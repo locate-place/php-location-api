@@ -1,7 +1,7 @@
 <?php
 
 /*
- * This file is part of the ixnode/php-api-version-bundle project.
+ * This file is part of the bjoern-hempel/php-location-api project.
  *
  * (c) Björn Hempel <https://www.hempel.li/>
  *

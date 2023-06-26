@@ -13,7 +13,7 @@ require_once('plugins/login-servers.php');
 
 return new AdminerLoginServers([
     'PostgreSQL (development)' => [
-        'server' => 'de-ixnode-php-api-version-bundle-development-postgresql',
+        'server' => 'com-twelvepics-php-location-api-development-postgresql',
         'driver' => 'pgsql',
     ],
 ]);
