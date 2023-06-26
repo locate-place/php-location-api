@@ -1,0 +1,176 @@
+# ===========================================
+# A recipe to deliver the app via Nginx, PHP 8.1.x and MySQL 8.0.31.
+#
+# @author Björn Hempel <bjoern@hempel.li>
+# @version 0.1.0 (2023-06-24)
+# @since 0.1.0 (2023-06-24) First version.
+# ===========================================
+
+# ===========================================
+# Start app:
+# ----------
+# ❯ docker-compose up -d
+#
+# Show containers:
+# ----------------
+# ❯ docker container ls
+#
+# Build images:
+# -------------
+# ❯ docker-compose build
+#
+# Show logs:
+# ----------------
+# ❯ docker-compose logs -f
+#
+# Login into containers:
+# ----------------------
+# ❯ docker-compose exec nginx bash
+# ❯ docker-compose exec php bash
+#
+# Open app (local - localhost):
+# -----------------
+#
+# With Traefik proxy:
+# - https://www.api-version.localhost/
+# - https://www.api-version.localhost/api/v1/docs.html
+#
+# Without Traefik proxy:
+# - https://localhost:44443/
+# - https://localhost:44443/api/v1/docs.html
+#
+# Restart containers:
+# -------------------
+# ❯ docker-compose restart
+#
+# Shutdown containers:
+# --------------------
+# ❯ docker-compose down
+#
+# Installation:
+# -------------
+# ❯ docker-compose up -d
+# ❯ docker-compose exec php composer install
+#
+# ===========================================
+
+version: "3.8"
+
+# Configures the services
+services:
+
+  # PHP FPM 8.2.1 and apache to serve the app
+  php:
+    # @see: https://hub.docker.com/_/php
+    build:
+      dockerfile: "${DOCKERFILE_PHP_FPM}"
+      context: "docker/php"
+      args:
+        - IMAGE_ADD=${IMAGE_ADD}
+    image: "${IMAGE_PHP}:${VERSION_APP_LATEST}"
+    container_name: "${NAMESPACE_DEVELOPMENT}.php.${PHP_VERSION}"
+    hostname: "${NAMESPACE_HOSTNAME_DEVELOPMENT}-php-${PHP_VERSION_HOSTNAME}"
+    restart: always
+    volumes:
+      # Server content (development mode)
+      - .:/var/www/web:delegated
+      # Exclude folder vendor
+      - php-data-vendor:/var/www/web/vendor
+      # Exclude folder var/cache
+      - php-data-var:/var/www/web/var
+      # Include cron tasks
+      - ./docker/php/cron.d/symfony.local:/etc/cron.d/symfony
+    #user: "www-data:users"
+    networks:
+      - network-internal
+    environment:
+      # app version
+      VERSION_APP: "${VERSION_APP}"
+      # database configuration
+      ENV_DB_USER: "${POSTGRESQL_SERVER_ROOT_USER}"
+      ENV_DB_PASS: "${POSTGRESQL_SERVER_ROOT_PASSWORD}"
+      ENV_DB_HOST: "${POSTGRESQL_SERVER_HOST}"
+      ENV_DB_PORT: "${POSTGRESQL_SERVER_PORT}"
+      ENV_DB_NAME: "${POSTGRESQL_SERVER_DB}"
+      ENV_DB_VERSION: "${POSTGRESQL_SERVER_VERSION}"
+      ENV_DB_DRIVER: "${POSTGRESQL_SERVER_DRIVER}"
+      # mail configuration
+      ENV_MAIL_SERVER_TRANSPORT: "${MAIL_SERVER_TRANSPORT}"
+      ENV_MAIL_SERVER_HOST: "${MAIL_SERVER_HOST}"
+      ENV_MAIL_SERVER_PORT: "${MAIL_SERVER_PORT}"
+    depends_on:
+      - postgresql
+
+  # PostgreSQL 14.7
+  postgresql:
+    image: "${IMAGE_POSTGRESQL}"
+    container_name: "${NAMESPACE_DEVELOPMENT}.postgresql"
+    hostname: "${NAMESPACE_HOSTNAME_DEVELOPMENT}-postgresql"
+    restart: always
+    environment:
+      POSTGRES_USER: "${POSTGRESQL_SERVER_ROOT_USER}"
+      POSTGRES_PASSWORD: "${POSTGRESQL_SERVER_ROOT_PASSWORD}"
+      POSTGRES_DB: "${POSTGRESQL_SERVER_DB}"
+    volumes:
+      # Add database data volume
+      - postgresql-data:/var/lib/postgresql/data:rw
+      # Mount fixtures
+      - ./fixtures/db:/fixtures/db
+    networks:
+      - network-internal
+
+  # Adminer MySQL Client (MySQL + PostgreSQL)
+  adminer:
+    # @see: https://hub.docker.com/_/adminer/
+    build:
+      dockerfile: "${DOCKERFILE_ADMINER}"
+      context: "docker/adminer"
+      args:
+        - IMAGE_ADD=${IMAGE_ADD}
+    image: "${IMAGE_ADMINER}:${VERSION_APP_LATEST}"
+    container_name: "${NAMESPACE_DEVELOPMENT}.adminer"
+    hostname: "${NAMESPACE_HOSTNAME_DEVELOPMENT}-adminer"
+    restart: always
+    environment:
+      ADMINER_DEFAULT_SERVER: "${NAMESPACE_HOSTNAME_DEVELOPMENT}-postgresql"
+      ADMINER_DESIGN: "flat"
+      ADMINER_PLUGINS: "tables-filter tinymce"
+    networks:
+      - network-internal
+    depends_on:
+      - postgresql
+
+  # Maildev
+  maildev:
+    image: "maildev/maildev:latest"
+    container_name: "${NAMESPACE_DEVELOPMENT}.maildev"
+    hostname: "${NAMESPACE_HOSTNAME_DEVELOPMENT}-maildev"
+    command: ["--mail-directory=/maildir"]
+    volumes:
+      - maildev-data:/maildir
+    restart: always
+    networks:
+      - network-internal
+    depends_on:
+      - php
+
+# configure volumes
+volumes:
+  # PHP vendor volume to avoid using local folder
+  php-data-vendor:
+    name: "${NAMESPACE_DEVELOPMENT}.php.data.vendor"
+  # PHP var volume to avoid using local folder
+  php-data-var:
+    name: "${NAMESPACE_DEVELOPMENT}.php.data.var"
+  # Volume to persist the DB data
+  postgresql-data:
+    name: "${NAMESPACE_DEVELOPMENT}.postgresql.data"
+  # Volume to persist the Mail data
+  maildev-data:
+    name: "${NAMESPACE_DEVELOPMENT}.maildev.data"
+
+# configure networks
+networks:
+  network-internal:
+    external: false
+    name: "${NAMESPACE_HOSTNAME}.network.internal"

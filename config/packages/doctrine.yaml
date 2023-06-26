@@ -1,0 +1,82 @@
+doctrine:
+    dbal:
+        default_connection: postgresql
+        connections:
+            postgresql:
+                driver: "%env(resolve:DOCTRINE_DB_DRIVER_POSTGRESQL)%"
+                server_version: "%env(resolve:DOCTRINE_DB_VERSION_POSTGRESQL)%"
+                path: "%env(resolve:DOCTRINE_DB_PATH_POSTGRESQL)%"
+                dbname: "%env(resolve:DOCTRINE_DB_NAME_POSTGRESQL)%"
+                host: "%env(resolve:DOCTRINE_DB_HOST_POSTGRESQL)%"
+                port: "%env(resolve:DOCTRINE_DB_PORT_POSTGRESQL)%"
+                user: "%env(resolve:DOCTRINE_DB_USER_POSTGRESQL)%"
+                password: "%env(resolve:DOCTRINE_DB_PASS_POSTGRESQL)%"
+            sqlite:
+                driver: "%env(resolve:DOCTRINE_DB_DRIVER_SQLITE)%"
+                server_version: "%env(resolve:DOCTRINE_DB_VERSION_SQLITE)%"
+                path: "%env(resolve:DOCTRINE_DB_PATH_SQLITE)%"
+                dbname: "%env(resolve:DOCTRINE_DB_NAME_SQLITE)%"
+                host: "%env(resolve:DOCTRINE_DB_HOST_SQLITE)%"
+                port: "%env(resolve:DOCTRINE_DB_PORT_SQLITE)%"
+                user: "%env(resolve:DOCTRINE_DB_USER_SQLITE)%"
+                password: "%env(resolve:DOCTRINE_DB_PASS_SQLITE)%"
+
+    orm:
+        auto_generate_proxy_classes: true
+        enable_lazy_ghost_objects: true
+        default_entity_manager: default
+        entity_managers:
+            default:
+                connection: postgresql # doctrine.dbal.connections.mysql
+                naming_strategy: doctrine.orm.naming_strategy.underscore_number_aware
+                report_fields_where_declared: true
+                validate_xml_mapping: true
+                auto_mapping: true
+                mappings:
+                    App:
+                        is_bundle: false
+                        dir: '%kernel.project_dir%/src/Entity'
+                        prefix: 'App\Entity'
+                        alias: App
+
+when@test:
+    doctrine:
+        dbal:
+            default_connection: sqlite
+            connections:
+                sqlite:
+                # "TEST_TOKEN" is typically set by ParaTest
+                #dbname_suffix: '_test%env(default::TEST_TOKEN)%'
+        orm:
+            auto_generate_proxy_classes: true
+            default_entity_manager: default
+            entity_managers:
+                default:
+                    connection: sqlite # doctrine.dbal.connections.mysql
+                    naming_strategy: doctrine.orm.naming_strategy.underscore_number_aware
+                    auto_mapping: true
+                    mappings:
+                        App:
+                            is_bundle: false
+                            dir: '%kernel.project_dir%/src/Entity'
+                            prefix: 'App\Entity'
+                            alias: App
+
+when@prod:
+    doctrine:
+        orm:
+            auto_generate_proxy_classes: false
+            query_cache_driver:
+                type: pool
+                pool: doctrine.system_cache_pool
+            result_cache_driver:
+                type: pool
+                pool: doctrine.result_cache_pool
+
+    framework:
+        cache:
+            pools:
+                doctrine.result_cache_pool:
+                    adapter: cache.app
+                doctrine.system_cache_pool:
+                    adapter: cache.system

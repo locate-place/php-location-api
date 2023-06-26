@@ -4,6 +4,12 @@
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
+    # API settings
+    api.base_url: '%env(resolve:API_BASE_URL)%'
+    api.cors_allow_origin: '%env(CORS_ALLOW_ORIGIN)%'
+    api.country_code: '%env(resolve:API_COUNTRY_CODE)%'
+    # Mailer settings
+    mailer.dns: '%env(MAILER_DSN)%'
 
 services:
     # default configuration for services in *this* file

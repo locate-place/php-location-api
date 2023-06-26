@@ -1,0 +1,2 @@
+# Change permissions of own cron.d entries
+*  *  *  *  *  root  chown root:root /etc/cron.d/* && chmod 644 /etc/cron.d/*

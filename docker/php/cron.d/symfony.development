@@ -1,0 +1,6 @@
+# ==========
+# MAINTENANCE
+# ==========
+
+# Logs the last cron execution
+*  *  *  *  *  www-data  date > /var/www/web/export/last-cron
