@@ -1,0 +1,54 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "description": "Used for validation of resource.json JSON file.",
+    "type": "object",
+    "properties": {
+        "$schema": {
+            "type": "string"
+        },
+        "name": {
+            "type": "string"
+        },
+        "description": {
+            "type": "string"
+        },
+        "version": {
+            "type": "string",
+            "pattern": "^\\d+\\.\\d+\\.\\d+$"
+        },
+        "date": {
+            "type": "string"
+        },
+        "license": {
+            "type": "string"
+        },
+        "authors": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "php-version": {
+            "type": "string",
+            "pattern": "^\\d+\\.\\d+\\.\\d+$"
+        },
+        "symfony-version": {
+            "type": "string",
+            "pattern": "^\\d+\\.\\d+\\.\\d+$"
+        },
+        "composer-version": {
+            "type": "string",
+            "pattern": "^\\d+\\.\\d+\\.\\d+$"
+        },
+        "doctrine-version": {
+            "type": "string",
+            "pattern": "^\\d+\\.\\d+\\.\\d+$"
+        },
+        "api-platform-version": {
+            "type": "string",
+            "pattern": "^\\d+\\.\\d+\\.\\d+$"
+        }
+    },
+    "required": ["version", "date", "license", "authors", "php-version", "symfony-version"],
+    "additionalProperties": false
+}

@@ -1,6 +1,6 @@
 # PHP Location API
 
-[![Release](https://img.shields.io/github/v/release/bjoern-hempel/php-location-api)](https://github.com/bjoern-hempel/php-location-api/releases)
+[![Release](https://img.shields.io/github/v/release/twelvepics-com/php-location-api)](https://github.com/twelvepics-com/php-location-api/releases)
 [![PHP](https://img.shields.io/badge/PHP-^8.2-777bb3.svg?logo=php&logoColor=white&labelColor=555555&style=flat)](https://www.php.net/supported-versions.php)
 [![PHPStan](https://img.shields.io/badge/PHPStan-Level%20Max-brightgreen.svg?style=flat)](https://phpstan.org/user-guide/rule-levels)
 [![PHPCS](https://img.shields.io/badge/PHPCS-PSR12-brightgreen.svg?style=flat)](https://www.php-fig.org/psr/psr-12/)

@@ -1,0 +1,34 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "description": "Used for validation of resource.valid.json JSON file.",
+    "type": "object",
+    "properties": {
+        "$schema": {
+            "type": "string"
+        },
+        "name": {
+            "type": "string"
+        },
+        "description": {
+            "type": "string"
+        },
+        "version": {
+            "type": "string",
+            "pattern": "^\\d+\\.\\d+\\.\\d+$"
+        },
+        "date": {
+            "type": "string"
+        },
+        "license": {
+            "type": "string"
+        },
+        "authors": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        }
+    },
+    "required": ["name", "description", "version", "date", "license", "authors"],
+    "additionalProperties": false
+}
