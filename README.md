@@ -22,14 +22,35 @@ docker compose up -d
 docker compose exec php composer install
 ```
 
-Open:
+Open the project in your browser:
 
 * https://www.location-api.localhost/
 * https://www.location-api.localhost/api/v1
 * https://www.location-api.localhost/api/v1/version.json
 
+> Hint: If you want to use real urls instead of using port numbers,
+> try to use https://github.com/bjoern-hempel/local-traefik-proxy
 
 ### Adminer
 
+If you want to use the adminer to manage your db data.
+
 * https://adminer.location-api.localhost/
-* 
+
+## Import data
+
+Download data from: http://download.geonames.org/export/dump/
+
+Extract the txt file with its data to `import/location/DE.txt`.
+As an example for the country DE.
+
+Import command:
+
+```bash
+bin/console import:location import/location/DE.txt
+```
+
+Takes about 60 seconds for 10000 lines. The country DE for
+example with 200000 needs about half an hour to import.
+Depending on the performance of the system used and the
+amounts of data in the table.

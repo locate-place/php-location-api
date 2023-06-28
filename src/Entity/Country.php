@@ -1,0 +1,198 @@
+<?php
+
+/*
+ * This file is part of the twelvepics-com/php-location-api project.
+ *
+ * (c) Björn Hempel <https://www.hempel.li/>
+ *
+ * For the full copyright and license information, please view the LICENSE.md
+ * file that was distributed with this source code.
+ */
+
+declare(strict_types=1);
+
+namespace App\Entity;
+
+use App\Entity\Trait\TimestampsTrait;
+use App\Repository\CountryRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+
+/**
+ * Class Country
+ *
+ * @author Björn Hempel <bjoern@hempel.li>
+ * @version 0.1.0 (2023-06-27)
+ * @since 0.1.0 (2023-06-27) First version.
+ */
+#[ORM\Entity(repositoryClass: CountryRepository::class)]
+#[UniqueEntity('code')]
+#[ORM\UniqueConstraint(columns: ['code'])]
+#[ORM\Index(columns: ['code'])]
+#[ORM\HasLifecycleCallbacks]
+class Country
+{
+    use TimestampsTrait;
+
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column]
+    private ?int $id = null;
+
+    #[ORM\Column(length: 2, unique: true)]
+    private ?string $code = null;
+
+    /** @var Collection<int, Timezone> $timezones */
+    #[ORM\ManyToMany(targetEntity: Timezone::class, mappedBy: 'countries')]
+    private Collection $timezones;
+
+    /** @var Collection<int, Location> $locations */
+    #[ORM\OneToMany(mappedBy: 'country', targetEntity: Location::class, orphanRemoval: true)]
+    private Collection $locations;
+
+    /** @var Collection<int, AdminCode> $adminCodes */
+    #[ORM\OneToMany(mappedBy: 'country', targetEntity: AdminCode::class, orphanRemoval: true)]
+    private Collection $adminCodes;
+
+    /**
+     *
+     */
+    public function __construct()
+    {
+        $this->timezones = new ArrayCollection();
+        $this->locations = new ArrayCollection();
+        $this->adminCodes = new ArrayCollection();
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getCode(): ?string
+    {
+        return $this->code;
+    }
+
+    /**
+     * @param string $code
+     * @return $this
+     */
+    public function setCode(string $code): static
+    {
+        $this->code = $code;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Timezone>
+     */
+    public function getTimezones(): Collection
+    {
+        return $this->timezones;
+    }
+
+    /**
+     * @param Timezone $timezone
+     * @return $this
+     */
+    public function addTimezone(Timezone $timezone): static
+    {
+        if (!$this->timezones->contains($timezone)) {
+            $this->timezones->add($timezone);
+            $timezone->addCountry($this);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param Timezone $timezone
+     * @return $this
+     */
+    public function removeTimezone(Timezone $timezone): static
+    {
+        if ($this->timezones->removeElement($timezone)) {
+            $timezone->removeCountry($this);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Location>
+     */
+    public function getLocations(): Collection
+    {
+        return $this->locations;
+    }
+
+    /**
+     * @param Location $location
+     * @return $this
+     */
+    public function addLocation(Location $location): static
+    {
+        if (!$this->locations->contains($location)) {
+            $this->locations->add($location);
+            $location->setCountry($this);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param Location $location
+     * @return $this
+     */
+    public function removeLocation(Location $location): static
+    {
+        if ($this->locations->removeElement($location)) {
+            /* Set the owning side to null (unless already changed). */
+            if ($location->getCountry() === $this) {
+                $location->setCountry(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, AdminCode>
+     */
+    public function getAdminCodes(): Collection
+    {
+        return $this->adminCodes;
+    }
+
+    public function addAdminCode(AdminCode $adminCode): static
+    {
+        if (!$this->adminCodes->contains($adminCode)) {
+            $this->adminCodes->add($adminCode);
+            $adminCode->setCountry($this);
+        }
+
+        return $this;
+    }
+
+    public function removeAdminCode(AdminCode $adminCode): static
+    {
+        if ($this->adminCodes->removeElement($adminCode)) {
+            // set the owning side to null (unless already changed)
+            if ($adminCode->getCountry() === $this) {
+                $adminCode->setCountry(null);
+            }
+        }
+
+        return $this;
+    }
+}

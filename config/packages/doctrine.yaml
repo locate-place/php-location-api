@@ -1,5 +1,7 @@
 doctrine:
     dbal:
+        types:
+            point: App\DBAL\GeoLocation\Types\PostgreSQL\PointType
         default_connection: postgresql
         connections:
             postgresql:
