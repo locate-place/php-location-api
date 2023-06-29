@@ -28,9 +28,13 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
  * @since 0.1.0 (2023-06-27) First version.
  */
 #[ORM\Entity(repositoryClass: FeatureCodeRepository::class)]
-#[UniqueEntity('code')]
-#[ORM\UniqueConstraint(columns: ['code'])]
-#[ORM\Index(columns: ['code'])]
+#[UniqueEntity(
+    fields: ['class', 'code'],
+    message: 'The code combination is already used with this class.',
+    errorPath: 'class'
+)]
+#[ORM\UniqueConstraint(columns: ['class_id', 'code'])]
+#[ORM\Index(columns: ['class_id', 'code'])]
 #[ORM\HasLifecycleCallbacks]
 class FeatureCode
 {
@@ -45,7 +49,7 @@ class FeatureCode
     #[ORM\JoinColumn(nullable: false)]
     private ?FeatureClass $class = null;
 
-    #[ORM\Column(length: 10, unique: true)]
+    #[ORM\Column(length: 10)]
     private ?string $code = null;
 
     /** @var Collection<int, Location> $locations */

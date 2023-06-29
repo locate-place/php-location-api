@@ -589,6 +589,7 @@ EOT
             $writtenRows++;
         }
 
+        $this->printAndLog('Start flushing Location entities.');
         $this->entityManager->flush();
 
         return $writtenRows;
@@ -621,7 +622,7 @@ EOT
         $this->printAndLog(sprintf('%d rows successfully read: %.2fs (CSV file)', count($data), $timeExecution));
 
         /* Imports the Location data */
-        $this->printAndLog(sprintf('Start writing %s', 'Location'));
+        $this->printAndLog('Start writing Location entities.');
         $timeStart = microtime(true);
         $rows = $this->saveEntities($data);
         $timeExecution = (microtime(true) - $timeStart);
