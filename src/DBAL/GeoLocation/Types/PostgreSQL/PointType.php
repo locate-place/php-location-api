@@ -73,7 +73,7 @@ class PointType extends Type
             throw new TypeInvalidException('array', 'null');
         }
 
-        [$longitude, $latitude] = $result;
+        [$latitude, $longitude] = $result;
 
         if (is_null($latitude)) {
             throw new TypeInvalidException('float', 'null');
@@ -96,7 +96,7 @@ class PointType extends Type
      */
     public function convertToDatabaseValue($value, AbstractPlatform $platform): string
     {
-        return sprintf('%f,%f', $value->getLongitude(), $value->getLatitude());
+        return sprintf('%f,%f', $value->getLatitude(), $value->getLongitude());
     }
 
     /**

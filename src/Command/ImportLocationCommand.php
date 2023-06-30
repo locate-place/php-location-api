@@ -55,8 +55,6 @@ class ImportLocationCommand extends BaseImport
 {
     protected static $defaultName = 'import:location';
 
-    #private const COLS_EXPECTED = 19;
-
     /** @var array<string, Country> $countries */
     private array $countries = [];
 
