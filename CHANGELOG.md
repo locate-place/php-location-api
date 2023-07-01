@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Releases
 
+### [0.1.4] - 2023-07-02
+
+* Optimization interaction with the package ixnode/php-api-version-bundle
+* Refactoring
+
 ### [0.1.3] - 2023-07-01
 
 * Add first /location endpoint
