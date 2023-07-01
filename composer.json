@@ -10,8 +10,10 @@
         "ext-ctype": "*",
         "ext-iconv": "*",
         "ext-zip": "*",
-        "ixnode/php-api-version-bundle": "^0.1.10",
+        "ixnode/bash-version-manager": "^0.1.7",
+        "ixnode/php-api-version-bundle": "^0.1.11",
         "ixnode/php-container": "*",
+        "ixnode/php-exception": "*",
         "ixnode/php-timezone": "^0.1.7",
         "symfony/console": "6.3.*",
         "symfony/dotenv": "6.3.*",
@@ -19,6 +21,7 @@
         "symfony/framework-bundle": "6.3.*",
         "symfony/monolog-bundle": "^3.8",
         "symfony/runtime": "6.3.*",
+        "symfony/stopwatch": "6.3.*",
         "symfony/yaml": "6.3.*"
     },
     "config": {
@@ -333,7 +336,6 @@
     "require-dev": {
         "doctrine/doctrine-fixtures-bundle": "^3.4",
         "friendsofphp/php-cs-fixer": "^3.14",
-        "ixnode/bash-version-manager": "^0.1.7",
         "phpmd/phpmd": "^2.13",
         "phpstan/phpstan": "^1.10",
         "phpunit/phpunit": "^9.5",
@@ -344,7 +346,6 @@
         "symfony/http-client": "6.3.*",
         "symfony/maker-bundle": "^1.49",
         "symfony/phpunit-bridge": "^6.3",
-        "symfony/stopwatch": "6.3.*",
         "symfony/web-profiler-bundle": "6.3.*"
     }
 }

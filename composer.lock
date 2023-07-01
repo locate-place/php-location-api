@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "11f5f0d18cafb87976fbebac588c293a",
+    "content-hash": "dda9bc9b51b8da1524267cc3ed622a64",
     "packages": [
         {
             "name": "api-platform/core",
@@ -1624,16 +1624,16 @@
         },
         {
             "name": "ixnode/php-api-version-bundle",
-            "version": "0.1.10",
+            "version": "0.1.11",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ixnode/php-api-version-bundle.git",
-                "reference": "96163da18c86047427e74d71a7ca42ebc9ec81be"
+                "reference": "421cd9e0e59b6af310ec4ece45343aa716033e1a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ixnode/php-api-version-bundle/zipball/96163da18c86047427e74d71a7ca42ebc9ec81be",
-                "reference": "96163da18c86047427e74d71a7ca42ebc9ec81be",
+                "url": "https://api.github.com/repos/ixnode/php-api-version-bundle/zipball/421cd9e0e59b6af310ec4ece45343aa716033e1a",
+                "reference": "421cd9e0e59b6af310ec4ece45343aa716033e1a",
                 "shasum": ""
             },
             "require": {
@@ -1648,7 +1648,7 @@
                 "ixnode/php-array-to-object": "^0.1.1",
                 "ixnode/php-checker": "^0.1.9",
                 "ixnode/php-container": "^0.1.8",
-                "ixnode/php-exception": "^0.1.19",
+                "ixnode/php-exception": "^0.1.20",
                 "ixnode/php-json-schema-validator": "^0.1.2",
                 "ixnode/php-naming-conventions": "^0.1.1",
                 "monolog/monolog": "^3.4",
@@ -1725,9 +1725,9 @@
             "description": "Provides the base API plattform functionality",
             "support": {
                 "issues": "https://github.com/ixnode/php-api-version-bundle/issues",
-                "source": "https://github.com/ixnode/php-api-version-bundle/tree/0.1.10"
+                "source": "https://github.com/ixnode/php-api-version-bundle/tree/0.1.11"
             },
-            "time": "2023-06-25T10:05:23+00:00"
+            "time": "2023-07-01T21:01:12+00:00"
         },
         {
             "name": "ixnode/php-array-to-object",
@@ -1913,16 +1913,16 @@
         },
         {
             "name": "ixnode/php-exception",
-            "version": "0.1.19",
+            "version": "0.1.20",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ixnode/php-exception.git",
-                "reference": "8eb8b682be8a2e254a7dece7f0d8dec1e5ab99d7"
+                "reference": "ba3eaa2f7d6b10d37bd2ac59cd9402a4bc991da2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ixnode/php-exception/zipball/8eb8b682be8a2e254a7dece7f0d8dec1e5ab99d7",
-                "reference": "8eb8b682be8a2e254a7dece7f0d8dec1e5ab99d7",
+                "url": "https://api.github.com/repos/ixnode/php-exception/zipball/ba3eaa2f7d6b10d37bd2ac59cd9402a4bc991da2",
+                "reference": "ba3eaa2f7d6b10d37bd2ac59cd9402a4bc991da2",
                 "shasum": ""
             },
             "require": {
@@ -1967,9 +1967,9 @@
             ],
             "support": {
                 "issues": "https://github.com/ixnode/php-exception/issues",
-                "source": "https://github.com/ixnode/php-exception/tree/0.1.19"
+                "source": "https://github.com/ixnode/php-exception/tree/0.1.20"
             },
-            "time": "2023-06-24T21:47:37+00:00"
+            "time": "2023-07-01T16:29:06+00:00"
         },
         {
             "name": "ixnode/php-json-schema-validator",
