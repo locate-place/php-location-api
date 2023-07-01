@@ -15,11 +15,12 @@ namespace App\ApiPlatform\State;
 
 use App\ApiPlatform\OpenApiContext\Name;
 use App\ApiPlatform\Resource\Location;
-use App\ApiPlatform\State\Base\Wrapper\BaseResourceWrapperProvider;
+use App\ApiPlatform\Route\LocationRoute;
 use App\Entity\Location as LocationEntity;
 use App\Repository\LocationRepository;
-use App\Utils\Version\Version;
 use Ixnode\PhpApiVersionBundle\ApiPlatform\Resource\Base\BasePublicResource;
+use Ixnode\PhpApiVersionBundle\ApiPlatform\State\Base\Wrapper\BaseResourceWrapperProvider;
+use Ixnode\PhpApiVersionBundle\Utils\Version\Version;
 use Ixnode\PhpException\ArrayType\ArrayKeyNotFoundException;
 use Ixnode\PhpException\Case\CaseUnsupportedException;
 use Ixnode\PhpException\Type\TypeInvalidException;
@@ -50,6 +51,16 @@ final class LocationProvider extends BaseResourceWrapperProvider
     )
     {
         parent::__construct($version, $parameterBag, $request);
+    }
+
+    /**
+     * Returns the route properties according to current class.
+     *
+     * @return array<string, array<string, int|string|string[]>>
+     */
+    protected function getRouteProperties(): array
+    {
+        return LocationRoute::PROPERTIES;
     }
 
     /**
