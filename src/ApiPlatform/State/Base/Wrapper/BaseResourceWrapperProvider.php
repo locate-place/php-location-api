@@ -18,12 +18,14 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
-use App\ApiPlatform\State\Base\BaseProvider;
+use App\ApiPlatform\Route\LocationRoute;
+use App\ApiPlatform\State\LocationProvider;
 use App\Utils\Version\Version;
 use DateTimeImmutable;
 use Exception;
 use Ixnode\PhpApiVersionBundle\ApiPlatform\Resource\Base\BasePublicResource;
 use Ixnode\PhpApiVersionBundle\ApiPlatform\Route\Base\BaseRoute;
+use Ixnode\PhpApiVersionBundle\ApiPlatform\State\Base\BaseProvider;
 use Ixnode\PhpApiVersionBundle\Utils\TypeCasting\TypeCastingHelper;
 use Ixnode\PhpContainer\Json;
 use Ixnode\PhpException\ArrayType\ArrayKeyNotFoundException;
@@ -89,6 +91,20 @@ abstract class BaseResourceWrapperProvider extends BaseProvider
     )
     {
         parent::__construct($parameterBag, $request);
+    }
+
+    /**
+     * Returns the route properties according to current class.
+     *
+     * @return array<string, array<string, int|string|string[]>>
+     * @throws CaseInvalidException
+     */
+    protected function getRouteProperties(): array
+    {
+        return match (static::class) {
+            LocationProvider::class => LocationRoute::PROPERTIES,
+            default => throw new CaseInvalidException(static::class, [])
+        };
     }
 
     /**

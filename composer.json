@@ -11,7 +11,7 @@
         "ext-iconv": "*",
         "ext-zip": "*",
         "ixnode/bash-version-manager": "^0.1.7",
-        "ixnode/php-api-version-bundle": "^0.1.11",
+        "ixnode/php-api-version-bundle": "^0.1.12",
         "ixnode/php-container": "*",
         "ixnode/php-exception": "*",
         "ixnode/php-timezone": "^0.1.7",
