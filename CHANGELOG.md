@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Releases
 
+### [0.1.3] - 2023-07-01
+
+* Add first /location endpoint
+
 ### [0.1.2] - 2023-07-01
 
 * Add PostGis to PostgreSQL
