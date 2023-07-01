@@ -103,6 +103,12 @@ services:
 
   # PostgreSQL 14.7
   postgresql:
+    # @see: https://hub.docker.com/_/php
+    build:
+      dockerfile: "${DOCKERFILE_POSTGRESQL}"
+      context: "docker/postgresql"
+      args:
+        - IMAGE_ADD=${IMAGE_ADD}
     image: "${IMAGE_POSTGRESQL}"
     container_name: "${NAMESPACE_DEVELOPMENT}.postgresql"
     hostname: "${NAMESPACE_HOSTNAME_DEVELOPMENT}-postgresql"

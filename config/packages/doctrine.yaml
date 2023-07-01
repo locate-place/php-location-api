@@ -15,6 +15,7 @@ doctrine:
                 password: "%env(resolve:DOCTRINE_DB_PASS_POSTGRESQL)%"
                 mapping_types:
                     point: point
+                schema_filter: ~^(?!(topology)_)~
             sqlite:
                 driver: "%env(resolve:DOCTRINE_DB_DRIVER_SQLITE)%"
                 server_version: "%env(resolve:DOCTRINE_DB_VERSION_SQLITE)%"

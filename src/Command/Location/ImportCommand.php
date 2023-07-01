@@ -11,11 +11,10 @@
 
 declare(strict_types=1);
 
-namespace App\Command;
+namespace App\Command\Location;
 
-use App\Command\Base\BaseImport;
+use App\Command\Base\BaseLocationImport;
 use App\Constants\Key\KeyCamelCase;
-use DateTimeImmutable;
 use App\DBAL\GeoLocation\ValueObject\Point;
 use App\Entity\AdminCode;
 use App\Entity\Country;
@@ -24,16 +23,19 @@ use App\Entity\FeatureCode;
 use App\Entity\Location;
 use App\Entity\Timezone;
 use DateTime;
+use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use Ixnode\PhpApiVersionBundle\Utils\TypeCasting\TypeCastingHelper;
 use Ixnode\PhpContainer\File;
 use Ixnode\PhpException\ArrayType\ArrayKeyNotFoundException;
 use Ixnode\PhpException\Case\CaseInvalidException;
+use Ixnode\PhpException\Class\ClassInvalidException;
 use Ixnode\PhpException\File\FileNotFoundException;
 use Ixnode\PhpException\File\FileNotReadableException;
 use Ixnode\PhpException\Type\TypeInvalidException;
-use SplFileObject;
+use Ixnode\PhpTimezone\Country as IxnodeCountry;
+use Ixnode\PhpTimezone\Timezone as IxnodeTimezone;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -43,17 +45,31 @@ use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
 
 /**
- * Class LocationImportCommand
+ * Class ImportCommand
  *
  * @author Björn Hempel <bjoern@hempel.li>
  * @version 0.1.0 (2023-06-27)
  * @since 0.1.0 (2023-06-27) First version.
- * @example bin/console import:location [file]
+ * @example bin/console location:import [file]
+ * @example bin/console location:import import/location/DE.txt
+ * @download bin/console location:download [countryCode]
  * @see http://download.geonames.org/export/dump/
+ * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
  */
-class ImportLocationCommand extends BaseImport
+class ImportCommand extends BaseLocationImport
 {
-    protected static $defaultName = 'import:location';
+    protected static $defaultName = 'location:import';
+
+    private int $ignoredLines = 0;
+
+    /** @var array<int, string> $ignoredLinesText */
+    private array $ignoredLinesText = [];
+
+    /** @var array<string, array<int, string>> $unknownTimezones */
+    private array $unknownTimezones = [];
+
+    /** @var array<string, array<int, string>> $invalidTimezones */
+    private array $invalidTimezones = [];
 
     /** @var array<string, Country> $countries */
     private array $countries = [];
@@ -70,55 +86,55 @@ class ImportLocationCommand extends BaseImport
     /** @var array<string, AdminCode> $adminCodes */
     private array $adminCodes = [];
 
-    private const FIELD_GEONAME_ID = 'geoname-id';
+    protected const FIELD_GEONAME_ID = 'geoname-id';
 
-    private const FIELD_NAME = 'name';
+    protected const FIELD_NAME = 'name';
 
-    private const FIELD_ASCII_NAME = 'ascii-name';
+    protected const FIELD_ASCII_NAME = 'ascii-name';
 
-    private const FIELD_ALTERNATE_NAMES = 'alternate-names';
+    protected const FIELD_ALTERNATE_NAMES = 'alternate-names';
 
-    private const FIELD_LATITUDE = 'latitude';
+    protected const FIELD_LATITUDE = 'latitude';
 
-    private const FIELD_LONGITUDE = 'longitude';
+    protected const FIELD_LONGITUDE = 'longitude';
 
-    private const FIELD_FEATURE_CLASS = 'feature-class';
+    protected const FIELD_FEATURE_CLASS = 'feature-class';
 
-    private const FIELD_FEATURE_CODE = 'feature-code';
+    protected const FIELD_FEATURE_CODE = 'feature-code';
 
-    private const FIELD_COUNTRY_CODE = 'country-code';
+    protected const FIELD_COUNTRY_CODE = 'country-code';
 
-    private const FIELD_CC2 = 'cc2';
+    protected const FIELD_CC2 = 'cc2';
 
-    private const FIELD_ADMIN1 = 'admin1';
+    protected const FIELD_ADMIN1 = 'admin1';
 
-    private const FIELD_ADMIN2 = 'admin2';
+    protected const FIELD_ADMIN2 = 'admin2';
 
-    private const FIELD_ADMIN3 = 'admin3';
+    protected const FIELD_ADMIN3 = 'admin3';
 
-    private const FIELD_ADMIN4 = 'admin4';
+    protected const FIELD_ADMIN4 = 'admin4';
 
-    private const FIELD_POPULATION = 'population';
+    protected const FIELD_POPULATION = 'population';
 
-    private const FIELD_ELEVATION = 'elevation';
+    protected const FIELD_ELEVATION = 'elevation';
 
-    private const FIELD_DEM = 'dem';
+    protected const FIELD_DEM = 'dem';
 
-    private const FIELD_TIMEZONE = 'timezone';
+    protected const FIELD_TIMEZONE = 'timezone';
 
-    private const FIELD_MODIFICATION_DATE = 'modification-date';
+    protected const FIELD_MODIFICATION_DATE = 'modification-date';
 
-    private const TEXT_IMPORT_START = 'Start importing "%s" - [%d/%d]. Please wait.';
+    protected const TEXT_IMPORT_START = 'Start importing "%s" - [%d/%d]. Please wait.';
 
     private const TEXT_ROWS_WRITTEN = '%d rows written to table %s (%d checked): %.2fs';
 
+    protected const TEXT_WARNING_IGNORED_LINE = 'Ignored line: %s:%d';
+
     /**
-     * CreateUserCommand constructor.
-     *
      * @param EntityManagerInterface $entityManager
      */
     public function __construct(
-        private readonly EntityManagerInterface $entityManager
+        protected readonly EntityManagerInterface $entityManager
     )
     {
         parent::__construct();
@@ -224,16 +240,20 @@ EOT
      * Returns the converted row.
      *
      * @inheritdoc
-     * @throws CaseInvalidException
      * @throws TypeInvalidException
+     * @throws ClassInvalidException
      */
-    protected function getDataRow(array $row, array $header): array
+    protected function getDataRow(array $row, array $header, File $csv, int $line): ?array
     {
         if (count($row) !== count($header)) {
-            throw new CaseInvalidException(
-                sprintf('%s !== %s', count($row), count($header)),
-                [sprintf(self::TEXT_ERROR_UNEXPECTED_COUNTS, count($row), count($header))]
-            );
+            $this->ignoredLines++;
+            $this->ignoredLinesText[] = sprintf('%s:%d', $csv->getPath(), $line);
+            $this->printAndLog(sprintf(
+                self::TEXT_WARNING_IGNORED_LINE,
+                $csv->getPath(),
+                $line
+            ));
+            return null;
         }
 
         $dataRow = [];
@@ -256,6 +276,7 @@ EOT
      *
      * @param string $code
      * @return Country
+     * @throws ArrayKeyNotFoundException
      */
     protected function getCountry(string $code): Country
     {
@@ -276,6 +297,7 @@ EOT
         if (!$country instanceof Country) {
             $country = (new Country())
                 ->setCode($code)
+                ->setName((new IxnodeCountry($code))->getName())
             ;
             $this->entityManager->persist($country);
         }
@@ -358,6 +380,7 @@ EOT
      *
      * @param string $timezoneValue
      * @return Timezone
+     * @throws ArrayKeyNotFoundException
      */
     protected function getTimezone(string $timezoneValue): Timezone
     {
@@ -376,8 +399,13 @@ EOT
 
         /* Create new entity. */
         if (!$timezone instanceof Timezone) {
+            $countryCode = (new IxnodeTimezone($timezoneValue))->getCountryCode();
+
+            $country = $this->getCountry($countryCode);
+
             $timezone = (new Timezone())
                 ->setTimezone($timezoneValue)
+                ->setCountry($country)
             ;
             $this->entityManager->persist($timezone);
         }
@@ -607,7 +635,7 @@ EOT
      * @throws FileNotReadableException
      * @throws Exception
      */
-    private function doExecute(File $file, int $numberCurrent, int $numberAll): void
+    protected function doExecute(File $file, int $numberCurrent, int $numberAll): void
     {
         $this->printAndLog('---');
         $this->printAndLog(sprintf(self::TEXT_IMPORT_START, $file->getPath(), $numberCurrent, $numberAll));
@@ -645,6 +673,8 @@ EOT
      * @throws Exception
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+     * @SuppressWarnings(PHPMD.NPathComplexity)
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
@@ -658,16 +688,16 @@ EOT
             return Command::INVALID;
         }
 
-        $fileBase = basename($file->getPath(), '.txt');
-        $pathLog = $this->getPathLog($file);
+        $countryCode = basename($file->getPath(), '.txt');
+        $type = sprintf('%s/csv-import', $countryCode);
 
-        $this->fileLog = new SplFileObject($pathLog, 'w');
+        $this->createLogInstanceFromFile($file, $type);
 
-        $this->clearTmpFolder($file, $fileBase);
+        $this->clearTmpFolder($file, $countryCode);
         $this->setSplitLines(10000);
         $this->splitFile(
             $file,
-            $fileBase,
+            $countryCode,
             false,
             [
                 'GeonameId',        /*  0 */
@@ -694,10 +724,56 @@ EOT
         );
 
         /* Get tmp files */
-        $splittedFiles = $this->getFilesTmp($file, $fileBase);
+        $splittedFiles = $this->getFilesTmp($file, $countryCode);
 
+        /* Execute all splitted files */
         foreach ($splittedFiles as $index => $splittedFile) {
             $this->doExecute(new File($splittedFile), $index + 1, count($splittedFiles));
+        }
+
+        $errorFound = false;
+
+        /* Show ignored lines */
+        if ($this->getIgnoredLines() > 0) {
+            $this->printAndLog('---');
+            $this->printAndLog(sprintf('Ignored lines: %d', $this->getIgnoredLines()));
+            foreach ($this->getIgnoredLinesText() as $ignoredLine) {
+                $this->printAndLog(sprintf('- %s', $ignoredLine));
+            }
+            $errorFound = true;
+        }
+
+        /* Show unknown timezones */
+        $unknownTimezones = $this->getUnknownTimezones();
+        if (count($unknownTimezones) > 0) {
+            $this->printAndLog('---');
+            $this->printAndLog(sprintf('Unknown timezones: %d', count($unknownTimezones)));
+            foreach ($unknownTimezones as $timezone => $unknownTimezoneFiles) {
+                $this->printAndLog(sprintf('- %s', $timezone));
+                foreach ($unknownTimezoneFiles as $unknownTimezoneFile) {
+                    $this->printAndLog(sprintf('  - %s', $unknownTimezoneFile));
+                }
+            }
+            $errorFound = true;
+        }
+
+        /* Show invalid timezones */
+        $invalidTimezones = $this->getInvalidTimezones();
+        if (count($invalidTimezones) > 0) {
+            $this->printAndLog('---');
+            $this->printAndLog(sprintf('Invalid timezones: %d', count($invalidTimezones)));
+            foreach ($invalidTimezones as $timezone => $invalidTimezoneFiles) {
+                $this->printAndLog(sprintf('- %s', $timezone));
+                foreach ($invalidTimezoneFiles as $invalidTimezoneFile) {
+                    $this->printAndLog(sprintf('  - %s', $invalidTimezoneFile));
+                }
+            }
+            $errorFound = true;
+        }
+
+        if (!$errorFound) {
+            $this->printAndLog('---');
+            $this->printAndLog('Finish. No error was found.');
         }
 
 //        $location = $this->locationARepository->findOneBy(['id' => 4]);
@@ -712,5 +788,79 @@ EOT
 
         /* Command successfully executed. */
         return Command::SUCCESS;
+    }
+
+    /**
+     * Returns the number of ignored lines.
+     *
+     * @return int
+     */
+    public function getIgnoredLines(): int
+    {
+        return $this->ignoredLines;
+    }
+
+    /**
+     * Returns the ignored lines.
+     *
+     * @return array<int, string>
+     */
+    public function getIgnoredLinesText(): array
+    {
+        return $this->ignoredLinesText;
+    }
+
+    /**
+     * Returns the unknown timezones.
+     *
+     * @return array<string, array<int, string>>
+     */
+    public function getUnknownTimezones(): array
+    {
+        return $this->unknownTimezones;
+    }
+
+    /**
+     * Adds an unknown timezones.
+     *
+     * @param string $timezone
+     * @param File $file
+     * @param int $line
+     * @return void
+     */
+    public function addUnknownTimezones(string $timezone, File $file, int $line): void
+    {
+        if (!array_key_exists($timezone, $this->unknownTimezones)) {
+            $this->unknownTimezones[$timezone] = [];
+        }
+
+        $this->unknownTimezones[$timezone][] = sprintf('%s: %s', $file->getPath(), $line);
+    }
+
+    /**
+     * Returns the invalid timezones.
+     *
+     * @return array<string, array<int, string>>
+     */
+    public function getInvalidTimezones(): array
+    {
+        return $this->invalidTimezones;
+    }
+
+    /**
+     * Adds an invalid timezones.
+     *
+     * @param string $timezone
+     * @param File $file
+     * @param int $line
+     * @return void
+     */
+    public function addInvalidTimezones(string $timezone, File $file, int $line): void
+    {
+        if (!array_key_exists($timezone, $this->invalidTimezones)) {
+            $this->invalidTimezones[$timezone] = [];
+        }
+
+        $this->unknownTimezones[$timezone][] = sprintf('%s:%d', $file->getPath(), $line);
     }
 }

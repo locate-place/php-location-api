@@ -26,30 +26,21 @@ use Ixnode\PhpException\File\FileNotWriteableException;
 use Ixnode\PhpException\Type\TypeInvalidException;
 use RegexIterator;
 use SplFileObject;
-use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
 
 /**
- * Class BaseImport
+ * Class BaseLocationImport
  *
  * @author Björn Hempel <bjoern@hempel.li>
  * @version 0.1.0 (2023-06-28)
  * @since 0.1.0 (2023-06-28) First version.
  * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
  */
-abstract class BaseImport extends Command
+abstract class BaseLocationImport extends Base
 {
     protected const TEXT_ERROR_UNEXPECTED_COUNTS = 'The given number of fields (%d) in row does not match with number of fields (%d) in header.';
 
     protected const NAME_ARGUMENT_CSV = 'csv';
-
-    protected InputInterface $input;
-
-    protected OutputInterface $output;
-
-    protected SplFileObject $fileLog;
 
     private int $splitLines = 100000;
 
@@ -78,30 +69,6 @@ abstract class BaseImport extends Command
     }
 
     /**
-     * Returns the log path.
-     *
-     * @param File $file
-     * @return string
-     * @throws FileNotWriteableException
-     */
-    protected function getPathLog(File $file): string
-    {
-        $pathLog = sprintf('%s/log/csv-import.%s.log', $file->getDirectoryPath(), (new DateTimeImmutable())->format('Ymd-His'));
-
-        $directoryLog = dirname($pathLog);
-
-        if (!is_dir($directoryLog)) {
-            mkdir($directoryLog, 0775, true);
-        }
-
-        if (!is_dir($directoryLog)) {
-            throw new FileNotWriteableException($directoryLog);
-        }
-
-        return $pathLog;
-    }
-
-    /**
      * @return array<string, string|null>
      */
     abstract protected function getFieldTranslation(): array;
@@ -127,9 +94,9 @@ abstract class BaseImport extends Command
      *
      * @param array<int, string> $row
      * @param array<int, string|null> $header
-     * @return array<string, mixed>
+     * @return array<string, mixed>|null
      */
-    abstract protected function getDataRow(array $row, array $header): array;
+    abstract protected function getDataRow(array $row, array $header, File $csv, int $line): ?array;
 
     /**
      * Configures the command.
@@ -421,6 +388,7 @@ abstract class BaseImport extends Command
      * @return array<int, array<string, mixed>>
      * @throws ArrayKeyNotFoundException
      * @throws CaseInvalidException
+     * @throws ClassInvalidException
      * @throws FileNotFoundException
      * @throws FileNotReadableException
      * @throws TypeInvalidException
@@ -444,7 +412,8 @@ abstract class BaseImport extends Command
 
         $header = [];
         $rowIndex = 0;
-        while (($row = fgetcsv($handle, 4096, $separator)) !== false) {
+        $currentLine = 0;
+        while (($row = fgetcsv($handle, 16384, $separator)) !== false) {
 
             /* Remove bom if it exists. */
             if ($rowIndex === 0) {
@@ -461,12 +430,21 @@ abstract class BaseImport extends Command
             if ($rowIndex === 0) {
                 $header = $this->getHeader($row);
                 $rowIndex++;
+                $currentLine++;
                 continue;
             }
 
-            $dataCsv[] = $this->getDataRow($row, $header);
+            $dataRow = $this->getDataRow($row, $header, $csv, $currentLine + 1);
+
+            if (is_null($dataRow)) {
+                $currentLine++;
+                continue;
+            }
+
+            $dataCsv[] = $dataRow;
 
             $rowIndex++;
+            $currentLine++;
         }
 
         fclose($handle);
@@ -552,43 +530,6 @@ abstract class BaseImport extends Command
         }
 
         return $files;
-    }
-
-    /**
-     * Prints and logs given message.
-     *
-     * @param string $message
-     * @return void
-     */
-    protected function printAndLog(string $message): void
-    {
-        $message = sprintf('[%s] %s', (new DateTimeImmutable())->format('c'), $message);
-
-        $this->print($message);
-        $this->log($message);
-    }
-
-    /**
-     * Logs given message.
-     *
-     * @param string $message
-     * @return void
-     */
-    protected function print(string $message): void
-    {
-        $this->output->writeln($message);
-        flush();
-    }
-
-    /**
-     * Logs given message.
-     *
-     * @param string $message
-     * @return void
-     */
-    protected function log(string $message): void
-    {
-        $this->fileLog->fwrite($message.PHP_EOL);
     }
 
     /**

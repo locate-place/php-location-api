@@ -44,9 +44,8 @@ class Country
     #[ORM\Column(length: 2, unique: true)]
     private ?string $code = null;
 
-    /** @var Collection<int, Timezone> $timezones */
-    #[ORM\ManyToMany(targetEntity: Timezone::class, mappedBy: 'countries')]
-    private Collection $timezones;
+    #[ORM\Column(length: 255)]
+    private ?string $name = null;
 
     /** @var Collection<int, Location> $locations */
     #[ORM\OneToMany(mappedBy: 'country', targetEntity: Location::class, orphanRemoval: true)]
@@ -56,14 +55,18 @@ class Country
     #[ORM\OneToMany(mappedBy: 'country', targetEntity: AdminCode::class, orphanRemoval: true)]
     private Collection $adminCodes;
 
+    /** @var Collection<int, Timezone> $timezones */
+    #[ORM\OneToMany(mappedBy: 'country', targetEntity: Timezone::class, orphanRemoval: true)]
+    private Collection $timezones;
+
     /**
      *
      */
     public function __construct()
     {
-        $this->timezones = new ArrayCollection();
         $this->locations = new ArrayCollection();
         $this->adminCodes = new ArrayCollection();
+        $this->timezones = new ArrayCollection();
     }
 
     /**
@@ -94,36 +97,20 @@ class Country
     }
 
     /**
-     * @return Collection<int, Timezone>
+     * @return string|null
      */
-    public function getTimezones(): Collection
+    public function getName(): ?string
     {
-        return $this->timezones;
+        return $this->name;
     }
 
     /**
-     * @param Timezone $timezone
+     * @param string $name
      * @return $this
      */
-    public function addTimezone(Timezone $timezone): static
+    public function setName(string $name): static
     {
-        if (!$this->timezones->contains($timezone)) {
-            $this->timezones->add($timezone);
-            $timezone->addCountry($this);
-        }
-
-        return $this;
-    }
-
-    /**
-     * @param Timezone $timezone
-     * @return $this
-     */
-    public function removeTimezone(Timezone $timezone): static
-    {
-        if ($this->timezones->removeElement($timezone)) {
-            $timezone->removeCountry($this);
-        }
+        $this->name = $name;
 
         return $this;
     }
@@ -174,6 +161,10 @@ class Country
         return $this->adminCodes;
     }
 
+    /**
+     * @param AdminCode $adminCode
+     * @return $this
+     */
     public function addAdminCode(AdminCode $adminCode): static
     {
         if (!$this->adminCodes->contains($adminCode)) {
@@ -184,12 +175,54 @@ class Country
         return $this;
     }
 
+    /**
+     * @param AdminCode $adminCode
+     * @return $this
+     */
     public function removeAdminCode(AdminCode $adminCode): static
     {
         if ($this->adminCodes->removeElement($adminCode)) {
             // set the owning side to null (unless already changed)
             if ($adminCode->getCountry() === $this) {
                 $adminCode->setCountry(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Timezone>
+     */
+    public function getTimezones(): Collection
+    {
+        return $this->timezones;
+    }
+
+    /**
+     * @param Timezone $timezone
+     * @return $this
+     */
+    public function addTimezone(Timezone $timezone): static
+    {
+        if (!$this->timezones->contains($timezone)) {
+            $this->timezones->add($timezone);
+            $timezone->setCountry($this);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param Timezone $timezone
+     * @return $this
+     */
+    public function removeTimezone(Timezone $timezone): static
+    {
+        if ($this->timezones->removeElement($timezone)) {
+            // set the owning side to null (unless already changed)
+            if ($timezone->getCountry() === $this) {
+                $timezone->setCountry(null);
             }
         }
 

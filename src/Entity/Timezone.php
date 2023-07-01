@@ -41,20 +41,19 @@ class Timezone
     #[ORM\Column(length: 255)]
     private ?string $timezone = null;
 
-    /** @var Collection<int, Country> $countries */
-    #[ORM\ManyToMany(targetEntity: Country::class, inversedBy: 'timezones')]
-    private Collection $countries;
-
     /** @var Collection<int, Location> $locations */
     #[ORM\OneToMany(mappedBy: 'timezone', targetEntity: Location::class, orphanRemoval: true)]
     private Collection $locations;
+
+    #[ORM\ManyToOne(inversedBy: 'timezones')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Country $country = null;
 
     /**
      *
      */
     public function __construct()
     {
-        $this->countries = new ArrayCollection();
         $this->locations = new ArrayCollection();
     }
 
@@ -81,38 +80,6 @@ class Timezone
     public function setTimezone(string $timezone): static
     {
         $this->timezone = $timezone;
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, Country>
-     */
-    public function getCountries(): Collection
-    {
-        return $this->countries;
-    }
-
-    /**
-     * @param Country $country
-     * @return $this
-     */
-    public function addCountry(Country $country): static
-    {
-        if (!$this->countries->contains($country)) {
-            $this->countries->add($country);
-        }
-
-        return $this;
-    }
-
-    /**
-     * @param Country $country
-     * @return $this
-     */
-    public function removeCountry(Country $country): static
-    {
-        $this->countries->removeElement($country);
 
         return $this;
     }
@@ -151,6 +118,18 @@ class Timezone
                 $location->setTimezone(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getCountry(): ?Country
+    {
+        return $this->country;
+    }
+
+    public function setCountry(?Country $country): static
+    {
+        $this->country = $country;
 
         return $this;
     }
