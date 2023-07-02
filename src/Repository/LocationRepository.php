@@ -70,28 +70,50 @@ class LocationRepository extends ServiceEntityRepository
         }
     }
 
-//    /**
-//     * @return Location[] Returns an array of Location objects
-//     */
-//    public function findByExampleField($value): array
-//    {
-//        return $this->createQueryBuilder('l')
-//            ->andWhere('l.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->orderBy('l.id', 'ASC')
-//            ->setMaxResults(10)
-//            ->getQuery()
-//            ->getResult()
-//        ;
-//    }
+    /**
+     * Returns a list of locations (location.id).
+     *
+     * @param string $featureClass
+     * @param float $latitude
+     * @param float $longitude
+     * @param int $distanceMeter
+     * @return array<int, int>
+     */
+    public function findLocationsByFeatureClassAndDistance(
+        string $featureClass,
+        float  $latitude,
+        float  $longitude,
+        int    $distanceMeter
+    ): array
+    {
+        $queryBuilder = $this->createQueryBuilder('l');
 
-//    public function findOneBySomeField($value): ?Location
-//    {
-//        return $this->createQueryBuilder('l')
-//            ->andWhere('l.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->getQuery()
-//            ->getOneOrNullResult()
-//        ;
-//    }
+        $queryBuilder
+            ->select([
+                'l.id',
+            ])
+            ->leftJoin('l.featureClass', 'fc')
+        ;
+
+        $queryBuilder
+            ->andWhere('fc.class = :featureClass')
+            ->setParameter('featureClass', $featureClass)
+
+            ->andWhere('ST_DWithin(
+                ST_MakePointPoint(l.coordinate(0), l.coordinate(1)),
+                ST_MakePoint(:latitude, :longitude),
+                :distance
+            ) = TRUE')
+            ->setParameter('latitude', $latitude)
+            ->setParameter('longitude', $longitude)
+            ->setParameter('distance', $distanceMeter)
+        ;
+
+        $ids = $queryBuilder
+            ->orderBy('l.id', 'ASC')
+            ->getQuery()
+            ->getArrayResult();
+
+        return array_column($ids, 'id');
+    }
 }

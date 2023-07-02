@@ -87,6 +87,10 @@ final class LocationProvider extends BaseResourceWrapperProvider
         return (new Location())
             ->setGeonameId($location->getGeonameId() ?: 0)
             ->setName($location->getName() ?: '')
+            ->setCountry([
+                'code' => $location->getCountry()?->getCode() ?: '',
+                'name' => $location->getCountry()?->getName() ?: '',
+            ])
             ->setFeature([
                 'class' => $location->getFeatureClass()?->getClass() ?: '',
                 'code' => $location->getFeatureCode()?->getCode() ?: '',
@@ -107,10 +111,17 @@ final class LocationProvider extends BaseResourceWrapperProvider
     {
         //$coordinate = $this->getFilter('coordinate');
 
+        $locationIds = $this->locationRepository->findLocationsByFeatureClassAndDistance(
+            'P',
+            47.486850,
+            10.721803,
+            2000
+        );
+
         $locations = [];
 
-        foreach ([182559, 182560] as $geonameId) {
-            $location = $this->locationRepository->find($geonameId);
+        foreach ($locationIds as $locationId) {
+            $location = $this->locationRepository->find($locationId);
 
             if (!$location instanceof LocationEntity) {
                 continue;

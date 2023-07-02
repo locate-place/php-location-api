@@ -55,6 +55,9 @@ class Location extends BasePublicResource
 
     protected string $name;
 
+    /** @var array{code: string, name: string} $country */
+    protected array $country;
+
     /** @var array{class: string, code: string} $feature */
     protected array $feature;
 
@@ -104,6 +107,28 @@ class Location extends BasePublicResource
     {
         $this->name = $name;
 
+        return $this;
+    }
+
+    /**
+     * Gets the country.
+     *
+     * @return array{code: string, name: string}
+     */
+    public function getCountry(): array
+    {
+        return $this->country;
+    }
+
+    /**
+     * Sets the country.
+     *
+     * @param array{code: string, name: string} $country
+     * @return Location
+     */
+    public function setCountry(array $country): Location
+    {
+        $this->country = $country;
         return $this;
     }
 

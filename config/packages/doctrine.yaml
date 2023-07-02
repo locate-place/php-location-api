@@ -39,6 +39,11 @@ doctrine:
                 report_fields_where_declared: true
                 validate_xml_mapping: true
                 auto_mapping: true
+                dql:
+                    string_functions:
+                        ST_DWithin: App\DBAL\GeoLocation\Functions\PostgreSQL\ST_DWithin
+                        ST_MakePoint: App\DBAL\GeoLocation\Functions\PostgreSQL\ST_MakePoint
+                        ST_MakePointPoint: App\DBAL\GeoLocation\Functions\PostgreSQL\ST_MakePointPoint
                 mappings:
                     App:
                         is_bundle: false
