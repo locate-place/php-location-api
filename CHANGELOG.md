@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Releases
 
+### [0.1.5] - 2023-07-02
+
+* Add DQL Functions for ST_DWithin and ST_MakePoint
+
 ### [0.1.4] - 2023-07-02
 
 * Optimization interaction with the package ixnode/php-api-version-bundle
