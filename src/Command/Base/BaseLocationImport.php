@@ -451,6 +451,7 @@ abstract class BaseLocationImport extends Base
 
         foreach ($this->getExtraCsvRows() as $csvRow) {
             foreach ($csvRow as $indexName => $value) {
+                /** @phpstan-ignore-next-line */
                 if (!(is_bool($value) || is_string($value) || is_int($value))) {
                     throw new CaseInvalidException(
                         'not bool or string or int',

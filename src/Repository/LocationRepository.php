@@ -73,17 +73,17 @@ class LocationRepository extends ServiceEntityRepository
     /**
      * Returns a list of locations (location.id).
      *
-     * @param string $featureClass
+     * @param string|null $featureClass
      * @param float $latitude
      * @param float $longitude
      * @param int $distanceMeter
      * @return array<int, int>
      */
     public function findLocationsByFeatureClassAndDistance(
-        string $featureClass,
-        float  $latitude,
-        float  $longitude,
-        int    $distanceMeter
+        ?string $featureClass,
+        float   $latitude,
+        float   $longitude,
+        int     $distanceMeter
     ): array
     {
         $queryBuilder = $this->createQueryBuilder('l');
@@ -95,10 +95,13 @@ class LocationRepository extends ServiceEntityRepository
             ->leftJoin('l.featureClass', 'fc')
         ;
 
-        $queryBuilder
-            ->andWhere('fc.class = :featureClass')
-            ->setParameter('featureClass', $featureClass)
+        if (!is_null($featureClass)) {
+            $queryBuilder
+                ->andWhere('fc.class = :featureClass')
+                ->setParameter('featureClass', $featureClass);
+        }
 
+        $queryBuilder
             ->andWhere('ST_DWithin(
                 ST_MakePointPoint(l.coordinate(0), l.coordinate(1)),
                 ST_MakePoint(:latitude, :longitude),

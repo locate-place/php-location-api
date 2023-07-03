@@ -16,17 +16,20 @@ namespace App\ApiPlatform\State;
 use App\ApiPlatform\OpenApiContext\Name;
 use App\ApiPlatform\Resource\Location;
 use App\ApiPlatform\Route\LocationRoute;
+use App\ApiPlatform\State\Base\BaseProvider;
 use App\Entity\Location as LocationEntity;
 use App\Repository\LocationRepository;
 use Ixnode\PhpApiVersionBundle\ApiPlatform\Resource\Base\BasePublicResource;
 use Ixnode\PhpApiVersionBundle\ApiPlatform\State\Base\Wrapper\BaseResourceWrapperProvider;
 use Ixnode\PhpApiVersionBundle\Utils\Version\Version;
+use Ixnode\PhpCoordinate\Coordinate;
 use Ixnode\PhpException\ArrayType\ArrayKeyNotFoundException;
 use Ixnode\PhpException\Case\CaseUnsupportedException;
 use Ixnode\PhpException\Type\TypeInvalidException;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
  * Class LocationProvider
@@ -35,19 +38,21 @@ use Symfony\Component\HttpFoundation\RequestStack;
  * @version 0.1.0 (2023-07-01)
  * @since 0.1.0 (2023-07-01) First version.
  */
-final class LocationProvider extends BaseResourceWrapperProvider
+final class LocationProvider extends BaseProvider
 {
     /**
      * @param Version $version
      * @param ParameterBagInterface $parameterBag
      * @param RequestStack $request
      * @param LocationRepository $locationRepository
+     * @param TranslatorInterface $translator
      */
     public function __construct(
         protected Version $version,
         protected ParameterBagInterface $parameterBag,
         protected RequestStack $request,
-        protected LocationRepository $locationRepository
+        protected LocationRepository $locationRepository,
+        protected TranslatorInterface $translator
     )
     {
         parent::__construct($version, $parameterBag, $request);
@@ -81,9 +86,20 @@ final class LocationProvider extends BaseResourceWrapperProvider
      *
      * @param LocationEntity $location
      * @return Location
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      */
     private function getLocation(LocationEntity $location): Location
     {
+        $featureClass = $location->getFeatureClass()?->getClass() ?: '';
+        $featureCode = $location->getFeatureCode()?->getCode() ?: '';
+        $featureClassCode = sprintf('%s.%s', $featureClass, $featureCode);
+
+        $featureName = $this->translator->trans(
+            $featureClassCode,
+            domain: 'place',
+            locale: 'de_DE'
+        );
+
         return (new Location())
             ->setGeonameId($location->getGeonameId() ?: 0)
             ->setName($location->getName() ?: '')
@@ -94,6 +110,7 @@ final class LocationProvider extends BaseResourceWrapperProvider
             ->setFeature([
                 'class' => $location->getFeatureClass()?->getClass() ?: '',
                 'code' => $location->getFeatureCode()?->getCode() ?: '',
+                'name' => $featureName,
             ])
             ->setCoordinate([
                 'latitude' => $location->getCoordinate()?->getLatitude() ?: .0,
@@ -106,16 +123,21 @@ final class LocationProvider extends BaseResourceWrapperProvider
      * Returns a collection of location resources that matches the given coordinate.
      *
      * @return BasePublicResource[]
+     * @throws ArrayKeyNotFoundException
+     * @throws CaseUnsupportedException
+     * @throws TypeInvalidException
      */
     private function doProvideGetCollection(): array
     {
-        //$coordinate = $this->getFilter('coordinate');
+        $coordinate = new Coordinate($this->getFilterString(Name::COORDINATE));
+        $distance = $this->hasFilter(Name::DISTANCE) ? $this->getFilterInteger(Name::DISTANCE) : 1000;
+        $featureClass = $this->hasFilter(Name::FEATURE_CLASS) ? $this->getFilterString(Name::FEATURE_CLASS) : null;
 
         $locationIds = $this->locationRepository->findLocationsByFeatureClassAndDistance(
-            'P',
-            47.486850,
-            10.721803,
-            2000
+            $featureClass,
+            $coordinate->getLatitude(),
+            $coordinate->getLongitude(),
+            $distance
         );
 
         $locations = [];

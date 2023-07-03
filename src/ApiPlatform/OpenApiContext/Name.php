@@ -24,5 +24,9 @@ class Name
 {
     final public const COORDINATE = 'coordinate';
 
+    final public const DISTANCE = 'distance';
+
+    final public const FEATURE_CLASS = 'feature_class';
+
     final public const GEONAME_ID = 'geoname_id';
 }

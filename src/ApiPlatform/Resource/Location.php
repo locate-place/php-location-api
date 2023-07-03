@@ -33,6 +33,8 @@ use Ixnode\PhpApiVersionBundle\ApiPlatform\Resource\Base\BasePublicResource;
         'description' => LocationRoute::DESCRIPTION_COLLECTION_GET,
         'parameters' => [
             Parameter::COORDINATE,
+            Parameter::DISTANCE,
+            Parameter::FEATURE_CLASS,
         ],
     ],
     provider: LocationProvider::class
@@ -58,7 +60,7 @@ class Location extends BasePublicResource
     /** @var array{code: string, name: string} $country */
     protected array $country;
 
-    /** @var array{class: string, code: string} $feature */
+    /** @var array{class: string, code: string, name: string} $feature */
     protected array $feature;
 
     /** @var array{latitude: float, longitude: float} $coordinate */
@@ -135,7 +137,7 @@ class Location extends BasePublicResource
     /**
      * Gets the feature.
      *
-     * @return array{class: string, code: string}
+     * @return array{class: string, code: string, name: string}
      */
     public function getFeature(): array
     {
@@ -145,7 +147,7 @@ class Location extends BasePublicResource
     /**
      * Sets the feature.
      *
-     * @param array{class: string, code: string} $feature
+     * @param array{class: string, code: string, name: string} $feature
      * @return self
      */
     public function setFeature(array $feature): self

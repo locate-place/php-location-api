@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace App\ApiPlatform\OpenApiContext;
 
+use App\Constants\DB\FeatureClass;
+
 /**
  * Class Parameter
  *
@@ -31,7 +33,40 @@ class Parameter
         'allowEmptyValue' => false,
         'schema' => [
             'type' => 'string',
-            'default' => '51%2E0504, 13%2E7373' /* Dresden, Germany */
+            'default' => '51.0504, 13.7373' /* Dresden, Germany */
+        ],
+        'style' => 'simple', // simple, form
+        'explode' => false,
+        'allowReserved' => false,
+    ];
+
+    final public const DISTANCE = [
+        'name' => Name::DISTANCE,
+        'in' => 'query', // cookie, header, path, query
+        'description' => '<strong>Distance</strong>',
+        'required' => false,
+        'deprecated' => false,
+        'allowEmptyValue' => false,
+        'schema' => [
+            'type' => 'integer',
+            'default' => 10000,
+        ],
+        'style' => 'simple', // simple, form
+        'explode' => false,
+        'allowReserved' => false,
+    ];
+
+    final public const FEATURE_CLASS = [
+        'name' => Name::FEATURE_CLASS,
+        'in' => 'query', // cookie, header, path, query
+        'description' => '<strong>Feature Class</strong>',
+        'required' => false,
+        'deprecated' => false,
+        'allowEmptyValue' => false,
+        'schema' => [
+            'type' => 'string',
+            'default' => FeatureClass::FEATURE_CLASS_A,
+            'enum' => FeatureClass::FEATURE_CLASSES_ALL,
         ],
         'style' => 'simple', // simple, form
         'explode' => false,

@@ -13,6 +13,7 @@
         "ixnode/bash-version-manager": "^0.1.7",
         "ixnode/php-api-version-bundle": "^0.1.12",
         "ixnode/php-container": "*",
+        "ixnode/php-coordinate": "^0.1.0",
         "ixnode/php-exception": "*",
         "ixnode/php-timezone": "^0.1.7",
         "symfony/console": "6.3.*",
@@ -22,6 +23,7 @@
         "symfony/monolog-bundle": "^3.8",
         "symfony/runtime": "6.3.*",
         "symfony/stopwatch": "6.3.*",
+        "symfony/translation": "6.3.*",
         "symfony/yaml": "6.3.*"
     },
     "config": {

@@ -35,8 +35,14 @@ final class LocationRoute extends BaseRoute
         Name::COORDINATE => [
             self::KEY_REQUEST => Name::COORDINATE,
             self::KEY_RESPONSE => 'coordinate',
-            self::KEY_DEFAULT => '51%2E0504, 13%2E7373',
+            self::KEY_DEFAULT => '51.0504, 13.7373',
             self::KEY_TYPE => self::TYPE_STRING,
+        ],
+        Name::DISTANCE => [
+            self::KEY_REQUEST => Name::DISTANCE,
+            self::KEY_RESPONSE => 'distance',
+            self::KEY_DEFAULT => 1000,
+            self::KEY_TYPE => self::TYPE_INTEGER,
         ],
     ];
 
