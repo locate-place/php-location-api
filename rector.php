@@ -16,7 +16,6 @@ use Rector\Config\RectorConfig;
 use Rector\Doctrine\Set\DoctrineSetList;
 use Rector\Php80\Rector\FunctionLike\MixedTypeRector;
 use Rector\Set\ValueObject\LevelSetList;
-use Rector\Symfony\Set\SensiolabsSetList;
 use Rector\Symfony\Set\SymfonySetList;
 
 return static function (RectorConfig $rectorConfig): void {
