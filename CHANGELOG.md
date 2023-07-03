@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Releases
 
+### [0.1.6] - 2023-07-04
+
+* Add new fresh packages
+* Add distance, feature class and coordinate to endpoint
+* Extend given parameter
+
 ### [0.1.5] - 2023-07-02
 
 * Add DQL Functions for ST_DWithin and ST_MakePoint
