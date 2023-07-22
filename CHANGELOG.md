@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Releases
 
+### [0.1.10] - 2023-07-22
+
+* Composer update
+* Upgrading ixnode/php-coordinate (0.1.2 => 0.1.6)
+* Upgrading phpstan/phpstan (1.10.25 => 1.10.26)
+* Upgrading povils/phpmnd (v3.1.0 => v3.2.0)
+* Upgrading rector/rector (0.17.3 => 0.17.6)
+
 ### [0.1.9] - 2023-07-22
 
 * Update README.md
