@@ -59,6 +59,10 @@ class Country
     #[ORM\OneToMany(mappedBy: 'country', targetEntity: Timezone::class, orphanRemoval: true)]
     private Collection $timezones;
 
+    /** @var Collection<int, Import> $imports */
+    #[ORM\OneToMany(mappedBy: 'country', targetEntity: Import::class, orphanRemoval: true)]
+    private Collection $imports;
+
     /**
      *
      */
@@ -67,6 +71,7 @@ class Country
         $this->locations = new ArrayCollection();
         $this->adminCodes = new ArrayCollection();
         $this->timezones = new ArrayCollection();
+        $this->imports = new ArrayCollection();
     }
 
     /**
@@ -223,6 +228,36 @@ class Country
             // set the owning side to null (unless already changed)
             if ($timezone->getCountry() === $this) {
                 $timezone->setCountry(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Import>
+     */
+    public function getImports(): Collection
+    {
+        return $this->imports;
+    }
+
+    public function addImport(Import $import): static
+    {
+        if (!$this->imports->contains($import)) {
+            $this->imports->add($import);
+            $import->setCountry($this);
+        }
+
+        return $this;
+    }
+
+    public function removeImport(Import $import): static
+    {
+        if ($this->imports->removeElement($import)) {
+            // set the owning side to null (unless already changed)
+            if ($import->getCountry() === $this) {
+                $import->setCountry(null);
             }
         }
 

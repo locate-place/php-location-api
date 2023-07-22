@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace App\Command\Base;
 
+use App\Entity\Import;
 use DateTimeImmutable;
 use Ixnode\PhpApiVersionBundle\Utils\TypeCasting\TypeCastingHelper;
 use Ixnode\PhpContainer\Encoding;
@@ -48,6 +49,8 @@ abstract class BaseLocationImport extends Base
         '00.00.0000' => '01.01.1970',
         '31.12.9999' => '31.12.2099',
     ];
+
+    protected Import $import;
 
     /**
      *
@@ -468,21 +471,6 @@ abstract class BaseLocationImport extends Base
         return $dataCsv;
     }
 
-//    /**
-//     * Clears the table from given entity.
-//     *
-//     * @param class-string $entityName
-//     * @return bool
-//     */
-//    protected function clearTable(string $entityName): bool
-//    {
-//        $this->entity->getEntityManager()->createQuery(sprintf('DELETE %s p', $entityName))->execute();
-//
-//        $this->printAndLog(sprintf('table %s is truncated.', $entityName));
-//
-//        return true;
-//    }
-
     /**
      * Clears the tmp folder.
      *
@@ -490,6 +478,7 @@ abstract class BaseLocationImport extends Base
      * @param string|string[] $path
      * @return void
      * @throws TypeInvalidException
+     * @throws ClassInvalidException
      */
     protected function clearTmpFolder(File $file, string|array $path): void
     {
@@ -623,6 +612,7 @@ abstract class BaseLocationImport extends Base
      * @param string $addHeaderSeparator
      * @return void
      * @throws CaseInvalidException
+     * @throws ClassInvalidException
      * @throws FileNotWriteableException
      * @throws TypeInvalidException
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)

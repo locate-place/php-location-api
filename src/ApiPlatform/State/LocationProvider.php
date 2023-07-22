@@ -25,6 +25,7 @@ use Ixnode\PhpApiVersionBundle\Utils\Version\Version;
 use Ixnode\PhpCoordinate\Coordinate;
 use Ixnode\PhpException\ArrayType\ArrayKeyNotFoundException;
 use Ixnode\PhpException\Case\CaseUnsupportedException;
+use Ixnode\PhpException\Parser\ParserException;
 use Ixnode\PhpException\Type\TypeInvalidException;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -126,6 +127,7 @@ final class LocationProvider extends BaseProvider
      * @throws ArrayKeyNotFoundException
      * @throws CaseUnsupportedException
      * @throws TypeInvalidException
+     * @throws ParserException
      */
     private function doProvideGetCollection(): array
     {
@@ -183,6 +185,7 @@ final class LocationProvider extends BaseProvider
      * @throws ArrayKeyNotFoundException
      * @throws CaseUnsupportedException
      * @throws TypeInvalidException
+     * @throws ParserException
      */
     protected function doProvide(): BasePublicResource|array
     {

@@ -165,6 +165,9 @@ EOT
         rename($pathZipTxt, $pathTxt);
         rename($pathZipReadme, $pathReadme);
 
+        $this->printAndLog(sprintf('Data file saved to "%s".', $pathTxt));
+        $this->printAndLog(sprintf('readme.txt file saved to "%s".', $pathReadme));
+
         return true;
     }
 

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "d0565258a2c5d6c6a5488454b796aff5",
+    "content-hash": "99addbc91332e4f80e3b68d314aec98f",
     "packages": [
         {
             "name": "api-platform/core",
@@ -2216,16 +2216,16 @@
         },
         {
             "name": "ixnode/php-timezone",
-            "version": "0.1.7",
+            "version": "0.1.10",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ixnode/php-timezone.git",
-                "reference": "ea78f8924a4daa8ea9dc8fcfd9d5778e275051b0"
+                "reference": "37099dd42b3b434f78ef333deaaaf969331eda77"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ixnode/php-timezone/zipball/ea78f8924a4daa8ea9dc8fcfd9d5778e275051b0",
-                "reference": "ea78f8924a4daa8ea9dc8fcfd9d5778e275051b0",
+                "url": "https://api.github.com/repos/ixnode/php-timezone/zipball/37099dd42b3b434f78ef333deaaaf969331eda77",
+                "reference": "37099dd42b3b434f78ef333deaaaf969331eda77",
                 "shasum": ""
             },
             "require": {
@@ -2268,9 +2268,9 @@
             ],
             "support": {
                 "issues": "https://github.com/ixnode/php-timezone/issues",
-                "source": "https://github.com/ixnode/php-timezone/tree/0.1.7"
+                "source": "https://github.com/ixnode/php-timezone/tree/0.1.10"
             },
-            "time": "2023-07-01T15:01:33+00:00"
+            "time": "2023-07-12T23:43:48+00:00"
         },
         {
             "name": "monolog/monolog",

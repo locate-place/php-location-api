@@ -17,6 +17,8 @@ use App\DBAL\GeoLocation\ValueObject\Point;
 use App\Entity\Trait\TimestampsTrait;
 use App\Repository\LocationRepository;
 use DateTimeInterface;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -89,6 +91,15 @@ class Location
     #[ORM\ManyToOne(inversedBy: 'locations')]
     #[ORM\JoinColumn(nullable: false)]
     private ?AdminCode $adminCode = null;
+
+    /** @var Collection<int, Import> $imports */
+    #[ORM\ManyToMany(targetEntity: Import::class, inversedBy: 'locations')]
+    private Collection $imports;
+
+    public function __construct()
+    {
+        $this->imports = new ArrayCollection();
+    }
 
     /**
      * @return int|null
@@ -372,6 +383,30 @@ class Location
     public function setAdminCode(?AdminCode $adminCode): static
     {
         $this->adminCode = $adminCode;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Import>
+     */
+    public function getImports(): Collection
+    {
+        return $this->imports;
+    }
+
+    public function addImport(Import $import): static
+    {
+        if (!$this->imports->contains($import)) {
+            $this->imports->add($import);
+        }
+
+        return $this;
+    }
+
+    public function removeImport(Import $import): static
+    {
+        $this->imports->removeElement($import);
 
         return $this;
     }

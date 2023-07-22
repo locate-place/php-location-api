@@ -13,9 +13,13 @@ declare(strict_types=1);
 
 namespace App\Repository;
 
+use App\Entity\Country;
 use App\Entity\Location;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\NonUniqueResultException;
+use Doctrine\ORM\NoResultException;
 use Doctrine\Persistence\ManagerRegistry;
+use Ixnode\PhpException\Type\TypeInvalidException;
 
 /**
  * Class LocationRepository
@@ -118,5 +122,34 @@ class LocationRepository extends ServiceEntityRepository
             ->getArrayResult();
 
         return array_column($ids, 'id');
+    }
+
+    /**
+     * Returns the number of locations from given country code.
+     *
+     * @param Country $country
+     * @return int
+     * @throws NoResultException
+     * @throws NonUniqueResultException
+     * @throws TypeInvalidException
+     */
+    public function getNumberOfLocations(Country $country): int
+    {
+        $queryBuilder = $this->createQueryBuilder('l');
+
+        $queryBuilder
+            ->select('COUNT(l)')
+            ->leftJoin('l.imports', 'i')
+            ->where('i.country = :country')
+            ->setParameter('country', $country)
+        ;
+
+        $count = $queryBuilder->getQuery()->getSingleScalarResult();
+
+        if (!is_int($count)) {
+            throw new TypeInvalidException('int', gettype($count));
+        }
+
+        return $count;
     }
 }

@@ -16,7 +16,7 @@
         "ixnode/php-container": "*",
         "ixnode/php-coordinate": "^0.1.2",
         "ixnode/php-exception": "*",
-        "ixnode/php-timezone": "^0.1.7",
+        "ixnode/php-timezone": "^0.1.10",
         "symfony/console": "6.3.*",
         "symfony/dotenv": "6.3.*",
         "symfony/flex": "^2",

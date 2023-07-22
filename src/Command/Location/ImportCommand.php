@@ -20,6 +20,7 @@ use App\Entity\AdminCode;
 use App\Entity\Country;
 use App\Entity\FeatureClass;
 use App\Entity\FeatureCode;
+use App\Entity\Import;
 use App\Entity\Location;
 use App\Entity\Timezone;
 use DateTime;
@@ -129,6 +130,8 @@ class ImportCommand extends BaseLocationImport
     private const TEXT_ROWS_WRITTEN = '%d rows written to table %s (%d checked): %.2fs';
 
     protected const TEXT_WARNING_IGNORED_LINE = 'Ignored line: %s:%d';
+
+    protected bool $createImportEntity = true;
 
     /**
      * @param EntityManagerInterface $entityManager
@@ -473,6 +476,30 @@ EOT
     }
 
     /**
+     * Returns the Import class.
+     *
+     * @param File $file
+     * @return Import
+     * @throws ArrayKeyNotFoundException
+     */
+    protected function getImport(File $file): Import
+    {
+        $countryCode = basename($file->getPath(), '.txt');
+
+        $country = $this->getCountry($countryCode);
+
+        $import = (new Import())
+            ->setCountry($country)
+            ->setPath($file->getPath())
+        ;
+
+        $this->entityManager->persist($import);
+        $this->entityManager->flush();
+
+        return $import;
+    }
+
+    /**
      * Returns or creates a new Location entity.
      *
      * @param int $geonameId
@@ -553,6 +580,24 @@ EOT
     }
 
     /**
+     * Sets the update_at field of Import entity.
+     *
+     * @return void
+     */
+    private function updateImportEntity(): void
+    {
+        if (!isset($this->import)) {
+            return;
+        }
+
+        $this->import
+            ->setUpdatedAt(new DateTimeImmutable())
+        ;
+        $this->entityManager->persist($this->import);
+        $this->entityManager->flush();
+    }
+
+    /**
      * Saves the data as entities.
      *
      * @param array<int, array<string, mixed>> $data
@@ -593,7 +638,7 @@ EOT
             $timezone = $this->getTimezone($timezoneValue);
             $adminCode = $this->getAdminCode($country, $admin1CodeValue, $admin2CodeValue, $admin3CodeValue, $admin4CodeValue);
 
-            $this->getLocation(
+            $location = $this->getLocation(
                 $geonameIdValue,
                 $nameValue,
                 $asciiNameValue,
@@ -611,6 +656,8 @@ EOT
                 $timezone,
                 $adminCode
             );
+
+            $location->addImport($this->import);
 
             $writtenRows++;
         }
@@ -723,6 +770,10 @@ EOT
             "\t"
         );
 
+        if ($this->createImportEntity) {
+            $this->import = $this->getImport($file);
+        }
+
         /* Get tmp files */
         $splittedFiles = $this->getFilesTmp($file, $countryCode);
 
@@ -776,15 +827,8 @@ EOT
             $this->printAndLog('Finish. No error was found.');
         }
 
-//        $location = $this->locationARepository->findOneBy(['id' => 4]);
-//
-//        if (is_null($location)) {
-//            $output->writeln('<error>Location not found.</error>');
-//            return Command::SUCCESS;
-//        }
-//
-//        print $location->getCoordinate()->getLatitude().','.$location->getCoordinate()->getLongitude().PHP_EOL;
-//        exit();
+        /* Set last date to Import entity. */
+        $this->updateImportEntity();
 
         /* Command successfully executed. */
         return Command::SUCCESS;

@@ -26,6 +26,8 @@ use Ixnode\PhpTimezone\Constants\CountryUnknown;
 use Ixnode\PhpTimezone\Country as IxnodeCountry;
 use Ixnode\PhpTimezone\Timezone as IxnodeTimezone;
 use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
 
 /**
  * Class CheckCommand
@@ -174,5 +176,15 @@ EOT
             count($data),
             $timeExecution
         ));
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function execute(InputInterface $input, OutputInterface $output): int
+    {
+        $this->createImportEntity = false;
+
+        return parent::execute($input, $output);
     }
 }
