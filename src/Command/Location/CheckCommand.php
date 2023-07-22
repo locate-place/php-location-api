@@ -25,6 +25,7 @@ use Ixnode\PhpException\Type\TypeInvalidException;
 use Ixnode\PhpTimezone\Constants\CountryUnknown;
 use Ixnode\PhpTimezone\Country as IxnodeCountry;
 use Ixnode\PhpTimezone\Timezone as IxnodeTimezone;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -42,7 +43,7 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class CheckCommand extends ImportCommand
 {
-    protected static $defaultName = 'location:check';
+    public static $defaultName = 'location:check';
 
     private const TEXT_ROWS_CHECKED = '%d rows checked from data %s (%d checked): %.2fs';
 
@@ -183,8 +184,14 @@ EOT
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $this->createImportEntity = false;
+        $this->checkCommandExecution = true;
 
-        return parent::execute($input, $output);
+        $return = parent::execute($input, $output);
+
+        if ($this->errorFound) {
+            $return = Command::FAILURE;
+        }
+
+        return $return;
     }
 }

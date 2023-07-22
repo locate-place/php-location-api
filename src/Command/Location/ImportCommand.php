@@ -31,6 +31,7 @@ use Ixnode\PhpApiVersionBundle\Utils\TypeCasting\TypeCastingHelper;
 use Ixnode\PhpContainer\File;
 use Ixnode\PhpException\ArrayType\ArrayKeyNotFoundException;
 use Ixnode\PhpException\Case\CaseInvalidException;
+use Ixnode\PhpException\Case\CaseUnsupportedException;
 use Ixnode\PhpException\Class\ClassInvalidException;
 use Ixnode\PhpException\File\FileNotFoundException;
 use Ixnode\PhpException\File\FileNotReadableException;
@@ -38,6 +39,7 @@ use Ixnode\PhpException\Type\TypeInvalidException;
 use Ixnode\PhpTimezone\Country as IxnodeCountry;
 use Ixnode\PhpTimezone\Timezone as IxnodeTimezone;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -131,7 +133,9 @@ class ImportCommand extends BaseLocationImport
 
     protected const TEXT_WARNING_IGNORED_LINE = 'Ignored line: %s:%d';
 
-    protected bool $createImportEntity = true;
+    protected bool $checkCommandExecution = false;
+
+    protected bool $errorFound = false;
 
     /**
      * @param EntityManagerInterface $entityManager
@@ -709,6 +713,49 @@ EOT
     }
 
     /**
+     * Executes the check command.
+     *
+     * @return int
+     * @throws TypeInvalidException
+     * @throws Exception
+     */
+    protected function executeCheckCommand(): int
+    {
+        $commandName = CheckCommand::$defaultName;
+
+        $this->printAndLog('Check given file. Please wait...');
+
+        /* Create application instance. */
+        $application = $this->getApplication();
+
+        if (is_null($application)) {
+            throw new CaseUnsupportedException('Unable to create application.');
+        }
+
+        $application->setCatchExceptions(false);
+        $application->setAutoExit(false);
+
+        $file = (new TypeCastingHelper($this->input->getArgument('file')))->strval();
+
+        $input = new ArrayInput([
+            'command' => $commandName,
+            'file' => $file,
+        ]);
+
+        /* Execute the command. */
+        $returnValue = $application->run($input, $this->output);
+
+        $message = match (true) {
+            $returnValue === Command::SUCCESS => 'Done without errors. Continue with import.',
+            default => 'Done with errors. Do not continue with import.',
+        };
+
+        $this->printAndLog($message);
+
+        return $returnValue;
+    }
+
+    /**
      * Execute the commands.
      *
      * @param InputInterface $input
@@ -740,6 +787,13 @@ EOT
 
         $this->createLogInstanceFromFile($file, $type);
 
+        if (!$this->checkCommandExecution) {
+            $returnValue = $this->executeCheckCommand();
+            if ($returnValue !== Command::SUCCESS) {
+                return $returnValue;
+            }
+        }
+
         $this->clearTmpFolder($file, $countryCode);
         $this->setSplitLines(10000);
         $this->splitFile(
@@ -770,7 +824,7 @@ EOT
             "\t"
         );
 
-        if ($this->createImportEntity) {
+        if (!$this->checkCommandExecution) {
             $this->import = $this->getImport($file);
         }
 
@@ -782,7 +836,7 @@ EOT
             $this->doExecute(new File($splittedFile), $index + 1, count($splittedFiles));
         }
 
-        $errorFound = false;
+        $this->errorFound = false;
 
         /* Show ignored lines */
         if ($this->getIgnoredLines() > 0) {
@@ -791,7 +845,7 @@ EOT
             foreach ($this->getIgnoredLinesText() as $ignoredLine) {
                 $this->printAndLog(sprintf('- %s', $ignoredLine));
             }
-            $errorFound = true;
+            $this->errorFound = true;
         }
 
         /* Show unknown timezones */
@@ -805,7 +859,7 @@ EOT
                     $this->printAndLog(sprintf('  - %s', $unknownTimezoneFile));
                 }
             }
-            $errorFound = true;
+            $this->errorFound = true;
         }
 
         /* Show invalid timezones */
@@ -819,10 +873,10 @@ EOT
                     $this->printAndLog(sprintf('  - %s', $invalidTimezoneFile));
                 }
             }
-            $errorFound = true;
+            $this->errorFound = true;
         }
 
-        if (!$errorFound) {
+        if (!$this->errorFound) {
             $this->printAndLog('---');
             $this->printAndLog('Finish. No error was found.');
         }
