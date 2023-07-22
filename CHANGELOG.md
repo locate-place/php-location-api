@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Releases
 
+### [0.1.11] - 2023-07-23
+
+* Add distance to endpoint /api/v1/location
+* Order result by distance
+
 ### [0.1.10] - 2023-07-22
 
 * Composer update
