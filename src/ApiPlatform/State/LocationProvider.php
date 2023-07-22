@@ -86,10 +86,14 @@ final class LocationProvider extends BaseProvider
      * Returns a Location entity.
      *
      * @param LocationEntity $location
+     * @param Coordinate|null $coordinateSource
      * @return Location
+     * @throws CaseUnsupportedException
+     * @throws ParserException
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+     * @SuppressWarnings(PHPMD.NPathComplexity)
      */
-    private function getLocation(LocationEntity $location): Location
+    private function getLocation(LocationEntity $location, Coordinate|null $coordinateSource): Location
     {
         $featureClass = $location->getFeatureClass()?->getClass() ?: '';
         $featureCode = $location->getFeatureCode()?->getCode() ?: '';
@@ -100,6 +104,16 @@ final class LocationProvider extends BaseProvider
             domain: 'place',
             locale: 'de_DE'
         );
+
+        $latitude = $location->getCoordinate()?->getLatitude() ?: .0;
+        $longitude = $location->getCoordinate()?->getLongitude() ?: .0;
+
+        $coordinateTarget = new Coordinate($latitude, $longitude);
+
+        $distance = is_null($coordinateSource) ? null : [
+            'meters' => $coordinateSource->getDistance($coordinateTarget),
+            'kilometers' => $coordinateSource->getDistance($coordinateTarget, Coordinate::RETURN_KILOMETERS),
+        ];
 
         return (new Location())
             ->setGeonameId($location->getGeonameId() ?: 0)
@@ -114,8 +128,9 @@ final class LocationProvider extends BaseProvider
                 'name' => $featureName,
             ])
             ->setCoordinate([
-                'latitude' => $location->getCoordinate()?->getLatitude() ?: .0,
-                'longitude' => $location->getCoordinate()?->getLongitude() ?: .0,
+                'latitude' => $latitude,
+                'longitude' => $longitude,
+                'distance' => $distance,
             ])
         ;
     }
@@ -151,8 +166,11 @@ final class LocationProvider extends BaseProvider
                 continue;
             }
 
-            $locations[] = $this->getLocation($location);
+            $locations[] = $this->getLocation($location, $coordinate);
         }
+
+        /* @phpstan-ignore-next-line */
+        usort($locations, fn(Location $first, Location $next) => ($first->getMeters() ?: 0) - ($next->getMeters() ?: 0));
 
         return $locations;
     }
@@ -162,6 +180,8 @@ final class LocationProvider extends BaseProvider
      *
      * @return BasePublicResource
      * @throws ArrayKeyNotFoundException
+     * @throws CaseUnsupportedException
+     * @throws ParserException
      * @throws TypeInvalidException
      */
     private function doProvideGet(): BasePublicResource
@@ -175,7 +195,7 @@ final class LocationProvider extends BaseProvider
             return $this->getEmptyLocation($geonameId);
         }
 
-        return $this->getLocation($location);
+        return $this->getLocation($location, null);
     }
 
     /**

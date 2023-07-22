@@ -63,7 +63,7 @@ class Location extends BasePublicResource
     /** @var array{class: string, code: string, name: string} $feature */
     protected array $feature;
 
-    /** @var array{latitude: float, longitude: float} $coordinate */
+    /** @var array{latitude: float, longitude: float, distance: null|array{meters: float, kilometers: float}} $coordinate */
     protected array $coordinate;
 
     /**
@@ -160,7 +160,7 @@ class Location extends BasePublicResource
     /**
      * Gets the coordinate array.
      *
-     * @return array{latitude: float, longitude: float}
+     * @return array{latitude: float, longitude: float, distance: null|array{meters: float, kilometers: float}}
      */
     public function getCoordinate(): array
     {
@@ -170,7 +170,7 @@ class Location extends BasePublicResource
     /**
      * Sets the coordinate array.
      *
-     * @param array{latitude: float, longitude: float} $coordinate
+     * @param array{latitude: float, longitude: float, distance: null|array{meters: float, kilometers: float}} $coordinate
      * @return self
      */
     public function setCoordinate(array $coordinate): self
@@ -178,5 +178,23 @@ class Location extends BasePublicResource
         $this->coordinate = $coordinate;
 
         return $this;
+    }
+
+    /**
+     * Returns the distance in meters.
+     *
+     * @return float|null
+     */
+    public function getMeters(): ?float
+    {
+        $coordinate = $this->getCoordinate();
+
+        $distance = $coordinate['distance'];
+
+        if (is_null($distance)) {
+            return null;
+        }
+
+        return $distance['meters'];
     }
 }

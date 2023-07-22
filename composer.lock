@@ -4,8 +4,78 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "99addbc91332e4f80e3b68d314aec98f",
+    "content-hash": "b92cebd6975e552370046cfbf975aee6",
     "packages": [
+        {
+            "name": "adhocore/cli",
+            "version": "v1.6.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/adhocore/php-cli.git",
+                "reference": "25b5a93e5eebcdb70e20ee33313a011ea3a4f770"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/adhocore/php-cli/zipball/25b5a93e5eebcdb70e20ee33313a011ea3a4f770",
+                "reference": "25b5a93e5eebcdb70e20ee33313a011ea3a4f770",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=8.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^9.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Ahc\\Cli\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Jitendra Adhikari",
+                    "email": "jiten.adhikary@gmail.com"
+                }
+            ],
+            "description": "Command line interface library for PHP",
+            "keywords": [
+                "argument-parser",
+                "argv-parser",
+                "cli",
+                "cli-action",
+                "cli-app",
+                "cli-color",
+                "cli-option",
+                "cli-writer",
+                "command",
+                "console",
+                "console-app",
+                "php-cli",
+                "php8",
+                "stream-input",
+                "stream-output"
+            ],
+            "support": {
+                "issues": "https://github.com/adhocore/php-cli/issues",
+                "source": "https://github.com/adhocore/php-cli/tree/v1.6.1"
+            },
+            "funding": [
+                {
+                    "url": "https://paypal.me/ji10",
+                    "type": "custom"
+                },
+                {
+                    "url": "https://github.com/adhocore",
+                    "type": "github"
+                }
+            ],
+            "time": "2023-06-26T09:55:29+00:00"
+        },
         {
             "name": "api-platform/core",
             "version": "v3.1.12",
@@ -1974,6 +2044,70 @@
                 "source": "https://github.com/ixnode/php-coordinate/tree/0.1.6"
             },
             "time": "2023-07-22T21:31:17+00:00"
+        },
+        {
+            "name": "ixnode/php-date-parser",
+            "version": "1.0.3",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/ixnode/php-date-parser.git",
+                "reference": "c21edfbced51eda05dbf18f6032951089f33bfe0"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/ixnode/php-date-parser/zipball/c21edfbced51eda05dbf18f6032951089f33bfe0",
+                "reference": "c21edfbced51eda05dbf18f6032951089f33bfe0",
+                "shasum": ""
+            },
+            "require": {
+                "adhocore/cli": "^v1.0.0",
+                "ixnode/php-naming-conventions": "^0.1.1",
+                "php": "^8.2"
+            },
+            "require-dev": {
+                "friendsofphp/php-cs-fixer": "^3.13",
+                "ixnode/bash-version-manager": "^0.1.3",
+                "phpmd/phpmd": "^2.13",
+                "phpstan/phpstan": "^1.9",
+                "phpunit/phpunit": "^9.5",
+                "povils/phpmnd": "^3.0",
+                "rector/rector": "^0.15.1"
+            },
+            "bin": [
+                "bin/php-date-parser"
+            ],
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Ixnode\\PhpDateParser\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Björn Hempel",
+                    "email": "bjoern@hempel.li",
+                    "homepage": "https://www.hempel.li/"
+                }
+            ],
+            "description": "PHP Date Parser - This library parses various given date and time strings into DateTime or DateTimeImmutable classes which return the time range. Can be used e.g. excellently for command line arguments and options to make database queries with.",
+            "keywords": [
+                "conversion",
+                "date",
+                "datetime",
+                "datetimeimmutable",
+                "parser",
+                "php",
+                "time"
+            ],
+            "support": {
+                "issues": "https://github.com/ixnode/php-date-parser/issues",
+                "source": "https://github.com/ixnode/php-date-parser/tree/1.0.3"
+            },
+            "time": "2023-07-22T15:34:01+00:00"
         },
         {
             "name": "ixnode/php-exception",
