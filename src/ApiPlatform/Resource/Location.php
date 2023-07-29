@@ -20,6 +20,8 @@ use App\ApiPlatform\OpenApiContext\Parameter;
 use App\ApiPlatform\Route\LocationRoute;
 use App\ApiPlatform\State\LocationProvider;
 use Ixnode\PhpApiVersionBundle\ApiPlatform\Resource\Base\BasePublicResource;
+use Symfony\Component\Serializer\Annotation\Ignore;
+use Symfony\Component\Serializer\Annotation\SerializedName;
 
 /**
  * Class Location
@@ -53,6 +55,7 @@ use Ixnode\PhpApiVersionBundle\ApiPlatform\Resource\Base\BasePublicResource;
 )]
 class Location extends BasePublicResource
 {
+    #[SerializedName('geoname-id')]
     protected int $geonameId;
 
     protected string $name;
@@ -60,11 +63,22 @@ class Location extends BasePublicResource
     /** @var array{code: string, name: string} $country */
     protected array $country;
 
-    /** @var array{class: string, code: string, name: string} $feature */
+    /** @var array{class: string, class-name: string, code: string, code-name: string} $feature */
     protected array $feature;
 
     /** @var array{latitude: float, longitude: float, distance: null|array{meters: float, kilometers: float}} $coordinate */
     protected array $coordinate;
+
+    /** @var array{
+     *     district-locality: string|null,
+     *     city-municipality: string|null,
+     *     state: string|null,
+     *     country: string|null
+     * } $location */
+    protected array $location;
+
+    /** @var array{google: string, openstreetmap: string} */
+    protected array $link;
 
     /**
      * Gets the geoname ID.
@@ -137,7 +151,7 @@ class Location extends BasePublicResource
     /**
      * Gets the feature.
      *
-     * @return array{class: string, code: string, name: string}
+     * @return array{class: string, class-name: string, code: string, code-name: string}
      */
     public function getFeature(): array
     {
@@ -147,7 +161,7 @@ class Location extends BasePublicResource
     /**
      * Sets the feature.
      *
-     * @param array{class: string, code: string, name: string} $feature
+     * @param array{class: string, class-name: string, code: string, code-name: string} $feature
      * @return self
      */
     public function setFeature(array $feature): self
@@ -170,7 +184,12 @@ class Location extends BasePublicResource
     /**
      * Sets the coordinate array.
      *
-     * @param array{latitude: float, longitude: float, distance: null|array{meters: float, kilometers: float}} $coordinate
+     * @param array{
+     *     latitude: float,
+     *     longitude: float,
+     *     distance: null|array{meters: float, kilometers: float},
+     *     direction: null|array{degree: float, direction: string},
+     * } $coordinate
      * @return self
      */
     public function setCoordinate(array $coordinate): self
@@ -181,10 +200,67 @@ class Location extends BasePublicResource
     }
 
     /**
+     * Returns the location array.
+     *
+     * @return array{
+     *     district-locality: string|null,
+     *     city-municipality: string|null,
+     *     state: string|null,
+     *     country: string|null
+     * }
+     */
+    public function getLocation(): array
+    {
+        return $this->location;
+    }
+
+    /**
+     * Sets the location array.
+     *
+     * @param array{
+     *     district-locality: string|null,
+     *     city-municipality: string|null,
+     *     state: string|null,
+     *     country: string|null
+     * } $location
+     * @return Location
+     */
+    public function setLocation(array $location): Location
+    {
+        $this->location = $location;
+
+        return $this;
+    }
+
+    /**
+     * Gets the link array.
+     *
+     * @return array{google: string, openstreetmap: string}
+     */
+    public function getLink(): array
+    {
+        return $this->link;
+    }
+
+    /**
+     * Sets the link array.
+     *
+     * @param array{google: string, openstreetmap: string} $link
+     * @return self
+     */
+    public function setLink(array $link): self
+    {
+        $this->link = $link;
+
+        return $this;
+    }
+
+    /**
      * Returns the distance in meters.
      *
      * @return float|null
      */
+    #[Ignore]
     public function getMeters(): ?float
     {
         $coordinate = $this->getCoordinate();

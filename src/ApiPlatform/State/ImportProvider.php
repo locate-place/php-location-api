@@ -108,7 +108,7 @@ final class ImportProvider extends BaseProvider
             ->setNumberOfLocations($this->locationRepository->getNumberOfLocations($country))
             ->setCreatedAt($createdAt)
             ->setUpdatedAt($updatedAt)
-            ->setDuration($updatedAt->getTimestamp() - $createdAt->getTimestamp())
+            ->setExecutionTime((int) $importEntity->getExecutionTime())
         ;
     }
 
@@ -124,7 +124,7 @@ final class ImportProvider extends BaseProvider
     private function doProvideGetCollection(): array
     {
         $imports = [];
-        $importEntities = $this->importRepository->findAll();
+        $importEntities = $this->importRepository->findBy([], ['path' => 'ASC']);
 
         foreach ($importEntities as $importEntity) {
 

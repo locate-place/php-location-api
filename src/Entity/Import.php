@@ -46,6 +46,12 @@ class Import
     #[ORM\ManyToMany(targetEntity: Location::class, mappedBy: 'imports')]
     private Collection $locations;
 
+    #[ORM\Column(options: ['default' => 0])]
+    private ?int $executionTime = null;
+
+    #[ORM\Column(options: ['default' => 0])]
+    private ?int $rows = null;
+
     /**
      *
      */
@@ -131,6 +137,37 @@ class Import
         if ($this->locations->removeElement($location)) {
             $location->removeImport($this);
         }
+
+        return $this;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getExecutionTime(): ?int
+    {
+        return $this->executionTime;
+    }
+
+    /**
+     * @param int $executionTime
+     * @return $this
+     */
+    public function setExecutionTime(int $executionTime): static
+    {
+        $this->executionTime = $executionTime;
+
+        return $this;
+    }
+
+    public function getRows(): ?int
+    {
+        return $this->rows;
+    }
+
+    public function setRows(int $rows): static
+    {
+        $this->rows = $rows;
 
         return $this;
     }

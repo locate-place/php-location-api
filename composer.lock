@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "b92cebd6975e552370046cfbf975aee6",
+    "content-hash": "cd55dc3161348a31b163148744917e69",
     "packages": [
         {
             "name": "adhocore/cli",
@@ -1983,20 +1983,22 @@
         },
         {
             "name": "ixnode/php-coordinate",
-            "version": "0.1.6",
+            "version": "0.1.13",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ixnode/php-coordinate.git",
-                "reference": "73668d9425756cf771ae7cd4ceedd4dfc65f2c32"
+                "reference": "4bb5b92363272872eb9c5f36990b37880fedaf95"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ixnode/php-coordinate/zipball/73668d9425756cf771ae7cd4ceedd4dfc65f2c32",
-                "reference": "73668d9425756cf771ae7cd4ceedd4dfc65f2c32",
+                "url": "https://api.github.com/repos/ixnode/php-coordinate/zipball/4bb5b92363272872eb9c5f36990b37880fedaf95",
+                "reference": "4bb5b92363272872eb9c5f36990b37880fedaf95",
                 "shasum": ""
             },
             "require": {
+                "adhocore/cli": "^v1.0.0",
                 "ext-curl": "*",
+                "ext-gd": "*",
                 "ixnode/php-exception": "^0.1.21",
                 "php": "^8.2"
             },
@@ -2041,9 +2043,9 @@
             ],
             "support": {
                 "issues": "https://github.com/ixnode/php-coordinate/issues",
-                "source": "https://github.com/ixnode/php-coordinate/tree/0.1.6"
+                "source": "https://github.com/ixnode/php-coordinate/tree/0.1.13"
             },
-            "time": "2023-07-22T21:31:17+00:00"
+            "time": "2023-07-28T20:27:28+00:00"
         },
         {
             "name": "ixnode/php-date-parser",
@@ -2351,16 +2353,16 @@
         },
         {
             "name": "ixnode/php-timezone",
-            "version": "0.1.10",
+            "version": "0.1.14",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ixnode/php-timezone.git",
-                "reference": "37099dd42b3b434f78ef333deaaaf969331eda77"
+                "reference": "4f063d1bd25e47b12f49c7505a11da468df28314"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ixnode/php-timezone/zipball/37099dd42b3b434f78ef333deaaaf969331eda77",
-                "reference": "37099dd42b3b434f78ef333deaaaf969331eda77",
+                "url": "https://api.github.com/repos/ixnode/php-timezone/zipball/4f063d1bd25e47b12f49c7505a11da468df28314",
+                "reference": "4f063d1bd25e47b12f49c7505a11da468df28314",
                 "shasum": ""
             },
             "require": {
@@ -2403,9 +2405,9 @@
             ],
             "support": {
                 "issues": "https://github.com/ixnode/php-timezone/issues",
-                "source": "https://github.com/ixnode/php-timezone/tree/0.1.10"
+                "source": "https://github.com/ixnode/php-timezone/tree/0.1.14"
             },
-            "time": "2023-07-12T23:43:48+00:00"
+            "time": "2023-07-29T18:36:04+00:00"
         },
         {
             "name": "monolog/monolog",

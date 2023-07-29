@@ -22,9 +22,9 @@ use Doctrine\ORM\Query\QueryException;
 use Doctrine\ORM\Query\SqlWalker;
 
 /**
- * Class ST_MakePointFunction
+ * Class ST_MakePoint
  *
- * ST_MakePointFunction ::= "ST_MakePoint" "(" ArithmeticPrimary "," ArithmeticPrimary ")"
+ * ST_MakePoint ::= "ST_MakePoint" "(" ArithmeticPrimary "," ArithmeticPrimary ")"
  *
  * @example ST_MakePoint(47.473110, 10.813154)::geography
  *

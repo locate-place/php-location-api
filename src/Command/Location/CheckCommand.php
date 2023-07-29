@@ -51,6 +51,14 @@ class CheckCommand extends ImportCommand
 
     private const TEXT_INVALID_TIMEZONE = 'Invalid timezone detected: "%s", file: %s:%d';
 
+    private const MAX_LENGTH_NAME_VALUE = 1024;
+
+    private const MAX_LENGTH_ASCII_NAME_VALUE = 1024;
+
+    private const MAX_LENGTH_ALTERNATE_NAMES_VALUE = 8192;
+
+    private const MAX_LENGTH_CC2_VALUE = 200;
+
     /**
      * Configures the command.
      */
@@ -115,6 +123,64 @@ EOT
     }
 
     /**
+     * Checks all string fields.
+     *
+     * @param array<string, mixed> $row
+     * @param File $file
+     * @param int $currentRow
+     * @return void
+     * @throws TypeInvalidException
+     * @throws ClassInvalidException
+     */
+    private function checkStringFields(array $row, File $file, int $currentRow): void
+    {
+        $nameValue = (new TypeCastingHelper($row[self::FIELD_NAME]))->strval();
+        $asciiNameValue = (new TypeCastingHelper($row[self::FIELD_ASCII_NAME]))->strval();
+        $alternateNamesValue = (new TypeCastingHelper($row[self::FIELD_ALTERNATE_NAMES]))->strval();
+        $cc2Value = (new TypeCastingHelper($row[self::FIELD_CC2]))->strval();
+
+        if (strlen($nameValue) > self::MAX_LENGTH_NAME_VALUE) {
+            $this->addInvalidNameValues($nameValue, $file, $currentRow, self::MAX_LENGTH_NAME_VALUE);
+            $this->printAndLog(sprintf(
+                'Name value is too long: "%s", file: %s:%d',
+                $nameValue,
+                $file->getPath(),
+                $currentRow
+            ));
+        }
+
+        if (strlen($asciiNameValue) > self::MAX_LENGTH_ASCII_NAME_VALUE) {
+            $this->addInvalidAsciiNameValues($asciiNameValue, $file, $currentRow, self::MAX_LENGTH_ASCII_NAME_VALUE);
+            $this->printAndLog(sprintf(
+                'Ascii name value is too long: "%s", file: %s:%d',
+                $asciiNameValue,
+                $file->getPath(),
+                $currentRow
+            ));
+        }
+
+        if (strlen($alternateNamesValue) > self::MAX_LENGTH_ALTERNATE_NAMES_VALUE) {
+            $this->addInvalidAlternateNamesValues($alternateNamesValue, $file, $currentRow, self::MAX_LENGTH_ALTERNATE_NAMES_VALUE);
+            $this->printAndLog(sprintf(
+                'Alternate names value is too long: "%s", file: %s:%d',
+                $alternateNamesValue,
+                $file->getPath(),
+                $currentRow
+            ));
+        }
+
+        if (strlen($cc2Value) > self::MAX_LENGTH_CC2_VALUE) {
+            $this->addInvalidCc2Values($cc2Value, $file, $currentRow, self::MAX_LENGTH_CC2_VALUE);
+            $this->printAndLog(sprintf(
+                'CC2 value is too long: "%s", file: %s:%d',
+                $cc2Value,
+                $file->getPath(),
+                $currentRow
+            ));
+        }
+    }
+
+    /**
      * Checks the imported data.
      *
      * @param array<int, array<string, mixed>> $data
@@ -132,6 +198,7 @@ EOT
             $rowsChecked++;
 
             $this->checkTimezone($row, $file, $rowsChecked + 1);
+            $this->checkStringFields($row, $file, $rowsChecked + 1);
 
             /* @see \App\Command\Location\ImportCommand::saveEntities for more checks. */
         }

@@ -58,6 +58,8 @@ use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
  * @download bin/console location:download [countryCode]
  * @see http://download.geonames.org/export/dump/
  * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
+ * @SuppressWarnings(PHPMD.ExcessiveClassLength)
+ * @SuppressWarnings(PHPMD.TooManyFields)
  */
 class ImportCommand extends BaseLocationImport
 {
@@ -73,6 +75,18 @@ class ImportCommand extends BaseLocationImport
 
     /** @var array<string, array<int, string>> $invalidTimezones */
     private array $invalidTimezones = [];
+
+    /** @var array<int, string> $invalidNameValues */
+    private array $invalidNameValues = [];
+
+    /** @var array<int, string> $invalidAsciiNameValues */
+    private array $invalidAsciiNameValues = [];
+
+    /** @var array<int, string> $invalidAlternateNamesValues */
+    private array $invalidAlternateNamesValues = [];
+
+    /** @var array<int, string> $invalidCc2Values */
+    private array $invalidCc2Values = [];
 
     /** @var array<string, Country> $countries */
     private array $countries = [];
@@ -136,6 +150,8 @@ class ImportCommand extends BaseLocationImport
     protected bool $checkCommandExecution = false;
 
     protected bool $errorFound = false;
+
+    protected float $timeStart;
 
     /**
      * @param EntityManagerInterface $entityManager
@@ -495,6 +511,8 @@ EOT
         $import = (new Import())
             ->setCountry($country)
             ->setPath($file->getPath())
+            ->setExecutionTime(0)
+            ->setRows(0)
         ;
 
         $this->entityManager->persist($import);
@@ -594,8 +612,11 @@ EOT
             return;
         }
 
+        $executionTime = (int) round(microtime(true) - $this->timeStart);
+
         $this->import
             ->setUpdatedAt(new DateTimeImmutable())
+            ->setExecutionTime($executionTime);
         ;
         $this->entityManager->persist($this->import);
         $this->entityManager->flush();
@@ -772,6 +793,8 @@ EOT
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        $this->timeStart = microtime(true);
+
         $this->output = $output;
         $this->input = $input;
 
@@ -876,6 +899,50 @@ EOT
             $this->errorFound = true;
         }
 
+        /* Show invalid name values */
+        $invalidNameValues = $this->getInvalidNameValues();
+        if (count($invalidNameValues) > 0) {
+            $this->printAndLog('---');
+            $this->printAndLog(sprintf('Invalid name values: %d', count($invalidNameValues)));
+            foreach ($invalidNameValues as $invalidNameValue) {
+                $this->printAndLog(sprintf('- %s', $invalidNameValue));
+            }
+            $this->errorFound = true;
+        }
+
+        /* Show invalid ascii name values */
+        $invalidAsciiNameValues = $this->getInvalidAsciiNameValues();
+        if (count($invalidAsciiNameValues) > 0) {
+            $this->printAndLog('---');
+            $this->printAndLog(sprintf('Invalid ascii name values: %d', count($invalidAsciiNameValues)));
+            foreach ($invalidAsciiNameValues as $invalidAsciiNameValue) {
+                $this->printAndLog(sprintf('- %s', $invalidAsciiNameValue));
+            }
+            $this->errorFound = true;
+        }
+
+        /* Show invalid alternate name values */
+        $invalidAlternateNamesValues = $this->getInvalidAlternateNamesValues();
+        if (count($invalidAlternateNamesValues) > 0) {
+            $this->printAndLog('---');
+            $this->printAndLog(sprintf('Invalid alternate name values: %d', count($invalidAlternateNamesValues)));
+            foreach ($invalidAlternateNamesValues as $invalidAlternateNamesValue) {
+                $this->printAndLog(sprintf('- %s', $invalidAlternateNamesValue));
+            }
+            $this->errorFound = true;
+        }
+
+        /* Show invalid cc2 values */
+        $invalidCc2Values = $this->getInvalidCc2Values();
+        if (count($invalidCc2Values) > 0) {
+            $this->printAndLog('---');
+            $this->printAndLog(sprintf('Invalid cc2 values: %d', count($invalidCc2Values)));
+            foreach ($invalidCc2Values as $invalidCc2Value) {
+                $this->printAndLog(sprintf('- %s', $invalidCc2Value));
+            }
+            $this->errorFound = true;
+        }
+
         if (!$this->errorFound) {
             $this->printAndLog('---');
             $this->printAndLog('Finish. No error was found.');
@@ -960,5 +1027,129 @@ EOT
         }
 
         $this->unknownTimezones[$timezone][] = sprintf('%s:%d', $file->getPath(), $line);
+    }
+
+    /**
+     * Gets the invalid name values.
+     *
+     * @return array<int, string>
+     */
+    public function getInvalidNameValues(): array
+    {
+        return $this->invalidNameValues;
+    }
+
+    /**
+     * Adds an invalid name value.
+     *
+     * @param string $nameValue
+     * @param File $file
+     * @param int $line
+     * @param int $expectedMaxLength
+     * @return void
+     */
+    public function addInvalidNameValues(string $nameValue, File $file, int $line, int $expectedMaxLength): void
+    {
+        $this->invalidNameValues[] = sprintf(
+            '"%s" (max length %d, %d given) -> %s:%d',
+            $nameValue,
+            $expectedMaxLength,
+            strlen($nameValue),
+            $file->getPath(),
+            $line
+        );
+    }
+
+    /**
+     * Gets the invalid ascii name values.
+     *
+     * @return array<int, string>
+     */
+    public function getInvalidAsciiNameValues(): array
+    {
+        return $this->invalidAsciiNameValues;
+    }
+
+    /**
+     * Adds an invalid ascii name value.
+     *
+     * @param string $asciiNameValue
+     * @param File $file
+     * @param int $line
+     * @param int $expectedMaxLength
+     * @return void
+     */
+    public function addInvalidAsciiNameValues(string $asciiNameValue, File $file, int $line, int $expectedMaxLength): void
+    {
+        $this->invalidAsciiNameValues[] = sprintf(
+            '"%s" (max length %d, %d given) -> %s:%d',
+            $asciiNameValue,
+            $expectedMaxLength,
+            strlen($asciiNameValue),
+            $file->getPath(),
+            $line
+        );
+    }
+
+    /**
+     * Gets the invalid alternate name values.
+     *
+     * @return array<int, string>
+     */
+    public function getInvalidAlternateNamesValues(): array
+    {
+        return $this->invalidAlternateNamesValues;
+    }
+
+    /**
+     * Adds an invalid ascii name value.
+     *
+     * @param string $alternateNameValue
+     * @param File $file
+     * @param int $line
+     * @param int $expectedMaxLength
+     * @return void
+     */
+    public function addInvalidAlternateNamesValues(string $alternateNameValue, File $file, int $line, int $expectedMaxLength): void
+    {
+        $this->invalidAlternateNamesValues[] = sprintf(
+            '"%s" (max length %d, %d given) -> %s:%d',
+            $alternateNameValue,
+            $expectedMaxLength,
+            strlen($alternateNameValue),
+            $file->getPath(),
+            $line
+        );
+    }
+
+    /**
+     * Gets the invalid cc2 values.
+     *
+     * @return array<int, string>
+     */
+    public function getInvalidCc2Values(): array
+    {
+        return $this->invalidCc2Values;
+    }
+
+    /**
+     * Adds an invalid ascii name value.
+     *
+     * @param string $cc2Value
+     * @param File $file
+     * @param int $line
+     * @param int $expectedMaxLength
+     * @return void
+     */
+    public function addInvalidCc2Values(string $cc2Value, File $file, int $line, int $expectedMaxLength): void
+    {
+        $this->invalidCc2Values[] = sprintf(
+            '"%s" (max length %d, %d given) -> %s:%d',
+            $cc2Value,
+            $expectedMaxLength,
+            strlen($cc2Value),
+            $file->getPath(),
+            $line
+        );
     }
 }

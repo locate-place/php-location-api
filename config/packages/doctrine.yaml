@@ -41,6 +41,7 @@ doctrine:
                 auto_mapping: true
                 dql:
                     string_functions:
+                        ST_Distance : App\DBAL\GeoLocation\Functions\PostgreSQL\ST_Distance
                         ST_DWithin: App\DBAL\GeoLocation\Functions\PostgreSQL\ST_DWithin
                         ST_MakePoint: App\DBAL\GeoLocation\Functions\PostgreSQL\ST_MakePoint
                         ST_MakePointPoint: App\DBAL\GeoLocation\Functions\PostgreSQL\ST_MakePointPoint

@@ -45,7 +45,7 @@ class Import extends BasePublicResource
 
     private DateTimeImmutable $updatedAt;
 
-    private int $duration;
+    private int $executionTime;
 
     /**
      * @return string
@@ -145,18 +145,18 @@ class Import extends BasePublicResource
     /**
      * @return int
      */
-    public function getDuration(): int
+    public function getExecutionTime(): int
     {
-        return $this->duration;
+        return $this->executionTime;
     }
 
     /**
-     * @param int $duration
+     * @param int $executionTime
      * @return self
      */
-    public function setDuration(int $duration): self
+    public function setExecutionTime(int $executionTime): self
     {
-        $this->duration = $duration;
+        $this->executionTime = $executionTime;
 
         return $this;
     }

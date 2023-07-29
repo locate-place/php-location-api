@@ -22,22 +22,21 @@ use Doctrine\ORM\Query\QueryException;
 use Doctrine\ORM\Query\SqlWalker;
 
 /**
- * Class ST_DWithin
+ * Class ST_Distance
  *
- * ST_DWithin ::= "ST_DWithin" "(" ArithmeticPrimary "," ArithmeticPrimary "," ArithmeticPrimary ")"
+ * ST_Distance ::= "ST_DWithin" "(" ArithmeticPrimary "," ArithmeticPrimary "," ArithmeticPrimary ")"
  *
- * @example WHERE ST_DWithin(
+ * @example WHERE ST_Distance(
  *     ST_MakePoint(coordinate(0), coordinate(1))::geography,
- *     ST_MakePoint(47.473110, 10.813154)::geography,
- *     10000
+ *     ST_MakePoint(47.473110, 10.813154)::geography
  * )
  *
  * @author Björn Hempel <bjoern@hempel.li>
- * @version 0.1.0 (2023-07-02)
- * @since 0.1.0 (2023-07-02) First version.
+ * @version 0.1.0 (2023-07-29)
+ * @since 0.1.0 (2023-07-29) First version.
  * @SuppressWarnings(PHPMD.CamelCaseClassName)
  */
-class ST_DWithin extends FunctionNode
+class ST_Distance extends FunctionNode
 {
     /** @var array<int, object> */
     protected array $expressions = [];
@@ -53,10 +52,6 @@ class ST_DWithin extends FunctionNode
     {
         $parser->match(Lexer::T_IDENTIFIER);
         $parser->match(Lexer::T_OPEN_PARENTHESIS);
-
-        $this->expressions[] = $parser->ArithmeticFactor();
-
-        $parser->match(Lexer::T_COMMA);
 
         $this->expressions[] = $parser->ArithmeticFactor();
 
@@ -92,6 +87,6 @@ class ST_DWithin extends FunctionNode
             $arguments[] = $expression->dispatch($sqlWalker);
         }
 
-        return sprintf('ST_DWithin(%s)', implode(', ', $arguments));
+        return 'ST_Distance(' . implode(', ', $arguments) . ')';
     }
 }

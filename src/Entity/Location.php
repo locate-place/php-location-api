@@ -51,7 +51,7 @@ class Location
     #[ORM\Column(length: 1024)]
     private ?string $asciiName = null;
 
-    #[ORM\Column(length: 4096)]
+    #[ORM\Column(length: 8192)]
     private ?string $alternateNames = null;
 
     #[ORM\Column(type: 'point')]
