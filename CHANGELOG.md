@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Releases
 
+### [0.1.12] - 2023-07-29
+
+* Add district, city, state detection
+* Add country translations
+* Add Google and OpenStreetMap links
+* Add execution time to import
+* Add ST_Distance to doctrine
+* Add new QueryBuilder location finder
+
 ### [0.1.11] - 2023-07-23
 
 * Add distance to endpoint /api/v1/location
