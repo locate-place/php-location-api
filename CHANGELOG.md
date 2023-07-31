@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Releases
 
+### [0.1.13] - 2023-07-31
+
+* Add new geography coordinate field, indizes and db changes; Improvement of the query speed; Add geography and geometry doctrine dbal types; Add PostgreSQL distance operator <->
+* Remove replacement field location.coordinate_geography
+* Fix lat/lon order for PostGISType::convertToDatabaseValue
+
 ### [0.1.12] - 2023-07-29
 
 * Add district, city, state detection
