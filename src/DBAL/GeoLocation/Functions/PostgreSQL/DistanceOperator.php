@@ -56,7 +56,7 @@ class DistanceOperator extends FunctionNode
     {
         $parser->match(Lexer::T_IDENTIFIER);          // DistanceOperator
         $parser->match(Lexer::T_OPEN_PARENTHESIS);    // (
-        $this->field = $parser->ArithmeticFactor();         // l.coordinateGeography
+        $this->field = $parser->ArithmeticFactor();         // l.coordinate
         $parser->match(Lexer::T_COMMA);               // ,
         $this->latitude = $parser->ArithmeticFactor();      // 47.473110 (latitude)
         $parser->match(Lexer::T_COMMA);               // ,

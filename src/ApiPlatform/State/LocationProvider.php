@@ -17,6 +17,7 @@ use App\ApiPlatform\OpenApiContext\Name;
 use App\ApiPlatform\Resource\Location;
 use App\ApiPlatform\Route\LocationRoute;
 use App\ApiPlatform\State\Base\BaseProvider;
+use App\DBAL\GeoLocation\ValueObject\Point;
 use App\Entity\Location as LocationEntity;
 use App\Repository\LocationRepository;
 use App\Service\LocationService;
@@ -140,6 +141,7 @@ final class LocationProvider extends BaseProvider
 
         $latitude = $location->getCoordinate()?->getLatitude() ?: .0;
         $longitude = $location->getCoordinate()?->getLongitude() ?: .0;
+        $srid = $location->getCoordinate()?->getSrid() ?: Point::SRID_WSG84;
 
         $coordinateTarget = new Coordinate($latitude, $longitude);
 
@@ -169,6 +171,7 @@ final class LocationProvider extends BaseProvider
             ->setCoordinate([
                 'latitude' => $latitude,
                 'longitude' => $longitude,
+                'srid' => $srid,
                 'distance' => $distance,
                 'direction' => $direction,
             ])

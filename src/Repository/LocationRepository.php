@@ -135,7 +135,7 @@ class LocationRepository extends ServiceEntityRepository
         /* Order result by distance (uses <-> for performance reasons). */
         $queryBuilder
             ->addSelect(sprintf(
-                'DistanceOperator(l.coordinateGeography, %f, %f) AS HIDDEN distance',
+                'DistanceOperator(l.coordinate, %f, %f) AS HIDDEN distance',
                 $coordinate->getLatitude(),
                 $coordinate->getLongitude()
             ))
@@ -147,7 +147,7 @@ class LocationRepository extends ServiceEntityRepository
             $queryBuilder
                 /* Attention: PostGIS uses lon/lat not lat/lon! */
                 ->andWhere('ST_DWithin(
-                l.coordinateGeography,
+                l.coordinate,
                 ST_MakePoint(:longitude, :latitude),
                 :distance,
                 TRUE

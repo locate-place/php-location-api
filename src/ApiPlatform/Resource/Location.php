@@ -66,7 +66,7 @@ class Location extends BasePublicResource
     /** @var array{class: string, class-name: string, code: string, code-name: string} $feature */
     protected array $feature;
 
-    /** @var array{latitude: float, longitude: float, distance: null|array{meters: float, kilometers: float}} $coordinate */
+    /** @var array{latitude: float, longitude: float, srid: int, distance: null|array{meters: float, kilometers: float}} $coordinate */
     protected array $coordinate;
 
     /** @var array{
@@ -174,7 +174,7 @@ class Location extends BasePublicResource
     /**
      * Gets the coordinate array.
      *
-     * @return array{latitude: float, longitude: float, distance: null|array{meters: float, kilometers: float}}
+     * @return array{latitude: float, longitude: float, srid: int, distance: null|array{meters: float, kilometers: float}}
      */
     public function getCoordinate(): array
     {
@@ -187,6 +187,7 @@ class Location extends BasePublicResource
      * @param array{
      *     latitude: float,
      *     longitude: float,
+     *     srid: int,
      *     distance: null|array{meters: float, kilometers: float},
      *     direction: null|array{degree: float, direction: string},
      * } $coordinate

@@ -13,8 +13,11 @@ declare(strict_types=1);
 
 namespace App\DBAL\GeoLocation\Types\PostgreSQL;
 
+use App\DBAL\GeoLocation\ValueObject\Point;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Types\Type;
+use Ixnode\PhpException\Case\CaseUnsupportedException;
+use Ixnode\PhpException\Type\TypeInvalidException;
 
 /**
  * Class PostGISType
@@ -84,6 +87,64 @@ abstract class PostGISType extends Type
     public function convertToDatabaseValueSQL($sqlExpr, AbstractPlatform $platform): string
     {
         return sprintf('ST_GeomFromEWKT(%s)', $sqlExpr);
+    }
+
+    /**
+     * Returns the instantiated Point.
+     *
+     * @param mixed $value
+     * @param AbstractPlatform $platform
+     * @return Point
+     * @throws TypeInvalidException
+     * @throws CaseUnsupportedException
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     */
+    public function convertToPHPValue($value, AbstractPlatform $platform): Point
+    {
+        if (!is_string($value)) {
+            throw new TypeInvalidException('string', 'string');
+        }
+
+        $result = sscanf($value, 'SRID=%f;POINT(%f %f)');
+
+        if (is_null($result)) {
+            throw new CaseUnsupportedException(sprintf('Unable to parse given ST_AsEWKT value: %s', $value));
+        }
+
+        /* Attention: PostgreSQL uses lon/lat not lat/lon: Switch order. */
+        [$srid, $longitude, $latitude, ] = $result;
+
+        if (is_null($srid)) {
+            throw new TypeInvalidException('float', 'null');
+        }
+
+        if (is_null($latitude)) {
+            throw new TypeInvalidException('float', 'null');
+        }
+
+        if (is_null($longitude)) {
+            throw new TypeInvalidException('float', 'null');
+        }
+
+        return new Point((float) $latitude, (float) $longitude, (int) $srid);
+    }
+
+    /**
+     * Returns the database value.
+     *
+     * @param Point $value
+     * @param AbstractPlatform $platform
+     * @return string
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     */
+    public function convertToDatabaseValue($value, AbstractPlatform $platform): string
+    {
+        return sprintf(
+            'SRID=%d;POINT(%f %f)',
+            $value->getSrid(),
+            $value->getLatitude(),
+            $value->getLongitude()
+        );
     }
 
     /**

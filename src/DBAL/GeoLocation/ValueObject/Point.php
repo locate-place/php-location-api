@@ -17,16 +17,20 @@ namespace App\DBAL\GeoLocation\ValueObject;
  * Class Point
  *
  * @author Björn Hempel <bjoern@hempel.li>
- * @version 0.1.0 (2023-06-27)
+ * @version 0.1.1 (2023-07-31)
+ * @since 0.1.1 (2023-07-31) Add srid.
  * @since 0.1.0 (2023-06-27) First version.
  */
 readonly class Point
 {
+    final public const SRID_WSG84 = 4326;
+
     /**
      * @param float $latitude
      * @param float $longitude
+     * @param int $srid
      */
-    public function __construct(private float $latitude, private float $longitude)
+    public function __construct(private float $latitude, private float $longitude, private int $srid = self::SRID_WSG84)
     {
     }
 
@@ -58,5 +62,15 @@ readonly class Point
     public function getLongitude(): float
     {
         return $this->longitude;
+    }
+
+    /**
+     * Returns the srid value of this point (WSG84).
+     *
+     * @return int
+     */
+    public function getSrid(): int
+    {
+        return $this->srid;
     }
 }
