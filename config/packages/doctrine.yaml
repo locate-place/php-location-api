@@ -2,6 +2,12 @@ doctrine:
     dbal:
         types:
             point: App\DBAL\GeoLocation\Types\PostgreSQL\PointType
+            geography:
+                class: App\DBAL\GeoLocation\Types\PostgreSQL\GeographyType
+                commented: false
+            geometry:
+                class: App\DBAL\GeoLocation\Types\PostgreSQL\GeometryType
+                commented: false
         default_connection: postgresql
         connections:
             postgresql:
@@ -15,6 +21,8 @@ doctrine:
                 password: "%env(resolve:DOCTRINE_DB_PASS_POSTGRESQL)%"
                 mapping_types:
                     point: point
+                    geography: geography
+                    geometry: geometry
                 schema_filter: ~^(?!(topology)_)~
             sqlite:
                 driver: "%env(resolve:DOCTRINE_DB_DRIVER_SQLITE)%"
@@ -27,6 +35,8 @@ doctrine:
                 password: "%env(resolve:DOCTRINE_DB_PASS_SQLITE)%"
                 mapping_types:
                     point: point
+                    geography: geography
+                    geometry: geometry
 
     orm:
         auto_generate_proxy_classes: true
@@ -41,6 +51,7 @@ doctrine:
                 auto_mapping: true
                 dql:
                     string_functions:
+                        DistanceOperator: App\DBAL\GeoLocation\Functions\PostgreSQL\DistanceOperator
                         ST_Distance : App\DBAL\GeoLocation\Functions\PostgreSQL\ST_Distance
                         ST_DWithin: App\DBAL\GeoLocation\Functions\PostgreSQL\ST_DWithin
                         ST_MakePoint: App\DBAL\GeoLocation\Functions\PostgreSQL\ST_MakePoint

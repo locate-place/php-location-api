@@ -17,7 +17,7 @@
         "ixnode/php-coordinate": "^0.1.13",
         "ixnode/php-date-parser": "^1.0",
         "ixnode/php-exception": "*",
-        "ixnode/php-timezone": "^0.1.14",
+        "ixnode/php-timezone": "^0.1.15",
         "symfony/console": "6.3.*",
         "symfony/dotenv": "6.3.*",
         "symfony/flex": "^2",
@@ -105,21 +105,18 @@
         "phpunit:unit:debug": "bin/header/phpunit 'PHPUNIT_DEBUG=1 vendor/bin/phpunit -d memory_limit=512M --configuration .phpunit/phpunit.unit.xml' 'Unit'",
         "phpunit:all": [
             "@cache:delete",
-            "@db:initialize:test:fixture",
             "@phpunit:unit",
             "@phpunit:functional",
             "@phpunit:api"
         ],
         "phpunit:all:coverage": [
             "@cache:delete",
-            "@db:initialize:test:fixture",
             "@phpunit:unit:coverage",
             "@phpunit:functional:coverage",
             "@phpunit:api:coverage"
         ],
         "phpunit:all:debug": [
             "@cache:delete",
-            "@db:initialize:test:fixture",
             "@phpunit:unit:debug",
             "@phpunit:functional:debug",
             "@phpunit:api:debug"

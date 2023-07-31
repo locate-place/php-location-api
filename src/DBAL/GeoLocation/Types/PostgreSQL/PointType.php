@@ -27,7 +27,7 @@ use Ixnode\PhpException\Type\TypeInvalidException;
  */
 class PointType extends Type
 {
-    private const POINT = 'point';
+    final public const POINT = 'point';
 
     /**
      * Returns the name of this type.

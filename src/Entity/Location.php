@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use App\DBAL\GeoLocation\Types\PostgreSQL\PointType;
+use App\DBAL\GeoLocation\Types\PostgreSQL\PostGISType;
 use App\DBAL\GeoLocation\ValueObject\Point;
 use App\Entity\Trait\TimestampsTrait;
 use App\Repository\LocationRepository;
@@ -32,6 +34,8 @@ use Doctrine\ORM\Mapping as ORM;
  */
 #[ORM\Entity(repositoryClass: LocationRepository::class)]
 #[ORM\Index(columns: ['coordinate'], flags: ['gist'])]
+#[ORM\Index(columns: ['coordinate_geography'], flags: ['gist'])]
+#[ORM\Index(columns: ['geoname_id'])]
 #[ORM\HasLifecycleCallbacks]
 class Location
 {
@@ -54,8 +58,11 @@ class Location
     #[ORM\Column(length: 8192)]
     private ?string $alternateNames = null;
 
-    #[ORM\Column(type: 'point')]
+    #[ORM\Column(type: PointType::POINT)]
     private ?Point $coordinate = null;
+
+    #[ORM\Column(type: PostGISType::GEOGRAPHY, nullable: true, options: ['geometry_type' => 'POINT', 'srid' => 4326])]
+    private ?string $coordinateGeography = null;
 
     #[ORM\Column(length: 200)]
     private ?string $cc2 = null;
@@ -200,6 +207,25 @@ class Location
     public function setCoordinate(Point $coordinate): static
     {
         $this->coordinate = $coordinate;
+
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getCoordinateGeography(): ?string
+    {
+        return $this->coordinateGeography;
+    }
+
+    /**
+     * @param string|null $coordinateGeography
+     * @return self
+     */
+    public function setCoordinateGeography(?string $coordinateGeography): self
+    {
+        $this->coordinateGeography = $coordinateGeography;
 
         return $this;
     }

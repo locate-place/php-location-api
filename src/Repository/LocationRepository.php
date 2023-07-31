@@ -132,25 +132,25 @@ class LocationRepository extends ServiceEntityRepository
             ;
         }
 
-        /* Order result by distance. */
+        /* Order result by distance (uses <-> for performance reasons). */
         $queryBuilder
-            ->addSelect('ST_Distance(
-                ST_MakePointPoint(l.coordinate(0), l.coordinate(1)),
-                ST_MakePoint(:latitude, :longitude),
-                TRUE
-            ) AS HIDDEN distance')
-            ->setParameter('latitude', $coordinate->getLatitude())
-            ->setParameter('longitude', $coordinate->getLongitude())
+            ->addSelect(sprintf(
+                'DistanceOperator(l.coordinateGeography, %f, %f) AS HIDDEN distance',
+                $coordinate->getLatitude(),
+                $coordinate->getLongitude()
+            ))
             ->orderBy('distance', 'ASC')
         ;
 
         /* Limit result by given distance. */
         if (is_int($distanceMeter)) {
             $queryBuilder
+                /* Attention: PostGIS uses lon/lat not lat/lon! */
                 ->andWhere('ST_DWithin(
-                ST_MakePointPoint(l.coordinate(0), l.coordinate(1)),
-                ST_MakePoint(:latitude, :longitude),
-                :distance
+                l.coordinateGeography,
+                ST_MakePoint(:longitude, :latitude),
+                :distance,
+                TRUE
             ) = TRUE')
                 ->setParameter('latitude', $coordinate->getLatitude())
                 ->setParameter('longitude', $coordinate->getLongitude())
@@ -164,6 +164,9 @@ class LocationRepository extends ServiceEntityRepository
                 ->setMaxResults($limit)
             ;
         }
+
+        #print_r($queryBuilder->getQuery()->getDQL());
+        #exit();
 
         return array_values(
             (new CheckerArray($queryBuilder->getQuery()->getResult()))
@@ -190,7 +193,7 @@ class LocationRepository extends ServiceEntityRepository
         return $this->findLocationsByCoordinate(
             $coordinate,
             $distanceMeter,
-            null,
+            FeatureClass::FEATURE_CLASS_P,
             FeatureClass::FEATURE_CODES_P_ADMIN_PLACES,
             $limit
         );

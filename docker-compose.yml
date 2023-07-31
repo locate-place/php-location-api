@@ -112,6 +112,7 @@ services:
     image: "${IMAGE_POSTGRESQL}"
     container_name: "${NAMESPACE_DEVELOPMENT}.postgresql"
     hostname: "${NAMESPACE_HOSTNAME_DEVELOPMENT}-postgresql"
+    shm_size: 1g
     restart: always
     environment:
       POSTGRES_USER: "${POSTGRESQL_SERVER_ROOT_USER}"

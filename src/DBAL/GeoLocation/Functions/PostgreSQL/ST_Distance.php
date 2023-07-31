@@ -87,6 +87,6 @@ class ST_Distance extends FunctionNode
             $arguments[] = $expression->dispatch($sqlWalker);
         }
 
-        return 'ST_Distance(' . implode(', ', $arguments) . ')';
+        return 'ST_Distance('.implode(', ', $arguments).')';
     }
 }
