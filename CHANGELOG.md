@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Releases
 
+### [0.1.14] - 2023-07-31
+
+* Improve import time
+* Add location:geoname-id and location:coordinate command
+
 ### [0.1.13] - 2023-07-31
 
 * Add new geography coordinate field, indizes and db changes; Improvement of the query speed; Add geography and geometry doctrine dbal types; Add PostgreSQL distance operator <->
