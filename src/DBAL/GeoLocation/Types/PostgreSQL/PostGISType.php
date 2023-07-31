@@ -139,11 +139,12 @@ abstract class PostGISType extends Type
      */
     public function convertToDatabaseValue($value, AbstractPlatform $platform): string
     {
+        /* Attention: PostgreSQL uses lon/lat not lat/lon: Switch order. */
         return sprintf(
             'SRID=%d;POINT(%f %f)',
             $value->getSrid(),
-            $value->getLatitude(),
-            $value->getLongitude()
+            $value->getLongitude(),
+            $value->getLatitude()
         );
     }
 
