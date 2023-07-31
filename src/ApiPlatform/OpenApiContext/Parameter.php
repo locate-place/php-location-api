@@ -13,7 +13,10 @@ declare(strict_types=1);
 
 namespace App\ApiPlatform\OpenApiContext;
 
+use App\Constants\DB\Distance;
 use App\Constants\DB\FeatureClass;
+use App\Constants\DB\Format;
+use App\Constants\DB\Limit;
 
 /**
  * Class Parameter
@@ -49,7 +52,8 @@ class Parameter
         'allowEmptyValue' => false,
         'schema' => [
             'type' => 'integer',
-            'default' => 10000,
+            'default' => Distance::DISTANCE_1000,
+            'enum' => Distance::ALL_DISTANCES,
         ],
         'style' => 'simple', // simple, form
         'explode' => false,
@@ -65,8 +69,25 @@ class Parameter
         'allowEmptyValue' => false,
         'schema' => [
             'type' => 'string',
-            'default' => FeatureClass::FEATURE_CLASS_A,
+            'default' => null,
             'enum' => FeatureClass::FEATURE_CLASSES_ALL,
+        ],
+        'style' => 'simple', // simple, form
+        'explode' => false,
+        'allowReserved' => false,
+    ];
+
+    final public const FORMAT = [
+        'name' => Name::FORMAT,
+        'in' => 'query', // cookie, header, path, query
+        'description' => '<strong>Format</strong>',
+        'required' => true,
+        'deprecated' => false,
+        'allowEmptyValue' => false,
+        'schema' => [
+            'type' => 'string',
+            'default' => Format::SIMPLE,
+            'enum' => Format::ALL_FORMATS,
         ],
         'style' => 'simple', // simple, form
         'explode' => false,
@@ -82,7 +103,24 @@ class Parameter
         'allowEmptyValue' => false,
         'schema' => [
             'type' => 'integer',
-            'default' => 182559 /* Dresden, Germany */
+            'default' => 2_956_832 /* Altstadt, Dresden, Germany */
+        ],
+        'style' => 'simple', // simple, form
+        'explode' => false,
+        'allowReserved' => false,
+    ];
+
+    final public const LIMIT = [
+        'name' => Name::LIMIT,
+        'in' => 'query', // cookie, header, path, query
+        'description' => '<strong>Limit</strong>',
+        'required' => true,
+        'deprecated' => false,
+        'allowEmptyValue' => false,
+        'schema' => [
+            'type' => 'integer',
+            'default' => Limit::LIMIT_10,
+            'enum' => Limit::ALL_LIMITS,
         ],
         'style' => 'simple', // simple, form
         'explode' => false,

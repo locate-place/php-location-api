@@ -36,11 +36,13 @@ use Symfony\Component\Serializer\Annotation\SerializedName;
         'parameters' => [
             Parameter::COORDINATE,
             Parameter::DISTANCE,
+            Parameter::LIMIT,
             Parameter::FEATURE_CLASS,
         ],
     ],
     provider: LocationProvider::class
 )]
+/* Get ressource via geoname id: /api/v1/location/{geoname_id} */
 #[Get(
     uriVariables: [
         Name::GEONAME_ID,
@@ -49,6 +51,20 @@ use Symfony\Component\Serializer\Annotation\SerializedName;
         'description' => LocationRoute::DESCRIPTION,
         'parameters' => [
             Parameter::GEONAME_ID,
+        ]
+    ],
+    provider: LocationProvider::class
+)]
+/* Get ressource via location: /api/v1/location/coordinate/{coordinate} */
+#[Get(
+    uriTemplate: 'location/coordinate.{_format}',
+    uriVariables: [
+        Name::COORDINATE,
+    ],
+    openapiContext: [
+        'description' => LocationRoute::DESCRIPTION,
+        'parameters' => [
+            Parameter::COORDINATE,
         ]
     ],
     provider: LocationProvider::class
@@ -66,7 +82,7 @@ class Location extends BasePublicResource
     /** @var array{class: string, class-name: string, code: string, code-name: string} $feature */
     protected array $feature;
 
-    /** @var array{latitude: float, longitude: float, srid: int, distance: null|array{meters: float, kilometers: float}} $coordinate */
+    /** @var array{latitude: float, longitude: float, srid: int, distance?: null|array{meters: float, kilometers: float}, direction?: null|array{degree: float, direction: string}} $coordinate */
     protected array $coordinate;
 
     /** @var array{
@@ -174,7 +190,7 @@ class Location extends BasePublicResource
     /**
      * Gets the coordinate array.
      *
-     * @return array{latitude: float, longitude: float, srid: int, distance: null|array{meters: float, kilometers: float}}
+     * @return array{latitude: float, longitude: float, srid: int, distance?: null|array{meters: float, kilometers: float}, direction?: null|array{degree: float, direction: string}}
      */
     public function getCoordinate(): array
     {
@@ -188,8 +204,8 @@ class Location extends BasePublicResource
      *     latitude: float,
      *     longitude: float,
      *     srid: int,
-     *     distance: null|array{meters: float, kilometers: float},
-     *     direction: null|array{degree: float, direction: string},
+     *     distance?: null|array{meters: float, kilometers: float},
+     *     direction?: null|array{degree: float, direction: string},
      * } $coordinate
      * @return self
      */
@@ -266,7 +282,7 @@ class Location extends BasePublicResource
     {
         $coordinate = $this->getCoordinate();
 
-        $distance = $coordinate['distance'];
+        $distance = array_key_exists('distance', $coordinate) ? $coordinate['distance'] : null;
 
         if (is_null($distance)) {
             return null;

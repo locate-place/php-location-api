@@ -97,8 +97,8 @@ class LocationRepository extends ServiceEntityRepository
      *
      * @param Coordinate $coordinate
      * @param int|null $distanceMeter
-     * @param string|null $featureClass
-     * @param string|array<int, string>|null $featureCodes
+     * @param array<int, string>|string|null $featureClass
+     * @param array<int, string>|string|null $featureCodes
      * @param int|null $limit
      * @return array<int, Location>
      * @throws TypeInvalidException
@@ -107,21 +107,22 @@ class LocationRepository extends ServiceEntityRepository
     public function findLocationsByCoordinate(
         Coordinate $coordinate,
         int|null $distanceMeter = null,
-        string|null $featureClass = null,
-        string|array|null $featureCodes = null,
+        array|string|null $featureClass = null,
+        array|string|null $featureCodes = null,
         int|null $limit = null
     ): array
     {
         $queryBuilder = $this->createQueryBuilder('l');
 
-        /* Convert $featureCodes to an array. */
+        /* Convert $featureClass and $featureCodes to an array. */
+        $featureClass = is_string($featureClass) ? [$featureClass] : $featureClass;
         $featureCodes = is_string($featureCodes) ? [$featureCodes] : $featureCodes;
 
-        if (is_string($featureClass)) {
+        if (is_array($featureClass)) {
             $queryBuilder
                 ->leftJoin('l.featureClass', 'fcl')
-                ->andWhere('fcl.class = :featureClass')
-                ->setParameter('featureClass', $featureClass);
+                ->andWhere('fcl.class IN (:featureClasses)')
+                ->setParameter('featureClasses', $featureClass);
         }
 
         if (is_array($featureCodes)) {
@@ -165,13 +166,41 @@ class LocationRepository extends ServiceEntityRepository
             ;
         }
 
-        #print_r($queryBuilder->getQuery()->getDQL());
-        #exit();
-
         return array_values(
             (new CheckerArray($queryBuilder->getQuery()->getResult()))
                 ->checkClass(Location::class)
         );
+    }
+
+    /**
+     * Finds the next location given by coordinate.
+     *
+     * @param Coordinate $coordinate
+     * @param string|null $featureClass
+     * @param string|array<int, string>|null $featureCodes
+     * @return Location|null
+     * @throws ClassInvalidException
+     * @throws TypeInvalidException
+     */
+    public function findNextLocationByCoordinate(
+        Coordinate $coordinate,
+        string|null $featureClass = null,
+        string|array|null $featureCodes = null
+    ): Location|null
+    {
+        $location = $this->findLocationsByCoordinate(
+            $coordinate,
+            null,
+            $featureClass,
+            $featureCodes,
+            1
+        );
+
+        if (count($location) <= 0) {
+            return null;
+        }
+
+        return $location[0];
     }
 
     /**
@@ -208,22 +237,22 @@ class LocationRepository extends ServiceEntityRepository
      * @throws ClassInvalidException
      * @throws TypeInvalidException
      */
-    public function findFirstAdminLocationByCoordinate(
+    public function findNextAdminLocationByCoordinate(
         Coordinate $coordinate,
         int|null $distanceMeter = null
     ): Location|null
     {
-        $place = $this->findAdminLocationsByCoordinate(
+        $location = $this->findAdminLocationsByCoordinate(
             $coordinate,
             $distanceMeter,
             1
         );
 
-        if (count($place) <= 0) {
+        if (count($location) <= 0) {
             return null;
         }
 
-        return $place[0];
+        return $location[0];
     }
 
     /**

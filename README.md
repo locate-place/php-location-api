@@ -27,6 +27,10 @@ docker compose up -d
 docker compose exec php composer install
 ```
 
+```bash
+bin/console doctrine:migrations:migrate  --no-interaction
+```
+
 Open the project in your browser:
 
 * https://www.location-api.localhost/

@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace App\ApiPlatform\Resource;
 
 use ApiPlatform\Metadata\GetCollection;
+use App\ApiPlatform\OpenApiContext\Parameter;
 use App\ApiPlatform\Route\ImportRoute;
 use App\ApiPlatform\State\ImportProvider;
 use DateTimeImmutable;
@@ -26,10 +27,13 @@ use Ixnode\PhpApiVersionBundle\ApiPlatform\Resource\Base\BasePublicResource;
  * @version 0.1.0 (2023-07-22)
  * @since 0.1.0 (2023-07-22) First version.
  */
+/* Gets ressource of imports: /api/v1/import */
 #[GetCollection(
     openapiContext: [
         'description' => ImportRoute::DESCRIPTION_COLLECTION_GET,
-        'parameters' => [],
+        'parameters' => [
+            Parameter::FORMAT,
+        ],
     ],
     provider: ImportProvider::class
 )]

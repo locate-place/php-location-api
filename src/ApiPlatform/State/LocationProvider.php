@@ -14,18 +14,16 @@ declare(strict_types=1);
 namespace App\ApiPlatform\State;
 
 use App\ApiPlatform\OpenApiContext\Name;
-use App\ApiPlatform\Resource\Location;
 use App\ApiPlatform\Route\LocationRoute;
 use App\ApiPlatform\State\Base\BaseProvider;
-use App\DBAL\GeoLocation\ValueObject\Point;
-use App\Entity\Location as LocationEntity;
+use App\Constants\DB\Distance;
+use App\Constants\DB\Limit;
 use App\Repository\LocationRepository;
 use App\Service\LocationService;
 use Doctrine\ORM\NonUniqueResultException;
 use Ixnode\PhpApiVersionBundle\ApiPlatform\Resource\Base\BasePublicResource;
 use Ixnode\PhpApiVersionBundle\ApiPlatform\State\Base\Wrapper\BaseResourceWrapperProvider;
 use Ixnode\PhpApiVersionBundle\Utils\Version\Version;
-use Ixnode\PhpCoordinate\Coordinate;
 use Ixnode\PhpException\ArrayType\ArrayKeyNotFoundException;
 use Ixnode\PhpException\Case\CaseUnsupportedException;
 use Ixnode\PhpException\Class\ClassInvalidException;
@@ -76,147 +74,6 @@ final class LocationProvider extends BaseProvider
     }
 
     /**
-     * Converts the given Location entities to ApiPlatform resources.
-     *
-     * @param array<int, LocationEntity> $locationEntities
-     * @param Coordinate $coordinate
-     * @return array<int, Location>
-     * @throws CaseUnsupportedException
-     * @throws ParserException
-     */
-    private function convertLocationEntityToLocation(array $locationEntities, Coordinate $coordinate): array
-    {
-        $locations = [];
-
-        foreach ($locationEntities as $locationEntity) {
-            if (!$locationEntity instanceof LocationEntity) {
-                continue;
-            }
-
-            $locations[] = $this->getLocation($locationEntity, $coordinate);
-        }
-
-        return $locations;
-    }
-
-    /**
-     * Returns an empty Location entity.
-     *
-     * @param int $geonameId
-     * @return Location
-     */
-    private function getEmptyLocation(int $geonameId): Location
-    {
-        return (new Location())
-            ->setGeonameId($geonameId)
-        ;
-    }
-
-    /**
-     * Returns a Location entity.
-     *
-     * @param LocationEntity $location
-     * @param Coordinate|null $coordinate
-     * @return Location
-     * @throws CaseUnsupportedException
-     * @throws ParserException
-     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
-     * @SuppressWarnings(PHPMD.NPathComplexity)
-     */
-    private function getLocation(LocationEntity $location, Coordinate|null $coordinate): Location
-    {
-        $featureClass = $location->getFeatureClass()?->getClass() ?: '';
-        $featureClassName = $this->translator->trans(
-            $featureClass,
-            domain: 'feature-code',
-            locale: 'de_DE'
-        );
-
-        $featureCode = $location->getFeatureCode()?->getCode() ?: '';
-        $featureCodeName = $this->translator->trans(
-            sprintf('%s.%s', $featureClass, $featureCode),
-            domain: 'place',
-            locale: 'de_DE'
-        );
-
-        $latitude = $location->getCoordinate()?->getLatitude() ?: .0;
-        $longitude = $location->getCoordinate()?->getLongitude() ?: .0;
-        $srid = $location->getCoordinate()?->getSrid() ?: Point::SRID_WSG84;
-
-        $coordinateTarget = new Coordinate($latitude, $longitude);
-
-        $distance = is_null($coordinate) ? null : [
-            'meters' => $coordinate->getDistance($coordinateTarget),
-            'kilometers' => $coordinate->getDistance($coordinateTarget, Coordinate::RETURN_KILOMETERS),
-        ];
-
-        $direction = is_null($coordinate) ? null : [
-            'degree' => $coordinate->getDegree($coordinateTarget),
-            'direction' => $coordinate->getDirection($coordinateTarget),
-        ];
-
-        return (new Location())
-            ->setGeonameId($location->getGeonameId() ?: 0)
-            ->setName($location->getName() ?: '')
-            ->setCountry([
-                'code' => $location->getCountry()?->getCode() ?: '',
-                'name' => $location->getCountry()?->getName() ?: '',
-            ])
-            ->setFeature([
-                'class' => $featureClass,
-                'class-name' => $featureClassName,
-                'code' => $featureCode,
-                'code-name' => $featureCodeName,
-            ])
-            ->setCoordinate([
-                'latitude' => $latitude,
-                'longitude' => $longitude,
-                'srid' => $srid,
-                'distance' => $distance,
-                'direction' => $direction,
-            ])
-        ;
-    }
-
-    /**
-     * Returns the full location.
-     *
-     * @param LocationEntity $location
-     * @param Coordinate|null $coordinateSource
-     * @return Location
-     * @throws CaseUnsupportedException
-     * @throws NonUniqueResultException
-     * @throws ParserException
-     * @throws TypeInvalidException
-     * @throws ClassInvalidException
-     */
-    private function getLocationFull(LocationEntity $location, Coordinate|null $coordinateSource = null): Location
-    {
-        $latitude = $location->getCoordinate()?->getLatitude() ?: .0;
-        $longitude = $location->getCoordinate()?->getLongitude() ?: .0;
-
-        $coordinateTarget = new Coordinate($latitude, $longitude);
-
-        $location = $this->getLocation($location, $coordinateSource)
-            ->setLink([
-                'google' => $coordinateTarget->getLinkGoogle(),
-                'openstreetmap' => $coordinateTarget->getLinkOpenStreetMap(),
-            ])
-        ;
-
-        $locationsP = $this->locationRepository->findAdminLocationsByCoordinate($coordinateTarget, null, 25);
-        $locationInformation = $this->locationService->getLocationInformation($locationsP);
-
-        if (!is_null($locationInformation)) {
-            $location
-                ->setLocation($locationInformation)
-            ;
-        }
-
-        return $location;
-    }
-
-    /**
      * Returns a collection of location resources that matches the given coordinate.
      *
      * @return BasePublicResource[]
@@ -228,17 +85,42 @@ final class LocationProvider extends BaseProvider
      */
     private function doProvideGetCollection(): array
     {
-        $coordinate = new Coordinate($this->getFilterString(Name::COORDINATE));
-        $distance = $this->hasFilter(Name::DISTANCE) ? $this->getFilterInteger(Name::DISTANCE) : 1000;
+        $coordinate = $this->getFilterString(Name::COORDINATE);
+        $limit = $this->hasFilter(Name::LIMIT) ? $this->getFilterInteger(Name::LIMIT) : Limit::LIMIT_10;
+        $distance = $this->hasFilter(Name::DISTANCE) ? $this->getFilterInteger(Name::DISTANCE) : Distance::DISTANCE_1000;
         $featureClass = $this->hasFilter(Name::FEATURE_CLASS) ? $this->getFilterString(Name::FEATURE_CLASS) : null;
 
-        $locationEntities = $this->locationRepository->findLocationsByCoordinate(
-            $coordinate,
-            $distance,
-            $featureClass
-        );
+        $locations = $this->locationService->getLocationsByCoordinate($coordinate, $limit, $distance, $featureClass);
 
-        return $this->convertLocationEntityToLocation($locationEntities, $coordinate);
+        if ($this->locationService->hasError()) {
+            $this->setError($this->locationService->getError());
+        }
+
+        return $locations;
+    }
+
+    /**
+     * Returns a location resource that matches the given geoname id.
+     *
+     * @return BasePublicResource
+     * @throws ArrayKeyNotFoundException
+     * @throws CaseUnsupportedException
+     * @throws ClassInvalidException
+     * @throws NonUniqueResultException
+     * @throws ParserException
+     * @throws TypeInvalidException
+     */
+    private function doProvideGetWithGeonameId(): BasePublicResource
+    {
+        $geonameId = $this->getUriInteger(Name::GEONAME_ID);
+
+        $location = $this->locationService->getLocationByGeonameId($geonameId);
+
+        if ($this->locationService->hasError()) {
+            $this->setError($this->locationService->getError());
+        }
+
+        return $location;
     }
 
     /**
@@ -252,18 +134,17 @@ final class LocationProvider extends BaseProvider
      * @throws ParserException
      * @throws TypeInvalidException
      */
-    private function doProvideGet(): BasePublicResource
+    private function doProvideGetWithCoordinate(): BasePublicResource
     {
-        $geonameId = $this->getUriInteger(Name::GEONAME_ID);
+        $coordinate = $this->getFilterString(Name::COORDINATE);
 
-        $location = $this->locationRepository->findOneBy(['geonameId' => $geonameId]);
+        $location = $this->locationService->getLocationByCoordinate($coordinate);
 
-        if (!$location instanceof LocationEntity) {
-            $this->setError(sprintf('Unable to find location with geoname id %d', $geonameId));
-            return $this->getEmptyLocation($geonameId);
+        if ($this->locationService->hasError()) {
+            $this->setError($this->locationService->getError());
         }
 
-        return $this->getLocationFull($location);
+        return $location;
     }
 
     /**
@@ -279,9 +160,10 @@ final class LocationProvider extends BaseProvider
      */
     protected function doProvide(): BasePublicResource|array
     {
-        return match($this->getRequestMethod()) {
-            BaseResourceWrapperProvider::METHOD_GET_COLLECTION => $this->doProvideGetCollection(),
-            Request::METHOD_GET => $this->doProvideGet(),
+        return match(true) {
+            $this->getRequestMethod() === BaseResourceWrapperProvider::METHOD_GET_COLLECTION => $this->doProvideGetCollection(),
+            $this->getRequestMethod() === Request::METHOD_GET && $this->hasFilter(Name::COORDINATE) => $this->doProvideGetWithCoordinate(),
+            $this->getRequestMethod() === Request::METHOD_GET && $this->hasUri(Name::GEONAME_ID) => $this->doProvideGetWithGeonameId(),
             default => throw new CaseUnsupportedException('Unsupported mode from api endpoint /api/v1/location.'),
         };
     }

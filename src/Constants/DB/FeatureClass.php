@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace App\Constants\DB;
 
 /**
- * Class Code
+ * Class FeatureClass
  *
  * @author Björn Hempel <bjoern@hempel.li>
  * @version 0.1.0 (2023-06-27)

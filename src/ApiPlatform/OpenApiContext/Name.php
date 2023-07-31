@@ -28,5 +28,9 @@ class Name
 
     final public const FEATURE_CLASS = 'feature_class';
 
+    final public const FORMAT = 'format';
+
     final public const GEONAME_ID = 'geoname_id';
+
+    final public const LIMIT = 'limit';
 }

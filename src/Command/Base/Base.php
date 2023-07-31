@@ -15,7 +15,6 @@ namespace App\Command\Base;
 
 use DateTimeImmutable;
 use Ixnode\PhpContainer\File;
-use Ixnode\PhpException\Class\ClassInvalidException;
 use Ixnode\PhpException\File\FileNotWriteableException;
 use SplFileObject;
 use Symfony\Component\Console\Command\Command;
@@ -136,7 +135,6 @@ abstract class Base extends Command
      *
      * @param string $message
      * @return void
-     * @throws ClassInvalidException
      */
     protected function printAndLog(string $message): void
     {
@@ -163,12 +161,11 @@ abstract class Base extends Command
      *
      * @param string $message
      * @return void
-     * @throws ClassInvalidException
      */
     protected function log(string $message): void
     {
         if (!isset($this->fileLog)) {
-            throw new ClassInvalidException(SplFileObject::class, SplFileObject::class);
+            return;
         }
 
         $this->fileLog->fwrite($message.PHP_EOL);

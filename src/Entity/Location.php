@@ -22,6 +22,10 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Ixnode\PhpCoordinate\Coordinate;
+use Ixnode\PhpException\Case\CaseUnsupportedException;
+use Ixnode\PhpException\Parser\ParserException;
+use Symfony\Component\Serializer\Annotation\Ignore;
 
 /**
  * Class Location
@@ -411,5 +415,33 @@ class Location
         $this->imports->removeElement($import);
 
         return $this;
+    }
+
+    /**
+     * Get distance to a second location.
+     *
+     * @param Location $locationTarget
+     * @return float
+     * @throws CaseUnsupportedException
+     * @throws ParserException
+     */
+    #[Ignore]
+    public function getDistance(Location $locationTarget): float
+    {
+        $pointSource = $this->getCoordinate();
+        $pointTarget = $locationTarget->getCoordinate();
+
+        if (!$pointSource instanceof Point) {
+            throw new CaseUnsupportedException(sprintf('Location "%s" does not have a coordinate.', $this->getName()));
+        }
+
+        if (!$pointTarget instanceof Point) {
+            throw new CaseUnsupportedException(sprintf('Location "%s" does not have a coordinate.', $locationTarget->getName()));
+        }
+
+        $coordinateSource = new Coordinate($pointSource->getLatitude(), $pointSource->getLongitude());
+        $coordinateTarget = new Coordinate($pointTarget->getLatitude(), $pointTarget->getLongitude());
+
+        return $coordinateSource->getDistance($coordinateTarget);
     }
 }
