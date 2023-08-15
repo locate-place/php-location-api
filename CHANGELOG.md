@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Releases
 
+### [0.1.15] - 2023-08-14
+
+* Add location:test for testing purposes
+  * Translates a given word to coordinates
+  * Useful for testing purposes
+* Add command location:test functional tests
+* Add first "final" data structure to location:coordinate (data, given, time-taken, etc.)
+* Update API platform from v3.1.12 to v3.1.14
+* Add environment and db driver name to version:show command
+* Increase alternate name field (location) from 8192 to 16384
+* findNextLocationByXXX refactoring
+  * More filter and sorting options
+* Add country settings (admin fields) for city and district detection
+  * Improved detection
+
 ### [0.1.14] - 2023-07-31
 
 * Improve import time
