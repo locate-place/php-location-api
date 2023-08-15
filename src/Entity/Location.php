@@ -57,7 +57,7 @@ class Location
     #[ORM\Column(length: 1024)]
     private ?string $asciiName = null;
 
-    #[ORM\Column(length: 8192)]
+    #[ORM\Column(length: 16384)]
     private ?string $alternateNames = null;
 
     #[ORM\Column(type: PostGISType::GEOGRAPHY, nullable: false, options: ['geometry_type' => 'POINT', 'srid' => 4326])]
@@ -443,5 +443,42 @@ class Location
         $coordinateTarget = new Coordinate($pointTarget->getLatitude(), $pointTarget->getLongitude());
 
         return $coordinateSource->getDistance($coordinateTarget);
+    }
+
+    /**
+     * Converts the coordinate Point to Coordinate.
+     *
+     * @return Coordinate
+     * @throws CaseUnsupportedException
+     * @throws ParserException
+     */
+    #[Ignore]
+    public function getCoordinateIxnode(): Coordinate
+    {
+        $pointSource = $this->getCoordinate();
+
+        if (!$pointSource instanceof Point) {
+            throw new CaseUnsupportedException(sprintf('Location "%s" does not have a coordinate.', $this->getName()));
+        }
+
+        return new Coordinate($pointSource->getLatitude(), $pointSource->getLongitude());
+    }
+
+    /**
+     * Returns the position of the location.
+     *
+     * @return string
+     * @throws CaseUnsupportedException
+     */
+    #[Ignore]
+    public function getPosition(): string
+    {
+        $pointSource = $this->getCoordinate();
+
+        if (!$pointSource instanceof Point) {
+            throw new CaseUnsupportedException(sprintf('Location "%s" does not have a coordinate.', $this->getName()));
+        }
+
+        return sprintf('%s, %s', $pointSource->getLatitude(), $pointSource->getLongitude());
     }
 }

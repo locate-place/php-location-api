@@ -14,7 +14,9 @@ declare(strict_types=1);
 namespace App\Service;
 
 use App\ApiPlatform\Resource\Location;
+use App\Constants\DB\FeatureClass;
 use App\Constants\DB\Limit;
+use App\DBAL\GeoLocation\ValueObject\Point;
 use App\Entity\Location as LocationEntity;
 use App\Service\Base\BaseLocationService;
 use Doctrine\ORM\NonUniqueResultException;
@@ -53,6 +55,15 @@ final class LocationService extends BaseLocationService
             return $this->getEmptyLocation($geonameId);
         }
 
+        $point = $location->getCoordinate();
+
+        if (!$point instanceof Point) {
+            $this->setError(sprintf('Unable to get coordinate from %d', $geonameId));
+            return $this->getEmptyLocation($geonameId);
+        }
+
+        $this->coordinate = new Coordinate($point->getLatitude(), $point->getLongitude());
+
         return $this->getLocationFull($location);
     }
 
@@ -69,9 +80,13 @@ final class LocationService extends BaseLocationService
      */
     public function getLocationByCoordinate(string $coordinate): Location
     {
-        $coordinateInstance = new Coordinate($coordinate);
+        $this->coordinate = new Coordinate($coordinate);
 
-        $location = $this->locationRepository->findNextLocationByCoordinate($coordinateInstance);
+        $location = $this->locationRepository->findNextLocationByCoordinate(
+            coordinate: $this->coordinate,
+            featureClass: FeatureClass::FEATURE_CLASS_P,
+            featureCodes: FeatureClass::FEATURE_CODES_P_ALL,
+        );
 
         if (!$location instanceof LocationEntity) {
             $this->setError(sprintf('Unable to find location with coordinate "%s".', $coordinate));
@@ -96,14 +111,13 @@ final class LocationService extends BaseLocationService
      */
     public function getLocationsByCoordinate(string $coordinate, int|null $limit = Limit::LIMIT_10, int|null $distance = null, array|string|null $featureClass = null): array
     {
-        $coordinateInstance = new Coordinate($coordinate);
+        $this->coordinate = new Coordinate($coordinate);
 
         $locationEntities = $this->locationRepository->findLocationsByCoordinate(
-            $coordinateInstance,
-            $distance,
-            $featureClass,
-            null,
-            $limit
+            coordinate: $this->coordinate,
+            distanceMeter: $distance,
+            featureClass: $featureClass,
+            limit: $limit
         );
 
         $locations = [];
@@ -113,7 +127,7 @@ final class LocationService extends BaseLocationService
                 continue;
             }
 
-            $locations[] = $this->getLocation($locationEntity, $coordinateInstance);
+            $locations[] = $this->getLocation($locationEntity, $this->coordinate);
         }
 
         return $locations;

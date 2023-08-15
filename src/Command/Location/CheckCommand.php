@@ -55,7 +55,7 @@ class CheckCommand extends ImportCommand
 
     private const MAX_LENGTH_ASCII_NAME_VALUE = 1024;
 
-    private const MAX_LENGTH_ALTERNATE_NAMES_VALUE = 8192;
+    private const MAX_LENGTH_ALTERNATE_NAMES_VALUE = 16384;
 
     private const MAX_LENGTH_CC2_VALUE = 200;
 

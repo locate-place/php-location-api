@@ -13,9 +13,11 @@ declare(strict_types=1);
 
 namespace App\Repository;
 
+use App\Constants\DB\CountryConfig;
 use App\Constants\DB\FeatureClass;
 use App\Entity\Country;
 use App\Entity\Location;
+use App\Entity\Location as LocationEntity;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
@@ -25,8 +27,8 @@ use Ixnode\PhpChecker\CheckerArray;
 use Ixnode\PhpCoordinate\Coordinate;
 use Ixnode\PhpException\Case\CaseUnsupportedException;
 use Ixnode\PhpException\Class\ClassInvalidException;
+use Ixnode\PhpException\Parser\ParserException;
 use Ixnode\PhpException\Type\TypeInvalidException;
-use Ixnode\PhpTimezone\Constants\CountryEurope;
 
 /**
  * Class LocationRepository
@@ -40,6 +42,7 @@ use Ixnode\PhpTimezone\Constants\CountryEurope;
  * @method Location[]    findAll()
  * @method Location[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  * @extends ServiceEntityRepository<Location>
+ * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
  */
 class LocationRepository extends ServiceEntityRepository
 {
@@ -99,49 +102,37 @@ class LocationRepository extends ServiceEntityRepository
      * @param int|null $distanceMeter
      * @param array<int, string>|string|null $featureClass
      * @param array<int, string>|string|null $featureCodes
+     * @param Country|null $country
+     * @param array{a1?: string, a2?: string, a3?: string, a4?: string}|null $adminCodes
+     * @param bool|null $withPopulation
+     * @param bool $sortByFeatureClasses
+     * @param bool $sortByFeatureCodes
      * @param int|null $limit
      * @return array<int, Location>
-     * @throws TypeInvalidException
+     * @throws CaseUnsupportedException
      * @throws ClassInvalidException
+     * @throws TypeInvalidException
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+     * @SuppressWarnings(PHPMD.NPathComplexity)
+     * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
+     * @SuppressWarnings(PHPMD.ExcessiveParameterList)
+     * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     public function findLocationsByCoordinate(
         Coordinate $coordinate,
         int|null $distanceMeter = null,
         array|string|null $featureClass = null,
         array|string|null $featureCodes = null,
+        Country|null $country = null,
+        array|null $adminCodes = [],
+        bool|null $withPopulation = null,
+        bool $sortByFeatureClasses = false,
+        bool $sortByFeatureCodes = false,
         int|null $limit = null
     ): array
     {
         $queryBuilder = $this->createQueryBuilder('l');
-
-        /* Convert $featureClass and $featureCodes to an array. */
-        $featureClass = is_string($featureClass) ? [$featureClass] : $featureClass;
-        $featureCodes = is_string($featureCodes) ? [$featureCodes] : $featureCodes;
-
-        if (is_array($featureClass)) {
-            $queryBuilder
-                ->leftJoin('l.featureClass', 'fcl')
-                ->andWhere('fcl.class IN (:featureClasses)')
-                ->setParameter('featureClasses', $featureClass);
-        }
-
-        if (is_array($featureCodes)) {
-            $queryBuilder
-                ->leftJoin('l.featureCode', 'fco')
-                ->andWhere('fco.code IN (:featureCodes)')
-                ->setParameter('featureCodes', $featureCodes)
-            ;
-        }
-
-        /* Order result by distance (uses <-> for performance reasons). */
-        $queryBuilder
-            ->addSelect(sprintf(
-                'DistanceOperator(l.coordinate, %f, %f) AS HIDDEN distance',
-                $coordinate->getLatitude(),
-                $coordinate->getLongitude()
-            ))
-            ->orderBy('distance', 'ASC')
-        ;
 
         /* Limit result by given distance. */
         if (is_int($distanceMeter)) {
@@ -159,6 +150,91 @@ class LocationRepository extends ServiceEntityRepository
             ;
         }
 
+        /* Limit result by feature class. */
+        $featureClass = is_string($featureClass) ? [$featureClass] : $featureClass;
+        if (is_array($featureClass)) {
+            $queryBuilder
+                ->leftJoin('l.featureClass', 'fcl')
+                ->andWhere('fcl.class IN (:featureClasses)')
+                ->setParameter('featureClasses', $featureClass);
+        }
+
+        /* Limit result by feature code. */
+        $featureCodes = is_string($featureCodes) ? [$featureCodes] : $featureCodes;
+        if (is_array($featureCodes)) {
+            $queryBuilder
+                ->leftJoin('l.featureCode', 'fco')
+                ->andWhere('fco.code IN (:featureCodes)')
+                ->setParameter('featureCodes', $featureCodes)
+            ;
+        }
+
+        /* Limit result by country. */
+        if ($country instanceof Country) {
+            $queryBuilder
+                ->andWhere('l.country = :country')
+                ->setParameter('country', $country);
+        }
+
+        /* Limit with admin codes. */
+        if (!is_null($adminCodes)) {
+
+            $queryBuilder
+                ->leftJoin('l.adminCode', 'a');
+
+            foreach (CountryConfig::A_ALL as $adminCode) {
+                if (array_key_exists($adminCode, $adminCodes)) {
+                    $adminName = match ($adminCode) {
+                        CountryConfig::A1 => 'admin1Code',
+                        CountryConfig::A2 => 'admin2Code',
+                        CountryConfig::A3 => 'admin3Code',
+                        CountryConfig::A4 => 'admin4Code',
+                    };
+
+                    $valueAdminCode = $adminCodes[$adminCode];
+
+                    match ($valueAdminCode) {
+                        CountryConfig::NOT_NULL => $queryBuilder
+                            ->andWhere(sprintf('a.%s IS NOT NULL', $adminName)),
+                        CountryConfig::NULL => $queryBuilder
+                            ->andWhere(sprintf('a.%s IS NULL', $adminName)),
+                        default => $queryBuilder
+                            ->andWhere(sprintf('a.%s = :%s', $adminName, $adminCode))
+                            ->setParameter($adminCode, $valueAdminCode),
+                    };
+                }
+            }
+        }
+
+        /* Limit with population. */
+        if (!is_null($withPopulation)) {
+            $queryBuilder->andWhere(sprintf('l.population %s 0', $withPopulation ? '>' : '<='));
+        }
+
+        /* Order by given feature codes. */
+        if ($sortByFeatureCodes) {
+            if (!is_array($featureCodes)) {
+                throw new CaseUnsupportedException('$sortByFeatureCodes is used, but no $featureCodes are given.');
+            }
+
+            $fieldName = 'fco.code';
+            $sortName = 'sortByFeatureCode';
+            $queryBuilder
+                ->addSelect($this->getCaseString($featureCodes, $fieldName, $sortName))
+                ->addOrderBy($sortName, 'ASC')
+            ;
+        }
+
+        /* Order result by distance (uses <-> for performance reasons). */
+        $queryBuilder
+            ->addSelect(sprintf(
+                'DistanceOperator(l.coordinate, %f, %f) AS HIDDEN distance',
+                $coordinate->getLatitude(),
+                $coordinate->getLongitude()
+            ))
+            ->addOrderBy('distance', 'ASC')
+        ;
+
         /* Limit result by number of entities. */
         if (is_int($limit)) {
             $queryBuilder
@@ -166,6 +242,7 @@ class LocationRepository extends ServiceEntityRepository
             ;
         }
 
+        /* Returns the result. */
         return array_values(
             (new CheckerArray($queryBuilder->getQuery()->getResult()))
                 ->checkClass(Location::class)
@@ -178,22 +255,38 @@ class LocationRepository extends ServiceEntityRepository
      * @param Coordinate $coordinate
      * @param string|null $featureClass
      * @param string|array<int, string>|null $featureCodes
+     * @param Country|null $country
+     * @param array{a1?: string, a2?: string, a3?: string, a4?: string}|null $adminCodes
+     * @param bool|null $withPopulation
+     * @param bool $sortByFeatureClasses
+     * @param bool $sortByFeatureCodes
      * @return Location|null
+     * @throws CaseUnsupportedException
      * @throws ClassInvalidException
      * @throws TypeInvalidException
+     * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
      */
     public function findNextLocationByCoordinate(
         Coordinate $coordinate,
         string|null $featureClass = null,
-        string|array|null $featureCodes = null
+        string|array|null $featureCodes = null,
+        Country|null $country = null,
+        array|null $adminCodes = [],
+        bool|null $withPopulation = null,
+        bool $sortByFeatureClasses = false,
+        bool $sortByFeatureCodes = false
     ): Location|null
     {
         $location = $this->findLocationsByCoordinate(
-            $coordinate,
-            null,
-            $featureClass,
-            $featureCodes,
-            1
+            coordinate: $coordinate,
+            featureClass: $featureClass,
+            featureCodes: $featureCodes,
+            country: $country,
+            adminCodes: $adminCodes,
+            withPopulation: $withPopulation,
+            sortByFeatureClasses: $sortByFeatureClasses,
+            sortByFeatureCodes: $sortByFeatureCodes,
+            limit: 1
         );
 
         if (count($location) <= 0) {
@@ -204,133 +297,87 @@ class LocationRepository extends ServiceEntityRepository
     }
 
     /**
-     * Finds the admin places from given latitude and longitude ordered by distance.
+     * Finds the city given by location.
      *
-     * @param Coordinate $coordinate
-     * @param int|null $distanceMeter
-     * @param int|null $limit
-     * @return array<int, Location>
-     * @throws ClassInvalidException
-     * @throws TypeInvalidException
-     */
-    public function findAdminLocationsByCoordinate(
-        Coordinate $coordinate,
-        int|null $distanceMeter = null,
-        int|null $limit = null
-    ): array
-    {
-        return $this->findLocationsByCoordinate(
-            $coordinate,
-            $distanceMeter,
-            FeatureClass::FEATURE_CLASS_P,
-            FeatureClass::FEATURE_CODES_P_ADMIN_PLACES,
-            $limit
-        );
-    }
-
-    /**
-     * Finds the first admin places from given latitude and longitude ordered by distance.
-     *
-     * @param Coordinate $coordinate
-     * @param int|null $distanceMeter
-     * @return Location|null
-     * @throws ClassInvalidException
-     * @throws TypeInvalidException
-     */
-    public function findNextAdminLocationByCoordinate(
-        Coordinate $coordinate,
-        int|null $distanceMeter = null
-    ): Location|null
-    {
-        $location = $this->findAdminLocationsByCoordinate(
-            $coordinate,
-            $distanceMeter,
-            1
-        );
-
-        if (count($location) <= 0) {
-            return null;
-        }
-
-        return $location[0];
-    }
-
-    /**
-     * Finds the city from given district (FeatureCode PPL or PPLX).
-     *
-     * @param Location $district
-     * @return Location|null
-     * @throws NonUniqueResultException
+     * @param LocationEntity $location
+     * @return LocationEntity|null
      * @throws CaseUnsupportedException
      * @throws ClassInvalidException
      * @throws TypeInvalidException
+     * @throws ParserException
      */
-    public function findCityByLocationDistrict(Location $district): Location|null
+    public function findDistrictByLocation(Location $location): Location|null
     {
-        $featureCode = $district->getFeatureCode()?->getCode();
+        $point = $location->getCoordinate();
 
-        if (!in_array($featureCode, FeatureClass::FEATURE_CODES_P_DISTRICT_PLACES)) {
-            throw new CaseUnsupportedException(sprintf(
-                'FeatureCode "%s" is not supported (expected: "%s").',
-                $featureCode,
-                implode(', ', FeatureClass::FEATURE_CODES_P_DISTRICT_PLACES)
-            ));
+        if (is_null($point)) {
+            throw new CaseUnsupportedException('Unable to get point from location.');
         }
 
-        $country = $district->getCountry();
+        $coordinate = new Coordinate(
+            $point->getLatitude(),
+            $point->getLongitude()
+        );
 
-        if (!$country instanceof Country) {
-            throw new ClassInvalidException(Country::class, Country::class);
+        $countryCode = $location->getCountry()?->getCode();
+
+        if (is_null($countryCode)) {
+            throw new CaseUnsupportedException('Unable to get country code from location.');
         }
 
-        $queryBuilder = $this->createQueryBuilder('l');
-
-        $queryBuilder
-            ->andWhere('l.country = :country')
-            ->setParameter('country', $country);
-
-        $queryBuilder
-            ->leftJoin('l.featureClass', 'fcl')
-            ->andWhere('fcl.class = :featureClass')
-            ->setParameter('featureClass', FeatureClass::FEATURE_CLASS_A);
-
-        $queryBuilder
-            ->leftJoin('l.featureCode', 'fco')
-        ;
-
-        $queryBuilder
-            ->leftJoin('l.adminCode', 'a')
-        ;
-
-        match ($country->getCode()) {
-            CountryEurope::COUNTRY_CODE_AT,
-            CountryEurope::COUNTRY_CODE_CH,
-            CountryEurope::COUNTRY_CODE_ES,
-            CountryEurope::COUNTRY_CODE_PL =>
-                $queryBuilder
-                    ->andWhere('fco.code = :featureCode')
-                    ->setParameter('featureCode', FeatureClass::FEATURE_CODE_A_ADM3)
-                    ->andWhere('a.admin3Code = :admin3Code')
-                    ->setParameter('admin3Code', $district->getAdminCode()?->getAdmin3Code()),
-            default =>
-                $queryBuilder
-                    ->andWhere('fco.code = :featureCode')
-                    ->setParameter('featureCode', FeatureClass::FEATURE_CODE_A_ADM4)
-                    ->andWhere('a.admin4Code = :admin4Code')
-                    ->setParameter('admin4Code', $district->getAdminCode()?->getAdmin4Code()),
-        };
-
-        $result = $queryBuilder->getQuery()->getOneOrNullResult();
-
-        if (is_null($result)) {
-            return null;
-        }
-
-        return (new Checker($result))->checkClass(Location::class);
+        return $this->findNextLocationByCoordinate(
+            coordinate: $coordinate,
+            featureClass: $this->getDistrictFeatureClass($countryCode),
+            featureCodes: $this->getDistrictFeatureCodes($countryCode),
+            country: $location->getCountry(),
+            adminCodes: $this->getDistrictAdminCodes($countryCode, $location),
+            withPopulation: $this->getDistrictWithPopulation(),
+            sortByFeatureCodes: $this->isDistrictSortByFeatureCodes()
+        );
     }
 
     /**
-     * Finds the first admin places from given latitude and longitude ordered by distance.
+     * Finds the city given by location.
+     *
+     * @param LocationEntity $location
+     * @return LocationEntity|null
+     * @throws CaseUnsupportedException
+     * @throws ClassInvalidException
+     * @throws TypeInvalidException
+     * @throws ParserException
+     */
+    public function findCityByLocation(Location $location): Location|null
+    {
+        $point = $location->getCoordinate();
+
+        if (is_null($point)) {
+            throw new CaseUnsupportedException('Unable to get point from location.');
+        }
+
+        $coordinate = new Coordinate(
+            $point->getLatitude(),
+            $point->getLongitude()
+        );
+
+        $countryCode = $location->getCountry()?->getCode();
+
+        if (is_null($countryCode)) {
+            throw new CaseUnsupportedException('Unable to get country code from location.');
+        }
+
+        return $this->findNextLocationByCoordinate(
+            coordinate: $coordinate,
+            featureClass: $this->getCityFeatureClass($countryCode),
+            featureCodes: $this->getCityFeatureCodes($countryCode),
+            country: $location->getCountry(),
+            adminCodes: $this->getCityAdminCodes($countryCode, $location),
+            withPopulation: $this->getCityWithPopulation(),
+            sortByFeatureCodes: $this->isCitySortByFeatureCodes()
+        );
+    }
+
+    /**
+     * Finds the state given by location.
      *
      * @param Location $location
      * @return Location|null
@@ -359,9 +406,6 @@ class LocationRepository extends ServiceEntityRepository
 
         $queryBuilder
             ->leftJoin('l.featureCode', 'fco')
-        ;
-
-        $queryBuilder
             ->leftJoin('l.adminCode', 'a')
         ;
 
@@ -373,6 +417,61 @@ class LocationRepository extends ServiceEntityRepository
                     ->setParameter('featureCode', FeatureClass::FEATURE_CODE_A_ADM1)
                     ->andWhere('a.admin1Code = :admin1Code')
                     ->setParameter('admin1Code', $location->getAdminCode()?->getAdmin1Code())
+                ;
+        }
+
+        $result = $queryBuilder->getQuery()->getOneOrNullResult();
+
+        if (is_null($result)) {
+            return null;
+        }
+
+        return (new Checker($result))->checkClass(Location::class);
+    }
+
+    /**
+     * Finds the country given by location.
+     *
+     * @param LocationEntity|null $location
+     * @return Location|null
+     * @throws ClassInvalidException
+     * @throws NonUniqueResultException
+     * @throws TypeInvalidException
+     */
+    public function findCountryByLocation(Location|null $location): Location|null
+    {
+        if (is_null($location)) {
+            return null;
+        }
+
+        $country = $location->getCountry();
+
+        if (!$country instanceof Country) {
+            throw new ClassInvalidException(Country::class, Country::class);
+        }
+
+        $queryBuilder = $this->createQueryBuilder('l');
+
+        $queryBuilder
+            ->andWhere('l.country = :country')
+            ->setParameter('country', $country);
+
+        $queryBuilder
+            ->leftJoin('l.featureClass', 'fcl')
+            ->andWhere('fcl.class = :featureClass')
+            ->setParameter('featureClass', FeatureClass::FEATURE_CLASS_A);
+
+        $queryBuilder
+            ->leftJoin('l.featureCode', 'fco')
+            ->leftJoin('l.adminCode', 'a')
+        ;
+
+        switch ($country->getCode()) {
+            /* de, etc. */
+            default:
+                $queryBuilder
+                    ->andWhere('fco.code = :featureCode')
+                    ->setParameter('featureCode', FeatureClass::FEATURE_CODE_A_PCLI)
                 ;
         }
 
@@ -412,5 +511,248 @@ class LocationRepository extends ServiceEntityRepository
         }
 
         return $count;
+    }
+
+    /**
+     * Builds the case string for order query.
+     *
+     * @param array<int, string> $caseValues
+     * @param string $fieldName
+     * @param string $sortName
+     * @return string
+     */
+    protected function getCaseString(array $caseValues, string $fieldName, string $sortName): string
+    {
+        $whenCases = [];
+        $value = 0;
+        foreach ($caseValues as $caseValue) {
+            $whenCases[] = sprintf('WHEN \'%s\' THEN %d', $caseValue, $value++);
+        }
+
+        return sprintf(
+            'CASE %s %s ELSE %d END AS HIDDEN %s',
+            $fieldName,
+            implode(' ', $whenCases),
+            $value,
+            $sortName
+        );
+    }
+
+    /**
+     * Returns the admin codes for the given location (Country).
+     *
+     * @param LocationEntity $location
+     * @return array{a1?: string, a2?: string, a3?: string, a4?: string}
+     * @throws CaseUnsupportedException
+     */
+    public function getAdminCodesGeneral(LocationEntity $location): array
+    {
+        $countryCode = $location->getCountry()?->getCode();
+
+        if (is_null($countryCode)) {
+            throw new CaseUnsupportedException('Unable to get country code from location.');
+        }
+
+        $adminCode = array_key_exists($countryCode, CountryConfig::ADMIN_CODES_CITY_DEFAULT) ?
+            CountryConfig::ADMIN_CODES_CITY_DEFAULT[$countryCode] :
+            CountryConfig::A4
+        ;
+
+        return match ($adminCode) {
+            CountryConfig::A1 => [CountryConfig::A1 => (string) $location->getAdminCode()?->getAdmin1Code()],
+            CountryConfig::A2 => [CountryConfig::A2 => (string) $location->getAdminCode()?->getAdmin2Code()],
+            CountryConfig::A3 => [CountryConfig::A3 => (string) $location->getAdminCode()?->getAdmin3Code()],
+            default => [CountryConfig::A4 => (string) $location->getAdminCode()?->getAdmin4Code()]
+        };
+    }
+
+    /**
+     * Returns the admin codes for district.
+     *
+     * @param string $countryCode
+     * @param LocationEntity $location
+     * @return array{a1?: string, a2?: string, a3?: string, a4?: string}
+     * @throws CaseUnsupportedException
+     */
+    public function getDistrictAdminCodes(string $countryCode, LocationEntity $location): array
+    {
+        $districtConfig = array_key_exists($countryCode, CountryConfig::DISTRICT_PLACES) ?
+            CountryConfig::DISTRICT_PLACES[$countryCode] :
+            CountryConfig::DEFAULT_DISTRICT_CONFIG;
+
+        if (!array_key_exists(CountryConfig::NAME_ADMIN_CODES, $districtConfig)) {
+            return $this->getAdminCodesGeneral($location);
+        }
+
+        /* if no admin codes are given, use the city admin codes */
+        if (is_null($districtConfig[CountryConfig::NAME_ADMIN_CODES])) {
+            return $this->getAdminCodesGeneral($location);
+        }
+
+        return $districtConfig[CountryConfig::NAME_ADMIN_CODES];
+    }
+
+    /**
+     * Returns the admin codes for city.
+     *
+     * @param string $countryCode
+     * @param LocationEntity $location
+     * @return array{a1?: string, a2?: string, a3?: string, a4?: string}
+     * @throws CaseUnsupportedException
+     */
+    public function getCityAdminCodes(string $countryCode, LocationEntity $location): array
+    {
+        $cityConfig = array_key_exists($countryCode, CountryConfig::CITY_PLACES) ?
+            CountryConfig::CITY_PLACES[$countryCode] :
+            CountryConfig::DEFAULT_CITY_CONFIG;
+
+        if (!array_key_exists(CountryConfig::NAME_ADMIN_CODES, $cityConfig)) {
+            return $this->getAdminCodesGeneral($location);
+        }
+
+        /* if no admin codes are given, use the city admin codes */
+        if (is_null($cityConfig[CountryConfig::NAME_ADMIN_CODES])) {
+            return $this->getAdminCodesGeneral($location);
+        }
+
+        return $cityConfig[CountryConfig::NAME_ADMIN_CODES];
+    }
+
+    /**
+     * Returns the district with population.
+     *
+     * @return bool|null
+     */
+    protected function getDistrictWithPopulation(): bool|null
+    {
+        return null;
+    }
+
+    /**
+     * Returns the city with population.
+     *
+     * @return bool|null
+     */
+    protected function getCityWithPopulation(): bool|null
+    {
+        return true;
+    }
+
+    /**
+     * Returns the district sort by feature codes.
+     *
+     * @return bool
+     */
+    protected function isDistrictSortByFeatureCodes(): bool
+    {
+        return false;
+    }
+
+    /**
+     * Returns the city sort by feature codes.
+     *
+     * @return bool
+     */
+    protected function isCitySortByFeatureCodes(): bool
+    {
+        return true;
+    }
+
+    /**
+     * Returns the district feature codes.
+     *
+     * @param string $countryCode
+     * @return array<int, string>
+     * @throws TypeInvalidException
+     */
+    protected function getDistrictFeatureCodes(string $countryCode): array
+    {
+        $districtConfig = array_key_exists($countryCode, CountryConfig::DISTRICT_PLACES) ?
+            CountryConfig::DISTRICT_PLACES[$countryCode] :
+            CountryConfig::DEFAULT_DISTRICT_CONFIG;
+
+        if (!array_key_exists(CountryConfig::NAME_FEATURE_CODES, $districtConfig)) {
+            return CountryConfig::DEFAULT_DISTRICT_CONFIG[CountryConfig::NAME_FEATURE_CODES];
+        }
+
+        $featureCodes = $districtConfig[CountryConfig::NAME_FEATURE_CODES];
+
+//        if (is_null($featureCodes)) {
+//            return CountryConfig::DEFAULT_DISTRICT_CONFIG[CountryConfig::NAME_FEATURE_CODES];
+//        }
+
+        if (!is_array($featureCodes)) {
+            throw new TypeInvalidException('array', gettype($featureCodes));
+        }
+
+        return $featureCodes;
+    }
+
+    /**
+     * Returns the city feature codes.
+     *
+     * @param string $countryCode
+     * @return array<int, string>
+     * @throws TypeInvalidException
+     */
+    protected function getCityFeatureCodes(string $countryCode): array
+    {
+        $cityConfig = array_key_exists($countryCode, CountryConfig::CITY_PLACES) ?
+            CountryConfig::CITY_PLACES[$countryCode] :
+            CountryConfig::DEFAULT_CITY_CONFIG;
+
+        if (!array_key_exists(CountryConfig::NAME_FEATURE_CODES, $cityConfig)) {
+            return CountryConfig::DEFAULT_CITY_CONFIG[CountryConfig::NAME_FEATURE_CODES];
+        }
+
+        $featureCodes = $cityConfig[CountryConfig::NAME_FEATURE_CODES];
+
+//        if (is_null($featureCodes)) {
+//            return CountryConfig::DEFAULT_CITY_CONFIG[CountryConfig::NAME_FEATURE_CODES];
+//        }
+
+        if (!is_array($featureCodes)) {
+            throw new TypeInvalidException('array', gettype($featureCodes));
+        }
+
+        return $featureCodes;
+    }
+
+    /**
+     * Returns the district feature class.
+     *
+     * @param string $countryCode
+     * @return string
+     */
+    protected function getDistrictFeatureClass(string $countryCode): string
+    {
+        $districtConfig = array_key_exists($countryCode, CountryConfig::DISTRICT_PLACES) ?
+            CountryConfig::DISTRICT_PLACES[$countryCode] :
+            CountryConfig::DEFAULT_DISTRICT_CONFIG;
+
+        if (!array_key_exists(CountryConfig::NAME_FEATURE_CLASS, $districtConfig)) {
+            return FeatureClass::FEATURE_CLASS_P;
+        }
+
+        return $districtConfig[CountryConfig::NAME_FEATURE_CLASS];
+    }
+
+    /**
+     * Returns the city feature class.
+     *
+     * @param string $countryCode
+     * @return string
+     */
+    protected function getCityFeatureClass(string $countryCode): string
+    {
+        $cityConfig = array_key_exists($countryCode, CountryConfig::CITY_PLACES) ?
+            CountryConfig::CITY_PLACES[$countryCode] :
+            CountryConfig::DEFAULT_CITY_CONFIG;
+
+        if (!array_key_exists(CountryConfig::NAME_FEATURE_CLASS, $cityConfig)) {
+            return FeatureClass::FEATURE_CLASS_P;
+        }
+
+        return $cityConfig[CountryConfig::NAME_FEATURE_CLASS];
     }
 }

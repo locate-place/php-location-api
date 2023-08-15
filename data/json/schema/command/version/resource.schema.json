@@ -28,6 +28,12 @@
                 "type": "string"
             }
         },
+        "driver-name": {
+            "type": "string"
+        },
+        "environment": {
+            "type": "string"
+        },
         "php-version": {
             "type": "string",
             "pattern": "^\\d+\\.\\d+\\.\\d+$"

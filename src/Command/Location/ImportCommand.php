@@ -23,9 +23,12 @@ use App\Entity\FeatureCode;
 use App\Entity\Import;
 use App\Entity\Location;
 use App\Entity\Timezone;
+use App\Repository\ImportRepository;
 use DateTime;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\NonUniqueResultException;
+use Doctrine\ORM\NoResultException;
 use Exception;
 use Ixnode\PhpApiVersionBundle\Utils\TypeCasting\TypeCastingHelper;
 use Ixnode\PhpContainer\File;
@@ -42,6 +45,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
@@ -147,6 +151,8 @@ class ImportCommand extends BaseLocationImport
 
     protected const TEXT_WARNING_IGNORED_LINE = 'Ignored line: %s:%d';
 
+    protected const OPTION_NAME_FORCE = 'force';
+
     protected bool $checkCommandExecution = false;
 
     protected bool $errorFound = false;
@@ -174,6 +180,7 @@ class ImportCommand extends BaseLocationImport
             ->setDefinition([
                 new InputArgument('file', InputArgument::REQUIRED, 'The file to be imported.'),
             ])
+            ->addOption(self::OPTION_NAME_FORCE, 'f', InputOption::VALUE_NONE, 'Forces the import even if an import with the same given country code already exists.')
             ->setHelp(
                 <<<'EOT'
 
@@ -777,6 +784,34 @@ EOT
     }
 
     /**
+     * Returns if the current import was already done.
+     *
+     * @param string $countryCode
+     * @return bool
+     * @throws TypeInvalidException
+     * @throws NoResultException
+     * @throws NonUniqueResultException
+     */
+    protected function hasImportByCountryCode(string $countryCode): bool
+    {
+        $country = $this->entityManager->getRepository(Country::class)->findOneBy([
+            'code' => strtoupper($countryCode),
+        ]);
+
+        if (!$country instanceof Country) {
+            return false;
+        }
+
+        $repository = $this->entityManager->getRepository(Import::class);
+
+        if (!$repository instanceof ImportRepository) {
+            return false;
+        }
+
+        return $repository->getNumberOfImports($country) > 0;
+    }
+
+    /**
      * Execute the commands.
      *
      * @param InputInterface $input
@@ -798,6 +833,8 @@ EOT
         $this->output = $output;
         $this->input = $input;
 
+        $force = $input->hasOption(self::OPTION_NAME_FORCE) && (bool) $input->getOption(self::OPTION_NAME_FORCE);
+
         $file = $this->getCsvFile('file');
 
         if (is_null($file)) {
@@ -806,6 +843,12 @@ EOT
         }
 
         $countryCode = basename($file->getPath(), '.txt');
+
+        if (!$force && $this->hasImportByCountryCode($countryCode)) {
+            $this->printAndLog(sprintf('The given country code "%s" was already imported. Use --force to ignore.', $countryCode));
+            return Command::INVALID;
+        }
+
         $type = sprintf('%s/csv-import', $countryCode);
 
         $this->createLogInstanceFromFile($file, $type);

@@ -1,16 +1,18 @@
 {
     "$schema": "resource.schema.json",
-    "name": "ixnode/php-api-version-bundle",
-    "description": "Provides the base API plattform functionality",
-    "version": "0.1.9",
-    "date": "Sunday, June 25, 2023 - 08:47:18",
-    "license": "Copyright (c) 2022 Björn Hempel",
+    "name": "twelvepics-com/php-location-api",
+    "description": "Provides a location api.",
+    "version": "0.1.14",
+    "date": "Monday, July 31, 2023 - 21:50:53",
+    "license": "Copyright (c) 2023 Björn Hempel",
     "authors": [
         "Björn Hempel <bjoern@hempel.li>"
     ],
+    "driver-name": "PostgreSQL 9.4",
+    "environment": "Test",
     "php-version": "8.2.7",
-    "symfony-version": "6.3.0",
+    "symfony-version": "6.3.3",
     "composer-version": "2.5.1",
-    "doctrine-version": "2.15.3",
-    "api-platform-version": "3.1.12"
+    "doctrine-version": "2.16.1",
+    "api-platform-version": "3.1.14"
 }

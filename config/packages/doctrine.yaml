@@ -63,28 +63,28 @@ doctrine:
                         prefix: 'App\Entity'
                         alias: App
 
-when@test:
-    doctrine:
-        dbal:
-            default_connection: sqlite
-            connections:
-                sqlite:
-                # "TEST_TOKEN" is typically set by ParaTest
-                #dbname_suffix: '_test%env(default::TEST_TOKEN)%'
-        orm:
-            auto_generate_proxy_classes: true
-            default_entity_manager: default
-            entity_managers:
-                default:
-                    connection: sqlite # doctrine.dbal.connections.mysql
-                    naming_strategy: doctrine.orm.naming_strategy.underscore_number_aware
-                    auto_mapping: true
-                    mappings:
-                        App:
-                            is_bundle: false
-                            dir: '%kernel.project_dir%/src/Entity'
-                            prefix: 'App\Entity'
-                            alias: App
+#when@test:
+#    doctrine:
+#        dbal:
+#            default_connection: sqlite
+#            connections:
+#                sqlite:
+#                # "TEST_TOKEN" is typically set by ParaTest
+#                #dbname_suffix: '_test%env(default::TEST_TOKEN)%'
+#        orm:
+#            auto_generate_proxy_classes: true
+#            default_entity_manager: default
+#            entity_managers:
+#                default:
+#                    connection: sqlite # doctrine.dbal.connections.mysql
+#                    naming_strategy: doctrine.orm.naming_strategy.underscore_number_aware
+#                    auto_mapping: true
+#                    mappings:
+#                        App:
+#                            is_bundle: false
+#                            dir: '%kernel.project_dir%/src/Entity'
+#                            prefix: 'App\Entity'
+#                            alias: App
 
 when@prod:
     doctrine:

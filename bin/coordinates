@@ -1,0 +1,23 @@
+# Add some location aliases
+alias c='bin/console location:coordinate'
+
+# Great Britain
+alias l_gb_london_north_woolwich='c "51.505944, -0.075085"'
+
+# Germany
+alias l_germany_berlin_kreuzberg='c 52.500978, 13.406824'
+alias l_germany_doebeln_soermitz='c 51.119042, 13.132424'
+alias l_germany_dresden_innere_neustadt='c 51.062360, 13.742812'
+alias l_germany_dresden_pieschen='c 51.078152, 13.718352'
+
+# Sweden
+alias l_sweden_goeteborg_nordstaden='c 57.703012, 11.966626'
+alias l_sweden_malmoe_innerstaden='c 55.603222, 13.002750'
+alias l_sweden_stockholm_gamla_stan='c 59.324452, 18.072671'
+alias l_sweden_stockholm_skaersaetra='c 59.345713, 18.154673'
+
+# USA
+alias l_us_new_york_battery_park_city='c "40.708442, -74.009929"'
+alias l_us_new_york_east_village='c "40.731515, -73.992354"'
+alias l_us_new_york_soho='c "40.719061, -74.000559"'
+

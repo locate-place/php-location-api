@@ -11,9 +11,13 @@
 
 namespace App\Repository;
 
+use App\Entity\Country;
 use App\Entity\Import;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\NonUniqueResultException;
+use Doctrine\ORM\NoResultException;
 use Doctrine\Persistence\ManagerRegistry;
+use Ixnode\PhpException\Type\TypeInvalidException;
 
 /**
  * Class ImportRepository
@@ -63,5 +67,33 @@ class ImportRepository extends ServiceEntityRepository
         if ($flush) {
             $this->getEntityManager()->flush();
         }
+    }
+
+    /**
+     * Returns the number of imports from given country.
+     *
+     * @param Country $country
+     * @return int
+     * @throws TypeInvalidException
+     * @throws NoResultException
+     * @throws NonUniqueResultException
+     */
+    public function getNumberOfImports(Country $country): int
+    {
+        $queryBuilder = $this->createQueryBuilder('i');
+
+        $queryBuilder
+            ->select('COUNT(i)')
+            ->where('i.country = :country')
+            ->setParameter('country', $country)
+        ;
+
+        $count = $queryBuilder->getQuery()->getSingleScalarResult();
+
+        if (!is_int($count)) {
+            throw new TypeInvalidException('int', gettype($count));
+        }
+
+        return $count;
     }
 }

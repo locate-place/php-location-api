@@ -14,10 +14,11 @@ declare(strict_types=1);
 namespace App\Service\Base\Helper;
 
 use App\ApiPlatform\Resource\Location;
-use App\Constants\DB\FeatureClass;
 use App\Entity\Location as LocationEntity;
 use App\Repository\LocationRepository;
 use Ixnode\PhpApiVersionBundle\Utils\Version\Version;
+use Ixnode\PhpCoordinate\Coordinate;
+use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -31,7 +32,31 @@ use Symfony\Contracts\Translation\TranslatorInterface;
  */
 abstract class BaseHelperLocationService
 {
+    protected const DEBUG_LIMIT = 5;
+
+    protected const DEBUG_CAPTION = '%-9s | %-6s | %-10s | %-2s | %-11s | %-8s | %-8s | %-8s | %-8s | %-20s | %s';
+
+    protected const DEBUG_CONTENT = '%9s | %-6s | %10s | %-2s | %11s | %8s | %8s | %8s | %8s | %-20s | %s';
+
     protected ?string $error = null;
+
+    protected bool $debug = false;
+
+    protected float $timeStart;
+
+    protected Coordinate $coordinate;
+
+    protected LocationEntity|null $district = null;
+
+    protected LocationEntity|null $city = null;
+
+    protected LocationEntity|null $state = null;
+
+    protected LocationEntity|null $country = null;
+
+    protected OutputInterface $output;
+
+    protected int $debugLimit = self::DEBUG_LIMIT;
 
     /**
      * @param Version $version
@@ -48,97 +73,7 @@ abstract class BaseHelperLocationService
         protected TranslatorInterface $translator
     )
     {
-    }
-
-    /**
-     * Returns country name by given location.
-     *
-     * @param LocationEntity $location
-     * @return string|null
-     */
-    public function findCountry(LocationEntity $location): string|null
-    {
-        $countryCode = $location->getCountry()?->getCode();
-
-        if (is_null($countryCode)) {
-            return null;
-        }
-
-        $countryCode = strtolower($countryCode);
-
-        return $this->translator->trans(sprintf('country.alpha2.%s', $countryCode), [], 'countries', 'en');
-    }
-
-    /**
-     * Finds next admin place.
-     *
-     * @param LocationEntity[] $locationsP
-     * @param LocationEntity $district
-     * @return LocationEntity|null
-     */
-    public function findNextAdminCity(array $locationsP, LocationEntity $district): LocationEntity|null
-    {
-        /* Get the nearest placeP entry with equal admin4 code. */
-        foreach ($locationsP as $locationP) {
-            switch (true) {
-                case in_array($locationP->getFeatureCode()?->getCode(), FeatureClass::FEATURE_CODES_P_ADMIN_PLACES) &&
-                    $district->getAdminCode()?->getAdmin4Code() == $locationP->getAdminCode()?->getAdmin4Code():
-                    return $locationP;
-            }
-        }
-
-        /* Get the nearest placeP entry if no equal admin4 code was found. */
-        foreach ($locationsP as $locationP) {
-            switch (true) {
-                case in_array($locationP->getFeatureCode(), FeatureClass::FEATURE_CODES_P_ADMIN_PLACES):
-                    return $locationP;
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * Finds next place with more than 0 population from given district.
-     *
-     * @param LocationEntity[] $locationsP
-     * @param LocationEntity $district
-     * @return LocationEntity|null
-     */
-    public function findNextCityPopulation(array $locationsP, LocationEntity $district): ?LocationEntity
-    {
-        if ((int) $district->getPopulation() > 0) {
-            return null;
-        }
-
-        foreach ($locationsP as $locationP) {
-            switch (true) {
-                case (int) $locationP->getPopulation() > 0 && $district->getAdminCode()?->getAdmin4Code() == $locationP->getAdminCode()?->getAdmin4Code():
-                    $district->setPopulation($locationP->getPopulation());
-                    return $locationP;
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * Finds next admin place.
-     *
-     * @param LocationEntity[] $locationsP
-     * @param LocationEntity $city
-     * @return LocationEntity|null
-     */
-    protected function findNextDistrict(array $locationsP, LocationEntity $city): LocationEntity|null
-    {
-        foreach ($locationsP as $locationP) {
-            switch (true) {
-                case in_array($locationP->getFeatureCode(), FeatureClass::FEATURE_CODES_P_DISTRICT_PLACES) && $city->getAdminCode()?->getAdmin4Code() == $locationP->getAdminCode()?->getAdmin4Code():
-                    return $locationP;
-            }
-        }
-
-        return null;
+        $this->setTimeStart(microtime(true));
     }
 
     /**
@@ -189,5 +124,144 @@ abstract class BaseHelperLocationService
         }
 
         return $location;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isDebug(): bool
+    {
+        return $this->debug;
+    }
+
+    /**
+     * Sets debug mode.
+     *
+     * @param bool $debug
+     * @param OutputInterface $output
+     * @param int $debugLimit
+     * @return self
+     */
+    public function setDebug(bool $debug, OutputInterface $output, int $debugLimit = self::DEBUG_LIMIT): self
+    {
+        $this->debug = $debug;
+        $this->output = $output;
+        $this->debugLimit = $debugLimit;
+
+        return $this;
+    }
+
+    /**
+     * @return Coordinate
+     */
+    public function getCoordinate(): Coordinate
+    {
+        return $this->coordinate;
+    }
+
+    /**
+     * @param Coordinate $coordinate
+     * @return self
+     */
+    public function setCoordinate(Coordinate $coordinate): self
+    {
+        $this->coordinate = $coordinate;
+
+        return $this;
+    }
+
+    /**
+     * @return float
+     */
+    public function getTimeStart(): float
+    {
+        return $this->timeStart;
+    }
+
+    /**
+     * @param float $timeStart
+     * @return self
+     */
+    public function setTimeStart(float $timeStart): self
+    {
+        $this->timeStart = $timeStart;
+
+        return $this;
+    }
+
+    /**
+     * @return LocationEntity|null
+     */
+    public function getDistrict(): ?LocationEntity
+    {
+        return $this->district;
+    }
+
+    /**
+     * @param LocationEntity|null $district
+     * @return self
+     */
+    public function setDistrict(?LocationEntity $district): self
+    {
+        $this->district = $district;
+
+        return $this;
+    }
+
+    /**
+     * @return LocationEntity|null
+     */
+    public function getCity(): ?LocationEntity
+    {
+        return $this->city;
+    }
+
+    /**
+     * @param LocationEntity|null $city
+     * @return self
+     */
+    public function setCity(?LocationEntity $city): self
+    {
+        $this->city = $city;
+
+        return $this;
+    }
+
+    /**
+     * @return LocationEntity|null
+     */
+    public function getState(): ?LocationEntity
+    {
+        return $this->state;
+    }
+
+    /**
+     * @param LocationEntity|null $state
+     * @return self
+     */
+    public function setState(?LocationEntity $state): self
+    {
+        $this->state = $state;
+
+        return $this;
+    }
+
+    /**
+     * @return LocationEntity|null
+     */
+    public function getCountry(): ?LocationEntity
+    {
+        return $this->country;
+    }
+
+    /**
+     * @param LocationEntity|null $country
+     * @return self
+     */
+    public function setCountry(?LocationEntity $country): self
+    {
+        $this->country = $country;
+
+        return $this;
     }
 }

@@ -1,0 +1,186 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "description": "Used for validation of resource.json JSON file.",
+    "type": "object",
+    "properties": {
+        "$schema": {
+            "type": "string"
+        },
+        "data": {
+            "type": "object",
+            "properties": {
+                "geonameId": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "feature": {
+                    "type": "object",
+                    "properties": {
+                        "class": {
+                            "type": "string",
+                            "enum": ["P"]
+                        },
+                        "class-name": {
+                            "type": "string"
+                        },
+                        "code": {
+                            "type": "string",
+                            "enum": ["PPL"]
+                        },
+                        "code-name": {
+                            "type": "string"
+                        }
+                    },
+                    "required": ["class"],
+                    "additionalProperties": false
+
+                },
+                "coordinate": {
+                    "type": "object",
+                    "properties": {
+                        "latitude": {
+                            "type": "number"
+                        },
+                        "longitude": {
+                            "type": "number"
+                        },
+                        "srid": {
+                            "type": "number"
+                        }
+                    },
+                    "required": [
+                        "latitude",
+                        "longitude",
+                        "srid"
+                    ],
+                    "additionalProperties": false
+                },
+                "timezone": {
+                    "type": "object",
+                    "properties": {
+                        "timezone": {
+                            "type": "string"
+                        },
+                        "country": {
+                            "type": "string"
+                        },
+                        "current-time": {
+                            "type": "string"
+                        },
+                        "offset": {
+                            "type": "string"
+                        },
+                        "latitude": {
+                            "type": "number"
+                        },
+                        "longitude": {
+                            "type": "number"
+                        }
+                    },
+                    "required": [
+                        "timezone",
+                        "country",
+                        "current-time",
+                        "offset",
+                        "latitude",
+                        "longitude"
+                    ],
+                    "additionalProperties": false
+                },
+                "location": {
+                    "type": "object",
+                    "properties": {
+                        "district-locality": {
+                            "type": "string"
+                        },
+                        "city-municipality": {
+                            "type": "string"
+                        },
+                        "state": {
+                            "type": "string"
+                        },
+                        "country": {
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "district-locality",
+                        "city-municipality",
+                        "state",
+                        "country"
+                    ],
+                    "additionalProperties": false
+                },
+                "link": {
+                    "type": "object",
+                    "properties": {
+                        "google": {
+                            "type": "string"
+                        },
+                        "openstreetmap": {
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "google",
+                        "openstreetmap"
+                    ],
+                    "additionalProperties": false
+                }
+            },
+            "required": [
+                "geonameId",
+                "name",
+                "feature",
+                "coordinate",
+                "timezone",
+                "location",
+                "link"
+            ],
+            "additionalProperties": false
+        },
+        "given": {
+            "type": "object",
+            "properties": {
+                "coordinate": {
+                    "type": "object",
+                    "properties": {
+                        "raw": {
+                            "type": "string"
+                        },
+                        "parsed": {
+                            "type": "object",
+                            "properties": {
+                                "latitude": {
+                                    "type": "number"
+                                },
+                                "longitude": {
+                                    "type": "number"
+                                },
+                                "latitudeDms": {
+                                    "type": "string"
+                                },
+                                "longitudeDms": {
+                                    "type": "string"
+                                }
+                            },
+                            "required": ["latitude", "longitude", "latitudeDms", "longitudeDms"],
+                            "additionalProperties": false
+                        }
+                    },
+                    "required": ["raw", "parsed"],
+                    "additionalProperties": false
+                }
+            },
+            "required": ["coordinate"],
+            "additionalProperties": false
+        },
+        "time-taken": {
+            "type": "string"
+        }
+    },
+    "required": ["data"],
+    "additionalProperties": false
+}

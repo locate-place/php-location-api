@@ -828,6 +828,24 @@ class FeatureClass
         self::FEATURE_CODE_P_PPLX
     ];
 
+    final public const FEATURE_CODES_P_ALL = [
+        self::FEATURE_CODE_P_PPL,
+        self::FEATURE_CODE_P_PPLA,
+        self::FEATURE_CODE_P_PPLA2,
+        self::FEATURE_CODE_P_PPLA3,
+        self::FEATURE_CODE_P_PPLA4,
+        self::FEATURE_CODE_P_PPLA5,
+        self::FEATURE_CODE_P_PPLC,
+        self::FEATURE_CODE_P_PPLF,
+        self::FEATURE_CODE_P_PPLG,
+        self::FEATURE_CODE_P_PPLQ,
+        self::FEATURE_CODE_P_PPLR,
+        self::FEATURE_CODE_P_PPLS,
+        self::FEATURE_CODE_P_PPLW,
+        self::FEATURE_CODE_P_PPLX,
+        self::FEATURE_CODE_P_STLMT,
+    ];
+
     final public const FEATURE_CODES_T_HILLS = [
         self::FEATURE_CODE_T_HLL,
         self::FEATURE_CODE_T_MT,

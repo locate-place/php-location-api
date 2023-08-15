@@ -76,14 +76,14 @@ class Location extends BasePublicResource
 
     protected string $name;
 
-    /** @var array{code: string, name: string} $country */
-    protected array $country;
-
     /** @var array{class: string, class-name: string, code: string, code-name: string} $feature */
     protected array $feature;
 
     /** @var array{latitude: float, longitude: float, srid: int, distance?: null|array{meters: float, kilometers: float}, direction?: null|array{degree: float, direction: string}} $coordinate */
     protected array $coordinate;
+
+    /** @var array{timezone: string|null, country: string|null, current-time: string, offset: string, latitude: double, longitude: double} $timezone */
+    protected array $timezone;
 
     /** @var array{
      *     district-locality: string|null,
@@ -143,28 +143,6 @@ class Location extends BasePublicResource
     }
 
     /**
-     * Gets the country.
-     *
-     * @return array{code: string, name: string}
-     */
-    public function getCountry(): array
-    {
-        return $this->country;
-    }
-
-    /**
-     * Sets the country.
-     *
-     * @param array{code: string, name: string} $country
-     * @return Location
-     */
-    public function setCountry(array $country): Location
-    {
-        $this->country = $country;
-        return $this;
-    }
-
-    /**
      * Gets the feature.
      *
      * @return array{class: string, class-name: string, code: string, code-name: string}
@@ -213,6 +191,24 @@ class Location extends BasePublicResource
     {
         $this->coordinate = $coordinate;
 
+        return $this;
+    }
+
+    /**
+     * @return array{timezone: string|null, country: string|null, current-time: string, offset: string, latitude: double, longitude: double}
+     */
+    public function getTimezone(): array
+    {
+        return $this->timezone;
+    }
+
+    /**
+     * @param array{timezone: string|null, country: string|null, current-time: string, offset: string, latitude: double, longitude: double} $timezone
+     * @return Location
+     */
+    public function setTimezone(array $timezone): Location
+    {
+        $this->timezone = $timezone;
         return $this;
     }
 

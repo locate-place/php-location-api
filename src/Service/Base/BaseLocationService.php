@@ -18,6 +18,8 @@ use App\Constants\DB\FeatureClass;
 use App\DBAL\GeoLocation\ValueObject\Point;
 use App\Entity\Location as LocationEntity;
 use App\Service\Base\Helper\BaseHelperLocationService;
+use DateTime;
+use DateTimeZone;
 use Doctrine\ORM\NonUniqueResultException;
 use Ixnode\PhpCoordinate\Coordinate;
 use Ixnode\PhpException\Case\CaseUnsupportedException;
@@ -42,6 +44,7 @@ abstract class BaseLocationService extends BaseHelperLocationService
      * @return Location
      * @throws CaseUnsupportedException
      * @throws ParserException
+     * @throws \Exception
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      * @SuppressWarnings(PHPMD.NPathComplexity)
      */
@@ -91,13 +94,23 @@ abstract class BaseLocationService extends BaseHelperLocationService
             $coordinateArray['direction'] = $direction;
         }
 
+        $timezoneString = $location->getTimezone()?->getTimezone();
+
+        if (is_null($timezoneString)) {
+            throw new CaseUnsupportedException('Unable to get timezone.');
+        }
+
+        $timezone = new DateTimeZone($timezoneString);
+        $dateTime = new DateTime('now', $timezone);
+        $locationArray = $timezone->getLocation();
+
+        if ($locationArray === false) {
+            throw new CaseUnsupportedException('Unable to get timezone location.');
+        }
+
         return (new Location())
             ->setGeonameId($location->getGeonameId() ?: 0)
             ->setName($location->getName() ?: '')
-            ->setCountry([
-                'code' => $location->getCountry()?->getCode() ?: '',
-                'name' => $location->getCountry()?->getName() ?: '',
-            ])
             ->setFeature([
                 'class' => $featureClass,
                 'class-name' => $featureClassName,
@@ -105,6 +118,14 @@ abstract class BaseLocationService extends BaseHelperLocationService
                 'code-name' => $featureCodeName,
             ])
             ->setCoordinate($coordinateArray)
+            ->setTimezone([
+                'timezone' => $location->getTimezone()?->getTimezone(),
+                'country' => $location->getTimezone()?->getCountry()?->getCode(),
+                'current-time' => $dateTime->format('Y-m-d H:i:s'),
+                'offset' => $dateTime->format('P'),
+                'latitude' => $locationArray['latitude'],
+                'longitude' => $locationArray['longitude'],
+            ])
         ;
     }
 
@@ -122,94 +143,216 @@ abstract class BaseLocationService extends BaseHelperLocationService
      */
     protected function getLocationFull(LocationEntity $locationEntity, Coordinate|null $coordinateSource = null): Location
     {
-        $latitude = $locationEntity->getCoordinate()?->getLatitude() ?: .0;
-        $longitude = $locationEntity->getCoordinate()?->getLongitude() ?: .0;
-
-        $coordinateTarget = new Coordinate($latitude, $longitude);
-
         $location = $this->getLocation($locationEntity, $coordinateSource)
             ->setLink([
-                'google' => $coordinateTarget->getLinkGoogle(),
-                'openstreetmap' => $coordinateTarget->getLinkOpenStreetMap(),
+                'google' => $this->coordinate->getLinkGoogle(),
+                'openstreetmap' => $this->coordinate->getLinkOpenStreetMap(),
             ])
         ;
 
-        $locationsP = $this->locationRepository->findAdminLocationsByCoordinate($coordinateTarget, null, 25);
-        $locationInformation = $this->getLocationInformation($locationsP);
+        $this->district = $this->locationRepository->findDistrictByLocation($locationEntity);
+        $this->city = $this->locationRepository->findCityByLocation($locationEntity);
+        $this->state = $this->locationRepository->findStateByLocation(($this->district ?: $this->city) ?: $locationEntity);
+        $this->country = $this->locationRepository->findCountryByLocation($this->state);
 
-        if (!is_null($locationInformation)) {
-            $location
-                ->setLocation($locationInformation)
-            ;
-        }
+        $locationInformation = [
+            'district-locality' => $this->district?->getName(),
+            'city-municipality' => $this->city?->getName(),
+            'state' => $this->state?->getName(),
+            'country' => $this->country?->getName(),
+        ];
+
+        $this->printDebug($locationEntity, $this->district, $this->city, $this->state, $this->country);
+
+        $location
+            ->setLocation($locationInformation)
+        ;
 
         return $location;
     }
 
     /**
-     * Returns some location information (district, city, state, country, etc.).
+     * Prints some debug information.
      *
-     * @param array<int, LocationEntity> $locationsP
-     * @return array{
-     *     district-locality: string|null,
-     *     city-municipality: string|null,
-     *     state: string|null,
-     *     country: string|null
-     * }|null
+     * @param LocationEntity $locationSource
+     * @param LocationEntity|null $district
+     * @param LocationEntity|null $city
+     * @param LocationEntity|null $state
+     * @param LocationEntity|null $country
+     * @return void
      * @throws CaseUnsupportedException
-     * @throws NonUniqueResultException
-     * @throws TypeInvalidException
      * @throws ClassInvalidException
-     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+     * @throws ParserException
+     * @throws TypeInvalidException
      */
-    protected function getLocationInformation(array $locationsP): array|null
+    protected function printDebug(LocationEntity $locationSource, LocationEntity|null $district, LocationEntity|null $city, LocationEntity|null $state, LocationEntity|null $country): void
     {
-        $locationP = count($locationsP) > 0 ? $locationsP[0] : null;
-
-        if (is_null($locationP)) {
-            return null;
+        if (!$this->isDebug()) {
+            return;
         }
 
-        $featureCode = $locationP->getFeatureCode()?->getCode();
+        $this->printPlace($locationSource, $district, $city, $state, $country);
+        $this->printFeatureClass($locationSource, FeatureClass::FEATURE_CLASS_P);
 
-        switch (true) {
-            /* Location: Add administrative information */
-            case in_array($featureCode, FeatureClass::FEATURE_CODES_P_DISTRICT_PLACES):
+        $timeExecution = microtime(true) - $this->timeStart;
+        if ($this->isDebug()) {
+            $this->output->writeln('');
+            $this->output->writeln(sprintf('Execution time: %dms', $timeExecution * 1000));
+            $this->output->writeln('');
+        }
+    }
 
-                $district = $locationP;
-
-                $city1 = $this->locationRepository->findCityByLocationDistrict($locationP);
-                $city2 = $this->findNextAdminCity($locationsP, $district);
-                $city3 = $this->findNextCityPopulation($locationsP, $district);
-
-                $city = match (true) {
-                    $city1 === null => $city2 !== null && (int) $city2->getPopulation() > 0 ? $city2 : $city3,
-                    default => $city1,
-                };
-                break;
-
-            /* Location: Add administrative information (Admin place) */
-            case in_array($featureCode, FeatureClass::FEATURE_CODES_P_ADMIN_PLACES):
-                $city = $locationP;
-                $district = $this->findNextDistrict($locationsP, $city);
-                break;
-
-            default:
-                throw new CaseUnsupportedException(sprintf('Unsupported FeatureCode "%s" given.', $featureCode));
+    /**
+     * Prints the place information.
+     *
+     * @param LocationEntity $locationSource
+     * @param LocationEntity|null $district
+     * @param LocationEntity|null $city
+     * @param LocationEntity|null $state
+     * @param LocationEntity|null $country
+     * @return void
+     * @throws CaseUnsupportedException
+     * @throws ParserException
+     */
+    protected function printPlace(LocationEntity $locationSource, LocationEntity|null $district, LocationEntity|null $city, LocationEntity|null $state, LocationEntity|null $country): void
+    {
+        if (!$this->isDebug()) {
+            return;
         }
 
-        /* Disable district in some cases. */
-        if ($district !== null && $city !== null && $district->getName() === $city->getName()) {
-            $district = null;
+        $this->output->writeln('');
+        $this->printCaption();
+        $this->printLocation($locationSource, 'district');
+
+        $this->output->writeln('');
+        $this->printCaption();
+        $this->printLocation($district, 'district');
+        $this->printLocation($city, 'city');
+        $this->printLocation($state, 'state');
+        $this->printLocation($country, 'country');
+    }
+
+    /**
+     * Prints some debugging information.
+     *
+     * @param LocationEntity $locationSource
+     * @param string $featureClass
+     * @return void
+     * @throws CaseUnsupportedException
+     * @throws ClassInvalidException
+     * @throws ParserException
+     * @throws TypeInvalidException
+     */
+    protected function printFeatureClass(LocationEntity $locationSource, string $featureClass): void
+    {
+        if (!$this->isDebug()) {
+            return;
         }
 
-        $state = $this->locationRepository->findStateByLocation($locationP);
+        $featureCodes = match ($featureClass) {
+            FeatureClass::FEATURE_CLASS_P => FeatureClass::FEATURE_CODES_P_ALL,
+            default => throw new CaseUnsupportedException(sprintf('Feature class "%s" is not supported.', $featureClass)),
+        };
 
-        return [
-            'district-locality' => $district?->getName(),
-            'city-municipality' => $city?->getName(),
-            'state' => $state?->getName(),
-            'country' => $this->findCountry($locationP),
-        ];
+        $locations = [];
+        foreach ($featureCodes as $featureCode) {
+            $featureCodeLocations = $this->locationRepository->findLocationsByCoordinate(
+                coordinate: $this->coordinate,
+                featureClass: $featureClass,
+                featureCodes: $featureCode,
+                country: $locationSource->getCountry(),
+                adminCodes: $this->locationRepository->getAdminCodesGeneral($locationSource),
+                limit: $this->debugLimit,
+            );
+
+            foreach ($featureCodeLocations as $featureCodeLocation) {
+                $locations[] = [
+                    'location' => $featureCodeLocation,
+                    'distance' => $this->coordinate->getDistance($featureCodeLocation->getCoordinateIxnode())
+                ];
+            }
+        }
+
+        /* Sort by distance */
+        usort($locations, fn($item1, $item2) => $item1['distance'] <=> $item2['distance']);
+
+        $this->output->writeln('');
+        $this->printCaption();
+        foreach ($locations as $location) {
+            $location = $location['location'];
+
+            $this->printLocation($location);
+        }
+    }
+
+    /**
+     * Prints the caption.
+     *
+     * @return void
+     */
+    protected function printCaption(): void
+    {
+        $message = sprintf(
+            self::DEBUG_CAPTION,
+            'Geoname',
+            'FCo',
+            'Distance',
+            'CD',
+            'Inhabitents',
+            'Admin 1',
+            'Admin 2',
+            'Admin 3',
+            'Admin 4',
+            'Location',
+            'Name'
+        );
+
+        $this->output->writeln($message);
+        $this->output->writeln(str_repeat('-', strlen($message)));
+    }
+
+    /**
+     * Prints a location to screen.
+     *
+     * @param LocationEntity|null $location
+     * @param string|null $description
+     * @return void
+     * @throws CaseUnsupportedException
+     * @throws ParserException
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+     * @SuppressWarnings(PHPMD.NPathComplexity)
+     */
+    protected function printLocation(LocationEntity|null $location, string|null $description = null): void
+    {
+        $geoNameId = $location?->getGeonameId() ?: 'n/a';
+        $distanceKm = $location ? $this->coordinate->getDistance($location->getCoordinateIxnode()) / 1000 : 0;
+        $direction = $location ? $this->coordinate->getDirection($location->getCoordinateIxnode()) : 0;
+        $featureCode = $location?->getFeatureCode()?->getCode() ?: 'n/a';
+        $distance = number_format($distanceKm, 3, ',', '.').' km';
+        $inhabitants = number_format((int) $location?->getPopulation() ?: 0, 0, ',', '.');
+        $adminCode1 = $location?->getAdminCode()?->getAdmin1Code() ?: 'n/a';
+        $adminCode2 = $location?->getAdminCode()?->getAdmin2Code() ?: 'n/a';
+        $adminCode3 = $location?->getAdminCode()?->getAdmin3Code() ?: 'n/a';
+        $adminCode4 = $location?->getAdminCode()?->getAdmin4Code() ?: 'n/a';
+        $position = $location?->getPosition() ?: 'n/a';
+        $name = match (true) {
+            !is_null($description) => sprintf('%s (%s)', $location?->getName() ?: 'n/a', $description),
+            default => $location?->getName() ?: 'n/a',
+        };
+
+        $this->output->writeln(sprintf(
+            self::DEBUG_CONTENT,
+            $geoNameId,
+            $featureCode,
+            $distance,
+            $direction,
+            $inhabitants,
+            $adminCode1,
+            $adminCode2,
+            $adminCode3,
+            $adminCode4,
+            $position,
+            $name
+        ));
     }
 }
