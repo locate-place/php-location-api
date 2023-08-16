@@ -30,11 +30,15 @@ class KeyCamelCase
 
     final public const ADMIN_4_CODE = 'admin4Code';
 
-    final public const CODE = 'code';
+    final public const CITY = 'city';
 
     final public const CLASS_KEY = 'class';
 
+    final public const CODE = 'code';
+
     final public const COUNTRY = 'country';
+
+    final public const DISTRICT = 'district';
 
     final public const GEONAME_ID = 'geonameId';
 

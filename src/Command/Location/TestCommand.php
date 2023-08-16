@@ -20,6 +20,7 @@ use Ixnode\PhpApiVersionBundle\Utils\TypeCasting\TypeCastingHelper;
 use Ixnode\PhpContainer\Json;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Completion\CompletionInput;
 use Symfony\Component\Console\Exception\ExceptionInterface;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputArgument;
@@ -49,17 +50,27 @@ class TestCommand extends Base
 
     private const OPTION_NAME_DEBUG = 'debug';
 
+    private const OPTION_NAME_FORMAT = 'format';
+
     /**
      * Configures the command.
+     *
+     * @return void
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     protected function configure(): void
     {
         $this
             ->setName(self::COMMAND_NAME)
             ->setDescription('Returns some information about the given coordinate.')
-            ->setDefinition([
-                new InputArgument(self::ARGUMENT_NAME_SEARCH, InputArgument::REQUIRED, 'The search valur of the coordinate to test.'),
-            ])
+            ->addArgument(
+                self::ARGUMENT_NAME_SEARCH,
+                InputArgument::REQUIRED,
+                'The search valur of the coordinate to test.',
+                null,
+                fn(CompletionInput $input): array => array_keys(Search::VALUES)
+            )
+            ->addOption(self::OPTION_NAME_FORMAT, 'f', InputOption::VALUE_REQUIRED, 'Sets the output format.', 'json')
             ->addOption(self::OPTION_NAME_DEBUG, 'd', InputOption::VALUE_NONE, 'Shows debug information.')
             ->setHelp(
                 <<<'EOT'
@@ -103,6 +114,7 @@ EOT
 
         $verbose = (bool) $input->getOption(self::OPTION_NAME_VERBOSE);
         $debug = (bool) $input->getOption(self::OPTION_NAME_DEBUG);
+        $format = (new TypeCastingHelper($input->getOption(self::OPTION_NAME_FORMAT)))->strval();
 
         $application = $this->getApplication();
 
@@ -116,8 +128,9 @@ EOT
         $coordinateArguments = [
             CoordinateCommand::ARGUMENT_NAME_LATITUDE => (string) $latitude,
             CoordinateCommand::ARGUMENT_NAME_LONGITUDE => (string) $longitude,
-            sprintf('--%s', self::OPTION_NAME_VERBOSE)  => $verbose,
-            sprintf('--%s', self::OPTION_NAME_DEBUG)  => $debug,
+            sprintf('--%s', self::OPTION_NAME_VERBOSE) => $verbose,
+            sprintf('--%s', self::OPTION_NAME_DEBUG) => $debug,
+            sprintf('--%s', self::OPTION_NAME_FORMAT) => $format,
         ];
 
         $coordinateInput = new ArrayInput($coordinateArguments);

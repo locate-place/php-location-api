@@ -61,6 +61,17 @@ class CoordinateCommand extends Base
 
     private const OPTION_NAME_DEBUG = 'debug';
 
+    private const OPTION_NAME_FORMAT = 'format';
+
+    private const FORMAT_JSON = 'json';
+
+    private const FORMAT_PHP = 'php';
+
+    private const FORMATS = [
+        self::FORMAT_JSON,
+        self::FORMAT_PHP,
+    ];
+
     private readonly Serializer $serializer;
 
     /**
@@ -97,6 +108,7 @@ class CoordinateCommand extends Base
                 new InputArgument(self::ARGUMENT_NAME_LATITUDE, InputArgument::REQUIRED, 'The latitude of the coordinate.'),
                 new InputArgument(self::ARGUMENT_NAME_LONGITUDE, InputArgument::OPTIONAL, 'The longitude of the coordinate.'),
             ])
+            ->addOption(self::OPTION_NAME_FORMAT, 'f', InputOption::VALUE_REQUIRED, 'Sets the output format.', 'json')
             ->addOption(self::OPTION_NAME_DEBUG, 'd', InputOption::VALUE_NONE, 'Shows debug information.')
             ->setHelp(
                 <<<'EOT'
@@ -176,6 +188,16 @@ EOT
 
         $verbose = (bool) $input->getOption(self::OPTION_NAME_VERBOSE);
         $debug = (bool) $input->getOption(self::OPTION_NAME_DEBUG);
+        $format = (new TypeCastingHelper($input->getOption(self::OPTION_NAME_FORMAT)))->strval();
+
+        if (!in_array($format, self::FORMATS, true)) {
+            $this->output->writeln(sprintf(
+                '<error>Invalid given format "%s". Allowed: "%s"</error>',
+                $format,
+                implode('", "', self::FORMATS),
+            ));
+            return Command::INVALID;
+        }
 
         $coordinate = new Coordinate($coordinateString);
 
@@ -188,7 +210,12 @@ EOT
         $json = $this->getJson($location, $coordinateString);
 
         if (!$verbose) {
-            $this->output->writeln($json->getJsonStringFormatted());
+            $message = match ($format) {
+                self::FORMAT_JSON => $json->getJsonStringFormatted(),
+                self::FORMAT_PHP => var_export($json->getArray(), true),
+            };
+
+            $this->output->writeln($message);
             return Command::SUCCESS;
         }
 

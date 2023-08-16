@@ -27,7 +27,7 @@
                         },
                         "code": {
                             "type": "string",
-                            "enum": ["PPL"]
+                            "enum": ["PPL", "PPLX", "PPLA"]
                         },
                         "code-name": {
                             "type": "string"
@@ -93,7 +93,7 @@
                     "type": "object",
                     "properties": {
                         "district-locality": {
-                            "type": "string"
+                            "type": ["string", "null"]
                         },
                         "city-municipality": {
                             "type": "string"

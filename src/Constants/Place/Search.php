@@ -23,9 +23,17 @@ namespace App\Constants\Place;
 class Search
 {
     final public const VALUES = [
-        'germany-potsdam-cecilienhof' => PlaceGermany::GERMANY_POTSDAM_CECILIENHOF_PALACE,
-        'potsdam-cecilienhof' => PlaceGermany::GERMANY_POTSDAM_CECILIENHOF_PALACE,
-        'cecilienhof' => PlaceGermany::GERMANY_POTSDAM_CECILIENHOF_PALACE,
-        'germany-doebeln-blumenstrasse' => PlaceGermany::GERMANY_DOEBELN_BLUMENSTRASSE,
+        'ch-zuerich-friesenberg' => PlaceCH::ZUERICH_FRIESENBERG,
+        'de-berlin-fernsehturm' => PlaceDE::BERLIN_FERNSEHTURM,
+        'de-doebeln-blumenstrasse' => PlaceDE::DOEBELN_BLUMENSTRASSE,
+        'de-dresden-frauenkirche' => PlaceDE::DRESDEN_FRAUENKIRCHE,
+        'de-potsdam-cecilienhof' => PlaceDE::POTSDAM_CECILIENHOF_PALACE,
+        'gb-amesbury-stonehenge' => PlaceGB::AMESBURY_STONEHENGE,
+        'gb-london-tower-bridge' => PlaceGB::LONDON_TOWER_BRIDGE,
+        'gb-oxford-summertown' => PlaceGB::OXFORD_SUMMERTOWN,
+        'gb-warwick-university' => PlaceGB::WARWICK_UNIVERSITY,
+        'se-ekeroe-drottningholm-castle' => PlaceSE::EKEROE_DROTTNINGHOLM_CASTLE,
+        'se-lidingoe-boobooliving' => PlaceSE::LIDINGOE_BOOBOOLIVING,
+        'se-stockholm-palace' => PlaceSE::STOCKHOLM_PALACE,
     ];
 }

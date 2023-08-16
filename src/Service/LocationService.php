@@ -116,7 +116,7 @@ final class LocationService extends BaseLocationService
         $locationEntities = $this->locationRepository->findLocationsByCoordinate(
             coordinate: $this->coordinate,
             distanceMeter: $distance,
-            featureClass: $featureClass,
+            featureClasses: $featureClass,
             limit: $limit
         );
 

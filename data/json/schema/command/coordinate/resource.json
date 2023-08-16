@@ -1,48 +1,48 @@
 {
     "$schema": "resource.schema.json",
     "data": {
-        "geonameId": 11611209,
-        "name": "Nauener Vorstadt",
+        "geonameId": 6545310,
+        "name": "Mitte",
         "feature": {
             "class": "P",
             "class-name": "Städte, Dörfer, etc.",
-            "code": "PPL",
-            "code-name": "Besiedelter Ort (Stadtteil)"
+            "code": "PPLX",
+            "code-name": "Ausschnitt eines Wohngebiets (Stadtteil)"
         },
         "coordinate": {
-            "latitude": 52.41501,
-            "longitude": 13.06575,
+            "latitude": 52.52003,
+            "longitude": 13.40489,
             "srid": 4326
         },
         "timezone": {
             "timezone": "Europe/Berlin",
             "country": "DE",
-            "current-time": "2023-08-14 22:44:33",
+            "current-time": "2023-08-15 22:48:17",
             "offset": "+02:00",
             "latitude": 52.5,
             "longitude": 13.36666
         },
         "location": {
-            "district-locality": "Nauener Vorstadt",
-            "city-municipality": "Potsdam",
-            "state": "Brandenburg",
+            "district-locality": "Mitte",
+            "city-municipality": "Berlin",
+            "state": "Land Berlin",
             "country": "Federal Republic of Germany"
         },
         "link": {
-            "google": "https://www.google.de/maps/place/52.419167+13.070833",
-            "openstreetmap": "https://www.openstreetmap.org/?lat=52.419167&lon=13.070833&mlat=52.419167&mlon=13.070833&zoom=14&layers=M"
+            "google": "https://www.google.de/maps/place/52.520645+13.409779",
+            "openstreetmap": "https://www.openstreetmap.org/?lat=52.520645&lon=13.409779&mlat=52.520645&mlon=13.409779&zoom=14&layers=M"
         }
     },
     "given": {
         "coordinate": {
-            "raw": "52.419167 13.070833",
+            "raw": "52.520645 13.409779",
             "parsed": {
-                "latitude": 52.419167,
-                "longitude": 13.070833,
-                "latitudeDms": "52°25′9.0012″N",
-                "longitudeDms": "13°4′14.9988″E"
+                "latitude": 52.520645,
+                "longitude": 13.409779,
+                "latitudeDms": "52°31′14.322″N",
+                "longitudeDms": "13°24′35.2044″E"
             }
         }
     },
-    "time-taken": "165ms"
+    "time-taken": "122ms"
 }

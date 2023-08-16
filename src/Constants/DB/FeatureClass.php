@@ -802,6 +802,33 @@ class FeatureClass
         self::FEATURE_CLASS_V => [],
     ];
 
+    final public const FEATURE_CODES_A_ALL = [
+        self::FEATURE_CODE_A_ADM1,
+        self::FEATURE_CODE_A_ADM1H,
+        self::FEATURE_CODE_A_ADM2,
+        self::FEATURE_CODE_A_ADM2H,
+        self::FEATURE_CODE_A_ADM3,
+        self::FEATURE_CODE_A_ADM3H,
+        self::FEATURE_CODE_A_ADM4,
+        self::FEATURE_CODE_A_ADM4H,
+        self::FEATURE_CODE_A_ADM5,
+        self::FEATURE_CODE_A_ADM5H,
+        self::FEATURE_CODE_A_ADMD,
+        self::FEATURE_CODE_A_ADMDH,
+        self::FEATURE_CODE_A_LTER,
+        self::FEATURE_CODE_A_PCL,
+        self::FEATURE_CODE_A_PCLD,
+        self::FEATURE_CODE_A_PCLF,
+        self::FEATURE_CODE_A_PCLH,
+        self::FEATURE_CODE_A_PCLI,
+        self::FEATURE_CODE_A_PCLIX,
+        self::FEATURE_CODE_A_PCLS,
+        self::FEATURE_CODE_A_PRSH,
+        self::FEATURE_CODE_A_TERR,
+        self::FEATURE_CODE_A_ZN,
+        self::FEATURE_CODE_A_ZNB,
+    ];
+
     final public const FEATURE_CODES_P_ADMIN_PLACES = [
         self::FEATURE_CODE_P_PPL,
         self::FEATURE_CODE_P_PPLA, // default

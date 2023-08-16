@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "ab4d56a71691fcd8f089781f989efd4a",
+    "content-hash": "e58fbec44b16366ce08edfc625a59f68",
     "packages": [
         {
             "name": "adhocore/cli",
@@ -2050,16 +2050,16 @@
         },
         {
             "name": "ixnode/php-coordinate",
-            "version": "0.1.18",
+            "version": "0.1.19",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ixnode/php-coordinate.git",
-                "reference": "4a30321646a4bbdf404e2b30cca0796f1d358f57"
+                "reference": "3f8112e65b8d5910f69f5fd27d453081364dbe0e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ixnode/php-coordinate/zipball/4a30321646a4bbdf404e2b30cca0796f1d358f57",
-                "reference": "4a30321646a4bbdf404e2b30cca0796f1d358f57",
+                "url": "https://api.github.com/repos/ixnode/php-coordinate/zipball/3f8112e65b8d5910f69f5fd27d453081364dbe0e",
+                "reference": "3f8112e65b8d5910f69f5fd27d453081364dbe0e",
                 "shasum": ""
             },
             "require": {
@@ -2111,9 +2111,9 @@
             ],
             "support": {
                 "issues": "https://github.com/ixnode/php-coordinate/issues",
-                "source": "https://github.com/ixnode/php-coordinate/tree/0.1.18"
+                "source": "https://github.com/ixnode/php-coordinate/tree/0.1.19"
             },
-            "time": "2023-08-14T06:33:41+00:00"
+            "time": "2023-08-16T09:04:48+00:00"
         },
         {
             "name": "ixnode/php-date-parser",

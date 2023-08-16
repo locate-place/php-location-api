@@ -151,9 +151,14 @@ abstract class BaseLocationService extends BaseHelperLocationService
         ;
 
         $this->district = $this->locationRepository->findDistrictByLocation($locationEntity);
-        $this->city = $this->locationRepository->findCityByLocation($locationEntity);
+        $this->city = $this->locationRepository->findCityByLocation($this->district ?: $locationEntity);
         $this->state = $this->locationRepository->findStateByLocation(($this->district ?: $this->city) ?: $locationEntity);
         $this->country = $this->locationRepository->findCountryByLocation($this->state);
+
+        if (is_null($this->city) && !is_null($this->district)) {
+            $this->city = $this->district;
+            $this->district = null;
+        }
 
         $locationInformation = [
             'district-locality' => $this->district?->getName(),
@@ -193,6 +198,7 @@ abstract class BaseLocationService extends BaseHelperLocationService
 
         $this->printPlace($locationSource, $district, $city, $state, $country);
         $this->printFeatureClass($locationSource, FeatureClass::FEATURE_CLASS_P);
+        $this->printFeatureClass($locationSource, FeatureClass::FEATURE_CLASS_A);
 
         $timeExecution = microtime(true) - $this->timeStart;
         if ($this->isDebug()) {
@@ -250,6 +256,7 @@ abstract class BaseLocationService extends BaseHelperLocationService
         }
 
         $featureCodes = match ($featureClass) {
+            FeatureClass::FEATURE_CLASS_A => FeatureClass::FEATURE_CODES_A_ALL,
             FeatureClass::FEATURE_CLASS_P => FeatureClass::FEATURE_CODES_P_ALL,
             default => throw new CaseUnsupportedException(sprintf('Feature class "%s" is not supported.', $featureClass)),
         };
@@ -258,7 +265,7 @@ abstract class BaseLocationService extends BaseHelperLocationService
         foreach ($featureCodes as $featureCode) {
             $featureCodeLocations = $this->locationRepository->findLocationsByCoordinate(
                 coordinate: $this->coordinate,
-                featureClass: $featureClass,
+                featureClasses: $featureClass,
                 featureCodes: $featureCode,
                 country: $locationSource->getCountry(),
                 adminCodes: $this->locationRepository->getAdminCodesGeneral($locationSource),

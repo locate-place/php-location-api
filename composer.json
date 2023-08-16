@@ -14,7 +14,7 @@
         "ixnode/php-api-version-bundle": "^0.1.17",
         "ixnode/php-checker": "^0.1.9",
         "ixnode/php-container": "^0.1.10",
-        "ixnode/php-coordinate": "^0.1.18",
+        "ixnode/php-coordinate": "^0.1.19",
         "ixnode/php-date-parser": "^1.0",
         "ixnode/php-exception": "*",
         "ixnode/php-timezone": "^0.1.16",
