@@ -159,6 +159,8 @@ class ImportCommand extends BaseLocationImport
 
     protected float $timeStart;
 
+    protected int $importedRows = 0;
+
     /**
      * @param EntityManagerInterface $entityManager
      */
@@ -623,7 +625,8 @@ EOT
 
         $this->import
             ->setUpdatedAt(new DateTimeImmutable())
-            ->setExecutionTime($executionTime);
+            ->setExecutionTime($executionTime)
+            ->setRows($this->importedRows)
         ;
         $this->entityManager->persist($this->import);
         $this->entityManager->flush();
@@ -738,6 +741,8 @@ EOT
             count($data),
             $timeExecution
         ));
+
+        $this->importedRows += $rows;
     }
 
     /**

@@ -81,7 +81,6 @@ final class ImportProvider extends BaseProvider
      * @param ImportEntity $importEntity
      * @return Import
      * @throws ClassInvalidException
-     * @throws NoResultException
      * @throws NonUniqueResultException
      * @throws TypeInvalidException
      * @throws ArrayKeyNotFoundException
@@ -98,7 +97,8 @@ final class ImportProvider extends BaseProvider
 
         $import = (new Import())
             ->setCountry((string) $country->getName())
-            ->setNumberOfLocations($this->locationRepository->getNumberOfLocations($country))
+            ->setNumberOfLocations($importEntity->getRows() ?: 0)
+            //->setNumberOfLocations($this->locationRepository->getNumberOfLocations($country))
         ;
 
         if ($format === Format::SIMPLE) {

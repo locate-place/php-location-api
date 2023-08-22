@@ -93,8 +93,8 @@ If no error appears with the check command:
 bin/console location:import import/location/DE.txt
 ```
 
-Takes about 60 seconds for 10000 lines. The country DE for
-example with 200000 needs about half an hour to import.
+Takes about 20 seconds for 10000 lines. The country DE for
+example with 200000 needs about seven minutes to import.
 Depending on the performance of the system used and the
 amounts of data in the table.
 
