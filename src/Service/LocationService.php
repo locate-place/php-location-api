@@ -25,6 +25,7 @@ use Ixnode\PhpException\Case\CaseUnsupportedException;
 use Ixnode\PhpException\Class\ClassInvalidException;
 use Ixnode\PhpException\Parser\ParserException;
 use Ixnode\PhpException\Type\TypeInvalidException;
+use JetBrains\PhpStorm\NoReturn;
 
 /**
  * Class LocationService
@@ -80,11 +81,18 @@ final class LocationService extends BaseLocationService
      */
     public function getLocationByCoordinate(string $coordinate): Location
     {
+
         $this->coordinate = new Coordinate($coordinate);
+
+//        $adminConfiguration = $this->locationRepository->findNextAdminConfiguration(
+//            coordinate: $this->coordinate,
+//            featureClasses: FeatureClass::FEATURE_CLASS_P,
+//            featureCodes: FeatureClass::FEATURE_CODES_P_ALL,
+//        );
 
         $location = $this->locationRepository->findNextLocationByCoordinate(
             coordinate: $this->coordinate,
-            featureClass: FeatureClass::FEATURE_CLASS_P,
+            featureClasses: FeatureClass::FEATURE_CLASS_P,
             featureCodes: FeatureClass::FEATURE_CODES_P_ALL,
         );
 
@@ -131,5 +139,34 @@ final class LocationService extends BaseLocationService
         }
 
         return $locations;
+    }
+
+    /**
+     * Debugs a given location entity.
+     *
+     * @param LocationEntity $location
+     * @return never
+     * @throws CaseUnsupportedException
+     * @throws ParserException
+     * @SuppressWarnings(PHPMD.ExitExpression)
+     */
+    #[NoReturn]
+    protected function debugLocation(LocationEntity $location): never
+    {
+        $distanceKm = $this->coordinate->getDistance($location->getCoordinateIxnode()) / 1000;
+
+        print PHP_EOL;
+        print sprintf('Name           | Value'.PHP_EOL);
+        print sprintf('---------------+-------------------------------'.PHP_EOL);
+        print sprintf('Name           | %s'.PHP_EOL, $location->getName());
+        print sprintf('Distance       | %.2fkm'.PHP_EOL, $distanceKm);
+        print sprintf('Feature Class  | %s'.PHP_EOL, $location->getFeatureClass()?->getClass() ?: 'n/a');
+        print sprintf('Feature Code   | %s'.PHP_EOL, $location->getFeatureCode()?->getCode() ?: 'n/a');
+        print sprintf('Admin 1        | %s'.PHP_EOL, $location->getAdminCode()?->getAdmin1Code() ?: 'n/a');
+        print sprintf('Admin 2        | %s'.PHP_EOL, $location->getAdminCode()?->getAdmin2Code() ?: 'n/a');
+        print sprintf('Admin 3        | %s'.PHP_EOL, $location->getAdminCode()?->getAdmin3Code() ?: 'n/a');
+        print sprintf('Admin 4        | %s'.PHP_EOL, $location->getAdminCode()?->getAdmin4Code() ?: 'n/a');
+        print PHP_EOL;
+        exit();
     }
 }

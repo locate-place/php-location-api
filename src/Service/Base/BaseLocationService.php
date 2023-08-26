@@ -268,7 +268,7 @@ abstract class BaseLocationService extends BaseHelperLocationService
                 featureClasses: $featureClass,
                 featureCodes: $featureCode,
                 country: $locationSource->getCountry(),
-                adminCodes: $this->locationRepository->getAdminCodesGeneral($locationSource),
+                adminCodes: $this->locationCountryService->getAdminCodesGeneral($locationSource),
                 limit: $this->debugLimit,
             );
 

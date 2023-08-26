@@ -18,7 +18,6 @@ use Ixnode\PhpApiVersionBundle\Utils\TypeCasting\TypeCastingHelper;
 use Ixnode\PhpContainer\File;
 use Ixnode\PhpException\ArrayType\ArrayKeyNotFoundException;
 use Ixnode\PhpException\Case\CaseInvalidException;
-use Ixnode\PhpException\Class\ClassInvalidException;
 use Ixnode\PhpException\File\FileNotFoundException;
 use Ixnode\PhpException\File\FileNotReadableException;
 use Ixnode\PhpException\Type\TypeInvalidException;
@@ -86,7 +85,6 @@ EOT
      * @param File $file
      * @param int $currentRow
      * @return void
-     * @throws ClassInvalidException
      * @throws TypeInvalidException
      */
     private function checkTimezone(array $row, File $file, int $currentRow): void
@@ -130,7 +128,6 @@ EOT
      * @param int $currentRow
      * @return void
      * @throws TypeInvalidException
-     * @throws ClassInvalidException
      */
     private function checkStringFields(array $row, File $file, int $currentRow): void
     {
@@ -186,7 +183,6 @@ EOT
      * @param array<int, array<string, mixed>> $data
      * @param File $file
      * @return int
-     * @throws ClassInvalidException
      * @throws TypeInvalidException
      */
     protected function checkEntities(array $data, File $file): int

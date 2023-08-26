@@ -16,6 +16,7 @@ namespace App\Service\Base\Helper;
 use App\ApiPlatform\Resource\Location;
 use App\Entity\Location as LocationEntity;
 use App\Repository\LocationRepository;
+use App\Service\LocationCountryService;
 use Ixnode\PhpApiVersionBundle\Utils\Version\Version;
 use Ixnode\PhpCoordinate\Coordinate;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -32,7 +33,7 @@ use Symfony\Contracts\Translation\TranslatorInterface;
  */
 abstract class BaseHelperLocationService
 {
-    protected const DEBUG_LIMIT = 5;
+    final public const DEBUG_LIMIT = 1;
 
     protected const DEBUG_CAPTION = '%-9s | %-6s | %-10s | %-2s | %-11s | %-8s | %-8s | %-8s | %-8s | %-20s | %s';
 
@@ -64,16 +65,29 @@ abstract class BaseHelperLocationService
      * @param RequestStack $request
      * @param LocationRepository $locationRepository
      * @param TranslatorInterface $translator
+     * @param LocationCountryService $locationCountryService
      */
     public function __construct(
         protected Version $version,
         protected ParameterBagInterface $parameterBag,
         protected RequestStack $request,
         protected LocationRepository $locationRepository,
-        protected TranslatorInterface $translator
+        protected TranslatorInterface $translator,
+        protected LocationCountryService $locationCountryService
     )
     {
         $this->setTimeStart(microtime(true));
+    }
+
+    /**
+     * @param int $debugLimit
+     * @return self
+     */
+    public function setDebugLimit(int $debugLimit): self
+    {
+        $this->debugLimit = $debugLimit;
+
+        return $this;
     }
 
     /**

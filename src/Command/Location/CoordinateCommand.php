@@ -15,6 +15,7 @@ namespace App\Command\Location;
 
 use App\ApiPlatform\Resource\Location;
 use App\Command\Base\Base;
+use App\Service\Base\Helper\BaseHelperLocationService;
 use App\Service\LocationService;
 use Exception;
 use Ixnode\PhpApiVersionBundle\Utils\TypeCasting\TypeCastingHelper;
@@ -60,6 +61,8 @@ class CoordinateCommand extends Base
     private const OPTION_NAME_VERBOSE = 'verbose';
 
     private const OPTION_NAME_DEBUG = 'debug';
+
+    private const OPTION_NAME_DEBUG_LIMIT = 'debug-limit';
 
     private const OPTION_NAME_FORMAT = 'format';
 
@@ -110,6 +113,7 @@ class CoordinateCommand extends Base
             ])
             ->addOption(self::OPTION_NAME_FORMAT, 'f', InputOption::VALUE_REQUIRED, 'Sets the output format.', 'json')
             ->addOption(self::OPTION_NAME_DEBUG, 'd', InputOption::VALUE_NONE, 'Shows debug information.')
+            ->addOption(self::OPTION_NAME_DEBUG_LIMIT, 'l', InputOption::VALUE_REQUIRED, 'Sets the debug limit.', BaseHelperLocationService::DEBUG_LIMIT)
             ->setHelp(
                 <<<'EOT'
 
@@ -188,6 +192,7 @@ EOT
 
         $verbose = (bool) $input->getOption(self::OPTION_NAME_VERBOSE);
         $debug = (bool) $input->getOption(self::OPTION_NAME_DEBUG);
+        $debugLimit = (new TypeCastingHelper($input->getOption(self::OPTION_NAME_DEBUG_LIMIT)))->intval();
         $format = (new TypeCastingHelper($input->getOption(self::OPTION_NAME_FORMAT)))->strval();
 
         if (!in_array($format, self::FORMATS, true)) {
@@ -201,7 +206,10 @@ EOT
 
         $coordinate = new Coordinate($coordinateString);
 
-        $this->locationService->setDebug($debug, $this->output);
+        $this->locationService
+            ->setDebug($debug, $this->output)
+            ->setDebugLimit($debugLimit)
+        ;
         $location = $this->locationService->getLocationByCoordinate($coordinate->getString());
         if ($debug) {
             return Command::SUCCESS;

@@ -15,6 +15,7 @@ namespace App\Command\Location;
 
 use App\Command\Base\Base;
 use App\Constants\Place\Search;
+use App\Service\Base\Helper\BaseHelperLocationService;
 use Exception;
 use Ixnode\PhpApiVersionBundle\Utils\TypeCasting\TypeCastingHelper;
 use Ixnode\PhpContainer\Json;
@@ -50,6 +51,8 @@ class TestCommand extends Base
 
     private const OPTION_NAME_DEBUG = 'debug';
 
+    private const OPTION_NAME_DEBUG_LIMIT = 'debug-limit';
+
     private const OPTION_NAME_FORMAT = 'format';
 
     /**
@@ -72,6 +75,7 @@ class TestCommand extends Base
             )
             ->addOption(self::OPTION_NAME_FORMAT, 'f', InputOption::VALUE_REQUIRED, 'Sets the output format.', 'json')
             ->addOption(self::OPTION_NAME_DEBUG, 'd', InputOption::VALUE_NONE, 'Shows debug information.')
+            ->addOption(self::OPTION_NAME_DEBUG_LIMIT, 'l', InputOption::VALUE_REQUIRED, 'Sets the debug limit.', BaseHelperLocationService::DEBUG_LIMIT)
             ->setHelp(
                 <<<'EOT'
 
@@ -114,6 +118,7 @@ EOT
 
         $verbose = (bool) $input->getOption(self::OPTION_NAME_VERBOSE);
         $debug = (bool) $input->getOption(self::OPTION_NAME_DEBUG);
+        $debugLimit = (new TypeCastingHelper($input->getOption(self::OPTION_NAME_DEBUG_LIMIT)))->intval();
         $format = (new TypeCastingHelper($input->getOption(self::OPTION_NAME_FORMAT)))->strval();
 
         $application = $this->getApplication();
@@ -130,6 +135,7 @@ EOT
             CoordinateCommand::ARGUMENT_NAME_LONGITUDE => (string) $longitude,
             sprintf('--%s', self::OPTION_NAME_VERBOSE) => $verbose,
             sprintf('--%s', self::OPTION_NAME_DEBUG) => $debug,
+            sprintf('--%s', self::OPTION_NAME_DEBUG_LIMIT) => $debugLimit,
             sprintf('--%s', self::OPTION_NAME_FORMAT) => $format,
         ];
 

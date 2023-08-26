@@ -41,7 +41,7 @@ class PlaceGB
             'longitude' => -0.075278,
         ],
         'location' => [
-            'district-locality' => 'Tower of London',
+            'district-locality' => 'City of London',
             'city-municipality' => 'London',
             'state' => 'England',
             'country' => 'United Kingdom of Great Britain and Northern Ireland',
