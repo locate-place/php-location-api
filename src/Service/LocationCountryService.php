@@ -168,6 +168,40 @@ final class LocationCountryService
     }
 
     /**
+     * Returns the admin codes for the given location.
+     *
+     * @param Location $location
+     * @param bool $withNull
+     * @return array{a1?: string, a2?: string, a3?: string, a4?: string}
+     * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
+     */
+    private function getAdminCodesFromLocation(Location $location, bool $withNull = false): array
+    {
+        $adminCodes = [];
+
+        foreach (['a1', 'a2', 'a3', 'a4'] as $key) {
+            $adminCode = match (true) {
+                $key === 'a1' => $location->getAdminCode()?->getAdmin1Code(),
+                $key === 'a2' => $location->getAdminCode()?->getAdmin2Code(),
+                $key === 'a3' => $location->getAdminCode()?->getAdmin3Code(),
+                $key === 'a4' => $location->getAdminCode()?->getAdmin4Code(),
+            };
+
+            if (!$withNull && is_null($adminCode)) {
+                continue;
+            }
+
+            if (is_null($adminCode)) {
+                $adminCode = 'null';
+            }
+
+            $adminCodes[$key] = $adminCode;
+        }
+
+        return $adminCodes;
+    }
+
+    /**
      * Returns the exception configuration if exists.
      *
      * @param array<string, mixed> $countryConfig
@@ -205,7 +239,9 @@ final class LocationCountryService
                     default => throw new CaseUnsupportedException(sprintf('The given admin key %s is not supported.', $key))
                 };
 
-                if ($value !== $adminCode) {
+                $adminCodeSplit = explode('|', (string) $adminCode);
+
+                if (!in_array($value, $adminCodeSplit)) {
                     $match = false;
                     break;
                 }
@@ -374,6 +410,10 @@ final class LocationCountryService
     {
         $key = 'admin_codes';
 
+        if ($this->isMustMatchAdminCodes($location, $type)) {
+            return $this->getAdminCodesFromLocation($location);
+        }
+
         $countryCode = $this->getCountryCode($location);
 
         $countryConfig = $this->getCountryConfig($countryCode, $type);
@@ -441,6 +481,37 @@ final class LocationCountryService
         }
 
         return $withPopulation;
+    }
+
+    /**
+     * Returns the district "must match admin codes" flag of given location.
+     *
+     * @param Location $location
+     * @param string $type
+     * @return bool
+     * @throws CaseUnsupportedException
+     */
+    private function isMustMatchAdminCodes(Location $location, string $type = 'district'): bool
+    {
+        $key = 'must_match_admin_codes';
+
+        $mustMatchAdminCodes = $this->getValueFromConfig($key, $location, $type);
+
+        if (is_null($mustMatchAdminCodes)) {
+            return false;
+        }
+
+        if (!is_bool($mustMatchAdminCodes)) {
+            throw new CaseUnsupportedException(sprintf(
+                'Unsupported type given for %s.%s.%s: %s.',
+                $this->getCountryCode($location),
+                $type,
+                $key,
+                gettype($mustMatchAdminCodes)
+            ));
+        }
+
+        return $mustMatchAdminCodes;
     }
 
     /**
@@ -660,5 +731,41 @@ final class LocationCountryService
     public function getCityWithPopulation(Location $location): bool|null
     {
         return $this->getWithPopulation($location, 'city');
+    }
+
+    /**
+     * Returns the district "must match admin codes" flag of given location.
+     *
+     * @param Location $location
+     * @return bool
+     * @throws CaseUnsupportedException
+     */
+    public function isDistrictMustMatchAdminCodes(Location $location): bool
+    {
+        return $this->isMustMatchAdminCodes($location);
+    }
+
+    /**
+     * Returns the borough "must match admin codes" flag of given location.
+     *
+     * @param Location $location
+     * @return bool
+     * @throws CaseUnsupportedException
+     */
+    public function isBoroughMustMatchAdminCodes(Location $location): bool
+    {
+        return $this->isMustMatchAdminCodes($location, 'borough');
+    }
+
+    /**
+     * Returns the city "must match admin codes" flag of given location.
+     *
+     * @param Location $location
+     * @return bool
+     * @throws CaseUnsupportedException
+     */
+    public function isCityMustMatchAdminCodes(Location $location): bool
+    {
+        return $this->isMustMatchAdminCodes($location, 'city');
     }
 }

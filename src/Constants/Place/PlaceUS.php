@@ -35,6 +35,18 @@ class PlaceUS
         ],
     ];
 
+    final public const BINGHAMTON = [
+        'coordinate' => [
+            'latitude' => 42.101996,
+            'longitude' => -75.920821,
+        ],
+        'location' => [
+            'city-municipality' => 'Binghamton',
+            'state' => 'New York',
+            'country' => 'United States',
+        ],
+    ];
+
     final public const NEW_YORK_BROOKLYN = [
         'coordinate' => [
             'latitude' => 40.703231405519865,

@@ -170,24 +170,24 @@ abstract class BaseLocationService extends BaseHelperLocationService
 
         $locationInformation = [];
 
-        if ($this->isDistrictVisible) {
-            $locationInformation['district-locality'] = $this->district?->getName();
+        if ($this->isDistrictVisible && !is_null($this->district)) {
+            $locationInformation['district-locality'] = $this->district->getName();
         }
 
-        if ($this->isBoroughVisible) {
-            $locationInformation['borough-locality'] = $this->borough?->getName();
+        if ($this->isBoroughVisible && !is_null($this->borough)) {
+            $locationInformation['borough-locality'] = $this->borough->getName();
         }
 
-        if ($this->isCityVisible) {
-            $locationInformation['city-municipality'] = $this->city?->getName();
+        if ($this->isCityVisible && !is_null($this->city)) {
+            $locationInformation['city-municipality'] = $this->city->getName();
         }
 
-        if ($this->isStateVisible) {
-            $locationInformation['state'] = $this->state?->getName();
+        if ($this->isStateVisible && !is_null($this->state)) {
+            $locationInformation['state'] = $this->state->getName();
         }
 
-        if ($this->isCountryVisible) {
-            $locationInformation['country'] = $this->country?->getName();
+        if ($this->isCountryVisible && !is_null($this->country)) {
+            $locationInformation['country'] = $this->country->getName();
         }
 
         $this->printDebug($locationEntity);

@@ -28,8 +28,15 @@ parameters:
         ES: '%admin_codes_a3%'
         PL: '%admin_codes_a3%'
 
+    # some db configuration names
     db_not_null: 'not-null'
     db_null: 'null'
+    db_from_location: 'from-location'
+
+    # Some borough filters
+    filter_new_york_city:
+        a1: 'NY'
+        a2: '047|061'
 
     location_country:
         default:
@@ -131,9 +138,9 @@ parameters:
                 sort_by_feature_codes: false
                 admin_codes: null
                 with_population: null
+                must_match_admin_codes: true
                 exceptions:
-                    - filter:
-                          a1: 'NY'
+                    - filter: '%filter_new_york_city%'
                       feature_codes:
                           - 'PPLX'
                       sort_by_feature_codes: true
@@ -150,8 +157,7 @@ parameters:
                 admin_codes: null
                 with_population: null
                 exceptions:
-                    -   filter:
-                            a1: 'NY'
+                    -   filter: '%filter_new_york_city%'
                         visible: true
                         feature_codes:
                             - 'PPLA2'
@@ -162,9 +168,9 @@ parameters:
             city:
                 feature_class: '%feature_class_p%'
                 feature_codes:
-                    - 'PPLA5'
-                    - 'PPLA4'
-                    - 'PPLA3'
+                    #- 'PPLA5'
+                    #- 'PPLA4'
+                    #- 'PPLA3'
                     - 'PPLA2'
                     - 'PPLA'
                     - 'PPLC'
@@ -180,8 +186,7 @@ parameters:
                 admin_codes: null
                 with_population: true
                 exceptions:
-                    - filter:
-                          a1: 'NY'
+                    - filter: '%filter_new_york_city%'
                       feature_codes:
                           - 'PPL'
                       sort_by_feature_codes: true

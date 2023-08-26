@@ -27,7 +27,7 @@
                         },
                         "code": {
                             "type": "string",
-                            "enum": ["PPL", "PPLX", "PPLA"]
+                            "enum": ["PPL", "PPLX", "PPLA", "PPLA2"]
                         },
                         "code-name": {
                             "type": "string"

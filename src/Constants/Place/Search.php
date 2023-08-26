@@ -37,6 +37,7 @@ class Search
         'se-lidingoe-boobooliving' => PlaceSE::LIDINGOE_BOOBOOLIVING,
         'se-stockholm-palace' => PlaceSE::STOCKHOLM_PALACE,
         'us-austin-east-cesar-chavez' => PlaceUS::AUSTIN_EAST_CESAR_CHAVEZ,
+        'us-binghamton' => PlaceUS::BINGHAMTON,
         'us-new-york-brooklyn' => PlaceUS::NEW_YORK_BROOKLYN,
         'us-new-york-one-world' => PlaceUS::NEW_YORK_ONE_WORLD,
     ];
