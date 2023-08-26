@@ -188,7 +188,7 @@ EOT
 
         $latitude = (new TypeCastingHelper($input->getArgument(self::ARGUMENT_NAME_LATITUDE)))->strval();
         $longitude = $input->hasArgument(self::ARGUMENT_NAME_LONGITUDE) ? (new TypeCastingHelper($input->getArgument(self::ARGUMENT_NAME_LONGITUDE)))->strval() : '';
-        $coordinateString = sprintf('%s %s', $latitude, $longitude);
+        $coordinateString = trim(sprintf('%s %s', $latitude, $longitude));
 
         $verbose = (bool) $input->getOption(self::OPTION_NAME_VERBOSE);
         $debug = (bool) $input->getOption(self::OPTION_NAME_DEBUG);

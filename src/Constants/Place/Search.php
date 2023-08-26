@@ -38,7 +38,9 @@ class Search
         'se-stockholm-palace' => PlaceSE::STOCKHOLM_PALACE,
         'us-austin-east-cesar-chavez' => PlaceUS::AUSTIN_EAST_CESAR_CHAVEZ,
         'us-binghamton' => PlaceUS::BINGHAMTON,
+        'us-houston-east-downtown' => PlaceUS::HOUSTON_EAST_DOWNTOWN,
         'us-new-york-brooklyn' => PlaceUS::NEW_YORK_BROOKLYN,
         'us-new-york-one-world' => PlaceUS::NEW_YORK_ONE_WORLD,
+        'us-washington-dc-white-house' => PlaceUS::WASHINGTON_DC_WHITE_HOUSE,
     ];
 }

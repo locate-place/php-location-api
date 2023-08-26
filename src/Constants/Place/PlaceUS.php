@@ -47,6 +47,19 @@ class PlaceUS
         ],
     ];
 
+    final public const HOUSTON_EAST_DOWNTOWN = [
+        'coordinate' => [
+            'latitude' => 29.747600,
+            'longitude' => -95.351568,
+        ],
+        'location' => [
+            'district-locality' => 'East Downtown',
+            'city-municipality' => 'Houston',
+            'state' => 'Texas',
+            'country' => 'United States',
+        ],
+    ];
+
     final public const NEW_YORK_BROOKLYN = [
         'coordinate' => [
             'latitude' => 40.703231405519865,
@@ -71,6 +84,19 @@ class PlaceUS
             'borough-locality' => 'Manhattan',
             'city-municipality' => 'New York City',
             'state' => 'New York',
+            'country' => 'United States',
+        ],
+    ];
+
+    final public const WASHINGTON_DC_WHITE_HOUSE = [
+        'coordinate' => [
+            'latitude' => 38.89788058641667,
+            'longitude' => -77.03584566370898,
+        ],
+        'location' => [
+            'district-locality' => 'Franklin McPherson Square',
+            'city-municipality' => 'Washington',
+            'state' => 'District of Columbia',
             'country' => 'United States',
         ],
     ];

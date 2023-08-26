@@ -134,7 +134,6 @@ abstract class BaseLocationService extends BaseHelperLocationService
      * Returns the full location.
      *
      * @param LocationEntity $locationEntity
-     * @param Coordinate|null $coordinateSource
      * @return Location
      * @throws CaseUnsupportedException
      * @throws ClassInvalidException
@@ -144,9 +143,9 @@ abstract class BaseLocationService extends BaseHelperLocationService
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      * @SuppressWarnings(PHPMD.NPathComplexity)
      */
-    protected function getLocationFull(LocationEntity $locationEntity, Coordinate|null $coordinateSource = null): Location
+    protected function getLocationFull(LocationEntity $locationEntity): Location
     {
-        $location = $this->getLocation($locationEntity, $coordinateSource)
+        $location = $this->getLocation($locationEntity, $this->coordinate)
             ->setLink([
                 'google' => $this->coordinate->getLinkGoogle(),
                 'openstreetmap' => $this->coordinate->getLinkOpenStreetMap(),
@@ -157,9 +156,9 @@ abstract class BaseLocationService extends BaseHelperLocationService
         $this->isBoroughVisible = $this->locationCountryService->isBoroughVisible($locationEntity);
         $this->isCityVisible = $this->locationCountryService->isCityVisible($locationEntity);
 
-        $this->district = $this->isDistrictVisible ? $this->locationRepository->findDistrictByLocation($locationEntity) : null;
-        $this->borough = $this->isBoroughVisible? $this->locationRepository->findBoroughByLocation($locationEntity) : null;
-        $this->city = $this->isCityVisible ? $this->locationRepository->findCityByLocation($this->district ?: $locationEntity) : null;
+        $this->district = $this->isDistrictVisible ? $this->locationRepository->findDistrictByLocation($locationEntity, $this->coordinate) : null;
+        $this->borough = $this->isBoroughVisible? $this->locationRepository->findBoroughByLocation($locationEntity, $this->coordinate) : null;
+        $this->city = $this->isCityVisible ? $this->locationRepository->findCityByLocation($this->district ?: $locationEntity, $this->coordinate) : null;
         $this->state = $this->isStateVisible ? $this->locationRepository->findStateByLocation(($this->district ?: $this->city) ?: $locationEntity) : null;
         $this->country = $this->isCountryVisible ? $this->locationRepository->findCountryByLocation($this->state) : null;
 

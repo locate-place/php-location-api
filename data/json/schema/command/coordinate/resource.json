@@ -1,8 +1,8 @@
 {
     "$schema": "resource.schema.json",
     "data": {
-        "geonameId": 8410793,
-        "name": "Dumbo",
+        "geonameId": 6295497,
+        "name": "Zürich (Kreis 3) / Friesenberg",
         "feature": {
             "class": "P",
             "class-name": "Städte, Dörfer, etc.",
@@ -10,40 +10,47 @@
             "code-name": "Ausschnitt eines Wohngebiets (Stadtteil)"
         },
         "coordinate": {
-            "latitude": 40.70257,
-            "longitude": -73.99045,
-            "srid": 4326
+            "latitude": 47.36372,
+            "longitude": 8.50417,
+            "srid": 4326,
+            "distance": {
+                "meters": 454.1,
+                "kilometers": 0.454
+            },
+            "direction": {
+                "degree": 125.28,
+                "direction": "SE"
+            }
         },
         "timezone": {
-            "timezone": "America/New_York",
-            "country": "US",
-            "current-time": "2023-08-26 09:24:16",
-            "offset": "-04:00",
-            "latitude": 40.71416,
-            "longitude": -74.00638
+            "timezone": "Europe/Zurich",
+            "country": "CH",
+            "current-time": "2023-08-26 17:39:30",
+            "offset": "+02:00",
+            "latitude": 47.38333,
+            "longitude": 8.53333
         },
         "location": {
-            "district-locality": "Dumbo",
-            "borough-locality": "Brooklyn",
-            "city-municipality": "New York City",
-            "state": "New York",
-            "country": "United States"
+            "district-locality": "Zürich (Kreis 3) / Friesenberg",
+            "city-municipality": "Zürich",
+            "state": "Kanton Zürich",
+            "country": "Switzerland"
         },
         "link": {
-            "google": "https://www.google.de/maps/place/40.703231+-73.989617",
-            "openstreetmap": "https://www.openstreetmap.org/?lat=40.703231&lon=-73.989617&mlat=40.703231&mlon=-73.989617&zoom=14&layers=M"
+            "google": "https://www.google.de/maps/place/47.366670+8.500000",
+            "openstreetmap": "https://www.openstreetmap.org/?lat=47.366670&lon=8.500000&mlat=47.366670&mlon=8.500000&zoom=14&layers=M"
         }
     },
     "given": {
         "coordinate": {
-            "raw": "40.70323140552 -73.989616635981",
+            "raw": "47.36667 8.5",
             "parsed": {
-                "latitude": 40.703231,
-                "longitude": -73.989617,
-                "latitudeDms": "40°42′11.6316″N",
-                "longitudeDms": "73°59′22.6212″W"
+                "latitude": 47.36667,
+                "longitude": 8.5,
+                "latitudeDms": "47°22′0.012″N",
+                "longitudeDms": "8°30′0″E"
             }
         }
     },
-    "time-taken": "93ms"
+    "time-taken": "90ms"
 }

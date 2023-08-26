@@ -171,9 +171,9 @@ parameters:
                     #- 'PPLA5'
                     #- 'PPLA4'
                     #- 'PPLA3'
+                    - 'PPLC'
                     - 'PPLA2'
                     - 'PPLA'
-                    - 'PPLC'
                     - 'PPL'
                     - 'PPLF'
                     - 'PPLG'
@@ -185,6 +185,7 @@ parameters:
                 sort_by_feature_codes: true
                 admin_codes: null
                 with_population: true
+                #must_match_admin_codes: true
                 exceptions:
                     - filter: '%filter_new_york_city%'
                       feature_codes:

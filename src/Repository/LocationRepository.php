@@ -348,24 +348,16 @@ class LocationRepository extends ServiceEntityRepository
      * Finds the city given by location.
      *
      * @param LocationEntity $location
+     * @param Coordinate|null $coordinate
      * @return LocationEntity|null
      * @throws CaseUnsupportedException
      * @throws ClassInvalidException
-     * @throws TypeInvalidException
      * @throws ParserException
+     * @throws TypeInvalidException
      */
-    public function findDistrictByLocation(Location $location): Location|null
+    public function findDistrictByLocation(Location $location, ?Coordinate $coordinate = null): Location|null
     {
-        $point = $location->getCoordinate();
-
-        if (is_null($point)) {
-            throw new CaseUnsupportedException('Unable to get point from location.');
-        }
-
-        $coordinate = new Coordinate(
-            $point->getLatitude(),
-            $point->getLongitude()
-        );
+        $coordinate = $coordinate ?: $location->getCoordinateIxnode();
 
         $countryCode = $location->getCountry()?->getCode();
 
@@ -388,24 +380,16 @@ class LocationRepository extends ServiceEntityRepository
      * Finds the borough given by location.
      *
      * @param LocationEntity $location
+     * @param Coordinate|null $coordinate
      * @return LocationEntity|null
      * @throws CaseUnsupportedException
      * @throws ClassInvalidException
-     * @throws TypeInvalidException
      * @throws ParserException
+     * @throws TypeInvalidException
      */
-    public function findBoroughByLocation(Location $location): Location|null
+    public function findBoroughByLocation(Location $location, ?Coordinate $coordinate = null): Location|null
     {
-        $point = $location->getCoordinate();
-
-        if (is_null($point)) {
-            throw new CaseUnsupportedException('Unable to get point from location.');
-        }
-
-        $coordinate = new Coordinate(
-            $point->getLatitude(),
-            $point->getLongitude()
-        );
+        $coordinate = $coordinate ?: $location->getCoordinateIxnode();
 
         $countryCode = $location->getCountry()?->getCode();
 
@@ -428,24 +412,16 @@ class LocationRepository extends ServiceEntityRepository
      * Finds the city given by location.
      *
      * @param LocationEntity $location
+     * @param Coordinate|null $coordinate
      * @return LocationEntity|null
      * @throws CaseUnsupportedException
      * @throws ClassInvalidException
-     * @throws TypeInvalidException
      * @throws ParserException
+     * @throws TypeInvalidException
      */
-    public function findCityByLocation(Location $location): Location|null
+    public function findCityByLocation(Location $location, ?Coordinate $coordinate = null): Location|null
     {
-        $point = $location->getCoordinate();
-
-        if (is_null($point)) {
-            throw new CaseUnsupportedException('Unable to get point from location.');
-        }
-
-        $coordinate = new Coordinate(
-            $point->getLatitude(),
-            $point->getLongitude()
-        );
+        $coordinate = $coordinate ?: $location->getCoordinateIxnode();
 
         $countryCode = $location->getCountry()?->getCode();
 

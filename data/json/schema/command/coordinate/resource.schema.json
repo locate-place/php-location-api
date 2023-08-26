@@ -27,7 +27,7 @@
                         },
                         "code": {
                             "type": "string",
-                            "enum": ["PPL", "PPLX", "PPLA", "PPLA2"]
+                            "enum": ["PPL", "PPLX", "PPLA", "PPLA2", "PPLC"]
                         },
                         "code-name": {
                             "type": "string"
@@ -48,12 +48,37 @@
                         },
                         "srid": {
                             "type": "number"
+                        },
+                        "distance": {
+                            "type": "object",
+                            "properties": {
+                                "meters": {
+                                    "type": "number"
+                                },
+                                "kilometers": {
+                                    "type": "number"
+                                }
+                            }
+                        },
+                        "direction": {
+                            "type": "object",
+                            "properties": {
+                                "degrees": {
+                                    "type": "number"
+                                },
+                                "direction": {
+                                    "type": "string",
+                                    "enum": ["N", "NE", "E", "SE", "S", "SW", "W", "NW"]
+                                }
+                            }
                         }
                     },
                     "required": [
                         "latitude",
                         "longitude",
-                        "srid"
+                        "srid",
+                        "distance",
+                        "direction"
                     ],
                     "additionalProperties": false
                 },
