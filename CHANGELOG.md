@@ -7,10 +7,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Releases
 
+### [0.1.19] - 2023-08-26
+
+* Add New York / Binghamton test
+* Add "|" filter to exceptions
+
 ### [0.1.18] - 2023-08-26
 
 * Add United States tests
-* Add boroughs to United States (new york)
+* Add boroughs to United States (New York)
 
 ### [0.1.17] - 2023-08-26
 
