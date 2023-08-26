@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Releases
 
+### [0.1.17] - 2023-08-26
+
+* Remove country config to yaml file
+
 ### [0.1.16] - 2023-08-16
 
 * Add mew location tests
