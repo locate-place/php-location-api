@@ -86,10 +86,11 @@ class Location extends BasePublicResource
     protected array $timezone;
 
     /** @var array{
-     *     district-locality: string|null,
-     *     city-municipality: string|null,
-     *     state: string|null,
-     *     country: string|null
+     *     district-locality?: string|null,
+     *     borough-locality?: string|null,
+     *     city-municipality?: string|null,
+     *     state?: string|null,
+     *     country?: string|null
      * } $location */
     protected array $location;
 
@@ -216,10 +217,11 @@ class Location extends BasePublicResource
      * Returns the location array.
      *
      * @return array{
-     *     district-locality: string|null,
-     *     city-municipality: string|null,
-     *     state: string|null,
-     *     country: string|null
+     *     district-locality?: string|null,
+     *     borough-locality?: string|null,
+     *     city-municipality?: string|null,
+     *     state?: string|null,
+     *     country?: string|null
      * }
      */
     public function getLocation(): array
@@ -231,10 +233,11 @@ class Location extends BasePublicResource
      * Sets the location array.
      *
      * @param array{
-     *     district-locality: string|null,
-     *     city-municipality: string|null,
-     *     state: string|null,
-     *     country: string|null
+     *     district-locality?: string|null,
+     *     borough-locality?: string|null,
+     *     city-municipality?: string|null,
+     *     state?: string|null,
+     *     country?: string|null
      * } $location
      * @return Location
      */

@@ -45,6 +45,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
  * @method Location[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  * @extends ServiceEntityRepository<Location>
  * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
+ * @SuppressWarnings(PHPMD.TooManyPublicMethods)
  */
 class LocationRepository extends ServiceEntityRepository
 {
@@ -380,6 +381,46 @@ class LocationRepository extends ServiceEntityRepository
             adminCodes: $this->locationCountryService->getDistrictAdminCodes($location),
             withPopulation: $this->locationCountryService->getDistrictWithPopulation($location),
             sortByFeatureCodes: $this->locationCountryService->isDistrictSortByFeatureCodes($location)
+        );
+    }
+
+    /**
+     * Finds the borough given by location.
+     *
+     * @param LocationEntity $location
+     * @return LocationEntity|null
+     * @throws CaseUnsupportedException
+     * @throws ClassInvalidException
+     * @throws TypeInvalidException
+     * @throws ParserException
+     */
+    public function findBoroughByLocation(Location $location): Location|null
+    {
+        $point = $location->getCoordinate();
+
+        if (is_null($point)) {
+            throw new CaseUnsupportedException('Unable to get point from location.');
+        }
+
+        $coordinate = new Coordinate(
+            $point->getLatitude(),
+            $point->getLongitude()
+        );
+
+        $countryCode = $location->getCountry()?->getCode();
+
+        if (is_null($countryCode)) {
+            throw new CaseUnsupportedException('Unable to get country code from location.');
+        }
+
+        return $this->findNextLocationByCoordinate(
+            coordinate: $coordinate,
+            featureClasses: $this->locationCountryService->getBoroughFeatureClass($location),
+            featureCodes: $this->locationCountryService->getBoroughFeatureCodes($location),
+            country: $location->getCountry(),
+            adminCodes: $this->locationCountryService->getBoroughAdminCodes($location),
+            withPopulation: $this->locationCountryService->getBoroughWithPopulation($location),
+            sortByFeatureCodes: $this->locationCountryService->isBoroughSortByFeatureCodes($location)
         );
     }
 

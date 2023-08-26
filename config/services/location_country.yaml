@@ -14,7 +14,6 @@ parameters:
         - '%admin_codes_a4%'
 
     district_match:
-        US: '%admin_codes_a1%'
         JP: '%admin_codes_a1%'
         CZ: '%admin_codes_a1%'
         DK: '%admin_codes_a2%'
@@ -22,6 +21,7 @@ parameters:
         NL: '%admin_codes_a2%'
         PT: '%admin_codes_a2%'
         SE: '%admin_codes_a2%'
+        US: '%admin_codes_a2%'
         AT: '%admin_codes_a3%'
         CH: '%admin_codes_a3%'
         EE: '%admin_codes_a3%'
@@ -41,6 +41,8 @@ parameters:
                 sort_by_feature_codes: false
                 admin_codes: null
                 with_population: null
+            borough:
+                visible: false
             city:
                 feature_class: '%feature_class_p%'
                 feature_codes:
@@ -63,6 +65,7 @@ parameters:
                 with_population: true
         DE:
             district: null
+            borough: null
             city:
                 feature_class: '%feature_class_p%'
                 feature_codes:
@@ -93,11 +96,12 @@ parameters:
                 admin_codes: null
                 with_population: null
                 exceptions:
-                    - admin_codes:
+                    - filter:
                           a2: 'GLA'
                       feature_codes:
                         - 'PPLA3'
                       sort_by_feature_codes: true
+            borough: null
             city:
                 feature_class: '%feature_class_p%'
                 feature_codes:
@@ -124,12 +128,37 @@ parameters:
                 feature_codes:
                     - 'PPLX'
                     - 'PPL'
-                    - 'PPLW'
-                    - 'PPLA2'
                 sort_by_feature_codes: false
-                admin_codes:
-                    a2: 'not-null'
+                admin_codes: null
                 with_population: null
+                exceptions:
+                    - filter:
+                          a1: 'NY'
+                      feature_codes:
+                          - 'PPLX'
+                      sort_by_feature_codes: true
+                      admin_codes:
+                          a1: 'NY'
+                          a2: 'from-location'
+            borough:
+                visible: false
+                feature_class: '%feature_class_p%'
+                feature_codes:
+                    - 'PPLX'
+                    - 'PPL'
+                sort_by_feature_codes: false
+                admin_codes: null
+                with_population: null
+                exceptions:
+                    -   filter:
+                            a1: 'NY'
+                        visible: true
+                        feature_codes:
+                            - 'PPLA2'
+                        sort_by_feature_codes: true
+                        admin_codes:
+                            a1: 'NY'
+                            a2: 'from-location'
             city:
                 feature_class: '%feature_class_p%'
                 feature_codes:
@@ -148,6 +177,14 @@ parameters:
                     - 'PPLW'
                     - 'STLMT'
                 sort_by_feature_codes: true
-                admin_codes:
-                    a2: 'null'
+                admin_codes: null
                 with_population: true
+                exceptions:
+                    - filter:
+                          a1: 'NY'
+                      feature_codes:
+                          - 'PPL'
+                      sort_by_feature_codes: true
+                      admin_codes:
+                          a1: 'NY'
+                          a2: 'null'

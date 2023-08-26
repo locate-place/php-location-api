@@ -35,6 +35,19 @@ class PlaceGB
         ],
     ];
 
+    final public const EDINBURGH_LEITH = [
+        'coordinate' => [
+            'latitude' => 55.975070,
+            'longitude' => -3.158110,
+        ],
+        'location' => [
+            'district-locality' => 'Leith',
+            'city-municipality' => 'Edinburgh',
+            'state' => 'Scotland',
+            'country' => 'United Kingdom of Great Britain and Northern Ireland',
+        ],
+    ];
+
     final public const LONDON_TOWER_BRIDGE = [
         'coordinate' => [
             'latitude' => 51.505554,

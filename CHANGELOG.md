@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### [0.1.16] - 2023-08-16
 
-* Add mew location tests
+* Add new location tests
 * Configuration refactoring
 
 ### [0.1.15] - 2023-08-14

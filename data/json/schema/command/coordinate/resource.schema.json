@@ -95,6 +95,9 @@
                         "district-locality": {
                             "type": ["string", "null"]
                         },
+                        "borough-locality": {
+                            "type": ["string", "null"]
+                        },
                         "city-municipality": {
                             "type": "string"
                         },
@@ -106,8 +109,6 @@
                         }
                     },
                     "required": [
-                        "district-locality",
-                        "city-municipality",
                         "state",
                         "country"
                     ],

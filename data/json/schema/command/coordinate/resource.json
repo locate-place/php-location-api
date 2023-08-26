@@ -1,8 +1,8 @@
 {
     "$schema": "resource.schema.json",
     "data": {
-        "geonameId": 6545310,
-        "name": "Mitte",
+        "geonameId": 8410793,
+        "name": "Dumbo",
         "feature": {
             "class": "P",
             "class-name": "Städte, Dörfer, etc.",
@@ -10,39 +10,40 @@
             "code-name": "Ausschnitt eines Wohngebiets (Stadtteil)"
         },
         "coordinate": {
-            "latitude": 52.52003,
-            "longitude": 13.40489,
+            "latitude": 40.70257,
+            "longitude": -73.99045,
             "srid": 4326
         },
         "timezone": {
-            "timezone": "Europe/Berlin",
-            "country": "DE",
-            "current-time": "2023-08-15 22:48:17",
-            "offset": "+02:00",
-            "latitude": 52.5,
-            "longitude": 13.36666
+            "timezone": "America/New_York",
+            "country": "US",
+            "current-time": "2023-08-26 09:24:16",
+            "offset": "-04:00",
+            "latitude": 40.71416,
+            "longitude": -74.00638
         },
         "location": {
-            "district-locality": "Mitte",
-            "city-municipality": "Berlin",
-            "state": "Land Berlin",
-            "country": "Federal Republic of Germany"
+            "district-locality": "Dumbo",
+            "borough-locality": "Brooklyn",
+            "city-municipality": "New York City",
+            "state": "New York",
+            "country": "United States"
         },
         "link": {
-            "google": "https://www.google.de/maps/place/52.520645+13.409779",
-            "openstreetmap": "https://www.openstreetmap.org/?lat=52.520645&lon=13.409779&mlat=52.520645&mlon=13.409779&zoom=14&layers=M"
+            "google": "https://www.google.de/maps/place/40.703231+-73.989617",
+            "openstreetmap": "https://www.openstreetmap.org/?lat=40.703231&lon=-73.989617&mlat=40.703231&mlon=-73.989617&zoom=14&layers=M"
         }
     },
     "given": {
         "coordinate": {
-            "raw": "52.520645 13.409779",
+            "raw": "40.70323140552 -73.989616635981",
             "parsed": {
-                "latitude": 52.520645,
-                "longitude": 13.409779,
-                "latitudeDms": "52°31′14.322″N",
-                "longitudeDms": "13°24′35.2044″E"
+                "latitude": 40.703231,
+                "longitude": -73.989617,
+                "latitudeDms": "40°42′11.6316″N",
+                "longitudeDms": "73°59′22.6212″W"
             }
         }
     },
-    "time-taken": "122ms"
+    "time-taken": "93ms"
 }

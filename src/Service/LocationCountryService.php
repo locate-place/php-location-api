@@ -139,10 +139,11 @@ final class LocationCountryService
      * Returns the admin codes from given configuration.
      *
      * @param array<string, mixed> $adminCodeConfig
+     * @param Location $location
      * @return array{a1?: string, a2?: string, a3?: string, a4?: string}
      * @throws TypeInvalidException
      */
-    private function getAdminCodesFromConfig(array $adminCodeConfig): array
+    private function getAdminCodesFromConfig(array $adminCodeConfig, Location $location): array
     {
         $adminCodes = [];
 
@@ -152,6 +153,15 @@ final class LocationCountryService
             }
 
             $adminCodes[$adminCode] = (new TypeCastingHelper($adminCodeConfig[$adminCode]))->strval();
+
+            if ($adminCodes[$adminCode] === 'from-location') {
+                $adminCodes[$adminCode] = match (true) {
+                    $adminCode === 'a1' => $location->getAdminCode()?->getAdmin1Code() ?: 'null',
+                    $adminCode === 'a2' => $location->getAdminCode()?->getAdmin2Code() ?: 'null',
+                    $adminCode === 'a3' => $location->getAdminCode()?->getAdmin3Code() ?: 'null',
+                    $adminCode === 'a4' => $location->getAdminCode()?->getAdmin4Code() ?: 'null',
+                };
+            }
         }
 
         return $adminCodes;
@@ -182,7 +192,7 @@ final class LocationCountryService
                 throw new CaseUnsupportedException('The given exception configuration is not an array.');
             }
 
-            $adminCodes = $exception['admin_codes'];
+            $adminCodes = $exception['filter'];
 
             $match = true;
 
@@ -236,10 +246,38 @@ final class LocationCountryService
             return $countryConfig[$key];
         }
 
-        throw new CaseUnsupportedException(sprintf(
-            'The given key "%s" was not found.',
-            $key
-        ));
+        return null;
+    }
+
+    /**
+     * Returns the feature class of given country.
+     *
+     * @param Location $location
+     * @param string $type
+     * @return bool
+     * @throws CaseUnsupportedException
+     */
+    private function isVisible(Location $location, string $type = 'district'): bool
+    {
+        $key = 'visible';
+
+        $visible = $this->getValueFromConfig($key, $location, $type);
+
+        if (is_null($visible)) {
+            return true;
+        }
+
+        if (!is_bool($visible)) {
+            throw new CaseUnsupportedException(sprintf(
+                'Unsupported type given for %s.%s.%s: %s.',
+                $this->getCountryCode($location),
+                $type,
+                $key,
+                gettype($visible)
+            ));
+        }
+
+        return $visible;
     }
 
     /**
@@ -340,6 +378,20 @@ final class LocationCountryService
 
         $countryConfig = $this->getCountryConfig($countryCode, $type);
 
+        $exceptionMatch = $this->getExceptionMatchConfig($countryConfig, $location);
+
+        /* Returns overwritten exception admin codes. */
+        if (!is_null($exceptionMatch) && array_key_exists('admin_codes', $exceptionMatch)) {
+            $adminCodes = $exceptionMatch['admin_codes'];
+
+            if (!is_array($adminCodes)) {
+                throw new CaseUnsupportedException('Given admin_codes configuration is not an array.');
+            }
+
+            return $this->getAdminCodesFromConfig($adminCodes, $location);
+        }
+
+        /* Returns the default admin codes from district_match configuration. */
         if (!array_key_exists($key, $countryConfig)) {
             return $this->getAdminCodesGeneral($location);
         }
@@ -361,7 +413,7 @@ final class LocationCountryService
             ));
         }
 
-        return $this->getAdminCodesFromConfig($adminCodeConfig);
+        return $this->getAdminCodesFromConfig($adminCodeConfig, $location);
     }
 
     /**
@@ -392,6 +444,42 @@ final class LocationCountryService
     }
 
     /**
+     * Returns if district is visible.
+     *
+     * @param Location $location
+     * @return bool
+     * @throws CaseUnsupportedException
+     */
+    public function isDistrictVisible(Location $location): bool
+    {
+        return $this->isVisible($location);
+    }
+
+    /**
+     * Returns if borough is visible.
+     *
+     * @param Location $location
+     * @return bool
+     * @throws CaseUnsupportedException
+     */
+    public function isBoroughVisible(Location $location): bool
+    {
+        return $this->isVisible($location, 'borough');
+    }
+
+    /**
+     * Returns if city is visible.
+     *
+     * @param Location $location
+     * @return bool
+     * @throws CaseUnsupportedException
+     */
+    public function isCityVisible(Location $location): bool
+    {
+        return $this->isVisible($location, 'city');
+    }
+
+    /**
      * Returns the district feature class of given location.
      *
      * @param Location $location
@@ -401,6 +489,18 @@ final class LocationCountryService
     public function getDistrictFeatureClass(Location $location): string
     {
         return $this->getFeatureClass($location);
+    }
+
+    /**
+     * Returns the borough feature codes of given location.
+     *
+     * @param Location $location
+     * @return string
+     * @throws CaseUnsupportedException
+     */
+    public function getBoroughFeatureClass(Location $location): string
+    {
+        return $this->getFeatureClass($location, 'borough');
     }
 
     /**
@@ -428,6 +528,18 @@ final class LocationCountryService
     }
 
     /**
+     * Returns the borough feature codes of given location.
+     *
+     * @param Location $location
+     * @return array<int, string>
+     * @throws CaseUnsupportedException
+     */
+    public function getBoroughFeatureCodes(Location $location): array
+    {
+        return $this->getFeatureCodes($location, 'borough');
+    }
+
+    /**
      * Returns the city feature codes of given location.
      *
      * @param Location $location
@@ -449,6 +561,18 @@ final class LocationCountryService
     public function isDistrictSortByFeatureCodes(Location $location): bool
     {
         return $this->isSortByFeatureCodes($location);
+    }
+
+    /**
+     * Returns if the borough feature codes should be sorted.
+     *
+     * @param Location $location
+     * @return bool
+     * @throws CaseUnsupportedException
+     */
+    public function isBoroughSortByFeatureCodes(Location $location): bool
+    {
+        return $this->isSortByFeatureCodes($location, 'borough');
     }
 
     /**
@@ -477,6 +601,19 @@ final class LocationCountryService
     }
 
     /**
+     * Returns the admin codes for borough.
+     *
+     * @param Location $location
+     * @return array{a1?: string, a2?: string, a3?: string, a4?: string}
+     * @throws CaseUnsupportedException
+     * @throws TypeInvalidException
+     */
+    public function getBoroughAdminCodes(Location $location): array
+    {
+        return $this->getAdminCodes($location, 'borough');
+    }
+
+    /**
      * Returns the admin codes for district.
      *
      * @param Location $location
@@ -499,6 +636,18 @@ final class LocationCountryService
     public function getDistrictWithPopulation(Location $location): bool|null
     {
         return $this->getWithPopulation($location);
+    }
+
+    /**
+     * Returns the borough with population of given location.
+     *
+     * @param Location $location
+     * @return bool|null
+     * @throws CaseUnsupportedException
+     */
+    public function getBoroughWithPopulation(Location $location): bool|null
+    {
+        return $this->getWithPopulation($location, 'borough');
     }
 
     /**

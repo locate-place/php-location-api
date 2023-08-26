@@ -1,0 +1,65 @@
+<?php
+
+/*
+ * This file is part of the twelvepics-com/php-location-api project.
+ *
+ * (c) Björn Hempel <https://www.hempel.li/>
+ *
+ * For the full copyright and license information, please view the LICENSE.md
+ * file that was distributed with this source code.
+ */
+
+declare(strict_types=1);
+
+namespace App\Constants\Place;
+
+/**
+ * Class PlaceUS
+ *
+ * @author Björn Hempel <bjoern@hempel.li>
+ * @version 0.1.0 (2023-08-26)
+ * @since 0.1.0 (2023-08-26) First version.
+ */
+class PlaceUS
+{
+    final public const AUSTIN_EAST_CESAR_CHAVEZ = [
+        'coordinate' => [
+            'latitude' => 30.26683157778637,
+            'longitude' => -97.73855873989905,
+        ],
+        'location' => [
+            'district-locality' => 'East Cesar Chavez',
+            'city-municipality' => 'Austin',
+            'state' => 'Texas',
+            'country' => 'United States',
+        ],
+    ];
+
+    final public const NEW_YORK_BROOKLYN = [
+        'coordinate' => [
+            'latitude' => 40.703231405519865,
+            'longitude' => -73.98961663598128,
+        ],
+        'location' => [
+            'district-locality' => 'Dumbo',
+            'borough-locality' => 'Brooklyn',
+            'city-municipality' => 'New York City',
+            'state' => 'New York',
+            'country' => 'United States',
+        ],
+    ];
+
+    final public const NEW_YORK_ONE_WORLD = [
+        'coordinate' => [
+            'latitude' => 40.71299578580626,
+            'longitude' => -74.01313612224772,
+        ],
+        'location' => [
+            'district-locality' => 'Battery Park City',
+            'borough-locality' => 'Manhattan',
+            'city-municipality' => 'New York City',
+            'state' => 'New York',
+            'country' => 'United States',
+        ],
+    ];
+}

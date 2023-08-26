@@ -33,6 +33,7 @@ use Ixnode\PhpException\Type\TypeInvalidException;
  * @author Björn Hempel <bjoern@hempel.li>
  * @version 0.1.0 (2023-07-31)
  * @since 0.1.0 (2023-07-31) First version.
+ * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
  */
 abstract class BaseLocationService extends BaseHelperLocationService
 {
@@ -140,6 +141,8 @@ abstract class BaseLocationService extends BaseHelperLocationService
      * @throws NonUniqueResultException
      * @throws ParserException
      * @throws TypeInvalidException
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+     * @SuppressWarnings(PHPMD.NPathComplexity)
      */
     protected function getLocationFull(LocationEntity $locationEntity, Coordinate|null $coordinateSource = null): Location
     {
@@ -150,24 +153,44 @@ abstract class BaseLocationService extends BaseHelperLocationService
             ])
         ;
 
-        $this->district = $this->locationRepository->findDistrictByLocation($locationEntity);
-        $this->city = $this->locationRepository->findCityByLocation($this->district ?: $locationEntity);
-        $this->state = $this->locationRepository->findStateByLocation(($this->district ?: $this->city) ?: $locationEntity);
-        $this->country = $this->locationRepository->findCountryByLocation($this->state);
+        $this->isDistrictVisible = $this->locationCountryService->isDistrictVisible($locationEntity);
+        $this->isBoroughVisible = $this->locationCountryService->isBoroughVisible($locationEntity);
+        $this->isCityVisible = $this->locationCountryService->isCityVisible($locationEntity);
+
+        $this->district = $this->isDistrictVisible ? $this->locationRepository->findDistrictByLocation($locationEntity) : null;
+        $this->borough = $this->isBoroughVisible? $this->locationRepository->findBoroughByLocation($locationEntity) : null;
+        $this->city = $this->isCityVisible ? $this->locationRepository->findCityByLocation($this->district ?: $locationEntity) : null;
+        $this->state = $this->isStateVisible ? $this->locationRepository->findStateByLocation(($this->district ?: $this->city) ?: $locationEntity) : null;
+        $this->country = $this->isCountryVisible ? $this->locationRepository->findCountryByLocation($this->state) : null;
 
         if (is_null($this->city) && !is_null($this->district)) {
             $this->city = $this->district;
             $this->district = null;
         }
 
-        $locationInformation = [
-            'district-locality' => $this->district?->getName(),
-            'city-municipality' => $this->city?->getName(),
-            'state' => $this->state?->getName(),
-            'country' => $this->country?->getName(),
-        ];
+        $locationInformation = [];
 
-        $this->printDebug($locationEntity, $this->district, $this->city, $this->state, $this->country);
+        if ($this->isDistrictVisible) {
+            $locationInformation['district-locality'] = $this->district?->getName();
+        }
+
+        if ($this->isBoroughVisible) {
+            $locationInformation['borough-locality'] = $this->borough?->getName();
+        }
+
+        if ($this->isCityVisible) {
+            $locationInformation['city-municipality'] = $this->city?->getName();
+        }
+
+        if ($this->isStateVisible) {
+            $locationInformation['state'] = $this->state?->getName();
+        }
+
+        if ($this->isCountryVisible) {
+            $locationInformation['country'] = $this->country?->getName();
+        }
+
+        $this->printDebug($locationEntity);
 
         $location
             ->setLocation($locationInformation)
@@ -180,23 +203,19 @@ abstract class BaseLocationService extends BaseHelperLocationService
      * Prints some debug information.
      *
      * @param LocationEntity $locationSource
-     * @param LocationEntity|null $district
-     * @param LocationEntity|null $city
-     * @param LocationEntity|null $state
-     * @param LocationEntity|null $country
      * @return void
      * @throws CaseUnsupportedException
      * @throws ClassInvalidException
      * @throws ParserException
      * @throws TypeInvalidException
      */
-    protected function printDebug(LocationEntity $locationSource, LocationEntity|null $district, LocationEntity|null $city, LocationEntity|null $state, LocationEntity|null $country): void
+    protected function printDebug(LocationEntity $locationSource): void
     {
         if (!$this->isDebug()) {
             return;
         }
 
-        $this->printPlace($locationSource, $district, $city, $state, $country);
+        $this->printPlace($locationSource);
         $this->printFeatureClass($locationSource, FeatureClass::FEATURE_CLASS_P);
         $this->printFeatureClass($locationSource, FeatureClass::FEATURE_CLASS_A);
 
@@ -212,15 +231,11 @@ abstract class BaseLocationService extends BaseHelperLocationService
      * Prints the place information.
      *
      * @param LocationEntity $locationSource
-     * @param LocationEntity|null $district
-     * @param LocationEntity|null $city
-     * @param LocationEntity|null $state
-     * @param LocationEntity|null $country
      * @return void
      * @throws CaseUnsupportedException
      * @throws ParserException
      */
-    protected function printPlace(LocationEntity $locationSource, LocationEntity|null $district, LocationEntity|null $city, LocationEntity|null $state, LocationEntity|null $country): void
+    protected function printPlace(LocationEntity $locationSource): void
     {
         if (!$this->isDebug()) {
             return;
@@ -232,10 +247,26 @@ abstract class BaseLocationService extends BaseHelperLocationService
 
         $this->output->writeln('');
         $this->printCaption();
-        $this->printLocation($district, 'district');
-        $this->printLocation($city, 'city');
-        $this->printLocation($state, 'state');
-        $this->printLocation($country, 'country');
+
+        if ($this->isDistrictVisible) {
+            $this->printLocation($this->district, 'district');
+        }
+
+        if ($this->isBoroughVisible) {
+            $this->printLocation($this->borough, 'borough');
+        }
+
+        if ($this->isCityVisible) {
+            $this->printLocation($this->city, 'city');
+        }
+
+        if ($this->isStateVisible) {
+            $this->printLocation($this->state,'state');
+        }
+
+        if ($this->isCountryVisible) {
+            $this->printLocation($this->country, 'country');
+        }
     }
 
     /**

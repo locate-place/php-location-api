@@ -30,14 +30,15 @@ use Symfony\Contracts\Translation\TranslatorInterface;
  * @author Björn Hempel <bjoern@hempel.li>
  * @version 0.1.0 (2023-07-31)
  * @since 0.1.0 (2023-07-31) First version.
+ * @SuppressWarnings(PHPMD.TooManyFields)
  */
 abstract class BaseHelperLocationService
 {
     final public const DEBUG_LIMIT = 1;
 
-    protected const DEBUG_CAPTION = '%-9s | %-6s | %-10s | %-2s | %-11s | %-8s | %-8s | %-8s | %-8s | %-20s | %s';
+    protected const DEBUG_CAPTION = '%-9s | %-6s | %-12s | %-2s | %-11s | %-8s | %-8s | %-8s | %-8s | %-20s | %s';
 
-    protected const DEBUG_CONTENT = '%9s | %-6s | %10s | %-2s | %11s | %8s | %8s | %8s | %8s | %-20s | %s';
+    protected const DEBUG_CONTENT = '%9s | %-6s | %12s | %-2s | %11s | %8s | %8s | %8s | %8s | %-20s | %s';
 
     protected ?string $error = null;
 
@@ -47,7 +48,19 @@ abstract class BaseHelperLocationService
 
     protected Coordinate $coordinate;
 
+    protected bool $isDistrictVisible = true;
+
+    protected bool $isBoroughVisible = false;
+
+    protected bool $isCityVisible = true;
+
+    protected bool $isStateVisible = true;
+
+    protected bool $isCountryVisible = true;
+
     protected LocationEntity|null $district = null;
+
+    protected LocationEntity|null $borough = null;
 
     protected LocationEntity|null $city = null;
 

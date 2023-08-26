@@ -29,11 +29,15 @@ class Search
         'de-dresden-frauenkirche' => PlaceDE::DRESDEN_FRAUENKIRCHE,
         'de-potsdam-cecilienhof' => PlaceDE::POTSDAM_CECILIENHOF_PALACE,
         'gb-amesbury-stonehenge' => PlaceGB::AMESBURY_STONEHENGE,
+        'gb-edinburgh-leith' => PlaceGB::EDINBURGH_LEITH,
         'gb-london-tower-bridge' => PlaceGB::LONDON_TOWER_BRIDGE,
         'gb-oxford-summertown' => PlaceGB::OXFORD_SUMMERTOWN,
         'gb-warwick-university' => PlaceGB::WARWICK_UNIVERSITY,
         'se-ekeroe-drottningholm-castle' => PlaceSE::EKEROE_DROTTNINGHOLM_CASTLE,
         'se-lidingoe-boobooliving' => PlaceSE::LIDINGOE_BOOBOOLIVING,
         'se-stockholm-palace' => PlaceSE::STOCKHOLM_PALACE,
+        'us-austin-east-cesar-chavez' => PlaceUS::AUSTIN_EAST_CESAR_CHAVEZ,
+        'us-new-york-brooklyn' => PlaceUS::NEW_YORK_BROOKLYN,
+        'us-new-york-one-world' => PlaceUS::NEW_YORK_ONE_WORLD,
     ];
 }
