@@ -48,7 +48,7 @@ Open the project in your browser:
 bin/console location:coordinate "51.0504, 13.7373" -i es
 ```
 
-### API
+### Via API
 
 ```bash
 curl -ks https://www.location-api.localhost/api/v1/location/coordinate\?coordinate\=51.0504%2C%2013.7373\&language\=es | jq .
