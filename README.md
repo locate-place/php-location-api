@@ -40,6 +40,92 @@ Open the project in your browser:
 > Hint: If you want to use real urls instead of using port numbers,
 > try to use https://github.com/bjoern-hempel/local-traefik-proxy
 
+## Get location information
+
+### Via command line
+
+```bash
+bin/console location:coordinate "51.0504, 13.7373" -i es
+```
+
+### API
+
+```bash
+curl -ks https://www.location-api.localhost/api/v1/location/coordinate\?coordinate\=51.0504%2C%2013.7373\&language\=es | jq .
+```
+
+### Result
+
+Both will result in:
+
+```json
+{
+  "data": {
+    "geoname-id": 2935022,
+    "name": "Dresden",
+    "feature": {
+      "class": "P",
+      "class-name": "Städte, Dörfer, etc.",
+      "code": "PPLA",
+      "code-name": "Sitz einer Verwaltungseinheit erster Ordnung"
+    },
+    "coordinate": {
+      "latitude": 51.05089,
+      "longitude": 13.73832,
+      "srid": 4326,
+      "distance": {
+        "meters": 89.7,
+        "kilometers": 0.09
+      },
+      "direction": {
+        "degree": 64.34,
+        "direction": "NE"
+      }
+    },
+    "timezone": {
+      "timezone": "Europe/Berlin",
+      "country": "DE",
+      "current-time": "2023-08-27 15:23:55",
+      "offset": "+02:00",
+      "latitude": 52.5,
+      "longitude": 13.36666
+    },
+    "location": {
+      "district-locality": "Innere Altstadt",
+      "city-municipality": "Dresde",
+      "state": "Sachsen",
+      "country": "Alemania"
+    },
+    "link": {
+      "google": "https://www.google.de/maps/place/51.050400+13.737300",
+      "openstreetmap": "https://www.openstreetmap.org/?lat=51.050400&lon=13.737300&mlat=51.050400&mlon=13.737300&zoom=14&layers=M"
+    }
+  },
+  "given": {
+    "geoname-id": 0,
+    "coordinate": {
+      "raw": "51.0504, 13.7373",
+      "parsed": {
+        "latitude": "51.0504",
+        "longitude": "13.7373",
+        "latitudeDms": "51°3′1.44″N",
+        "longitudeDms": "13°44′14.28″E"
+      }
+    },
+    "language": {
+      "raw": "es",
+      "parsed": {
+        "name": "Spanish, Castilian"
+      }
+    }
+  },
+  "valid": true,
+  "date": "2023-08-27T13:23:55+00:00",
+  "timeTaken": "65ms",
+  "version": "0.1.20"
+}
+```
+
 ### Adminer
 
 If you want to use the adminer to manage your db data.

@@ -130,6 +130,7 @@ bin/console alternate-name:import import/alternate-name/CI.txt && \
 bin/console alternate-name:import import/alternate-name/CN.txt && \
 bin/console alternate-name:import import/alternate-name/CY.txt && \
 bin/console alternate-name:import import/alternate-name/CZ.txt && \
+bin/console alternate-name:import import/alternate-name/DE.txt && \
 bin/console alternate-name:import import/alternate-name/DK.txt && \
 bin/console alternate-name:import import/alternate-name/EE.txt && \
 bin/console alternate-name:import import/alternate-name/ES.txt && \

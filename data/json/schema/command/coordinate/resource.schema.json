@@ -198,6 +198,26 @@
                     },
                     "required": ["raw", "parsed"],
                     "additionalProperties": false
+                },
+                "language": {
+                    "type": "object",
+                    "properties": {
+                        "raw": {
+                            "type": "string"
+                        },
+                        "parsed": {
+                            "type": "object",
+                            "properties": {
+                                "name": {
+                                    "type": "string"
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": ["name"]
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": ["raw", "parsed"]
                 }
             },
             "required": ["coordinate"],

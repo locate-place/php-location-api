@@ -132,16 +132,17 @@ EOT
      *
      * @param Location $location
      * @param string $coordinateString
+     * @param string $isoLanguage
      * @return Json
+     * @throws CaseUnsupportedException
      * @throws FileNotFoundException
      * @throws FileNotReadableException
      * @throws FunctionJsonEncodeException
      * @throws JsonException
-     * @throws TypeInvalidException
-     * @throws CaseUnsupportedException
      * @throws ParserException
+     * @throws TypeInvalidException
      */
-    private function getJson(Location $location, string $coordinateString): Json
+    private function getJson(Location $location, string $coordinateString, string $isoLanguage): Json
     {
         $jsonContent = $this->serializer->serialize($location, 'json', [AbstractNormalizer::IGNORED_ATTRIBUTES => ['meters']]);
         $json = new Json($jsonContent);
@@ -149,6 +150,11 @@ EOT
         $coordinate = new Coordinate($coordinateString);
 
         $duration = microtime(true) - $this->locationService->getTimeStart();
+
+        $languageValues = array_key_exists($isoLanguage, Language::LANGUAGE_ISO_639_1) ?
+            Language::LANGUAGE_ISO_639_1[$isoLanguage] :
+            null
+        ;
 
         $data = [
             'data' => $json->getArray(),
@@ -161,6 +167,12 @@ EOT
                         'latitudeDms' => $coordinate->getLatitudeDms(),
                         'longitudeDms' => $coordinate->getLongitudeDms(),
                     ],
+                ],
+                'language' => [
+                    'raw' => $isoLanguage,
+                    'parsed' => [
+                        'name' => !is_null($languageValues) ? $languageValues['en'] : 'n/a',
+                    ]
                 ],
             ],
             'time-taken' => sprintf(
@@ -228,7 +240,7 @@ EOT
             return Command::SUCCESS;
         }
 
-        $json = $this->getJson($location, $coordinateString);
+        $json = $this->getJson($location, $coordinateString, $isoLanguage);
 
         if (!$verbose) {
             $message = match ($format) {
