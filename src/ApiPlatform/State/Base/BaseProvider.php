@@ -14,11 +14,14 @@ declare(strict_types=1);
 namespace App\ApiPlatform\State\Base;
 
 use Ixnode\PhpApiVersionBundle\ApiPlatform\State\Base\Wrapper\BaseResourceWrapperProvider;
+use Ixnode\PhpApiVersionBundle\Utils\TypeCasting\TypeCastingHelper;
 use Ixnode\PhpCoordinate\Coordinate;
 use Ixnode\PhpException\ArrayType\ArrayKeyNotFoundException;
 use Ixnode\PhpException\Case\CaseInvalidException;
 use Ixnode\PhpException\Case\CaseUnsupportedException;
+use Ixnode\PhpException\Parser\ParserException;
 use Ixnode\PhpException\Type\TypeInvalidException;
+use Ixnode\PhpTimezone\Constants\Language;
 
 /**
  * Class BaseProvider
@@ -37,23 +40,40 @@ class BaseProvider extends BaseResourceWrapperProvider
      * @throws CaseInvalidException
      * @throws CaseUnsupportedException
      * @throws TypeInvalidException
+     * @throws ParserException
      */
     protected function getUriVariablesOutput(): array
     {
         $uriVariablesOutput = parent::getUriVariablesOutput();
 
         if (array_key_exists('coordinate', $uriVariablesOutput)) {
-            $coordinate = (string) $uriVariablesOutput['coordinate'];
+            $language = (string) $uriVariablesOutput['coordinate'];
 
-            $coordinateInstance = new Coordinate($coordinate);
+            $coordinateInstance = new Coordinate($language);
 
             $uriVariablesOutput['coordinate'] = [
-                'raw' => $coordinate,
+                'raw' => $language,
                 'parsed' => [
                     'latitude' => (string) $coordinateInstance->getLatitude(),
                     'longitude' => (string) $coordinateInstance->getLongitude(),
                     'latitudeDms' => $coordinateInstance->getLatitudeDMS(),
                     'longitudeDms' => $coordinateInstance->getLongitudeDMS(),
+                ]
+            ];
+        }
+
+        if (array_key_exists('language', $uriVariablesOutput)) {
+            $language = (new TypeCastingHelper($uriVariablesOutput['language']))->strval();
+
+            $languageValues = array_key_exists($language, Language::LANGUAGE_ISO_639_1) ?
+                Language::LANGUAGE_ISO_639_1[$language] :
+                null
+            ;
+
+            $uriVariablesOutput['language'] = [
+                'raw' => $language,
+                'parsed' => [
+                    'name' => !is_null($languageValues) ? $languageValues['en'] : 'n/a',
                 ]
             ];
         }

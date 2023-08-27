@@ -391,7 +391,6 @@ abstract class BaseLocationImport extends Base
      * @return array<int, array<string, mixed>>
      * @throws ArrayKeyNotFoundException
      * @throws CaseInvalidException
-     * @throws ClassInvalidException
      * @throws FileNotFoundException
      * @throws FileNotReadableException
      * @throws TypeInvalidException

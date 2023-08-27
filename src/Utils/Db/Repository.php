@@ -13,7 +13,9 @@ declare(strict_types=1);
 
 namespace App\Utils\Db;
 
+use App\Entity\AlternateName;
 use App\Entity\Location;
+use App\Repository\AlternateNameRepository;
 use App\Repository\LocationRepository;
 use Ixnode\PhpApiVersionBundle\Entity\Version;
 use Ixnode\PhpApiVersionBundle\Repository\VersionRepository;
@@ -39,6 +41,7 @@ class Repository extends RepositoryIxnode
     protected function getEntityClass(string $repositoryClassName): string
     {
         return match (true) {
+            $repositoryClassName === AlternateNameRepository::class => AlternateName::class,
             $repositoryClassName === LocationRepository::class => Location::class,
             $repositoryClassName === VersionRepository::class => Version::class,
             default => throw new ClassInvalidException($repositoryClassName, VersionRepository::class),

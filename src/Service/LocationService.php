@@ -40,6 +40,7 @@ final class LocationService extends BaseLocationService
      * Returns Location ressource by given geoname id.
      *
      * @param int $geonameId
+     * @param string $isoLanguage
      * @return Location
      * @throws CaseUnsupportedException
      * @throws ClassInvalidException
@@ -47,7 +48,7 @@ final class LocationService extends BaseLocationService
      * @throws ParserException
      * @throws TypeInvalidException
      */
-    public function getLocationByGeonameId(int $geonameId): Location
+    public function getLocationByGeonameId(int $geonameId, string $isoLanguage = 'en'): Location
     {
         $location = $this->locationRepository->findOneBy(['geonameId' => $geonameId]);
 
@@ -65,13 +66,14 @@ final class LocationService extends BaseLocationService
 
         $this->coordinate = new Coordinate($point->getLatitude(), $point->getLongitude());
 
-        return $this->getLocationFull($location);
+        return $this->getLocationFull($location, $isoLanguage);
     }
 
     /**
      * Returns Location ressource by given coordinate string.
      *
      * @param string $coordinate
+     * @param string $isoLanguage
      * @return Location
      * @throws CaseUnsupportedException
      * @throws ClassInvalidException
@@ -79,7 +81,7 @@ final class LocationService extends BaseLocationService
      * @throws ParserException
      * @throws TypeInvalidException
      */
-    public function getLocationByCoordinate(string $coordinate): Location
+    public function getLocationByCoordinate(string $coordinate, string $isoLanguage = 'en'): Location
     {
 
         $this->coordinate = new Coordinate($coordinate);
@@ -101,7 +103,7 @@ final class LocationService extends BaseLocationService
             return $this->getEmptyLocation();
         }
 
-        return $this->getLocationFull($location);
+        return $this->getLocationFull($location, $isoLanguage);
     }
 
     /**

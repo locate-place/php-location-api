@@ -55,6 +55,8 @@ class TestCommand extends Base
 
     private const OPTION_NAME_FORMAT = 'format';
 
+    private const OPTION_ISO_LANGUAGE = 'iso-language';
+
     /**
      * Configures the command.
      *
@@ -74,6 +76,7 @@ class TestCommand extends Base
                 fn(CompletionInput $input): array => array_keys(Search::VALUES)
             )
             ->addOption(self::OPTION_NAME_FORMAT, 'f', InputOption::VALUE_REQUIRED, 'Sets the output format.', 'json')
+            ->addOption(self::OPTION_ISO_LANGUAGE, 'i', InputOption::VALUE_REQUIRED, 'Sets the output language.', 'en')
             ->addOption(self::OPTION_NAME_DEBUG, 'd', InputOption::VALUE_NONE, 'Shows debug information.')
             ->addOption(self::OPTION_NAME_DEBUG_LIMIT, 'l', InputOption::VALUE_REQUIRED, 'Sets the debug limit.', BaseHelperLocationService::DEBUG_LIMIT)
             ->setHelp(
@@ -120,6 +123,7 @@ EOT
         $debug = (bool) $input->getOption(self::OPTION_NAME_DEBUG);
         $debugLimit = (new TypeCastingHelper($input->getOption(self::OPTION_NAME_DEBUG_LIMIT)))->intval();
         $format = (new TypeCastingHelper($input->getOption(self::OPTION_NAME_FORMAT)))->strval();
+        $isoLanguage = (new TypeCastingHelper($input->getOption(self::OPTION_ISO_LANGUAGE)))->strval();
 
         $application = $this->getApplication();
 
@@ -137,6 +141,7 @@ EOT
             sprintf('--%s', self::OPTION_NAME_DEBUG) => $debug,
             sprintf('--%s', self::OPTION_NAME_DEBUG_LIMIT) => $debugLimit,
             sprintf('--%s', self::OPTION_NAME_FORMAT) => $format,
+            sprintf('--%s', self::OPTION_ISO_LANGUAGE) => $isoLanguage,
         ];
 
         $coordinateInput = new ArrayInput($coordinateArguments);

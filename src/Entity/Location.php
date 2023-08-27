@@ -57,9 +57,6 @@ class Location
     #[ORM\Column(length: 1024)]
     private ?string $asciiName = null;
 
-    #[ORM\Column(length: 16384)]
-    private ?string $alternateNames = null;
-
     #[ORM\Column(type: PostGISType::GEOGRAPHY, nullable: false, options: ['geometry_type' => 'POINT', 'srid' => 4326])]
     private ?Point $coordinate = null;
 
@@ -102,9 +99,14 @@ class Location
     #[ORM\ManyToMany(targetEntity: Import::class, inversedBy: 'locations')]
     private Collection $imports;
 
+    /** @var Collection<int, AlternateName> $alternateNames */
+    #[ORM\OneToMany(mappedBy: 'location', targetEntity: AlternateName::class, orphanRemoval: true)]
+    private Collection $alternateNames;
+
     public function __construct()
     {
         $this->imports = new ArrayCollection();
+        $this->alternateNames = new ArrayCollection();
     }
 
     /**
@@ -168,25 +170,6 @@ class Location
     public function setAsciiName(string $asciiName): static
     {
         $this->asciiName = $asciiName;
-
-        return $this;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getAlternateNames(): ?string
-    {
-        return $this->alternateNames;
-    }
-
-    /**
-     * @param string $alternateNames
-     * @return $this
-     */
-    public function setAlternateNames(string $alternateNames): static
-    {
-        $this->alternateNames = $alternateNames;
 
         return $this;
     }
@@ -480,5 +463,35 @@ class Location
         }
 
         return sprintf('%s, %s', $pointSource->getLatitude(), $pointSource->getLongitude());
+    }
+
+    /**
+     * @return Collection<int, AlternateName>
+     */
+    public function getAlternateNames(): Collection
+    {
+        return $this->alternateNames;
+    }
+
+    public function addAlternateName(AlternateName $alternateName): static
+    {
+        if (!$this->alternateNames->contains($alternateName)) {
+            $this->alternateNames->add($alternateName);
+            $alternateName->setLocation($this);
+        }
+
+        return $this;
+    }
+
+    public function removeAlternateName(AlternateName $alternateName): static
+    {
+        if ($this->alternateNames->removeElement($alternateName)) {
+            // set the owning side to null (unless already changed)
+            if ($alternateName->getLocation() === $this) {
+                $alternateName->setLocation(null);
+            }
+        }
+
+        return $this;
     }
 }

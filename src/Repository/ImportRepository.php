@@ -15,8 +15,8 @@ use App\Entity\Country;
 use App\Entity\Import;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\NonUniqueResultException;
-use Doctrine\ORM\NoResultException;
 use Doctrine\Persistence\ManagerRegistry;
+use Ixnode\PhpContainer\File;
 use Ixnode\PhpException\Type\TypeInvalidException;
 
 /**
@@ -73,12 +73,12 @@ class ImportRepository extends ServiceEntityRepository
      * Returns the number of imports from given country.
      *
      * @param Country $country
+     * @param File $file
      * @return int
-     * @throws TypeInvalidException
-     * @throws NoResultException
      * @throws NonUniqueResultException
+     * @throws TypeInvalidException
      */
-    public function getNumberOfImports(Country $country): int
+    public function getNumberOfImports(Country $country, File $file): int
     {
         $queryBuilder = $this->createQueryBuilder('i');
 
@@ -86,6 +86,8 @@ class ImportRepository extends ServiceEntityRepository
             ->select('COUNT(i)')
             ->where('i.country = :country')
             ->setParameter('country', $country)
+            ->andWhere('i.path = :path')
+            ->setParameter('path', $file->getPath());
         ;
 
         $count = $queryBuilder->getQuery()->getSingleScalarResult();

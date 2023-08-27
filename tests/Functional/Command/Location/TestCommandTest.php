@@ -16,6 +16,7 @@ namespace App\Tests\Functional\Command\Location;
 use App\Command\Location\CoordinateCommand;
 use App\Constants\Command\CommandSchema;
 use App\Constants\Place\Search;
+use App\Repository\AlternateNameRepository;
 use App\Repository\LocationRepository;
 use App\Service\LocationCountryService;
 use App\Service\LocationService;
@@ -63,6 +64,7 @@ class TestCommandTest extends BaseFunctionalCommandTest
                     $this->parameterBag,
                     $this->request,
                     $this->repository->getRepository(LocationRepository::class),
+                    $this->repository->getRepository(AlternateNameRepository::class),
                     $this->translator,
                     new LocationCountryService($this->parameterBag)
                 )]

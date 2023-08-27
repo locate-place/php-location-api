@@ -38,6 +38,12 @@ final class LocationRoute extends BaseRoute
             self::KEY_DEFAULT => '51.0504, 13.7373',
             self::KEY_TYPE => self::TYPE_STRING,
         ],
+        Name::LANGUAGE => [
+            self::KEY_REQUEST => Name::LANGUAGE,
+            self::KEY_RESPONSE => 'language',
+            self::KEY_DEFAULT => 'de',
+            self::KEY_TYPE => self::TYPE_STRING,
+        ],
         Name::DISTANCE => [
             self::KEY_REQUEST => Name::DISTANCE,
             self::KEY_RESPONSE => 'distance',

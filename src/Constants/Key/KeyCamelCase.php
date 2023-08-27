@@ -30,6 +30,8 @@ class KeyCamelCase
 
     final public const ADMIN_4_CODE = 'admin4Code';
 
+    final public const ALTERNATE_NAME_ID = 'alternateNameId';
+
     final public const CITY = 'city';
 
     final public const CLASS_KEY = 'class';

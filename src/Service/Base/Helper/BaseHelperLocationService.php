@@ -15,6 +15,7 @@ namespace App\Service\Base\Helper;
 
 use App\ApiPlatform\Resource\Location;
 use App\Entity\Location as LocationEntity;
+use App\Repository\AlternateNameRepository;
 use App\Repository\LocationRepository;
 use App\Service\LocationCountryService;
 use Ixnode\PhpApiVersionBundle\Utils\Version\Version;
@@ -77,6 +78,7 @@ abstract class BaseHelperLocationService
      * @param ParameterBagInterface $parameterBag
      * @param RequestStack $request
      * @param LocationRepository $locationRepository
+     * @param AlternateNameRepository $alternateNameRepository
      * @param TranslatorInterface $translator
      * @param LocationCountryService $locationCountryService
      */
@@ -85,6 +87,7 @@ abstract class BaseHelperLocationService
         protected ParameterBagInterface $parameterBag,
         protected RequestStack $request,
         protected LocationRepository $locationRepository,
+        protected AlternateNameRepository $alternateNameRepository,
         protected TranslatorInterface $translator,
         protected LocationCountryService $locationCountryService
     )

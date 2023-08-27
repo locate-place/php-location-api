@@ -17,7 +17,7 @@
         "ixnode/php-coordinate": "^0.1.19",
         "ixnode/php-date-parser": "^1.0",
         "ixnode/php-exception": "*",
-        "ixnode/php-timezone": "^0.1.16",
+        "ixnode/php-timezone": "^0.1.17",
         "symfony/config": "6.3.*",
         "symfony/console": "6.3.*",
         "symfony/dotenv": "6.3.*",

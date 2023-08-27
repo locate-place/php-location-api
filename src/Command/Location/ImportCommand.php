@@ -28,7 +28,6 @@ use DateTime;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\NonUniqueResultException;
-use Doctrine\ORM\NoResultException;
 use Exception;
 use Ixnode\PhpApiVersionBundle\Utils\TypeCasting\TypeCastingHelper;
 use Ixnode\PhpContainer\File;
@@ -536,7 +535,6 @@ EOT
      * @param int $geonameId
      * @param string $name
      * @param string $asciiName
-     * @param string $alternateNames
      * @param float $latitude
      * @param float $longitude
      * @param string $cc2
@@ -557,7 +555,6 @@ EOT
         int $geonameId,
         string $name,
         string $asciiName,
-        string $alternateNames,
         float $latitude,
         float $longitude,
         string $cc2,
@@ -591,7 +588,6 @@ EOT
         $location
             ->setName($name)
             ->setAsciiName($asciiName)
-            ->setAlternateNames($alternateNames)
             ->setCoordinate($coordinate)
             ->setCc2($cc2)
             ->setPopulation($population)
@@ -648,7 +644,6 @@ EOT
             $geonameIdValue = (new TypeCastingHelper($row[self::FIELD_GEONAME_ID]))->intval();
             $nameValue = (new TypeCastingHelper($row[self::FIELD_NAME]))->strval();
             $asciiNameValue = (new TypeCastingHelper($row[self::FIELD_ASCII_NAME]))->strval();
-            $alternateNamesValue = (new TypeCastingHelper($row[self::FIELD_ALTERNATE_NAMES]))->strval();
             $latitudeValue = (new TypeCastingHelper($row[self::FIELD_LATITUDE]))->floatval();
             $longitudeValue = (new TypeCastingHelper($row[self::FIELD_LONGITUDE]))->floatval();
             $cc2Value = (new TypeCastingHelper($row[self::FIELD_CC2]))->strval();
@@ -677,7 +672,6 @@ EOT
                 $geonameIdValue,
                 $nameValue,
                 $asciiNameValue,
-                $alternateNamesValue,
                 $latitudeValue,
                 $longitudeValue,
                 $cc2Value,
@@ -792,12 +786,12 @@ EOT
      * Returns if the current import was already done.
      *
      * @param string $countryCode
+     * @param File $file
      * @return bool
-     * @throws TypeInvalidException
-     * @throws NoResultException
      * @throws NonUniqueResultException
+     * @throws TypeInvalidException
      */
-    protected function hasImportByCountryCode(string $countryCode): bool
+    protected function hasImportByCountryCodeAndPath(string $countryCode, File $file): bool
     {
         $country = $this->entityManager->getRepository(Country::class)->findOneBy([
             'code' => strtoupper($countryCode),
@@ -813,7 +807,7 @@ EOT
             return false;
         }
 
-        return $repository->getNumberOfImports($country) > 0;
+        return $repository->getNumberOfImports($country, $file) > 0;
     }
 
     /**
@@ -849,7 +843,7 @@ EOT
 
         $countryCode = basename($file->getPath(), '.txt');
 
-        if (!$force && $this->hasImportByCountryCode($countryCode)) {
+        if (!$force && $this->hasImportByCountryCodeAndPath($countryCode, $file)) {
             $this->printAndLog(sprintf('The given country code "%s" was already imported. Use --force to ignore.', $countryCode));
             return Command::INVALID;
         }

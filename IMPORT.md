@@ -5,7 +5,7 @@
 The data comes from http://download.geonames.org/export/dump/
 and are placed under `import/location`.
 
-### Download command:
+### Download command (location and alternate names):
 
 ```bash
 bin/console location:download "AD" && \
@@ -56,7 +56,7 @@ bin/console location:download "UA" && \
 bin/console location:download "US"
 ```
 
-### Import command:
+### Import command (location):
 
 ```bash
 bin/console location:import import/location/AD.txt && \
@@ -68,7 +68,6 @@ bin/console location:import import/location/BE.txt && \
 bin/console location:import import/location/BG.txt && \
 bin/console location:import import/location/BR.txt && \
 bin/console location:import import/location/BY.txt && \
-bin/console location:import import/location/CA.txt && \
 bin/console location:import import/location/CA.txt && \
 bin/console location:import import/location/CH.txt && \
 bin/console location:import import/location/CI.txt && \
@@ -105,6 +104,61 @@ bin/console location:import import/location/SI.txt && \
 bin/console location:import import/location/TR.txt && \
 bin/console location:import import/location/UA.txt && \
 bin/console location:import import/location/US.txt
+```
+
+Takes about 20 seconds for 10000 lines. The country DE for
+example with 200000 needs about seven minutes to import.
+Depending on the performance of the system used and the
+amounts of data in the table.
+
+
+### Import command (alternate names):
+
+```bash
+bin/console alternate-name:import import/alternate-name/AD.txt && \
+bin/console alternate-name:import import/alternate-name/AL.txt && \
+bin/console alternate-name:import import/alternate-name/AT.txt && \
+bin/console alternate-name:import import/alternate-name/AX.txt && \
+bin/console alternate-name:import import/alternate-name/BA.txt && \
+bin/console alternate-name:import import/alternate-name/BE.txt && \
+bin/console alternate-name:import import/alternate-name/BG.txt && \
+bin/console alternate-name:import import/alternate-name/BR.txt && \
+bin/console alternate-name:import import/alternate-name/BY.txt && \
+bin/console alternate-name:import import/alternate-name/CA.txt && \
+bin/console alternate-name:import import/alternate-name/CH.txt && \
+bin/console alternate-name:import import/alternate-name/CI.txt && \
+bin/console alternate-name:import import/alternate-name/CN.txt && \
+bin/console alternate-name:import import/alternate-name/CY.txt && \
+bin/console alternate-name:import import/alternate-name/CZ.txt && \
+bin/console alternate-name:import import/alternate-name/DK.txt && \
+bin/console alternate-name:import import/alternate-name/EE.txt && \
+bin/console alternate-name:import import/alternate-name/ES.txt && \
+bin/console alternate-name:import import/alternate-name/FI.txt && \
+bin/console alternate-name:import import/alternate-name/FO.txt && \
+bin/console alternate-name:import import/alternate-name/FR.txt && \
+bin/console alternate-name:import import/alternate-name/GB.txt && \
+bin/console alternate-name:import import/alternate-name/GI.txt && \
+bin/console alternate-name:import import/alternate-name/GR.txt && \
+bin/console alternate-name:import import/alternate-name/HR.txt && \
+bin/console alternate-name:import import/alternate-name/IE.txt && \
+bin/console alternate-name:import import/alternate-name/IN.txt && \
+bin/console alternate-name:import import/alternate-name/IS.txt && \
+bin/console alternate-name:import import/alternate-name/IT.txt && \
+bin/console alternate-name:import import/alternate-name/JP.txt && \
+bin/console alternate-name:import import/alternate-name/LI.txt && \
+bin/console alternate-name:import import/alternate-name/LU.txt && \
+bin/console alternate-name:import import/alternate-name/MC.txt && \
+bin/console alternate-name:import import/alternate-name/MX.txt && \
+bin/console alternate-name:import import/alternate-name/NL.txt && \
+bin/console alternate-name:import import/alternate-name/NO.txt && \
+bin/console alternate-name:import import/alternate-name/PL.txt && \
+bin/console alternate-name:import import/alternate-name/PT.txt && \
+bin/console alternate-name:import import/alternate-name/RU.txt && \
+bin/console alternate-name:import import/alternate-name/SE.txt && \
+bin/console alternate-name:import import/alternate-name/SI.txt && \
+bin/console alternate-name:import import/alternate-name/TR.txt && \
+bin/console alternate-name:import import/alternate-name/UA.txt && \
+bin/console alternate-name:import import/alternate-name/US.txt
 ```
 
 Takes about 20 seconds for 10000 lines. The country DE for

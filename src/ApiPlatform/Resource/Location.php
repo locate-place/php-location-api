@@ -58,13 +58,11 @@ use Symfony\Component\Serializer\Annotation\SerializedName;
 /* Get ressource via location: /api/v1/location/coordinate/{coordinate} */
 #[Get(
     uriTemplate: 'location/coordinate.{_format}',
-    uriVariables: [
-        Name::COORDINATE,
-    ],
     openapiContext: [
         'description' => LocationRoute::DESCRIPTION,
         'parameters' => [
             Parameter::COORDINATE,
+            Parameter::LANGUAGE,
         ]
     ],
     provider: LocationProvider::class

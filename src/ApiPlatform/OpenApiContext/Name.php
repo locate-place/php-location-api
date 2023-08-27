@@ -32,5 +32,7 @@ class Name
 
     final public const GEONAME_ID = 'geoname_id';
 
+    final public const LANGUAGE = 'language';
+
     final public const LIMIT = 'limit';
 }

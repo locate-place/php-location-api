@@ -17,6 +17,7 @@ use App\Constants\DB\Distance;
 use App\Constants\DB\FeatureClass;
 use App\Constants\DB\Format;
 use App\Constants\DB\Limit;
+use App\Constants\Language\Language;
 
 /**
  * Class Parameter
@@ -104,6 +105,23 @@ class Parameter
         'schema' => [
             'type' => 'integer',
             'default' => 2_956_832 /* Altstadt, Dresden, Germany */
+        ],
+        'style' => 'simple', // simple, form
+        'explode' => false,
+        'allowReserved' => false,
+    ];
+
+    final public const LANGUAGE = [
+        'name' => Name::LANGUAGE,
+        'in' => 'query', // cookie, header, path, query
+        'description' => '<strong>Language</strong>',
+        'required' => true,
+        'deprecated' => false,
+        'allowEmptyValue' => false,
+        'schema' => [
+            'type' => 'string',
+            'default' => 'en',
+            'enum' => Language::LANGUAGE_ISO_639_1,
         ],
         'style' => 'simple', // simple, form
         'explode' => false,

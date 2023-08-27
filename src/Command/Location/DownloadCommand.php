@@ -16,7 +16,6 @@ namespace App\Command\Location;
 use App\Command\Base\Base;
 use Exception;
 use Ixnode\PhpApiVersionBundle\Utils\TypeCasting\TypeCastingHelper;
-use Ixnode\PhpException\Class\ClassInvalidException;
 use Ixnode\PhpException\File\FileNotWriteableException;
 use Ixnode\PhpTimezone\Constants\CountryUnknown;
 use Ixnode\PhpTimezone\Country;
@@ -45,9 +44,13 @@ class DownloadCommand extends Base
 {
     protected static $defaultName = 'location:download';
 
-    protected const URL_DOWNLOAD = 'http://download.geonames.org/export/dump/%s.zip';
+    protected const URL_DOWNLOAD_LOCATION = 'http://download.geonames.org/export/dump/%s.zip';
 
-    protected const PATH_IMPORT = 'import/location';
+    protected const URL_DOWNLOAD_ALTERNATE_NAMES = 'http://download.geonames.org/export/dump/alternatenames/%s.zip';
+
+    protected const PATH_IMPORT_LOCATION = 'import/location';
+
+    protected const PATH_IMPORT_ALTERNATE_NAMES = 'import/alternate-name';
 
     protected const TEXT_ERROR_COUNTRY_CODE_INVALID = 'The given country code "%s" is invalid.';
 
@@ -57,13 +60,15 @@ class DownloadCommand extends Base
 
     protected const TEXT_ERROR_UNZIP = 'Unable to unzip file "%s".';
 
-    protected const TEXT_ERROR_DOWNLOAD = 'Unable to download file from %s.';
+    protected const TEXT_ERROR_DOWNLOAD_LOCATION = 'Unable to download location file from %s.';
+
+    protected const TEXT_ERROR_DOWNLOAD_ALTERNATE_NAMES = 'Unable to download alternate names file from %s.';
 
     protected const TEXT_ERROR_URL_PATH_DOES_NOT_EXIST = 'The given url "%s" does not exist.';
 
     protected const TEXT_INFORMATION_URL_PATH_EXISTS = 'The given url "%s" exists.';
 
-    protected const TEXT_SUCCESS_DOWNLOAD = 'Successfully downloaded file from %s.';
+    protected const TEXT_SUCCESS_DOWNLOAD = 'Successfully downloaded location and alternate name files from %s.';
 
     protected const TEXT_MESSAGE_DOWNLOAD_TRY = 'Try to download country %s (%s) from %s.';
 
@@ -90,21 +95,101 @@ EOT
     }
 
     /**
-     * Download file from given url.
+     * Download location file from given url.
      *
      * @param string $countryCode
      * @param string $countryName
      * @param string $url
      * @return bool
-     * @throws ClassInvalidException
      * @throws FileNotWriteableException
      */
-    private function downloadFile(string $countryCode, string $countryName, string $url): bool
+    private function downloadLocationFile(string $countryCode, string $countryName, string $url): bool
     {
-        $pathTxt = sprintf('%s/%s.txt', self::PATH_IMPORT, $countryCode);
-        $pathReadme = sprintf('%s/%s.readme.txt', self::PATH_IMPORT, $countryCode);
+        $pathTxt = sprintf('%s/%s.txt', self::PATH_IMPORT_LOCATION, $countryCode);
+        $pathReadme = sprintf('%s/%s.readme.txt', self::PATH_IMPORT_LOCATION, $countryCode);
 
-        $pathDownload = sprintf('%s/download/%s', self::PATH_IMPORT, $countryCode);
+        $pathDownload = sprintf('%s/download/%s', self::PATH_IMPORT_LOCATION, $countryCode);
+        $pathZip = sprintf('%s/%s.zip', $pathDownload, $countryCode);
+        $pathZipTxt = sprintf('%s/%s.txt', $pathDownload, $countryCode);
+        $pathZipReadme = sprintf('%s/readme.txt', $pathDownload);
+
+        if (!is_dir($pathDownload)) {
+            mkdir($pathDownload, 0775, true);
+        }
+
+        if (!is_dir($pathDownload)) {
+            throw new FileNotWriteableException($pathDownload);
+        }
+
+        $headers = get_headers($url);
+
+        if ($headers === false) {
+            $this->printAndLog(sprintf(self::TEXT_ERROR_URL_PATH_DOES_NOT_EXIST, $url));
+            return false;
+        }
+
+        if (!str_contains((string) $headers[0], '200')) {
+            $this->printAndLog(sprintf(self::TEXT_ERROR_URL_PATH_DOES_NOT_EXIST, $url));
+            return false;
+        }
+
+        $this->printAndLog(sprintf(self::TEXT_INFORMATION_URL_PATH_EXISTS, $url));
+
+        $this->printAndLog(sprintf(
+            self::TEXT_MESSAGE_DOWNLOAD,
+            $countryName,
+            $countryCode,
+            $url,
+            $pathZip
+        ));
+
+        file_put_contents($pathZip, file_get_contents($url));
+
+        $zip = new ZipArchive();
+        if ($zip->open($pathZip) !== true) {
+            $this->printAndLog(sprintf(self::TEXT_ERROR_UNZIP, $pathZip));
+            return false;
+        }
+
+        $zip->extractTo(dirname($pathZip));
+        $zip->close();
+
+        unlink($pathZip);
+
+        if (!file_exists($pathZipTxt)) {
+            $this->printAndLog(sprintf(self::TEXT_ERROR_UNZIPPED_FILE_NOT_FOUND, $pathZipTxt));
+            return false;
+        }
+
+        if (!file_exists($pathZipReadme)) {
+            $this->printAndLog(sprintf(self::TEXT_ERROR_UNZIPPED_FILE_NOT_FOUND, $pathZipReadme));
+            return false;
+        }
+
+        rename($pathZipTxt, $pathTxt);
+        rename($pathZipReadme, $pathReadme);
+
+        $this->printAndLog(sprintf('Data file saved to "%s".', $pathTxt));
+        $this->printAndLog(sprintf('readme.txt file saved to "%s".', $pathReadme));
+
+        return true;
+    }
+
+    /**
+     * Download location file from given url.
+     *
+     * @param string $countryCode
+     * @param string $countryName
+     * @param string $url
+     * @return bool
+     * @throws FileNotWriteableException
+     */
+    private function downloadAlternateNameFile(string $countryCode, string $countryName, string $url): bool
+    {
+        $pathTxt = sprintf('%s/%s.txt', self::PATH_IMPORT_ALTERNATE_NAMES, $countryCode);
+        $pathReadme = sprintf('%s/%s.readme.txt', self::PATH_IMPORT_ALTERNATE_NAMES, $countryCode);
+
+        $pathDownload = sprintf('%s/download/%s', self::PATH_IMPORT_ALTERNATE_NAMES, $countryCode);
         $pathZip = sprintf('%s/%s.zip', $pathDownload, $countryCode);
         $pathZipTxt = sprintf('%s/%s.txt', $pathDownload, $countryCode);
         $pathZipReadme = sprintf('%s/readme.txt', $pathDownload);
@@ -189,7 +274,7 @@ EOT
         $this->output = $output;
         $this->input = $input;
 
-        if (!$this->createLogInstance(self::PATH_IMPORT, 'download')) {
+        if (!$this->createLogInstance(self::PATH_IMPORT_LOCATION, 'download')) {
             $this->print('Unable to create log file.');
             return Command::FAILURE;
         }
@@ -209,12 +294,21 @@ EOT
             return Command::INVALID;
         }
 
-        $url = sprintf(self::URL_DOWNLOAD, $countryCodeGiven);
+        $urlLocation = sprintf(self::URL_DOWNLOAD_LOCATION, $countryCodeGiven);
 
-        $this->printAndLog(sprintf(self::TEXT_MESSAGE_DOWNLOAD_TRY, $countryName, $countryCode, $url));
+        $this->printAndLog(sprintf(self::TEXT_MESSAGE_DOWNLOAD_TRY, $countryName, $countryCode, $urlLocation));
 
-        if (!$this->downloadFile($countryCode, $countryName, $url)) {
-            $this->printAndLog(sprintf(self::TEXT_ERROR_DOWNLOAD, $countryCode));
+        if (!$this->downloadLocationFile($countryCode, $countryName, $urlLocation)) {
+            $this->printAndLog(sprintf(self::TEXT_ERROR_DOWNLOAD_LOCATION, $countryCode));
+            return Command::FAILURE;
+        }
+
+        $urlAlternativeNames = sprintf(self::URL_DOWNLOAD_ALTERNATE_NAMES, $countryCodeGiven);
+
+        $this->printAndLog(sprintf(self::TEXT_MESSAGE_DOWNLOAD_TRY, $countryName, $countryCode, $urlAlternativeNames));
+
+        if (!$this->downloadAlternateNameFile($countryCode, $countryName, $urlAlternativeNames)) {
+            $this->printAndLog(sprintf(self::TEXT_ERROR_DOWNLOAD_ALTERNATE_NAMES, $countryCode));
             return Command::FAILURE;
         }
 

@@ -137,8 +137,9 @@ final class LocationProvider extends BaseProvider
     private function doProvideGetWithCoordinate(): BasePublicResource
     {
         $coordinate = $this->getFilterString(Name::COORDINATE);
+        $isoLanguage = $this->getFilterString(Name::LANGUAGE);
 
-        $location = $this->locationService->getLocationByCoordinate($coordinate);
+        $location = $this->locationService->getLocationByCoordinate($coordinate, $isoLanguage);
 
         if ($this->locationService->hasError()) {
             $this->setError($this->locationService->getError());

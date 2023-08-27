@@ -27,6 +27,7 @@ use Ixnode\PhpException\File\FileNotReadableException;
 use Ixnode\PhpException\Function\FunctionJsonEncodeException;
 use Ixnode\PhpException\Parser\ParserException;
 use Ixnode\PhpException\Type\TypeInvalidException;
+use Ixnode\PhpTimezone\Constants\Language;
 use JsonException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -65,6 +66,8 @@ class CoordinateCommand extends Base
     private const OPTION_NAME_DEBUG_LIMIT = 'debug-limit';
 
     private const OPTION_NAME_FORMAT = 'format';
+
+    private const OPTION_ISO_LANGUAGE = 'iso-language';
 
     private const FORMAT_JSON = 'json';
 
@@ -112,6 +115,7 @@ class CoordinateCommand extends Base
                 new InputArgument(self::ARGUMENT_NAME_LONGITUDE, InputArgument::OPTIONAL, 'The longitude of the coordinate.'),
             ])
             ->addOption(self::OPTION_NAME_FORMAT, 'f', InputOption::VALUE_REQUIRED, 'Sets the output format.', 'json')
+            ->addOption(self::OPTION_ISO_LANGUAGE, 'i', InputOption::VALUE_REQUIRED, 'Sets the output language.', 'en')
             ->addOption(self::OPTION_NAME_DEBUG, 'd', InputOption::VALUE_NONE, 'Shows debug information.')
             ->addOption(self::OPTION_NAME_DEBUG_LIMIT, 'l', InputOption::VALUE_REQUIRED, 'Sets the debug limit.', BaseHelperLocationService::DEBUG_LIMIT)
             ->setHelp(
@@ -194,6 +198,15 @@ EOT
         $debug = (bool) $input->getOption(self::OPTION_NAME_DEBUG);
         $debugLimit = (new TypeCastingHelper($input->getOption(self::OPTION_NAME_DEBUG_LIMIT)))->intval();
         $format = (new TypeCastingHelper($input->getOption(self::OPTION_NAME_FORMAT)))->strval();
+        $isoLanguage = (new TypeCastingHelper($input->getOption(self::OPTION_ISO_LANGUAGE)))->strval();
+
+        if (!in_array($isoLanguage, array_keys(Language::LANGUAGE_ISO_639_1))) {
+            $this->output->writeln(sprintf(
+                '<error>%s</error> is not a valid ISO 639-1 language code.',
+                $isoLanguage
+            ));
+            return Command::INVALID;
+        }
 
         if (!in_array($format, self::FORMATS, true)) {
             $this->output->writeln(sprintf(
@@ -210,7 +223,7 @@ EOT
             ->setDebug($debug, $this->output)
             ->setDebugLimit($debugLimit)
         ;
-        $location = $this->locationService->getLocationByCoordinate($coordinate->getString());
+        $location = $this->locationService->getLocationByCoordinate($coordinate->getString(), $isoLanguage);
         if ($debug) {
             return Command::SUCCESS;
         }

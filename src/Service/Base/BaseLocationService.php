@@ -16,11 +16,13 @@ namespace App\Service\Base;
 use App\ApiPlatform\Resource\Location;
 use App\Constants\DB\FeatureClass;
 use App\DBAL\GeoLocation\ValueObject\Point;
+use App\Entity\AlternateName;
 use App\Entity\Location as LocationEntity;
 use App\Service\Base\Helper\BaseHelperLocationService;
 use DateTime;
 use DateTimeZone;
 use Doctrine\ORM\NonUniqueResultException;
+use Exception;
 use Ixnode\PhpCoordinate\Coordinate;
 use Ixnode\PhpException\Case\CaseUnsupportedException;
 use Ixnode\PhpException\Class\ClassInvalidException;
@@ -45,7 +47,7 @@ abstract class BaseLocationService extends BaseHelperLocationService
      * @return Location
      * @throws CaseUnsupportedException
      * @throws ParserException
-     * @throws \Exception
+     * @throws Exception
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      * @SuppressWarnings(PHPMD.NPathComplexity)
      */
@@ -134,6 +136,7 @@ abstract class BaseLocationService extends BaseHelperLocationService
      * Returns the full location.
      *
      * @param LocationEntity $locationEntity
+     * @param string $isoLanguage
      * @return Location
      * @throws CaseUnsupportedException
      * @throws ClassInvalidException
@@ -143,7 +146,7 @@ abstract class BaseLocationService extends BaseHelperLocationService
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      * @SuppressWarnings(PHPMD.NPathComplexity)
      */
-    protected function getLocationFull(LocationEntity $locationEntity): Location
+    protected function getLocationFull(LocationEntity $locationEntity, string $isoLanguage = 'en'): Location
     {
         $location = $this->getLocation($locationEntity, $this->coordinate)
             ->setLink([
@@ -170,26 +173,26 @@ abstract class BaseLocationService extends BaseHelperLocationService
         $locationInformation = [];
 
         if ($this->isDistrictVisible && !is_null($this->district)) {
-            $locationInformation['district-locality'] = $this->district->getName();
+            $locationInformation['district-locality'] = $this->getNameByIsoLanguage($this->district, $isoLanguage);
         }
 
         if ($this->isBoroughVisible && !is_null($this->borough)) {
-            $locationInformation['borough-locality'] = $this->borough->getName();
+            $locationInformation['borough-locality'] = $this->getNameByIsoLanguage($this->borough, $isoLanguage);
         }
 
         if ($this->isCityVisible && !is_null($this->city)) {
-            $locationInformation['city-municipality'] = $this->city->getName();
+            $locationInformation['city-municipality'] = $this->getNameByIsoLanguage($this->city, $isoLanguage);
         }
 
         if ($this->isStateVisible && !is_null($this->state)) {
-            $locationInformation['state'] = $this->state->getName();
+            $locationInformation['state'] = $this->getNameByIsoLanguage($this->state, $isoLanguage);
         }
 
         if ($this->isCountryVisible && !is_null($this->country)) {
-            $locationInformation['country'] = $this->country->getName();
+            $locationInformation['country'] = $this->getNameByIsoLanguage($this->country, $isoLanguage);
         }
 
-        $this->printDebug($locationEntity);
+        $this->printDebug($locationEntity, $isoLanguage);
 
         $location
             ->setLocation($locationInformation)
@@ -199,24 +202,55 @@ abstract class BaseLocationService extends BaseHelperLocationService
     }
 
     /**
+     * Returns the alternate name by given iso language.
+     *
+     * @param LocationEntity|null $location
+     * @param string $isoLanguage
+     * @return string
+     */
+    private function getNameByIsoLanguage(?LocationEntity $location, string $isoLanguage): string
+    {
+        if (is_null($location)) {
+            return 'n/a';
+        }
+
+        if ($isoLanguage === 'en') {
+            return (string) $location->getName();
+        }
+
+        $alternateName = $this->alternateNameRepository->findOneByIsoLanguage($location, $isoLanguage);
+
+        if ($alternateName instanceof AlternateName) {
+            $name = $alternateName->getAlternateName();
+
+            if (!is_null($name)) {
+                return $name;
+            }
+        }
+
+        return (string) $location->getName();
+    }
+
+    /**
      * Prints some debug information.
      *
      * @param LocationEntity $locationSource
+     * @param string $isoLanguage
      * @return void
      * @throws CaseUnsupportedException
      * @throws ClassInvalidException
      * @throws ParserException
      * @throws TypeInvalidException
      */
-    protected function printDebug(LocationEntity $locationSource): void
+    protected function printDebug(LocationEntity $locationSource, string $isoLanguage): void
     {
         if (!$this->isDebug()) {
             return;
         }
 
-        $this->printPlace($locationSource);
-        $this->printFeatureClass($locationSource, FeatureClass::FEATURE_CLASS_P);
-        $this->printFeatureClass($locationSource, FeatureClass::FEATURE_CLASS_A);
+        $this->printPlace($locationSource, $isoLanguage);
+        $this->printFeatureClass($locationSource, FeatureClass::FEATURE_CLASS_P, $isoLanguage);
+        $this->printFeatureClass($locationSource, FeatureClass::FEATURE_CLASS_A, $isoLanguage);
 
         $timeExecution = microtime(true) - $this->timeStart;
         if ($this->isDebug()) {
@@ -230,11 +264,12 @@ abstract class BaseLocationService extends BaseHelperLocationService
      * Prints the place information.
      *
      * @param LocationEntity $locationSource
+     * @param string $isoLanguage
      * @return void
      * @throws CaseUnsupportedException
      * @throws ParserException
      */
-    protected function printPlace(LocationEntity $locationSource): void
+    protected function printPlace(LocationEntity $locationSource, string $isoLanguage): void
     {
         if (!$this->isDebug()) {
             return;
@@ -242,29 +277,29 @@ abstract class BaseLocationService extends BaseHelperLocationService
 
         $this->output->writeln('');
         $this->printCaption();
-        $this->printLocation($locationSource, 'district');
+        $this->printLocation($locationSource, 'district', $isoLanguage);
 
         $this->output->writeln('');
         $this->printCaption();
 
         if ($this->isDistrictVisible) {
-            $this->printLocation($this->district, 'district');
+            $this->printLocation($this->district, 'district', $isoLanguage);
         }
 
         if ($this->isBoroughVisible) {
-            $this->printLocation($this->borough, 'borough');
+            $this->printLocation($this->borough, 'borough', $isoLanguage);
         }
 
         if ($this->isCityVisible) {
-            $this->printLocation($this->city, 'city');
+            $this->printLocation($this->city, 'city', $isoLanguage);
         }
 
         if ($this->isStateVisible) {
-            $this->printLocation($this->state,'state');
+            $this->printLocation($this->state,'state', $isoLanguage);
         }
 
         if ($this->isCountryVisible) {
-            $this->printLocation($this->country, 'country');
+            $this->printLocation($this->country, 'country', $isoLanguage);
         }
     }
 
@@ -273,13 +308,14 @@ abstract class BaseLocationService extends BaseHelperLocationService
      *
      * @param LocationEntity $locationSource
      * @param string $featureClass
+     * @param string $isoLanguage
      * @return void
      * @throws CaseUnsupportedException
      * @throws ClassInvalidException
      * @throws ParserException
      * @throws TypeInvalidException
      */
-    protected function printFeatureClass(LocationEntity $locationSource, string $featureClass): void
+    protected function printFeatureClass(LocationEntity $locationSource, string $featureClass, string $isoLanguage): void
     {
         if (!$this->isDebug()) {
             return;
@@ -318,7 +354,7 @@ abstract class BaseLocationService extends BaseHelperLocationService
         foreach ($locations as $location) {
             $location = $location['location'];
 
-            $this->printLocation($location);
+            $this->printLocation($location, null, $isoLanguage);
         }
     }
 
@@ -353,13 +389,14 @@ abstract class BaseLocationService extends BaseHelperLocationService
      *
      * @param LocationEntity|null $location
      * @param string|null $description
+     * @param string $isoLanguage
      * @return void
      * @throws CaseUnsupportedException
      * @throws ParserException
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      * @SuppressWarnings(PHPMD.NPathComplexity)
      */
-    protected function printLocation(LocationEntity|null $location, string|null $description = null): void
+    protected function printLocation(LocationEntity|null $location, string|null $description = null, string $isoLanguage = 'en'): void
     {
         $geoNameId = $location?->getGeonameId() ?: 'n/a';
         $distanceKm = $location ? $this->coordinate->getDistance($location->getCoordinateIxnode()) / 1000 : 0;
@@ -373,8 +410,8 @@ abstract class BaseLocationService extends BaseHelperLocationService
         $adminCode4 = $location?->getAdminCode()?->getAdmin4Code() ?: 'n/a';
         $position = $location?->getPosition() ?: 'n/a';
         $name = match (true) {
-            !is_null($description) => sprintf('%s (%s)', $location?->getName() ?: 'n/a', $description),
-            default => $location?->getName() ?: 'n/a',
+            !is_null($description) => sprintf('%s (%s)', $this->getNameByIsoLanguage($location, $isoLanguage), $description),
+            default => $this->getNameByIsoLanguage($location, $isoLanguage),
         };
 
         $this->output->writeln(sprintf(
