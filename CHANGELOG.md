@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Releases
 
+### [0.1.21] - 2023-08-28
+
+* Add state config
+* Add Malta tests and configuration
+
 ### [0.1.20] - 2023-08-27
 
 * Add alternate names
