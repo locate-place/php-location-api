@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Releases
 
+### [0.1.20] - 2023-08-27
+
+* Add alternate names
+* Add alternate names import
+* Add iso language parameter to api query and command line
+
 ### [0.1.19] - 2023-08-26
 
 * Add New York / Binghamton test
