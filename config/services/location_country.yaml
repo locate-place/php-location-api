@@ -141,7 +141,8 @@ parameters:
                 admin_codes: null
                 with_population: true
         MT:
-            district: null
+            district:
+                visible: false
             borough: null
             city: null
             state:

@@ -45,4 +45,16 @@ class PlaceMT
             'country' => 'Republic of Malta',
         ],
     ];
+
+    final public const VICTORIA_IL_KATIDRAL_TA_GHAWDEX = [
+        'coordinate' => [
+            'latitude' => 36.046679087139104,
+            'longitude' => 14.23976854681788,
+        ],
+        'location' => [
+            'city-municipality' => 'Victoria',
+            'state' => 'Gozo and Comino District',
+            'country' => 'Republic of Malta',
+        ],
+    ];
 }

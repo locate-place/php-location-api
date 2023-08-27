@@ -35,6 +35,7 @@ class Search
         'gb-warwick-university' => PlaceGB::WARWICK_UNIVERSITY,
         'mt-floriana-knisja-ta-san-publiju' => PlaceMT::FLORIANA_KNISJA_TA_SAN_PUBLIJU,
         'mt-valletta-misrah-san-gorg' => PlaceMT::VALLETTA_MISRAH_SAN_GORG,
+        'mt-victoria-il-katidral-ta-ghawdex' => PlaceMT::VICTORIA_IL_KATIDRAL_TA_GHAWDEX,
         'se-ekeroe-drottningholm-castle' => PlaceSE::EKEROE_DROTTNINGHOLM_CASTLE,
         'se-lidingoe-boobooliving' => PlaceSE::LIDINGOE_BOOBOOLIVING,
         'se-stockholm-palace' => PlaceSE::STOCKHOLM_PALACE,
