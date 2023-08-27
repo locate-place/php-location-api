@@ -107,7 +107,7 @@ class LocationRepository extends ServiceEntityRepository
      * ORDER BY distance
      * LIMIT 50;
      *
-     * @param Coordinate $coordinate
+     * @param Coordinate|null $coordinate
      * @param int|null $distanceMeter
      * @param array<int, string>|string|null $featureClasses
      * @param array<int, string>|string|null $featureCodes
@@ -129,7 +129,7 @@ class LocationRepository extends ServiceEntityRepository
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     public function findLocationsByCoordinate(
-        Coordinate $coordinate,
+        Coordinate|null $coordinate = null,
         int|null $distanceMeter = null,
         array|string|null $featureClasses = null,
         array|string|null $featureCodes = null,
@@ -144,7 +144,7 @@ class LocationRepository extends ServiceEntityRepository
         $queryBuilder = $this->createQueryBuilder('l');
 
         /* Limit result by given distance. */
-        if (is_int($distanceMeter)) {
+        if (!is_null($coordinate) && is_int($distanceMeter)) {
             $queryBuilder
                 /* Attention: PostGIS uses lon/lat not lat/lon! */
                 ->andWhere('ST_DWithin(
@@ -222,14 +222,16 @@ class LocationRepository extends ServiceEntityRepository
         }
 
         /* Order result by distance (uses <-> for performance reasons). */
-        $queryBuilder
-            ->addSelect(sprintf(
-                'DistanceOperator(l.coordinate, %f, %f) AS HIDDEN distance',
-                $coordinate->getLatitude(),
-                $coordinate->getLongitude()
-            ))
-            ->addOrderBy('distance', 'ASC')
-        ;
+        if (!is_null($coordinate)) {
+            $queryBuilder
+                ->addSelect(sprintf(
+                    'DistanceOperator(l.coordinate, %f, %f) AS HIDDEN distance',
+                    $coordinate->getLatitude(),
+                    $coordinate->getLongitude()
+                ))
+                ->addOrderBy('distance', 'ASC')
+            ;
+        }
 
         /* Limit result by number of entities. */
         if (is_int($limit)) {
@@ -248,7 +250,7 @@ class LocationRepository extends ServiceEntityRepository
     /**
      * Finds the next location given by coordinate.
      *
-     * @param Coordinate $coordinate
+     * @param Coordinate|null $coordinate
      * @param array<int, string>|string|null $featureClasses
      * @param array<int, string>|string|null $featureCodes
      * @param Country|null $country
@@ -263,7 +265,7 @@ class LocationRepository extends ServiceEntityRepository
      * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
      */
     public function findNextLocationByCoordinate(
-        Coordinate $coordinate,
+        Coordinate|null $coordinate = null,
         array|string|null $featureClasses = null,
         array|string|null $featureCodes = null,
         Country|null $country = null,
@@ -446,51 +448,23 @@ class LocationRepository extends ServiceEntityRepository
      * @param Location $location
      * @return Location|null
      * @throws ClassInvalidException
-     * @throws NonUniqueResultException
      * @throws TypeInvalidException
+     * @throws CaseUnsupportedException
+     * @throws ParserException
      */
     public function findStateByLocation(Location $location): Location|null
     {
-        $country = $location->getCountry();
+        $coordinate = $this->locationCountryService->isStateUseCoordinate($location) ? $location->getCoordinateIxnode() : null;
 
-        if (!$country instanceof Country) {
-            throw new ClassInvalidException(Country::class, Country::class);
-        }
-
-        $queryBuilder = $this->createQueryBuilder('l');
-
-        $queryBuilder
-            ->andWhere('l.country = :country')
-            ->setParameter('country', $country);
-
-        $queryBuilder
-            ->leftJoin('l.featureClass', 'fcl')
-            ->andWhere('fcl.class = :featureClass')
-            ->setParameter('featureClass', FeatureClass::FEATURE_CLASS_A);
-
-        $queryBuilder
-            ->leftJoin('l.featureCode', 'fco')
-            ->leftJoin('l.adminCode', 'a')
-        ;
-
-        switch ($country->getCode()) {
-            /* de, etc. */
-            default:
-                $queryBuilder
-                    ->andWhere('fco.code = :featureCode')
-                    ->setParameter('featureCode', FeatureClass::FEATURE_CODE_A_ADM1)
-                    ->andWhere('a.admin1Code = :admin1Code')
-                    ->setParameter('admin1Code', $location->getAdminCode()?->getAdmin1Code())
-                ;
-        }
-
-        $result = $queryBuilder->getQuery()->getOneOrNullResult();
-
-        if (is_null($result)) {
-            return null;
-        }
-
-        return (new Checker($result))->checkClass(Location::class);
+        return $this->findNextLocationByCoordinate(
+            coordinate: $coordinate,
+            featureClasses: $this->locationCountryService->getStateFeatureClass($location),
+            featureCodes: $this->locationCountryService->getStateFeatureCodes($location),
+            country: $location->getCountry(),
+            adminCodes: $this->locationCountryService->getStateAdminCodes($location),
+            withPopulation: $this->locationCountryService->getStateWithPopulation($location),
+            sortByFeatureCodes: $this->locationCountryService->isStateSortByFeatureCodes($location)
+        );
     }
 
     /**

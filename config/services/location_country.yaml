@@ -2,6 +2,7 @@ parameters:
     feature_class_a: 'A'
     feature_class_p: 'P'
 
+    admin_codes_a0: 'a0'
     admin_codes_a1: 'a1'
     admin_codes_a2: 'a2'
     admin_codes_a3: 'a3'
@@ -14,19 +15,20 @@ parameters:
         - '%admin_codes_a4%'
 
     district_match:
-        JP: '%admin_codes_a1%'
+        AT: '%admin_codes_a3%'
+        CH: '%admin_codes_a3%'
         CZ: '%admin_codes_a1%'
         DK: '%admin_codes_a2%'
+        EE: '%admin_codes_a3%'
+        ES: '%admin_codes_a3%'
         GB: '%admin_codes_a2%'
+        JP: '%admin_codes_a1%'
+        MT: '%admin_codes_a1%'
         NL: '%admin_codes_a2%'
+        PL: '%admin_codes_a3%'
         PT: '%admin_codes_a2%'
         SE: '%admin_codes_a2%'
         US: '%admin_codes_a2%'
-        AT: '%admin_codes_a3%'
-        CH: '%admin_codes_a3%'
-        EE: '%admin_codes_a3%'
-        ES: '%admin_codes_a3%'
-        PL: '%admin_codes_a3%'
 
     # some db configuration names
     db_not_null: 'not-null'
@@ -70,6 +72,15 @@ parameters:
                 sort_by_feature_codes: true
                 admin_codes: null
                 with_population: true
+            state:
+                feature_class: '%feature_class_a%'
+                feature_codes:
+                    - 'ADM1'
+                sort_by_feature_codes: true
+                admin_codes:
+                    a1: '%db_from_location%'
+                with_population: null
+                use_coordinate: false
         DE:
             district: null
             borough: null
@@ -129,6 +140,19 @@ parameters:
                 sort_by_feature_codes: true
                 admin_codes: null
                 with_population: true
+        MT:
+            district: null
+            borough: null
+            city: null
+            state:
+                feature_class: '%feature_class_a%'
+                feature_codes:
+                    - 'ADMD'
+                sort_by_feature_codes: true
+                admin_codes:
+                    a1: '00'
+                with_population: null
+                use_coordinate: true
         US:
             district:
                 feature_class: '%feature_class_p%'
@@ -146,7 +170,7 @@ parameters:
                       sort_by_feature_codes: true
                       admin_codes:
                           a1: 'NY'
-                          a2: 'from-location'
+                          a2: '%db_from_location%'
             borough:
                 visible: false
                 feature_class: '%feature_class_p%'
@@ -164,7 +188,7 @@ parameters:
                         sort_by_feature_codes: true
                         admin_codes:
                             a1: 'NY'
-                            a2: 'from-location'
+                            a2: '%db_from_location%'
             city:
                 feature_class: '%feature_class_p%'
                 feature_codes:

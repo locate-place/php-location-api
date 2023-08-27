@@ -225,8 +225,31 @@
         },
         "time-taken": {
             "type": "string"
+        },
+        "version": {
+            "type": "string"
+        },
+        "data-licence": {
+            "type": "object",
+            "properties": {
+                "full": {
+                    "type": "string"
+                },
+                "short": {
+                    "type": "string"
+                },
+                "url": {
+                    "type": "string"
+                }
+            },
+            "additionalProperties": false,
+            "required": [
+                "full",
+                "short",
+                "url"
+            ]
         }
     },
-    "required": ["data"],
+    "required": ["data", "given", "time-taken", "version", "data-licence"],
     "additionalProperties": false
 }

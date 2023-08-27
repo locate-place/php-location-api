@@ -26,6 +26,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
  * @version 0.1.0 (2023-08-24)
  * @since 0.1.0 (2023-08-24) First version.
  * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
+ * @SuppressWarnings(PHPMD.TooManyPublicMethods)
  */
 final class LocationCountryService
 {
@@ -128,6 +129,7 @@ final class LocationCountryService
         ;
 
         return match ($adminCode) {
+            'a0' => [],
             'a1' => ['a1' => (string) $location->getAdminCode()?->getAdmin1Code()],
             'a2' => ['a2' => (string) $location->getAdminCode()?->getAdmin2Code()],
             'a3' => ['a3' => (string) $location->getAdminCode()?->getAdmin3Code()],
@@ -398,6 +400,33 @@ final class LocationCountryService
     }
 
     /**
+     * Returns if the coordinate should be used of given location.
+     *
+     * @param Location $location
+     * @param string $type
+     * @return bool
+     * @throws CaseUnsupportedException
+     */
+    private function isUseCoordinate(Location $location, string $type = 'district'): bool
+    {
+        $key = 'use_coordinate';
+
+        $sortByFeatureCodes = $this->getValueFromConfig($key, $location, $type);
+
+        if (!is_bool($sortByFeatureCodes)) {
+            throw new CaseUnsupportedException(sprintf(
+                'Unsupported type given for %s.%s.%s: %s.',
+                $this->getCountryCode($location),
+                $type,
+                $key,
+                gettype($sortByFeatureCodes)
+            ));
+        }
+
+        return $sortByFeatureCodes;
+    }
+
+    /**
      * Returns the admin codes for district.
      *
      * @param Location $location
@@ -587,6 +616,18 @@ final class LocationCountryService
     }
 
     /**
+     * Returns the state feature codes of given location.
+     *
+     * @param Location $location
+     * @return string
+     * @throws CaseUnsupportedException
+     */
+    public function getStateFeatureClass(Location $location): string
+    {
+        return $this->getFeatureClass($location, 'state');
+    }
+
+    /**
      * Returns the district feature codes of given location.
      *
      * @param Location $location
@@ -620,6 +661,18 @@ final class LocationCountryService
     public function getCityFeatureCodes(Location $location): array
     {
         return $this->getFeatureCodes($location, 'city');
+    }
+
+    /**
+     * Returns the state feature codes of given location.
+     *
+     * @param Location $location
+     * @return array<int, string>
+     * @throws CaseUnsupportedException
+     */
+    public function getStateFeatureCodes(Location $location): array
+    {
+        return $this->getFeatureCodes($location, 'state');
     }
 
     /**
@@ -659,6 +712,30 @@ final class LocationCountryService
     }
 
     /**
+     * Returns if the feature codes should be sorted (state).
+     *
+     * @param Location $location
+     * @return bool
+     * @throws CaseUnsupportedException
+     */
+    public function isStateSortByFeatureCodes(Location $location): bool
+    {
+        return $this->isSortByFeatureCodes($location, 'state');
+    }
+
+    /**
+     * Returns if the coordinate should be used (state).
+     *
+     * @param Location $location
+     * @return bool
+     * @throws CaseUnsupportedException
+     */
+    public function isStateUseCoordinate(Location $location): bool
+    {
+        return $this->isUseCoordinate($location, 'state');
+    }
+
+    /**
      * Returns the admin codes for district.
      *
      * @param Location $location
@@ -685,7 +762,7 @@ final class LocationCountryService
     }
 
     /**
-     * Returns the admin codes for district.
+     * Returns the admin codes for city.
      *
      * @param Location $location
      * @return array{a1?: string, a2?: string, a3?: string, a4?: string}
@@ -695,6 +772,19 @@ final class LocationCountryService
     public function getCityAdminCodes(Location $location): array
     {
         return $this->getAdminCodes($location, 'city');
+    }
+
+    /**
+     * Returns the admin codes for state.
+     *
+     * @param Location $location
+     * @return array{a1?: string, a2?: string, a3?: string, a4?: string}
+     * @throws CaseUnsupportedException
+     * @throws TypeInvalidException
+     */
+    public function getStateAdminCodes(Location $location): array
+    {
+        return $this->getAdminCodes($location, 'state');
     }
 
     /**
@@ -731,6 +821,18 @@ final class LocationCountryService
     public function getCityWithPopulation(Location $location): bool|null
     {
         return $this->getWithPopulation($location, 'city');
+    }
+
+    /**
+     * Returns the state with population of given location.
+     *
+     * @param Location $location
+     * @return bool|null
+     * @throws CaseUnsupportedException
+     */
+    public function getStateWithPopulation(Location $location): bool|null
+    {
+        return $this->getWithPopulation($location, 'state');
     }
 
     /**

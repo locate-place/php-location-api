@@ -122,7 +122,12 @@ Both will result in:
   "valid": true,
   "date": "2023-08-27T13:23:55+00:00",
   "timeTaken": "65ms",
-  "version": "0.1.20"
+  "version": "0.1.20",
+  "data-licence": {
+    "full": "Creative Commons Attribution 4.0 License",
+    "short": "CC-BY 4.0",
+    "source": "https://download.geonames.org/export/dump/readme.txt"
+  }
 }
 ```
 

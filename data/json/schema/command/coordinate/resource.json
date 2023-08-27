@@ -25,7 +25,7 @@
         "timezone": {
             "timezone": "Europe/Zurich",
             "country": "CH",
-            "current-time": "2023-08-27 15:30:35",
+            "current-time": "2023-08-27 23:14:57",
             "offset": "+02:00",
             "latitude": 47.38333,
             "longitude": 8.53333
@@ -58,5 +58,11 @@
             }
         }
     },
-    "time-taken": "127ms"
+    "time-taken": "90ms",
+    "version": "0.1.20",
+    "data-licence": {
+        "full": "Creative Commons Attribution 4.0 License",
+        "short": "CC-BY 4.0",
+        "url": "https://download.geonames.org/export/dump/readme.txt"
+    }
 }

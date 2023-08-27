@@ -33,6 +33,8 @@ class Search
         'gb-london-tower-bridge' => PlaceGB::LONDON_TOWER_BRIDGE,
         'gb-oxford-summertown' => PlaceGB::OXFORD_SUMMERTOWN,
         'gb-warwick-university' => PlaceGB::WARWICK_UNIVERSITY,
+        'mt-floriana-knisja-ta-san-publiju' => PlaceMT::FLORIANA_KNISJA_TA_SAN_PUBLIJU,
+        'mt-valletta-misrah-san-gorg' => PlaceMT::VALLETTA_MISRAH_SAN_GORG,
         'se-ekeroe-drottningholm-castle' => PlaceSE::EKEROE_DROTTNINGHOLM_CASTLE,
         'se-lidingoe-boobooliving' => PlaceSE::LIDINGOE_BOOBOOLIVING,
         'se-stockholm-palace' => PlaceSE::STOCKHOLM_PALACE,

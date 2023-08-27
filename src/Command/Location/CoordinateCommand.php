@@ -17,6 +17,7 @@ use App\ApiPlatform\Resource\Location;
 use App\Command\Base\Base;
 use App\Service\Base\Helper\BaseHelperLocationService;
 use App\Service\LocationService;
+use App\Utils\Version\Version;
 use Exception;
 use Ixnode\PhpApiVersionBundle\Utils\TypeCasting\TypeCastingHelper;
 use Ixnode\PhpContainer\Json;
@@ -179,6 +180,12 @@ EOT
                 '%dms',
                 $duration * 1000
             ),
+            'version' => (new Version())->getVersion(),
+            'data-licence' => [
+                'full' => 'Creative Commons Attribution 4.0 License',
+                'short' => 'CC-BY 4.0',
+                'url' => 'https://download.geonames.org/export/dump/readme.txt',
+            ],
         ];
 
         return new Json($data);
