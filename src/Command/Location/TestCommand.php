@@ -15,7 +15,7 @@ namespace App\Command\Location;
 
 use App\Command\Base\Base;
 use App\Constants\Place\Search;
-use App\Service\Base\Helper\BaseHelperLocationService;
+use App\Service\LocationServiceDebug;
 use Exception;
 use Ixnode\PhpApiVersionBundle\Utils\TypeCasting\TypeCastingHelper;
 use Ixnode\PhpContainer\Json;
@@ -78,7 +78,7 @@ class TestCommand extends Base
             ->addOption(self::OPTION_NAME_FORMAT, 'f', InputOption::VALUE_REQUIRED, 'Sets the output format.', 'json')
             ->addOption(self::OPTION_ISO_LANGUAGE, 'i', InputOption::VALUE_REQUIRED, 'Sets the output language.', 'en')
             ->addOption(self::OPTION_NAME_DEBUG, 'd', InputOption::VALUE_NONE, 'Shows debug information.')
-            ->addOption(self::OPTION_NAME_DEBUG_LIMIT, 'l', InputOption::VALUE_REQUIRED, 'Sets the debug limit.', BaseHelperLocationService::DEBUG_LIMIT)
+            ->addOption(self::OPTION_NAME_DEBUG_LIMIT, 'l', InputOption::VALUE_REQUIRED, 'Sets the debug limit.', LocationServiceDebug::DEBUG_LIMIT)
             ->setHelp(
                 <<<'EOT'
 

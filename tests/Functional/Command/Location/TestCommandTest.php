@@ -18,7 +18,7 @@ use App\Constants\Command\CommandSchema;
 use App\Constants\Place\Search;
 use App\Repository\AlternateNameRepository;
 use App\Repository\LocationRepository;
-use App\Service\LocationCountryService;
+use App\Service\LocationServiceConfig;
 use App\Service\LocationService;
 use App\Utils\Db\Repository;
 use Ixnode\PhpApiVersionBundle\Command\Version\VersionCommand;
@@ -59,15 +59,18 @@ class TestCommandTest extends BaseFunctionalCommandTest
             ->setConfigUseCommand(
                 commandName: CoordinateCommand::COMMAND_NAME,
                 commandClass: CoordinateCommand::class,
-                commandClassParameterClosure: fn() => [new LocationService(
-                    new Version($this->getProjectDir()),
-                    $this->parameterBag,
-                    $this->request,
+                commandClassParameterClosure: fn() => [
                     $this->repository->getRepository(LocationRepository::class),
-                    $this->repository->getRepository(AlternateNameRepository::class),
-                    $this->translator,
-                    new LocationCountryService($this->parameterBag)
-                )]
+                    new LocationService(
+                        new Version($this->getProjectDir()),
+                        $this->parameterBag,
+                        $this->request,
+                        $this->repository->getRepository(LocationRepository::class),
+                        $this->repository->getRepository(AlternateNameRepository::class),
+                        $this->translator,
+                        new LocationServiceConfig($this->parameterBag)
+                    )
+                ]
             );
     }
 

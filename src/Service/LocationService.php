@@ -25,7 +25,6 @@ use Ixnode\PhpException\Case\CaseUnsupportedException;
 use Ixnode\PhpException\Class\ClassInvalidException;
 use Ixnode\PhpException\Parser\ParserException;
 use Ixnode\PhpException\Type\TypeInvalidException;
-use JetBrains\PhpStorm\NoReturn;
 
 /**
  * Class LocationService
@@ -64,7 +63,7 @@ final class LocationService extends BaseLocationService
             return $this->getEmptyLocation($geonameId);
         }
 
-        $this->coordinate = new Coordinate($point->getLatitude(), $point->getLongitude());
+        $this->setCoordinate(new Coordinate($point->getLatitude(), $point->getLongitude()));
 
         return $this->getLocationFull($location, $isoLanguage);
     }
@@ -72,7 +71,7 @@ final class LocationService extends BaseLocationService
     /**
      * Returns Location ressource by given coordinate string.
      *
-     * @param string $coordinate
+     * @param Coordinate $coordinate
      * @param string $isoLanguage
      * @return Location
      * @throws CaseUnsupportedException
@@ -81,10 +80,9 @@ final class LocationService extends BaseLocationService
      * @throws ParserException
      * @throws TypeInvalidException
      */
-    public function getLocationByCoordinate(string $coordinate, string $isoLanguage = 'en'): Location
+    public function getLocationByCoordinate(Coordinate $coordinate, string $isoLanguage = 'en'): Location
     {
-
-        $this->coordinate = new Coordinate($coordinate);
+        $this->setCoordinate($coordinate);
 
 //        $adminConfiguration = $this->locationRepository->findNextAdminConfiguration(
 //            coordinate: $this->coordinate,
@@ -92,14 +90,9 @@ final class LocationService extends BaseLocationService
 //            featureCodes: FeatureClass::FEATURE_CODES_P_ALL,
 //        );
 
-        $location = $this->locationRepository->findNextLocationByCoordinate(
-            coordinate: $this->coordinate,
-            featureClasses: FeatureClass::FEATURE_CLASS_P,
-            featureCodes: FeatureClass::FEATURE_CODES_P_ALL,
-        );
+        $location = $this->getLocationEntityByCoordinate($coordinate);
 
-        if (!$location instanceof LocationEntity) {
-            $this->setError(sprintf('Unable to find location with coordinate "%s".', $coordinate));
+        if (is_null($location)) {
             return $this->getEmptyLocation();
         }
 
@@ -109,7 +102,7 @@ final class LocationService extends BaseLocationService
     /**
      * Returns locations by given coordinates string (filter limit, distance, feature classes).
      *
-     * @param string $coordinate
+     * @param Coordinate $coordinate
      * @param int|null $limit
      * @param int|null $distance
      * @param array<int, string>|string|null $featureClass
@@ -119,9 +112,9 @@ final class LocationService extends BaseLocationService
      * @throws ParserException
      * @throws TypeInvalidException
      */
-    public function getLocationsByCoordinate(string $coordinate, int|null $limit = Limit::LIMIT_10, int|null $distance = null, array|string|null $featureClass = null): array
+    public function getLocationsByCoordinate(Coordinate $coordinate, int|null $limit = Limit::LIMIT_10, int|null $distance = null, array|string|null $featureClass = null): array
     {
-        $this->coordinate = new Coordinate($coordinate);
+        $this->setCoordinate($coordinate);
 
         $locationEntities = $this->locationRepository->findLocationsByCoordinate(
             coordinate: $this->coordinate,
@@ -144,31 +137,27 @@ final class LocationService extends BaseLocationService
     }
 
     /**
-     * Debugs a given location entity.
+     * Returns the first location by given coordinate.
      *
-     * @param LocationEntity $location
-     * @return never
+     * @param Coordinate $coordinate
+     * @return LocationEntity|null
      * @throws CaseUnsupportedException
-     * @throws ParserException
-     * @SuppressWarnings(PHPMD.ExitExpression)
+     * @throws ClassInvalidException
+     * @throws TypeInvalidException
      */
-    #[NoReturn]
-    protected function debugLocation(LocationEntity $location): never
+    public function getLocationEntityByCoordinate(Coordinate $coordinate): LocationEntity|null
     {
-        $distanceKm = $this->coordinate->getDistance($location->getCoordinateIxnode()) / 1000;
+        $location = $this->locationRepository->findNextLocationByCoordinate(
+            coordinate: $coordinate,
+            featureClasses: FeatureClass::FEATURE_CLASS_P,
+            featureCodes: FeatureClass::FEATURE_CODES_P_ALL,
+        );
 
-        print PHP_EOL;
-        print sprintf('Name           | Value'.PHP_EOL);
-        print sprintf('---------------+-------------------------------'.PHP_EOL);
-        print sprintf('Name           | %s'.PHP_EOL, $location->getName());
-        print sprintf('Distance       | %.2fkm'.PHP_EOL, $distanceKm);
-        print sprintf('Feature Class  | %s'.PHP_EOL, $location->getFeatureClass()?->getClass() ?: 'n/a');
-        print sprintf('Feature Code   | %s'.PHP_EOL, $location->getFeatureCode()?->getCode() ?: 'n/a');
-        print sprintf('Admin 1        | %s'.PHP_EOL, $location->getAdminCode()?->getAdmin1Code() ?: 'n/a');
-        print sprintf('Admin 2        | %s'.PHP_EOL, $location->getAdminCode()?->getAdmin2Code() ?: 'n/a');
-        print sprintf('Admin 3        | %s'.PHP_EOL, $location->getAdminCode()?->getAdmin3Code() ?: 'n/a');
-        print sprintf('Admin 4        | %s'.PHP_EOL, $location->getAdminCode()?->getAdmin4Code() ?: 'n/a');
-        print PHP_EOL;
-        exit();
+        if ($location instanceof LocationEntity) {
+            return $location;
+        }
+
+        $this->setError(sprintf('Unable to find location with coordinate "%s".', $coordinate->getRaw()));
+        return null;
     }
 }

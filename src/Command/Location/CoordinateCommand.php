@@ -15,14 +15,18 @@ namespace App\Command\Location;
 
 use App\ApiPlatform\Resource\Location;
 use App\Command\Base\Base;
-use App\Service\Base\Helper\BaseHelperLocationService;
+use App\Entity\Location as LocationEntity;
+use App\Repository\LocationRepository;
 use App\Service\LocationService;
+use App\Service\LocationServiceDebug;
 use App\Utils\Version\Version;
+use Doctrine\ORM\NonUniqueResultException;
 use Exception;
 use Ixnode\PhpApiVersionBundle\Utils\TypeCasting\TypeCastingHelper;
 use Ixnode\PhpContainer\Json;
 use Ixnode\PhpCoordinate\Coordinate;
 use Ixnode\PhpException\Case\CaseUnsupportedException;
+use Ixnode\PhpException\Class\ClassInvalidException;
 use Ixnode\PhpException\File\FileNotFoundException;
 use Ixnode\PhpException\File\FileNotReadableException;
 use Ixnode\PhpException\Function\FunctionJsonEncodeException;
@@ -82,9 +86,15 @@ class CoordinateCommand extends Base
     private readonly Serializer $serializer;
 
     /**
+     * @param LocationRepository $locationRepository
      * @param LocationService $locationService
+     * @param LocationServiceDebug|null $locationServiceDebug
      */
-    public function __construct(protected LocationService $locationService)
+    public function __construct(
+        protected LocationRepository $locationRepository,
+        protected LocationService $locationService,
+        protected LocationServiceDebug|null $locationServiceDebug = null
+    )
     {
         $this->serializer = $this->getSerializer();
 
@@ -118,7 +128,7 @@ class CoordinateCommand extends Base
             ->addOption(self::OPTION_NAME_FORMAT, 'f', InputOption::VALUE_REQUIRED, 'Sets the output format.', 'json')
             ->addOption(self::OPTION_ISO_LANGUAGE, 'i', InputOption::VALUE_REQUIRED, 'Sets the output language.', 'en')
             ->addOption(self::OPTION_NAME_DEBUG, 'd', InputOption::VALUE_NONE, 'Shows debug information.')
-            ->addOption(self::OPTION_NAME_DEBUG_LIMIT, 'l', InputOption::VALUE_REQUIRED, 'Sets the debug limit.', BaseHelperLocationService::DEBUG_LIMIT)
+            ->addOption(self::OPTION_NAME_DEBUG_LIMIT, 'l', InputOption::VALUE_REQUIRED, 'Sets the debug limit.', LocationServiceDebug::DEBUG_LIMIT)
             ->setHelp(
                 <<<'EOT'
 
@@ -192,6 +202,42 @@ EOT
     }
 
     /**
+     * Prints debug information.
+     *
+     * @param Coordinate $coordinate
+     * @param string $isoLanguage
+     * @param int $debugLimit
+     * @return void
+     * @throws CaseUnsupportedException
+     * @throws ClassInvalidException
+     * @throws ParserException
+     * @throws TypeInvalidException
+     * @throws NonUniqueResultException
+     */
+    private function debug(Coordinate $coordinate, string $isoLanguage, int $debugLimit): void
+    {
+        if (is_null($this->locationServiceDebug)) {
+            return;
+        }
+
+        $this->locationService->setCoordinate($coordinate);
+        $location = $this->locationService->getLocationEntityByCoordinate($coordinate);
+
+        /* No location was found for given coordinate. */
+        if (!$location instanceof LocationEntity) {
+            $this->output->writeln(sprintf('No location found for coordinate "%s".', $coordinate->getRaw()));
+            return;
+        }
+
+        $this->locationServiceDebug->startMeasurement();
+        $this->locationServiceDebug->setDebugLimit($debugLimit);
+        $this->locationServiceDebug->setCoordinate($coordinate);
+        $this->locationServiceDebug->setOutput($this->output);
+        $this->locationServiceDebug->setLocationContainer($this->locationService->getLocationContainer($location));
+        $this->locationServiceDebug->printDebug($location, $isoLanguage);
+    }
+
+    /**
      * Execute the commands.
      *
      * @param InputInterface $input
@@ -238,14 +284,12 @@ EOT
 
         $coordinate = new Coordinate($coordinateString);
 
-        $this->locationService
-            ->setDebug($debug, $this->output)
-            ->setDebugLimit($debugLimit)
-        ;
-        $location = $this->locationService->getLocationByCoordinate($coordinate->getString(), $isoLanguage);
         if ($debug) {
+            $this->debug($coordinate, $isoLanguage, $debugLimit);
             return Command::SUCCESS;
         }
+
+        $location = $this->locationService->getLocationByCoordinate($coordinate, $isoLanguage);
 
         $json = $this->getJson($location, $coordinateString, $isoLanguage);
 
@@ -259,7 +303,7 @@ EOT
             return Command::SUCCESS;
         }
 
-        $this->printAndLog(sprintf('Given coordinate:             %s', $coordinateString));
+        $this->printAndLog(sprintf('Given coordinate:             %s', $coordinate->getRaw()));
         $this->printAndLog(sprintf('Parsed coordinate (decimal):  %f %f', $coordinate->getLatitude(), $coordinate->getLongitude()));
         $this->printAndLog(sprintf('Parsed coordinate (dms):      %s %s', $coordinate->getLatitudeDMS(), $coordinate->getLongitudeDMS()));
         $this->printAndLog($json->getJsonStringFormatted());

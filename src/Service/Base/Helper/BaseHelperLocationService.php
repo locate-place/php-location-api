@@ -17,10 +17,11 @@ use App\ApiPlatform\Resource\Location;
 use App\Entity\Location as LocationEntity;
 use App\Repository\AlternateNameRepository;
 use App\Repository\LocationRepository;
-use App\Service\LocationCountryService;
+use App\Service\LocationContainer;
+use App\Service\LocationServiceConfig;
+use App\Service\LocationServiceAlternateName;
 use Ixnode\PhpApiVersionBundle\Utils\Version\Version;
 use Ixnode\PhpCoordinate\Coordinate;
-use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -35,43 +36,15 @@ use Symfony\Contracts\Translation\TranslatorInterface;
  */
 abstract class BaseHelperLocationService
 {
-    final public const DEBUG_LIMIT = 1;
-
-    protected const DEBUG_CAPTION = '%-9s | %-6s | %-12s | %-2s | %-11s | %-8s | %-8s | %-8s | %-8s | %-20s | %s';
-
-    protected const DEBUG_CONTENT = '%9s | %-6s | %12s | %-2s | %11s | %8s | %8s | %8s | %8s | %-20s | %s';
-
     protected ?string $error = null;
-
-    protected bool $debug = false;
 
     protected float $timeStart;
 
     protected Coordinate $coordinate;
 
-    protected bool $isDistrictVisible = true;
+    protected LocationContainer $locationContainer;
 
-    protected bool $isBoroughVisible = false;
-
-    protected bool $isCityVisible = true;
-
-    protected bool $isStateVisible = true;
-
-    protected bool $isCountryVisible = true;
-
-    protected LocationEntity|null $district = null;
-
-    protected LocationEntity|null $borough = null;
-
-    protected LocationEntity|null $city = null;
-
-    protected LocationEntity|null $state = null;
-
-    protected LocationEntity|null $country = null;
-
-    protected OutputInterface $output;
-
-    protected int $debugLimit = self::DEBUG_LIMIT;
+    protected LocationServiceAlternateName $locationServiceName;
 
     /**
      * @param Version $version
@@ -80,7 +53,7 @@ abstract class BaseHelperLocationService
      * @param LocationRepository $locationRepository
      * @param AlternateNameRepository $alternateNameRepository
      * @param TranslatorInterface $translator
-     * @param LocationCountryService $locationCountryService
+     * @param LocationServiceConfig $locationCountryService
      */
     public function __construct(
         protected Version $version,
@@ -89,21 +62,12 @@ abstract class BaseHelperLocationService
         protected LocationRepository $locationRepository,
         protected AlternateNameRepository $alternateNameRepository,
         protected TranslatorInterface $translator,
-        protected LocationCountryService $locationCountryService
+        protected LocationServiceConfig $locationCountryService
     )
     {
         $this->setTimeStart(microtime(true));
-    }
 
-    /**
-     * @param int $debugLimit
-     * @return self
-     */
-    public function setDebugLimit(int $debugLimit): self
-    {
-        $this->debugLimit = $debugLimit;
-
-        return $this;
+        $this->locationServiceName = new LocationServiceAlternateName($alternateNameRepository);
     }
 
     /**
@@ -157,31 +121,6 @@ abstract class BaseHelperLocationService
     }
 
     /**
-     * @return bool
-     */
-    public function isDebug(): bool
-    {
-        return $this->debug;
-    }
-
-    /**
-     * Sets debug mode.
-     *
-     * @param bool $debug
-     * @param OutputInterface $output
-     * @param int $debugLimit
-     * @return self
-     */
-    public function setDebug(bool $debug, OutputInterface $output, int $debugLimit = self::DEBUG_LIMIT): self
-    {
-        $this->debug = $debug;
-        $this->output = $output;
-        $this->debugLimit = $debugLimit;
-
-        return $this;
-    }
-
-    /**
      * @return Coordinate
      */
     public function getCoordinate(): Coordinate
@@ -224,18 +163,15 @@ abstract class BaseHelperLocationService
      */
     public function getDistrict(): ?LocationEntity
     {
-        return $this->district;
+        return $this->locationContainer->getDistrict();
     }
 
     /**
-     * @param LocationEntity|null $district
-     * @return self
+     * @return LocationEntity|null
      */
-    public function setDistrict(?LocationEntity $district): self
+    public function getBorough(): ?LocationEntity
     {
-        $this->district = $district;
-
-        return $this;
+        return $this->locationContainer->getBorough();
     }
 
     /**
@@ -243,18 +179,7 @@ abstract class BaseHelperLocationService
      */
     public function getCity(): ?LocationEntity
     {
-        return $this->city;
-    }
-
-    /**
-     * @param LocationEntity|null $city
-     * @return self
-     */
-    public function setCity(?LocationEntity $city): self
-    {
-        $this->city = $city;
-
-        return $this;
+        return $this->locationContainer->getCity();
     }
 
     /**
@@ -262,18 +187,7 @@ abstract class BaseHelperLocationService
      */
     public function getState(): ?LocationEntity
     {
-        return $this->state;
-    }
-
-    /**
-     * @param LocationEntity|null $state
-     * @return self
-     */
-    public function setState(?LocationEntity $state): self
-    {
-        $this->state = $state;
-
-        return $this;
+        return $this->locationContainer->getState();
     }
 
     /**
@@ -281,17 +195,6 @@ abstract class BaseHelperLocationService
      */
     public function getCountry(): ?LocationEntity
     {
-        return $this->country;
-    }
-
-    /**
-     * @param LocationEntity|null $country
-     * @return self
-     */
-    public function setCountry(?LocationEntity $country): self
-    {
-        $this->country = $country;
-
-        return $this;
+        return $this->locationContainer->getCountry();
     }
 }

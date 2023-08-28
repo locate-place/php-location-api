@@ -17,7 +17,7 @@ use App\Constants\DB\FeatureClass;
 use App\Entity\Country;
 use App\Entity\Location;
 use App\Entity\Location as LocationEntity;
-use App\Service\LocationCountryService;
+use App\Service\LocationServiceConfig;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\QueryBuilder;
@@ -51,12 +51,12 @@ class LocationRepository extends ServiceEntityRepository
 {
     /**
      * @param ManagerRegistry $registry
-     * @param LocationCountryService $locationCountryService
+     * @param LocationServiceConfig $locationCountryService
      * @param ParameterBagInterface $parameterBag
      */
     public function __construct(
-        protected ManagerRegistry $registry,
-        protected LocationCountryService $locationCountryService,
+        protected ManagerRegistry       $registry,
+        protected LocationServiceConfig $locationCountryService,
         protected ParameterBagInterface $parameterBag
     )
     {

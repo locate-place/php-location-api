@@ -20,7 +20,7 @@ use Ixnode\PhpException\Type\TypeInvalidException;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
 /**
- * Class LocationCountryService
+ * Class LocationServiceConfig
  *
  * @author Björn Hempel <bjoern@hempel.li>
  * @version 0.1.0 (2023-08-24)
@@ -28,7 +28,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
  * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
  * @SuppressWarnings(PHPMD.TooManyPublicMethods)
  */
-final class LocationCountryService
+final class LocationServiceConfig
 {
     /**
      * @param ParameterBagInterface $parameterBag

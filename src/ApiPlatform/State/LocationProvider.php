@@ -24,6 +24,7 @@ use Doctrine\ORM\NonUniqueResultException;
 use Ixnode\PhpApiVersionBundle\ApiPlatform\Resource\Base\BasePublicResource;
 use Ixnode\PhpApiVersionBundle\ApiPlatform\State\Base\Wrapper\BaseResourceWrapperProvider;
 use Ixnode\PhpApiVersionBundle\Utils\Version\Version;
+use Ixnode\PhpCoordinate\Coordinate;
 use Ixnode\PhpException\ArrayType\ArrayKeyNotFoundException;
 use Ixnode\PhpException\Case\CaseUnsupportedException;
 use Ixnode\PhpException\Class\ClassInvalidException;
@@ -90,7 +91,12 @@ final class LocationProvider extends BaseProvider
         $distance = $this->hasFilter(Name::DISTANCE) ? $this->getFilterInteger(Name::DISTANCE) : Distance::DISTANCE_1000;
         $featureClass = $this->hasFilter(Name::FEATURE_CLASS) ? $this->getFilterString(Name::FEATURE_CLASS) : null;
 
-        $locations = $this->locationService->getLocationsByCoordinate($coordinate, $limit, $distance, $featureClass);
+        $locations = $this->locationService->getLocationsByCoordinate(
+            new Coordinate($coordinate),
+            $limit,
+            $distance,
+            $featureClass
+        );
 
         if ($this->locationService->hasError()) {
             $this->setError($this->locationService->getError());
@@ -139,7 +145,7 @@ final class LocationProvider extends BaseProvider
         $coordinate = $this->getFilterString(Name::COORDINATE);
         $isoLanguage = $this->getFilterString(Name::LANGUAGE);
 
-        $location = $this->locationService->getLocationByCoordinate($coordinate, $isoLanguage);
+        $location = $this->locationService->getLocationByCoordinate(new Coordinate($coordinate), $isoLanguage);
 
         if ($this->locationService->hasError()) {
             $this->setError($this->locationService->getError());
