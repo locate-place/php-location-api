@@ -57,7 +57,7 @@ parameters:
         a1: 'NY'
         a2: '047|061'
 
-    location_country:
+    location_configuration:
         default:
             location_reference:
                 feature_class: '%feature_class_p%'

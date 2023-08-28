@@ -12,7 +12,7 @@ parameters:
     mailer.dns: '%env(MAILER_DSN)%'
 
 imports:
-    - { resource: 'services/location_country.yaml' }
+    - { resource: 'services/location_configuration.yaml' }
 
 services:
     # default configuration for services in *this* file

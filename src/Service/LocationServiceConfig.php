@@ -70,10 +70,10 @@ final class LocationServiceConfig
      */
     private function getCountryConfig(string|null $countryCode, string $type = 'district'): array
     {
-        $locationCountry = $this->parameterBag->get('location_country');
+        $locationCountry = $this->parameterBag->get('location_configuration');
 
         if (!is_array($locationCountry)) {
-            throw new CaseUnsupportedException('The given location_country configuration is not an array.');
+            throw new CaseUnsupportedException('The given location_configuration configuration is not an array.');
         }
 
         /* No country code given -> return default config */
