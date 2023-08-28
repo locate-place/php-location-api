@@ -44,7 +44,7 @@ abstract class BaseHelperLocationService
 
     protected LocationContainer $locationContainer;
 
-    protected LocationServiceAlternateName $locationServiceName;
+    protected LocationServiceAlternateName $locationServiceAlternateName;
 
     /**
      * @param Version $version
@@ -53,7 +53,7 @@ abstract class BaseHelperLocationService
      * @param LocationRepository $locationRepository
      * @param AlternateNameRepository $alternateNameRepository
      * @param TranslatorInterface $translator
-     * @param LocationServiceConfig $locationCountryService
+     * @param LocationServiceConfig $locationServiceConfig
      */
     public function __construct(
         protected Version $version,
@@ -62,12 +62,12 @@ abstract class BaseHelperLocationService
         protected LocationRepository $locationRepository,
         protected AlternateNameRepository $alternateNameRepository,
         protected TranslatorInterface $translator,
-        protected LocationServiceConfig $locationCountryService
+        protected LocationServiceConfig $locationServiceConfig
     )
     {
         $this->setTimeStart(microtime(true));
 
-        $this->locationServiceName = new LocationServiceAlternateName($alternateNameRepository);
+        $this->locationServiceAlternateName = new LocationServiceAlternateName($alternateNameRepository);
     }
 
     /**

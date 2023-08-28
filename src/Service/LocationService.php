@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace App\Service;
 
 use App\ApiPlatform\Resource\Location;
-use App\Constants\DB\FeatureClass;
 use App\Constants\DB\Limit;
 use App\DBAL\GeoLocation\ValueObject\Point;
 use App\Entity\Location as LocationEntity;
@@ -134,30 +133,5 @@ final class LocationService extends BaseLocationService
         }
 
         return $locations;
-    }
-
-    /**
-     * Returns the first location by given coordinate.
-     *
-     * @param Coordinate $coordinate
-     * @return LocationEntity|null
-     * @throws CaseUnsupportedException
-     * @throws ClassInvalidException
-     * @throws TypeInvalidException
-     */
-    public function getLocationEntityByCoordinate(Coordinate $coordinate): LocationEntity|null
-    {
-        $location = $this->locationRepository->findNextLocationByCoordinate(
-            coordinate: $coordinate,
-            featureClasses: FeatureClass::FEATURE_CLASS_P,
-            featureCodes: FeatureClass::FEATURE_CODES_P_ALL,
-        );
-
-        if ($location instanceof LocationEntity) {
-            return $location;
-        }
-
-        $this->setError(sprintf('Unable to find location with coordinate "%s".', $coordinate->getRaw()));
-        return null;
     }
 }

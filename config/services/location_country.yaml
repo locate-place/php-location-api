@@ -2,6 +2,23 @@ parameters:
     feature_class_a: 'A'
     feature_class_p: 'P'
 
+    feature_codes_p_all:
+        - 'PPL'
+        - 'PPLA'
+        - 'PPLA2'
+        - 'PPLA3'
+        - 'PPLA4'
+        - 'PPLA5'
+        - 'PPLC'
+        - 'PPLF'
+        - 'PPLG'
+        - 'PPLQ'
+        - 'PPLR'
+        - 'PPLS'
+        - 'PPLW'
+        - 'PPLX'
+        - 'STLMT'
+
     admin_codes_a0: 'a0'
     admin_codes_a1: 'a1'
     admin_codes_a2: 'a2'
@@ -42,6 +59,9 @@ parameters:
 
     location_country:
         default:
+            location_reference:
+                feature_class: '%feature_class_p%'
+                feature_codes: '%feature_codes_p_all%'
             district:
                 feature_class: '%feature_class_p%'
                 feature_codes:

@@ -40,12 +40,16 @@ final class LocationServiceConfig
     /**
      * Returns the country code of the given location.
      *
-     * @param Location $location
-     * @return string
+     * @param Location|null $location
+     * @return string|null
      * @throws CaseUnsupportedException
      */
-    private function getCountryCode(Location $location): string
+    private function getCountryCode(Location|null $location): string|null
     {
+        if (is_null($location)) {
+            return null;
+        }
+
         $countryCode = $location->getCountry()?->getCode();
 
         if (is_null($countryCode)) {
@@ -58,17 +62,23 @@ final class LocationServiceConfig
     /**
      * Returns the country config.
      *
-     * @param string $countryCode
+     * @param string|null $countryCode
      * @param string $type
      * @return array<string, mixed>
      * @throws CaseUnsupportedException
+     * @SuppressWarnings(PHPMD.NPathComplexity)
      */
-    private function getCountryConfig(string $countryCode, string $type = 'district'): array
+    private function getCountryConfig(string|null $countryCode, string $type = 'district'): array
     {
         $locationCountry = $this->parameterBag->get('location_country');
 
         if (!is_array($locationCountry)) {
             throw new CaseUnsupportedException('The given location_country configuration is not an array.');
+        }
+
+        /* No country code given -> return default config */
+        if (is_null($countryCode)) {
+            return $locationCountry['default'][$type];
         }
 
         if (!array_key_exists($countryCode, $locationCountry)) {
@@ -207,12 +217,16 @@ final class LocationServiceConfig
      * Returns the exception configuration if exists.
      *
      * @param array<string, mixed> $countryConfig
-     * @param Location $location
+     * @param Location|null $location
      * @return array<string, mixed>|null
      * @throws CaseUnsupportedException
      */
-    private function getExceptionMatchConfig(array $countryConfig, Location $location): ?array
+    private function getExceptionMatchConfig(array $countryConfig, Location|null $location): ?array
     {
+        if (is_null($location)) {
+            return null;
+        }
+
         if (!array_key_exists('exceptions', $countryConfig)) {
             return null;
         }
@@ -261,12 +275,12 @@ final class LocationServiceConfig
      * Returns the values from config from given key and location.
      *
      * @param string $key
-     * @param Location $location
+     * @param Location|null $location
      * @param string $type
      * @return mixed
      * @throws CaseUnsupportedException
      */
-    private function getValueFromConfig(string $key, Location $location, string $type = 'district'): mixed
+    private function getValueFromConfig(string $key, Location|null $location, string $type = 'district'): mixed
     {
         $countryCode = $this->getCountryCode($location);
 
@@ -321,12 +335,12 @@ final class LocationServiceConfig
     /**
      * Returns the feature class of given country.
      *
-     * @param Location $location
+     * @param Location|null $location
      * @param string $type
      * @return string
      * @throws CaseUnsupportedException
      */
-    private function getFeatureClass(Location $location, string $type = 'district'): string
+    private function getFeatureClass(Location|null $location, string $type = 'district'): string
     {
         $key = 'feature_class';
 
@@ -348,12 +362,12 @@ final class LocationServiceConfig
     /**
      * Returns the feature codes of given country.
      *
-     * @param Location $location
+     * @param Location|null $location
      * @param string $type
      * @return array<int, string>
      * @throws CaseUnsupportedException
      */
-    private function getFeatureCodes(Location $location, string $type = 'district'): array
+    private function getFeatureCodes(Location|null $location, string $type = 'district'): array
     {
         $key = 'feature_codes';
 
@@ -580,6 +594,18 @@ final class LocationServiceConfig
     }
 
     /**
+     * Returns the location reference feature class of given location.
+     *
+     * @param Location|null $location
+     * @return string
+     * @throws CaseUnsupportedException
+     */
+    public function getLocationReferenceFeatureClass(Location|null $location = null): string
+    {
+        return $this->getFeatureClass($location, 'location_reference');
+    }
+
+    /**
      * Returns the district feature class of given location.
      *
      * @param Location $location
@@ -625,6 +651,18 @@ final class LocationServiceConfig
     public function getStateFeatureClass(Location $location): string
     {
         return $this->getFeatureClass($location, 'state');
+    }
+
+    /**
+     * Returns the location reference feature codes of given location.
+     *
+     * @param Location|null $location
+     * @return array<int, string>
+     * @throws CaseUnsupportedException
+     */
+    public function getLocationReferenceFeatureCodes(Location|null $location = null): array
+    {
+        return $this->getFeatureCodes($location, 'location_reference');
     }
 
     /**

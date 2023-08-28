@@ -53,9 +53,9 @@ abstract class BaseLocationService extends BaseHelperLocationService
      */
     public function getLocationContainer(LocationEntity $locationEntity): LocationContainer
     {
-        $isDistrictVisible = $this->locationCountryService->isDistrictVisible($locationEntity);
-        $isBoroughVisible = $this->locationCountryService->isBoroughVisible($locationEntity);
-        $isCityVisible = $this->locationCountryService->isCityVisible($locationEntity);
+        $isDistrictVisible = $this->locationServiceConfig->isDistrictVisible($locationEntity);
+        $isBoroughVisible = $this->locationServiceConfig->isBoroughVisible($locationEntity);
+        $isCityVisible = $this->locationServiceConfig->isCityVisible($locationEntity);
 
         $district = $isDistrictVisible ? $this->locationRepository->findDistrictByLocation($locationEntity, $this->coordinate) : null;
         $borough = $isBoroughVisible? $this->locationRepository->findBoroughByLocation($locationEntity, $this->coordinate) : null;
@@ -256,6 +256,31 @@ abstract class BaseLocationService extends BaseHelperLocationService
     }
 
     /**
+     * Returns the first location by given coordinate.
+     *
+     * @param Coordinate $coordinate
+     * @return LocationEntity|null
+     * @throws CaseUnsupportedException
+     * @throws ClassInvalidException
+     * @throws TypeInvalidException
+     */
+    public function getLocationEntityByCoordinate(Coordinate $coordinate): LocationEntity|null
+    {
+        $location = $this->locationRepository->findNextLocationByCoordinate(
+            coordinate: $coordinate,
+            featureClasses: $this->locationServiceConfig->getLocationReferenceFeatureClass(),
+            featureCodes: $this->locationServiceConfig->getLocationReferenceFeatureCodes(),
+        );
+
+        if ($location instanceof LocationEntity) {
+            return $location;
+        }
+
+        $this->setError(sprintf('Unable to find location with coordinate "%s".', $coordinate->getRaw()));
+        return null;
+    }
+
+    /**
      * Returns the alternate name by given iso language.
      *
      * @param LocationEntity|null $location
@@ -264,6 +289,6 @@ abstract class BaseLocationService extends BaseHelperLocationService
      */
     private function getNameByIsoLanguage(?LocationEntity $location, string $isoLanguage): string
     {
-        return $this->locationServiceName->getNameByIsoLanguage($location, $isoLanguage);
+        return $this->locationServiceAlternateName->getNameByIsoLanguage($location, $isoLanguage);
     }
 }

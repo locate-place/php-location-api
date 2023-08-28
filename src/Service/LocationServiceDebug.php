@@ -42,7 +42,7 @@ class LocationServiceDebug
 
     protected const DEBUG_CONTENT = '%9s | %-6s | %12s | %-2s | %11s | %8s | %8s | %8s | %8s | %-20s | %s';
 
-    protected const TEXT_NOT_AVAILABLE = 'N/A';
+    final public const TEXT_NOT_AVAILABLE = 'N/A';
 
     protected LocationContainer|null $locationContainer = null;
 
