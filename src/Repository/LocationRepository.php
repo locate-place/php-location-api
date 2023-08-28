@@ -509,7 +509,7 @@ class LocationRepository extends ServiceEntityRepository
             default:
                 $queryBuilder
                     ->andWhere('fco.code = :featureCode')
-                    ->setParameter('featureCode', FeatureClass::FEATURE_CODE_A_PCLI)
+                    ->setParameter('featureCode', 'PCLI')
                 ;
         }
 

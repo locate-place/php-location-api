@@ -1,0 +1,37 @@
+parameters:
+    # next places configuration
+    next_places:
+        limit:
+            default: 1
+            feature_class:
+                H: 2
+                L: 2
+                R: 2
+                S: 2
+                T: 2
+                U: 2
+                V: 2
+            feature_code:
+                S.AIRP: 3 # Airports
+        distance:
+            default: null
+            feature_class:
+                H: 10000
+                L: 10000
+                R: 10000
+                S: 10000
+                T: 10000
+                U: 10000
+                V: 15000
+            feature_code:
+                S.AIRP: 200000 # Airports
+        use_admin_codes_general:
+            default: false
+            feature_class:
+                A: true
+                P: true
+        use_location_country:
+            default: false
+            feature_class:
+                A: true
+                P: true

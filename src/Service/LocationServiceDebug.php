@@ -43,6 +43,10 @@ class LocationServiceDebug
 
     protected const DEBUG_CONTENT = '%9s | %-6s | %12s | %-2s | %11s | %8s | %8s | %8s | %8s | %-20s | %s';
 
+    protected const SEPARATOR_LENGTH = 150;
+
+    protected const LIMIT_ARRAY = 3;
+
     final public const TEXT_NOT_AVAILABLE = 'N/A';
 
     protected LocationContainer|null $locationContainer = null;
@@ -59,17 +63,17 @@ class LocationServiceDebug
      * @param LocationRepository $locationRepository
      * @param AlternateNameRepository $alternateNameRepository
      * @param LocationService $locationService
-     * @param LocationServiceConfig $locationCountryService
+     * @param LocationServiceConfig $locationServiceConfig
      * @param LocationServiceAlternateName $locationServiceName
      * @param ParameterBagInterface $parameterBag
      */
     public function __construct(
-        protected LocationRepository $locationRepository,
-        protected AlternateNameRepository $alternateNameRepository,
-        protected LocationService $locationService,
-        protected LocationServiceConfig $locationCountryService,
+        protected LocationRepository           $locationRepository,
+        protected AlternateNameRepository      $alternateNameRepository,
+        protected LocationService              $locationService,
+        protected LocationServiceConfig        $locationServiceConfig,
         protected LocationServiceAlternateName $locationServiceName,
-        protected ParameterBagInterface $parameterBag
+        protected ParameterBagInterface        $parameterBag
     )
     {
     }
@@ -170,7 +174,9 @@ class LocationServiceDebug
 
         $timeExecution = microtime(true) - $this->timeStart;
 
-        $this->printHeader(sprintf('Execution time: %dms', $timeExecution * 1000));
+        $this->output->writeln('');
+        $this->output->writeln(sprintf('Execution time: %dms', $timeExecution * 1000));
+        $this->output->writeln('');
     }
 
     /**
@@ -179,12 +185,21 @@ class LocationServiceDebug
      * @param string $header
      * @return void
      */
-    public function printHeader(string $header): void
+    private function printHeader(string $header): void
     {
-        $this->output->writeln('');
-        $this->output->writeln('');
         $this->output->writeln($header);
         $this->output->writeln('');
+    }
+
+    /**
+     * Prints a separator.
+     *
+     * @param string $separator
+     * @return void
+     */
+    private function printSeparator(string $separator = '='): void
+    {
+        $this->output->writeln(str_repeat($separator, self::SEPARATOR_LENGTH));
     }
 
     /**
@@ -198,10 +213,14 @@ class LocationServiceDebug
      */
     protected function printPlace(Location $locationSource, string $isoLanguage): void
     {
-        $this->printHeader('First place');
+        $this->printSeparator();
+        $this->printHeader('Location reference');
         $this->printCaption();
         $this->printLocation($locationSource, 'district', $isoLanguage);
+        $this->printSeparator();
+        $this->output->writeln('');
 
+        $this->printSeparator();
         $this->printHeader('Location path');
         $this->printCaption();
 
@@ -230,6 +249,7 @@ class LocationServiceDebug
         if ($locationContainer->hasCountry()) {
             $this->printLocation($locationContainer->getCountry(), 'country', $isoLanguage);
         }
+        $this->printSeparator();
     }
 
     /**
@@ -244,6 +264,8 @@ class LocationServiceDebug
      * @throws ClassInvalidException
      * @throws ParserException
      * @throws TypeInvalidException
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+     * @SuppressWarnings(PHPMD.NPathComplexity)
      */
     protected function printFeatureClass(
         Location $locationSource,
@@ -269,20 +291,17 @@ class LocationServiceDebug
             throw new CaseUnsupportedException('The feature_codes array is not an array.');
         }
 
+        $adminCodesGeneral = $this->locationServiceConfig->getAdminCodesGeneral($locationSource);
+        $locationCountry = $locationSource->getCountry();
+
         $locations = [];
         foreach ($featureCodes as $featureCode) {
-            $country = match ($featureClass) {
-                FeatureClass::FEATURE_CLASS_A, FeatureClass::FEATURE_CLASS_P => $locationSource->getCountry(),
-                default => null,
-            };
-            $adminCodes = match ($featureClass) {
-                FeatureClass::FEATURE_CLASS_A, FeatureClass::FEATURE_CLASS_P => $this->locationCountryService->getAdminCodesGeneral($locationSource),
-                default => null,
-            };
-            $distanceMeter = match ($featureClass) {
-                FeatureClass::FEATURE_CLASS_A, FeatureClass::FEATURE_CLASS_P => null,
-                default => 10000,
-            };
+            $limit = $this->locationServiceConfig->getLimit($featureClass, $featureCode, $this->debugLimit);
+            $country = $this->locationServiceConfig->isUseLocationCountry($featureClass, $featureCode) ? $locationCountry : null;
+            $adminCodes = $this->locationServiceConfig->isUseAdminCodesGeneral($featureClass, $featureCode) ? $adminCodesGeneral : null;
+            $distanceMeter = $this->locationServiceConfig->getDistance($featureClass, $featureCode);
+
+            $limit = max($limit, $this->debugLimit);
 
             $featureCodeLocations = $this->locationRepository->findLocationsByCoordinate(
                 coordinate: $this->coordinate,
@@ -291,7 +310,7 @@ class LocationServiceDebug
                 featureCodes: $featureCode,
                 country: $country,
                 adminCodes: $adminCodes,
-                limit: $this->debugLimit,
+                limit: $limit,
             );
 
             foreach ($featureCodeLocations as $featureCodeLocation) {
@@ -302,17 +321,48 @@ class LocationServiceDebug
             }
         }
 
+        $limit = $this->locationServiceConfig->getLimit($featureClass, null, $this->debugLimit);
+        $country = $this->locationServiceConfig->isUseLocationCountry($featureClass) ? $locationCountry : null;
+        $adminCodes = $this->locationServiceConfig->isUseAdminCodesGeneral($featureClass) ? $adminCodesGeneral : null;
+        $distanceMeter = $this->locationServiceConfig->getDistance($featureClass);
+
+        $limit = max($limit, $this->debugLimit);
+
+        $adminCodesCombined = !is_null($adminCodes) ? array_map(fn($key, $value) => "$key:$value", array_keys($adminCodes), $adminCodes) : null;
+
+        $this->output->writeln('');
+        $this->printSeparator();
+        $query = sprintf(
+            'Query: LOC=%s; FCl=%s; FCo=%s; DST=%s; LIM=%d; CNTRY=%s; ACo=%s',
+            sprintf('%f,%f', $this->coordinate->getLatitude(), $this->coordinate->getLongitude()),
+            sprintf('%s:%s', $featureClass, str_replace(', ', ',', $description)),
+            count($featureCodes) <= self::LIMIT_ARRAY ? implode(',', $featureCodes) : implode(',', array_slice($featureCodes, 0, self::LIMIT_ARRAY)).',...',
+            !is_null($distanceMeter) ? sprintf('%sm', $distanceMeter) : 'NULL',
+            $limit,
+            !is_null($country) ? $country->getCode() : 'NULL',
+            !is_null($adminCodesCombined) ? implode(',', $adminCodesCombined) : 'NULL'
+        );
+        $this->output->writeln($query);
+        $this->output->writeln('');
+
+        if (count($locations) <= 0) {
+            $this->output->writeln('No locations found.');
+            $this->printSeparator();
+            return;
+        }
+
         /* Sort by distance */
         usort($locations, fn($item1, $item2) => $item1['distance'] <=> $item2['distance']);
 
-        $header = sprintf('%s (%s)', $featureClass, $description);
-        $this->printHeader($header);
         $this->printCaption();
         foreach ($locations as $location) {
             $location = $location['location'];
 
             $this->printLocation($location, null, $isoLanguage);
         }
+        $this->printSeparator('-');
+        $this->output->writeln(sprintf('(%d rows)', count($locations)));
+        $this->printSeparator();
     }
 
     /**
@@ -337,8 +387,9 @@ class LocationServiceDebug
             'Name'
         );
 
+        $this->printSeparator('-');
         $this->output->writeln($message);
-        $this->output->writeln(str_repeat('-', strlen($message)));
+        $this->printSeparator('-');
     }
 
     /**

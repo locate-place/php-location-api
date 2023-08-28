@@ -17,6 +17,7 @@ imports:
     - { resource: 'services/feature_class_configuration.yaml' }
     - { resource: 'services/feature_code_configuration.yaml' }
     - { resource: 'services/location_configuration.yaml' }
+    - { resource: 'services/next_places.yaml' }
 
 services:
     # default configuration for services in *this* file

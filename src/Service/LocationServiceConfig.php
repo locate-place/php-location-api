@@ -27,6 +27,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
  * @since 0.1.0 (2023-08-24) First version.
  * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
  * @SuppressWarnings(PHPMD.TooManyPublicMethods)
+ * @SuppressWarnings(PHPMD.ExcessiveClassLength)
  */
 final class LocationServiceConfig
 {
@@ -558,6 +559,60 @@ final class LocationServiceConfig
     }
 
     /**
+     * Returns the value for given feature class and feature code.
+     *
+     * @param string $key
+     * @param string $featureClass
+     * @param string|null $featureCode
+     * @param mixed|null $default
+     * @return mixed
+     * @throws TypeInvalidException
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+     * @SuppressWarnings(PHPMD.NPathComplexity)
+     */
+    private function getConfig(string $key, string $featureClass, string|null $featureCode = null, mixed $default = null): mixed
+    {
+        $nextPlaces = $this->parameterBag->get('next_places');
+
+        if (!is_array($nextPlaces)) {
+            throw new TypeInvalidException('array', gettype($nextPlaces));
+        }
+
+        $config = array_key_exists($key, $nextPlaces) ? $nextPlaces[$key] : [];
+
+        if (!is_array($config)) {
+            throw new TypeInvalidException('array', gettype($config));
+        }
+
+        /* Try to get config for given feature code. */
+        if (!is_null($featureCode)) {
+            $featureCodeConfig = array_key_exists('feature_code', $config) ? $config['feature_code'] : [];
+
+            if (!is_array($featureCodeConfig)) {
+                throw new TypeInvalidException('array', gettype($featureCodeConfig));
+            }
+
+            $featureCodeKey = sprintf('%s.%s', $featureClass, $featureCode);
+
+            if (array_key_exists($featureCodeKey, $featureCodeConfig)) {
+                return $featureCodeConfig[$featureCodeKey];
+            }
+        }
+
+        $featureClassConfig = array_key_exists('feature_class', $config) ? $config['feature_class'] : [];
+
+        if (!is_array($featureClassConfig)) {
+            throw new TypeInvalidException('array', gettype($featureClassConfig));
+        }
+
+        if (array_key_exists($featureClass, $featureClassConfig)) {
+            return $featureClassConfig[$featureClass];
+        }
+
+        return array_key_exists('default', $config) ? $config['default'] : $default;
+    }
+
+    /**
      * Returns if district is visible.
      *
      * @param Location $location
@@ -907,5 +962,95 @@ final class LocationServiceConfig
     public function isCityMustMatchAdminCodes(Location $location): bool
     {
         return $this->isMustMatchAdminCodes($location, 'city');
+    }
+
+    /**
+     * Returns the limit for given feature class and feature code.
+     *
+     * @param string $featureClass
+     * @param string|null $featureCode
+     * @param mixed|null $default
+     * @return int
+     * @throws CaseUnsupportedException
+     * @throws TypeInvalidException
+     */
+    public function getLimit(string $featureClass, string|null $featureCode = null, mixed $default = null): int
+    {
+        $limit = $this->getConfig('limit', $featureClass, $featureCode, $default);
+
+        if (is_int($limit)) {
+            return $limit;
+        }
+
+        throw new CaseUnsupportedException(sprintf(
+            'The distance configuration returns an invalid value: %s (%s)',
+            (new TypeCastingHelper($limit))->strval(),
+            gettype($limit)
+        ));
+    }
+
+    /**
+     * Returns the distance for given feature class and feature code.
+     *
+     * @param string $featureClass
+     * @param string|null $featureCode
+     * @param mixed|null $default
+     * @return int|null
+     * @throws CaseUnsupportedException
+     * @throws TypeInvalidException
+     */
+    public function getDistance(string $featureClass, string|null $featureCode = null, mixed $default = null): int|null
+    {
+        $distance = $this->getConfig('distance', $featureClass, $featureCode, $default);
+
+        if (is_null($distance) || is_int($distance)) {
+            return $distance;
+        }
+
+        throw new CaseUnsupportedException(sprintf(
+            'The distance configuration returns an invalid value: %s (%s)',
+            (new TypeCastingHelper($distance))->strval(),
+            gettype($distance)
+        ));
+    }
+
+    /**
+     * Returns the flag "use_admin_codes_general" for given feature class and feature code.
+     *
+     * @param string $featureClass
+     * @param string|null $featureCode
+     * @param mixed|null $default
+     * @return bool
+     * @throws TypeInvalidException
+     */
+    public function isUseAdminCodesGeneral(string $featureClass, string|null $featureCode = null, mixed $default = null): bool
+    {
+        $useAdminCodesGeneral = $this->getConfig('use_admin_codes_general', $featureClass, $featureCode, $default);
+
+        if (is_bool($useAdminCodesGeneral)) {
+            return $useAdminCodesGeneral;
+        }
+
+        throw new TypeInvalidException('bool', gettype($useAdminCodesGeneral));
+    }
+
+    /**
+     * Returns the flag "use_location_country" for given feature class and feature code.
+     *
+     * @param string $featureClass
+     * @param string|null $featureCode
+     * @param mixed|null $default
+     * @return bool
+     * @throws TypeInvalidException
+     */
+    public function isUseLocationCountry(string $featureClass, string|null $featureCode = null, mixed $default = null): bool
+    {
+        $useLocationCountry = $this->getConfig('use_location_country', $featureClass, $featureCode, $default);
+
+        if (is_bool($useLocationCountry)) {
+            return $useLocationCountry;
+        }
+
+        throw new TypeInvalidException('bool', gettype($useLocationCountry));
     }
 }
