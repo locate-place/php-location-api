@@ -68,7 +68,7 @@ abstract class BaseLocationService extends BaseHelperLocationService
             $district = null;
         }
 
-        $locationContainer = new LocationContainer();
+        $locationContainer = new LocationContainer($this->locationServiceAlternateName);
 
         if ($isDistrictVisible && !is_null($district)) {
             $locationContainer->setDistrict($district);
@@ -214,38 +214,23 @@ abstract class BaseLocationService extends BaseHelperLocationService
         $locationInformation = [];
 
         if ($this->locationContainer->hasDistrict()) {
-            $locationInformation['district-locality'] = $this->getNameByIsoLanguage(
-                $this->locationContainer->getDistrict(),
-                $isoLanguage
-            );
+            $locationInformation['district-locality'] = $this->locationContainer->getDistrictName($isoLanguage);
         }
 
         if ($this->locationContainer->hasBorough()) {
-            $locationInformation['borough-locality'] = $this->getNameByIsoLanguage(
-                $this->locationContainer->getBorough(),
-                $isoLanguage
-            );
+            $locationInformation['borough-locality'] = $this->locationContainer->getBoroughName($isoLanguage);
         }
 
         if ($this->locationContainer->hasCity()) {
-            $locationInformation['city-municipality'] = $this->getNameByIsoLanguage(
-                $this->locationContainer->getCity(),
-                $isoLanguage
-            );
+            $locationInformation['city-municipality'] = $this->locationContainer->getCityName($isoLanguage);
         }
 
         if ($this->locationContainer->hasState()) {
-            $locationInformation['state'] = $this->getNameByIsoLanguage(
-                $this->locationContainer->getState(),
-                $isoLanguage
-            );
+            $locationInformation['state'] = $this->locationContainer->getStateName($isoLanguage);
         }
 
         if ($this->locationContainer->hasCountry()) {
-            $locationInformation['country'] = $this->getNameByIsoLanguage(
-                $this->locationContainer->getCountry(),
-                $isoLanguage
-            );
+            $locationInformation['country'] = $this->locationContainer->getCountryName($isoLanguage);
         }
 
         $location
@@ -278,17 +263,5 @@ abstract class BaseLocationService extends BaseHelperLocationService
 
         $this->setError(sprintf('Unable to find location with coordinate "%s".', $coordinate->getRaw()));
         return null;
-    }
-
-    /**
-     * Returns the alternate name by given iso language.
-     *
-     * @param LocationEntity|null $location
-     * @param string $isoLanguage
-     * @return string
-     */
-    private function getNameByIsoLanguage(?LocationEntity $location, string $isoLanguage): string
-    {
-        return $this->locationServiceAlternateName->getNameByIsoLanguage($location, $isoLanguage);
     }
 }

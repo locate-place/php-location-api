@@ -10,6 +10,9 @@ parameters:
     api.country_code: '%env(resolve:API_COUNTRY_CODE)%'
     # Mailer settings
     mailer.dns: '%env(MAILER_DSN)%'
+    data_license_full: 'Creative Commons Attribution 4.0 License'
+    data_license_short: 'CC-BY 4.0'
+    data_license_url: 'https://download.geonames.org/export/dump/readme.txt'
 
 imports:
     - { resource: 'services/admin_code_configuration.yaml' }

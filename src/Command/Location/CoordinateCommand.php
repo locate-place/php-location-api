@@ -39,6 +39,7 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
@@ -88,11 +89,13 @@ class CoordinateCommand extends Base
     /**
      * @param LocationRepository $locationRepository
      * @param LocationService $locationService
+     * @param ParameterBagInterface $parameterBag
      * @param LocationServiceDebug|null $locationServiceDebug
      */
     public function __construct(
         protected LocationRepository $locationRepository,
         protected LocationService $locationService,
+        protected ParameterBagInterface $parameterBag,
         protected LocationServiceDebug|null $locationServiceDebug = null
     )
     {
@@ -192,9 +195,9 @@ EOT
             ),
             'version' => (new Version())->getVersion(),
             'data-licence' => [
-                'full' => 'Creative Commons Attribution 4.0 License',
-                'short' => 'CC-BY 4.0',
-                'url' => 'https://download.geonames.org/export/dump/readme.txt',
+                'full' => (new TypeCastingHelper($this->parameterBag->get('data_license_full')))->strval(),
+                'short' => (new TypeCastingHelper($this->parameterBag->get('data_license_short')))->strval(),
+                'url' => (new TypeCastingHelper($this->parameterBag->get('data_license_url')))->strval(),
             ],
         ];
 

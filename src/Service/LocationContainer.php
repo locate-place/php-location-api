@@ -34,12 +34,44 @@ final class LocationContainer
 
     protected Location|null $country = null;
 
+    public function __construct(protected LocationServiceAlternateName|null $locationServiceAlternateName = null)
+    {
+    }
+
+    /**
+     * @param LocationServiceAlternateName $locationServiceAlternateName
+     * @return self
+     */
+    public function setLocationServiceAlternateName(LocationServiceAlternateName $locationServiceAlternateName): self
+    {
+        $this->locationServiceAlternateName = $locationServiceAlternateName;
+
+        return $this;
+    }
+
     /**
      * @return Location|null
      */
     public function getDistrict(): ?Location
     {
         return $this->district;
+    }
+
+    /**
+     * @param string $isoLanguage
+     * @return string|null
+     */
+    public function getDistrictName(string $isoLanguage): string|null
+    {
+        if (is_null($this->district)) {
+            return null;
+        }
+
+        if (is_null($this->locationServiceAlternateName)) {
+            return $this->district->getName();
+        }
+
+        return $this->locationServiceAlternateName->getNameByIsoLanguage($this->district, $isoLanguage);
     }
 
     /**
@@ -70,6 +102,23 @@ final class LocationContainer
     }
 
     /**
+     * @param string $isoLanguage
+     * @return string|null
+     */
+    public function getBoroughName(string $isoLanguage): string|null
+    {
+        if (is_null($this->borough)) {
+            return null;
+        }
+
+        if (is_null($this->locationServiceAlternateName)) {
+            return $this->borough->getName();
+        }
+
+        return $this->locationServiceAlternateName->getNameByIsoLanguage($this->borough, $isoLanguage);
+    }
+
+    /**
      * @return bool
      */
     public function hasBorough(): bool
@@ -94,6 +143,23 @@ final class LocationContainer
     public function getCity(): ?Location
     {
         return $this->city;
+    }
+
+    /**
+     * @param string $isoLanguage
+     * @return string|null
+     */
+    public function getCityName(string $isoLanguage): string|null
+    {
+        if (is_null($this->city)) {
+            return null;
+        }
+
+        if (is_null($this->locationServiceAlternateName)) {
+            return $this->city->getName();
+        }
+
+        return $this->locationServiceAlternateName->getNameByIsoLanguage($this->city, $isoLanguage);
     }
 
     /**
@@ -124,6 +190,23 @@ final class LocationContainer
     }
 
     /**
+     * @param string $isoLanguage
+     * @return string|null
+     */
+    public function getStateName(string $isoLanguage): string|null
+    {
+        if (is_null($this->state)) {
+            return null;
+        }
+
+        if (is_null($this->locationServiceAlternateName)) {
+            return $this->state->getName();
+        }
+
+        return $this->locationServiceAlternateName->getNameByIsoLanguage($this->state, $isoLanguage);
+    }
+
+    /**
      * @return bool
      */
     public function hasState(): bool
@@ -148,6 +231,23 @@ final class LocationContainer
     public function getCountry(): ?Location
     {
         return $this->country;
+    }
+
+    /**
+     * @param string $isoLanguage
+     * @return string|null
+     */
+    public function getCountryName(string $isoLanguage): string|null
+    {
+        if (is_null($this->country)) {
+            return null;
+        }
+
+        if (is_null($this->locationServiceAlternateName)) {
+            return $this->country->getName();
+        }
+
+        return $this->locationServiceAlternateName->getNameByIsoLanguage($this->country, $isoLanguage);
     }
 
     /**
