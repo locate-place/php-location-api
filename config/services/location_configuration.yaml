@@ -1,36 +1,5 @@
 parameters:
-    feature_class_a: 'A'
-    feature_class_p: 'P'
-
-    feature_codes_p_all:
-        - 'PPL'
-        - 'PPLA'
-        - 'PPLA2'
-        - 'PPLA3'
-        - 'PPLA4'
-        - 'PPLA5'
-        - 'PPLC'
-        - 'PPLF'
-        - 'PPLG'
-        - 'PPLQ'
-        - 'PPLR'
-        - 'PPLS'
-        - 'PPLW'
-        - 'PPLX'
-        - 'STLMT'
-
-    admin_codes_a0: 'a0'
-    admin_codes_a1: 'a1'
-    admin_codes_a2: 'a2'
-    admin_codes_a3: 'a3'
-    admin_codes_a4: 'a4'
-
-    admin_codes_all:
-        - '%admin_codes_a1%'
-        - '%admin_codes_a2%'
-        - '%admin_codes_a3%'
-        - '%admin_codes_a4%'
-
+    # district admin codes
     district_match:
         AT: '%admin_codes_a3%'
         CH: '%admin_codes_a3%'
@@ -47,16 +16,12 @@ parameters:
         SE: '%admin_codes_a2%'
         US: '%admin_codes_a2%'
 
-    # some db configuration names
-    db_not_null: 'not-null'
-    db_null: 'null'
-    db_from_location: 'from-location'
-
-    # Some borough filters
+    # some borough filters
     filter_new_york_city:
         a1: 'NY'
         a2: '047|061'
 
+    # location configuration
     location_configuration:
         default:
             location_reference:

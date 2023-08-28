@@ -1,0 +1,5 @@
+parameters:
+    # some db configuration names
+    db_not_null: 'not-null'
+    db_null: 'null'
+    db_from_location: 'from-location'

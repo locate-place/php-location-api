@@ -12,6 +12,10 @@ parameters:
     mailer.dns: '%env(MAILER_DSN)%'
 
 imports:
+    - { resource: 'services/admin_code_configuration.yaml' }
+    - { resource: 'services/db_field_name_configuration.yaml' }
+    - { resource: 'services/feature_class_configuration.yaml' }
+    - { resource: 'services/feature_code_configuration.yaml' }
     - { resource: 'services/location_configuration.yaml' }
 
 services:

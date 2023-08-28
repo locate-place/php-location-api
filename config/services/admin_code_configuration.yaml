@@ -1,0 +1,12 @@
+parameters:
+    admin_codes_a0: 'a0'
+    admin_codes_a1: 'a1'
+    admin_codes_a2: 'a2'
+    admin_codes_a3: 'a3'
+    admin_codes_a4: 'a4'
+
+    admin_codes_all:
+        - '%admin_codes_a1%'
+        - '%admin_codes_a2%'
+        - '%admin_codes_a3%'
+        - '%admin_codes_a4%'

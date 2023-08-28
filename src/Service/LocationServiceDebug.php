@@ -25,6 +25,7 @@ use Ixnode\PhpException\Parser\ParserException;
 use Ixnode\PhpException\Type\TypeInvalidException;
 use JetBrains\PhpStorm\NoReturn;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
 /**
  * Class LocationServiceDebug
@@ -60,13 +61,15 @@ class LocationServiceDebug
      * @param LocationService $locationService
      * @param LocationServiceConfig $locationCountryService
      * @param LocationServiceAlternateName $locationServiceName
+     * @param ParameterBagInterface $parameterBag
      */
     public function __construct(
         protected LocationRepository $locationRepository,
         protected AlternateNameRepository $alternateNameRepository,
         protected LocationService $locationService,
         protected LocationServiceConfig $locationCountryService,
-        protected LocationServiceAlternateName $locationServiceName
+        protected LocationServiceAlternateName $locationServiceName,
+        protected ParameterBagInterface $parameterBag
     )
     {
     }
@@ -250,17 +253,21 @@ class LocationServiceDebug
     ): void
     {
         $featureCodes = match ($featureClass) {
-            FeatureClass::FEATURE_CLASS_A => FeatureClass::FEATURE_CODES_A_ALL,
-            FeatureClass::FEATURE_CLASS_H => FeatureClass::FEATURE_CODES_H_ALL,
-            FeatureClass::FEATURE_CLASS_L => FeatureClass::FEATURE_CODES_L_ALL,
-            FeatureClass::FEATURE_CLASS_P => FeatureClass::FEATURE_CODES_P_ALL,
-            FeatureClass::FEATURE_CLASS_R => FeatureClass::FEATURE_CODES_R_ALL,
-            FeatureClass::FEATURE_CLASS_S => FeatureClass::FEATURE_CODES_S_ALL,
-            FeatureClass::FEATURE_CLASS_T => FeatureClass::FEATURE_CODES_T_ALL,
-            FeatureClass::FEATURE_CLASS_U => FeatureClass::FEATURE_CODES_U_ALL,
-            FeatureClass::FEATURE_CLASS_V => FeatureClass::FEATURE_CODES_V_ALL,
+            FeatureClass::FEATURE_CLASS_A => $this->parameterBag->get('feature_codes_a_all'),
+            FeatureClass::FEATURE_CLASS_H => $this->parameterBag->get('feature_codes_h_all'),
+            FeatureClass::FEATURE_CLASS_L => $this->parameterBag->get('feature_codes_l_all'),
+            FeatureClass::FEATURE_CLASS_P => $this->parameterBag->get('feature_codes_p_all'),
+            FeatureClass::FEATURE_CLASS_R => $this->parameterBag->get('feature_codes_r_all'),
+            FeatureClass::FEATURE_CLASS_S => $this->parameterBag->get('feature_codes_s_all'),
+            FeatureClass::FEATURE_CLASS_T => $this->parameterBag->get('feature_codes_t_all'),
+            FeatureClass::FEATURE_CLASS_U => $this->parameterBag->get('feature_codes_u_all'),
+            FeatureClass::FEATURE_CLASS_V => $this->parameterBag->get('feature_codes_v_all'),
             default => throw new CaseUnsupportedException(sprintf('Feature class "%s" is not supported.', $featureClass)),
         };
+
+        if (!is_array($featureCodes)) {
+            throw new CaseUnsupportedException('The feature_codes array is not an array.');
+        }
 
         $locations = [];
         foreach ($featureCodes as $featureCode) {
