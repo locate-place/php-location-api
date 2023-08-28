@@ -562,7 +562,7 @@ final class LocationServiceConfig
      * Returns the value for given feature class and feature code.
      *
      * @param string $key
-     * @param string $featureClass
+     * @param string|null $featureClass
      * @param string|null $featureCode
      * @param mixed|null $default
      * @return mixed
@@ -570,7 +570,7 @@ final class LocationServiceConfig
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      * @SuppressWarnings(PHPMD.NPathComplexity)
      */
-    private function getConfig(string $key, string $featureClass, string|null $featureCode = null, mixed $default = null): mixed
+    private function getConfig(string $key, string|null $featureClass = null, string|null $featureCode = null, mixed $default = null): mixed
     {
         $nextPlaces = $this->parameterBag->get('next_places');
 
@@ -599,14 +599,16 @@ final class LocationServiceConfig
             }
         }
 
-        $featureClassConfig = array_key_exists('feature_class', $config) ? $config['feature_class'] : [];
+        if (!is_null($featureClass)) {
+            $featureClassConfig = array_key_exists('feature_class', $config) ? $config['feature_class'] : [];
 
-        if (!is_array($featureClassConfig)) {
-            throw new TypeInvalidException('array', gettype($featureClassConfig));
-        }
+            if (!is_array($featureClassConfig)) {
+                throw new TypeInvalidException('array', gettype($featureClassConfig));
+            }
 
-        if (array_key_exists($featureClass, $featureClassConfig)) {
-            return $featureClassConfig[$featureClass];
+            if (array_key_exists($featureClass, $featureClassConfig)) {
+                return $featureClassConfig[$featureClass];
+            }
         }
 
         return array_key_exists('default', $config) ? $config['default'] : $default;
@@ -967,14 +969,14 @@ final class LocationServiceConfig
     /**
      * Returns the limit for given feature class and feature code.
      *
-     * @param string $featureClass
+     * @param string|null $featureClass
      * @param string|null $featureCode
      * @param mixed|null $default
      * @return int
      * @throws CaseUnsupportedException
      * @throws TypeInvalidException
      */
-    public function getLimit(string $featureClass, string|null $featureCode = null, mixed $default = null): int
+    public function getLimit(string|null $featureClass = null, string|null $featureCode = null, mixed $default = null): int
     {
         $limit = $this->getConfig('limit', $featureClass, $featureCode, $default);
 
@@ -992,14 +994,14 @@ final class LocationServiceConfig
     /**
      * Returns the distance for given feature class and feature code.
      *
-     * @param string $featureClass
+     * @param string|null $featureClass
      * @param string|null $featureCode
      * @param mixed|null $default
      * @return int|null
      * @throws CaseUnsupportedException
      * @throws TypeInvalidException
      */
-    public function getDistance(string $featureClass, string|null $featureCode = null, mixed $default = null): int|null
+    public function getDistance(string|null $featureClass = null, string|null $featureCode = null, mixed $default = null): int|null
     {
         $distance = $this->getConfig('distance', $featureClass, $featureCode, $default);
 
@@ -1017,13 +1019,13 @@ final class LocationServiceConfig
     /**
      * Returns the flag "use_admin_codes_general" for given feature class and feature code.
      *
-     * @param string $featureClass
+     * @param string|null $featureClass
      * @param string|null $featureCode
      * @param mixed|null $default
      * @return bool
      * @throws TypeInvalidException
      */
-    public function isUseAdminCodesGeneral(string $featureClass, string|null $featureCode = null, mixed $default = null): bool
+    public function isUseAdminCodesGeneral(string|null $featureClass = null, string|null $featureCode = null, mixed $default = null): bool
     {
         $useAdminCodesGeneral = $this->getConfig('use_admin_codes_general', $featureClass, $featureCode, $default);
 
@@ -1037,13 +1039,13 @@ final class LocationServiceConfig
     /**
      * Returns the flag "use_location_country" for given feature class and feature code.
      *
-     * @param string $featureClass
+     * @param string|null $featureClass
      * @param string|null $featureCode
      * @param mixed|null $default
      * @return bool
      * @throws TypeInvalidException
      */
-    public function isUseLocationCountry(string $featureClass, string|null $featureCode = null, mixed $default = null): bool
+    public function isUseLocationCountry(string|null $featureClass = null, string|null $featureCode = null, mixed $default = null): bool
     {
         $useLocationCountry = $this->getConfig('use_location_country', $featureClass, $featureCode, $default);
 
