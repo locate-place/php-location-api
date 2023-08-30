@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace App\ApiPlatform\State\Base;
 
+use Ixnode\PhpApiVersionBundle\ApiPlatform\Resource\Base\BasePublicResource;
 use Ixnode\PhpApiVersionBundle\ApiPlatform\State\Base\Wrapper\BaseResourceWrapperProvider;
 use Ixnode\PhpApiVersionBundle\Utils\TypeCasting\TypeCastingHelper;
 use Ixnode\PhpCoordinate\Coordinate;
@@ -32,6 +33,36 @@ use Ixnode\PhpTimezone\Constants\Language;
  */
 class BaseProvider extends BaseResourceWrapperProvider
 {
+    /**
+     * Returns the resource wrapper.
+     *
+     * @param BasePublicResource|BasePublicResource[] $baseResource
+     * @param string $timeTaken
+     * @return ResourceWrapper
+     * @throws ArrayKeyNotFoundException
+     * @throws CaseInvalidException
+     * @throws CaseUnsupportedException
+     * @throws TypeInvalidException
+     */
+    protected function getResourceWrapper(BasePublicResource|array $baseResource, string $timeTaken): ResourceWrapper
+    {
+        $resourceWrapper = parent::getResourceWrapper($baseResource, $timeTaken);
+
+        /** @phpstan-ignore-next-line */
+        return (new ResourceWrapper())
+            ->setGiven($resourceWrapper->getGiven())
+            ->setDate($resourceWrapper->getDate())
+            ->setTimeTaken($resourceWrapper->getTimeTaken())
+            ->setVersion($resourceWrapper->getVersion())
+            ->setData($resourceWrapper->getData())
+            ->setDataLicence([
+                'full' => (new TypeCastingHelper($this->parameterBag->get('data_license_full')))->strval(),
+                'short' => (new TypeCastingHelper($this->parameterBag->get('data_license_short')))->strval(),
+                'url' => (new TypeCastingHelper($this->parameterBag->get('data_license_url')))->strval(),
+            ])
+        ;
+    }
+
     /**
      * Extends the getUriVariablesOutput method.
      *

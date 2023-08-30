@@ -13,13 +13,13 @@ api_platform:
   show_webby: true
 
   # Specify a name converter to use.
-  #name_converter: 'Ixnode\PhpApiVersionBundle\Utils\Converter\CamelCaseToSeparatedConverter'
+  name_converter: App\ApiPlatform\Operation\CamelCaseToSeparatedConverter
 
   # Specify an asset package name to use.
   asset_package: null
 
   # Specify a path name generator to use.
-  path_segment_name_generator: Ixnode\PhpApiVersionBundle\ApiPlatform\Operation\SingularPathSegmentNameGenerator
+  path_segment_name_generator: App\ApiPlatform\Operation\SingularPathSegmentNameGenerator
 
   validator:
     # Enable the serialization of payload fields when a validation error is thrown.
