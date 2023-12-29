@@ -116,6 +116,7 @@ class LocationRepository extends ServiceEntityRepository
      * @param bool|null $withPopulation
      * @param bool $sortByFeatureClasses
      * @param bool $sortByFeatureCodes
+     * @param bool $sortByPopulation
      * @param int|null $limit
      * @return array<int, Location>
      * @throws CaseUnsupportedException
@@ -138,6 +139,7 @@ class LocationRepository extends ServiceEntityRepository
         bool|null $withPopulation = null,
         bool $sortByFeatureClasses = false,
         bool $sortByFeatureCodes = false,
+        bool $sortByPopulation = false,
         int|null $limit = null
     ): array
     {
@@ -221,6 +223,16 @@ class LocationRepository extends ServiceEntityRepository
             ;
         }
 
+        /* Order by given population. */
+        if ($sortByPopulation) {
+            $fieldName = 'l.population';
+            $sortName = 'sortByPopulation';
+            $queryBuilder
+                ->addSelect(sprintf('CASE WHEN %s IS NOT NULL THEN %s ELSE 0 END AS HIDDEN %s', $fieldName, $fieldName, $sortName))
+                ->addOrderBy($sortName, 'DESC')
+            ;
+        }
+
         /* Order result by distance (uses <-> for performance reasons). */
         if (!is_null($coordinate)) {
             $queryBuilder
@@ -258,6 +270,7 @@ class LocationRepository extends ServiceEntityRepository
      * @param bool|null $withPopulation
      * @param bool $sortByFeatureClasses
      * @param bool $sortByFeatureCodes
+     * @param bool $sortByPopulation
      * @return Location|null
      * @throws CaseUnsupportedException
      * @throws ClassInvalidException
@@ -272,7 +285,8 @@ class LocationRepository extends ServiceEntityRepository
         array|null $adminCodes = [],
         bool|null $withPopulation = null,
         bool $sortByFeatureClasses = false,
-        bool $sortByFeatureCodes = false
+        bool $sortByFeatureCodes = false,
+        bool $sortByPopulation = false
     ): Location|null
     {
         $location = $this->findLocationsByCoordinate(
@@ -284,6 +298,7 @@ class LocationRepository extends ServiceEntityRepository
             withPopulation: $withPopulation,
             sortByFeatureClasses: $sortByFeatureClasses,
             sortByFeatureCodes: $sortByFeatureCodes,
+            sortByPopulation: $sortByPopulation,
             limit: 1
         );
 
@@ -438,7 +453,8 @@ class LocationRepository extends ServiceEntityRepository
             country: $location->getCountry(),
             adminCodes: $this->locationCountryService->getCityAdminCodes($location),
             withPopulation: $this->locationCountryService->getCityWithPopulation($location),
-            sortByFeatureCodes: $this->locationCountryService->isCitySortByFeatureCodes($location)
+            sortByFeatureCodes: $this->locationCountryService->isCitySortByFeatureCodes($location),
+            sortByPopulation: $this->locationCountryService->isCitySortByPopulation($location)
         );
     }
 

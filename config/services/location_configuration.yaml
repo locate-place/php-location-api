@@ -26,13 +26,14 @@ parameters:
         default:
             location_reference:
                 feature_class: '%feature_class_p%'
-                feature_codes: '%feature_codes_p_all%'
+                feature_codes: '%feature_codes_p_next_location%'
             district:
                 feature_class: '%feature_class_p%'
                 feature_codes:
                     - 'PPLX'
                     - 'PPL'
                 sort_by_feature_codes: false
+                sort_by_population: false
                 admin_codes: null
                 with_population: null
             borough:
@@ -55,6 +56,7 @@ parameters:
                     - 'PPLW'
                     - 'STLMT'
                 sort_by_feature_codes: true
+                sort_by_population: false
                 admin_codes: null
                 with_population: true
             state:
@@ -62,6 +64,7 @@ parameters:
                 feature_codes:
                     - 'ADM1'
                 sort_by_feature_codes: true
+                sort_by_population: false
                 admin_codes:
                     a1: '%db_from_location%'
                 with_population: null
@@ -73,11 +76,11 @@ parameters:
                 feature_class: '%feature_class_p%'
                 feature_codes:
                     - 'PPLC'
-                    - 'PPL'
                     - 'PPLA5'
                     - 'PPLA4'
                     - 'PPLA3'
                     - 'PPLA2'
+                    - 'PPL'
                     - 'PPLA'
                     - 'PPLF'
                     - 'PPLG'
@@ -86,7 +89,8 @@ parameters:
                     - 'PPLS'
                     - 'PPLW'
                     - 'STLMT'
-                sort_by_feature_codes: true
+                sort_by_feature_codes: false
+                sort_by_population: true
                 admin_codes: null
                 with_population: true
         GB:
@@ -96,6 +100,7 @@ parameters:
                     - 'PPLX'
                     - 'PPL'
                 sort_by_feature_codes: false
+                sort_by_population: false
                 admin_codes: null
                 with_population: null
                 exceptions:
@@ -104,6 +109,7 @@ parameters:
                       feature_codes:
                         - 'PPLA3'
                       sort_by_feature_codes: true
+                      sort_by_population: false
             borough: null
             city:
                 feature_class: '%feature_class_p%'
@@ -123,6 +129,7 @@ parameters:
                     - 'PPLW'
                     - 'STLMT'
                 sort_by_feature_codes: true
+                sort_by_population: false
                 admin_codes: null
                 with_population: true
         MT:
@@ -135,6 +142,7 @@ parameters:
                 feature_codes:
                     - 'ADMD'
                 sort_by_feature_codes: true
+                sort_by_population: false
                 admin_codes:
                     a1: '00'
                 with_population: null
@@ -146,6 +154,7 @@ parameters:
                     - 'PPLX'
                     - 'PPL'
                 sort_by_feature_codes: false
+                sort_by_population: false
                 admin_codes: null
                 with_population: null
                 must_match_admin_codes: true
@@ -154,6 +163,7 @@ parameters:
                       feature_codes:
                           - 'PPLX'
                       sort_by_feature_codes: true
+                      sort_by_population: false
                       admin_codes:
                           a1: 'NY'
                           a2: '%db_from_location%'
@@ -164,6 +174,7 @@ parameters:
                     - 'PPLX'
                     - 'PPL'
                 sort_by_feature_codes: false
+                sort_by_population: false
                 admin_codes: null
                 with_population: null
                 exceptions:
@@ -172,6 +183,7 @@ parameters:
                         feature_codes:
                             - 'PPLA2'
                         sort_by_feature_codes: true
+                        sort_by_population: false
                         admin_codes:
                             a1: 'NY'
                             a2: '%db_from_location%'
@@ -193,6 +205,7 @@ parameters:
                     - 'PPLW'
                     - 'STLMT'
                 sort_by_feature_codes: true
+                sort_by_population: false
                 admin_codes: null
                 with_population: true
                 #must_match_admin_codes: true
@@ -201,6 +214,7 @@ parameters:
                       feature_codes:
                           - 'PPL'
                       sort_by_feature_codes: true
+                      sort_by_population: false
                       admin_codes:
                           a1: 'NY'
                           a2: 'null'

@@ -73,4 +73,17 @@ class PlaceDE
             'country' => 'Federal Republic of Germany',
         ],
     ];
+
+    final public const COLOGNE_COLOGNE_CATHEDRAL = [
+        'coordinate' => [
+            'latitude' => 50.941074,
+            'longitude' => 6.957685,
+        ],
+        'location' => [
+            'district-locality' => 'Altstadt Nord',
+            'city-municipality' => 'Köln',
+            'state' => 'Nordrhein-Westfalen',
+            'country' => 'Federal Republic of Germany',
+        ],
+    ];
 }

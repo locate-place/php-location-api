@@ -388,7 +388,7 @@ final class LocationServiceConfig
     }
 
     /**
-     * Returns if the feature codes should be sorted of given location.
+     * Returns if the feature codes should be sorted by given location.
      *
      * @param Location $location
      * @param string $type
@@ -412,6 +412,33 @@ final class LocationServiceConfig
         }
 
         return $sortByFeatureCodes;
+    }
+
+    /**
+     * Returns if the feature codes should be sorted by given population.
+     *
+     * @param Location $location
+     * @param string $type
+     * @return bool
+     * @throws CaseUnsupportedException
+     */
+    private function isSortByPopulation(Location $location, string $type = 'district'): bool
+    {
+        $key = 'sort_by_population';
+
+        $sortByPopulation = $this->getValueFromConfig($key, $location, $type);
+
+        if (!is_bool($sortByPopulation)) {
+            throw new CaseUnsupportedException(sprintf(
+                'Unsupported type given for %s.%s.%s: %s.',
+                $this->getCountryCode($location),
+                $type,
+                $key,
+                gettype($sortByPopulation)
+            ));
+        }
+
+        return $sortByPopulation;
     }
 
     /**
@@ -816,6 +843,54 @@ final class LocationServiceConfig
     public function isStateSortByFeatureCodes(Location $location): bool
     {
         return $this->isSortByFeatureCodes($location, 'state');
+    }
+
+    /**
+     * Returns if the feature codes should be sorted by given population.
+     *
+     * @param Location $location
+     * @return bool
+     * @throws CaseUnsupportedException
+     */
+    public function isDistrictSortByPopulation(Location $location): bool
+    {
+        return $this->isSortByPopulation($location);
+    }
+
+    /**
+     * Returns if the borough feature codes should be sorted.
+     *
+     * @param Location $location
+     * @return bool
+     * @throws CaseUnsupportedException
+     */
+    public function isBoroughSortByPopulation(Location $location): bool
+    {
+        return $this->isSortByPopulation($location, 'borough');
+    }
+
+    /**
+     * Returns if the feature codes should be sorted.
+     *
+     * @param Location $location
+     * @return bool
+     * @throws CaseUnsupportedException
+     */
+    public function isCitySortByPopulation(Location $location): bool
+    {
+        return $this->isSortByPopulation($location, 'city');
+    }
+
+    /**
+     * Returns if the feature codes should be sorted (state).
+     *
+     * @param Location $location
+     * @return bool
+     * @throws CaseUnsupportedException
+     */
+    public function isStateSortByPopulation(Location $location): bool
+    {
+        return $this->isSortByPopulation($location, 'state');
     }
 
     /**

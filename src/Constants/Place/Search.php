@@ -28,6 +28,7 @@ class Search
         'de-doebeln-blumenstrasse' => PlaceDE::DOEBELN_BLUMENSTRASSE,
         'de-dresden-frauenkirche' => PlaceDE::DRESDEN_FRAUENKIRCHE,
         'de-potsdam-cecilienhof' => PlaceDE::POTSDAM_CECILIENHOF_PALACE,
+        'de-cologne-cologne-cathedral' => PlaceDE::COLOGNE_COLOGNE_CATHEDRAL,
         'gb-amesbury-stonehenge' => PlaceGB::AMESBURY_STONEHENGE,
         'gb-edinburgh-leith' => PlaceGB::EDINBURGH_LEITH,
         'gb-london-tower-bridge' => PlaceGB::LONDON_TOWER_BRIDGE,
