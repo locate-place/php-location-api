@@ -31,7 +31,7 @@ class PlaceGB
             'district-locality' => 'Countess',
             'city-municipality' => 'Amesbury',
             'state' => 'England',
-            'country' => 'United Kingdom of Great Britain and Northern Ireland',
+            'country' => 'UK',
         ],
     ];
 
@@ -43,8 +43,8 @@ class PlaceGB
         'location' => [
             'district-locality' => 'Leith',
             'city-municipality' => 'Edinburgh',
-            'state' => 'Scotland',
-            'country' => 'United Kingdom of Great Britain and Northern Ireland',
+            'state' => 'Schottland',
+            'country' => 'UK',
         ],
     ];
 
@@ -54,10 +54,10 @@ class PlaceGB
             'longitude' => -0.075278,
         ],
         'location' => [
-            'district-locality' => 'City of London',
+            'district-locality' => 'London City',
             'city-municipality' => 'London',
             'state' => 'England',
-            'country' => 'United Kingdom of Great Britain and Northern Ireland',
+            'country' => 'UK',
         ],
     ];
 
@@ -70,7 +70,7 @@ class PlaceGB
             'district-locality' => 'Summertown',
             'city-municipality' => 'Oxford',
             'state' => 'England',
-            'country' => 'United Kingdom of Great Britain and Northern Ireland',
+            'country' => 'UK',
         ],
     ];
 
@@ -83,7 +83,7 @@ class PlaceGB
             'district-locality' => 'Guys Cliffe',
             'city-municipality' => 'Warwick',
             'state' => 'England',
-            'country' => 'United Kingdom of Great Britain and Northern Ireland',
+            'country' => 'UK',
         ],
     ];
 }

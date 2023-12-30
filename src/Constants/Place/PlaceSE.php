@@ -30,8 +30,8 @@ class PlaceSE
         'location' => [
             'district-locality' => 'Drottningholm',
             'city-municipality' => 'Ekerö',
-            'state' => 'Stockholm County',
-            'country' => 'Kingdom of Sweden',
+            'state' => 'Stockholm',
+            'country' => 'Schweden',
         ],
     ];
     final public const LIDINGOE_BOOBOOLIVING = [
@@ -42,8 +42,8 @@ class PlaceSE
         'location' => [
             'district-locality' => 'Skärsätra',
             'city-municipality' => 'Lidingö',
-            'state' => 'Stockholm County',
-            'country' => 'Kingdom of Sweden',
+            'state' => 'Stockholm',
+            'country' => 'Schweden',
         ],
     ];
 
@@ -55,8 +55,8 @@ class PlaceSE
         'location' => [
             'district-locality' => 'Gamla Stan',
             'city-municipality' => 'Stockholm',
-            'state' => 'Stockholm County',
-            'country' => 'Kingdom of Sweden',
+            'state' => 'Stockholm',
+            'country' => 'Schweden',
         ],
     ];
 }

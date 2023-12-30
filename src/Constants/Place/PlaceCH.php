@@ -30,8 +30,8 @@ class PlaceCH
         'location' => [
             'district-locality' => 'Zürich (Kreis 3) / Friesenberg',
             'city-municipality' => 'Zürich',
-            'state' => 'Kanton Zürich',
-            'country' => 'Switzerland',
+            'state' => 'Zürich',
+            'country' => 'Schweizerische Eidgenossenschaft',
         ],
     ];
 }

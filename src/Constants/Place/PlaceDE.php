@@ -30,8 +30,8 @@ class PlaceDE
         'location' => [
             'district-locality' => 'Mitte',
             'city-municipality' => 'Berlin',
-            'state' => 'Land Berlin',
-            'country' => 'Federal Republic of Germany'
+            'state' => 'Berlin',
+            'country' => 'Bundesrepublik Deutschland'
         ],
     ];
 
@@ -43,8 +43,8 @@ class PlaceDE
         'location' => [
             'district-locality' => 'Sörmitz',
             'city-municipality' => 'Döbeln',
-            'state' => 'Saxony',
-            'country' => 'Federal Republic of Germany',
+            'state' => 'Sachsen',
+            'country' => 'Bundesrepublik Deutschland',
         ],
     ];
 
@@ -56,8 +56,8 @@ class PlaceDE
         'location' => [
             'district-locality' => 'Innere Altstadt',
             'city-municipality' => 'Dresden',
-            'state' => 'Saxony',
-            'country' => 'Federal Republic of Germany',
+            'state' => 'Sachsen',
+            'country' => 'Bundesrepublik Deutschland',
         ],
     ];
 
@@ -70,7 +70,7 @@ class PlaceDE
             'district-locality' => 'Nauener Vorstadt',
             'city-municipality' => 'Potsdam',
             'state' => 'Brandenburg',
-            'country' => 'Federal Republic of Germany',
+            'country' => 'Bundesrepublik Deutschland',
         ],
     ];
 
@@ -83,7 +83,7 @@ class PlaceDE
             'district-locality' => 'Altstadt Nord',
             'city-municipality' => 'Köln',
             'state' => 'Nordrhein-Westfalen',
-            'country' => 'Federal Republic of Germany',
+            'country' => 'Bundesrepublik Deutschland',
         ],
     ];
 }

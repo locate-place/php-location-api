@@ -37,16 +37,16 @@ class LocationServiceAlternateName
      * Returns the alternate name by given iso language.
      *
      * @param Location|null $location
-     * @param string $isoLanguage
+     * @param string|null $isoLanguage
      * @return string
      */
-    public function getNameByIsoLanguage(?Location $location, string $isoLanguage): string
+    public function getNameByIsoLanguage(?Location $location, string $isoLanguage = null): string
     {
         if (is_null($location)) {
             return 'n/a';
         }
 
-        if ($isoLanguage === 'en') {
+        if (is_null($isoLanguage)) {
             return (string) $location->getName();
         }
 

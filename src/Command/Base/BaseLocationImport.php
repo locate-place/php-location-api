@@ -13,10 +13,10 @@ declare(strict_types=1);
 
 namespace App\Command\Base;
 
+use App\Constants\Code\Encoding;
 use App\Entity\Import;
 use DateTimeImmutable;
 use Ixnode\PhpApiVersionBundle\Utils\TypeCasting\TypeCastingHelper;
-use Ixnode\PhpContainer\Encoding;
 use Ixnode\PhpContainer\File;
 use Ixnode\PhpException\ArrayType\ArrayKeyNotFoundException;
 use Ixnode\PhpException\Case\CaseInvalidException;

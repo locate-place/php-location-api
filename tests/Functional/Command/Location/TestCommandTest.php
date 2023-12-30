@@ -33,6 +33,7 @@ use Ixnode\PhpException\File\FileNotReadableException;
 use Ixnode\PhpException\Function\FunctionJsonEncodeException;
 use Ixnode\PhpException\Type\TypeInvalidException;
 use Ixnode\PhpJsonSchemaValidator\Validator;
+use Ixnode\PhpNamingConventions\Exception\FunctionReplaceException;
 use JsonException;
 
 /**
@@ -90,6 +91,7 @@ class TestCommandTest extends BaseFunctionalCommandTest
      * @throws TypeInvalidException
      * @throws ArrayKeyNotFoundException
      * @throws CaseInvalidException
+     * @throws FunctionReplaceException
      */
     public function wrapper(
         int $number,
@@ -105,6 +107,7 @@ class TestCommandTest extends BaseFunctionalCommandTest
         $this->commandTester->execute([
             CoordinateCommand::ARGUMENT_NAME_LATITUDE => $latitude,
             CoordinateCommand::ARGUMENT_NAME_LONGITUDE => $longitude,
+            '-i' => 'de',
         ]);
         $json = new Json($this->commandTester->getDisplay());
 
@@ -114,7 +117,7 @@ class TestCommandTest extends BaseFunctionalCommandTest
         /* Assert */
         $this->assertIsNumeric($number); // To avoid phpmd warning.
         $this->assertTrue($this->validateAndWriteOutput($validator), BaseFunctionalCommandTest::MESSAGE_JSON_RESPONSE_INVALID);
-        $this->assertEquals($location, $json->getKeyArray(['data', 'location']));
+        $this->assertEquals(array_values($location), array_values($json->getKeyArray(['data', 'location', ['name']])));
     }
 
     /**

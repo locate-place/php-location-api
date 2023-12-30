@@ -30,7 +30,7 @@ class PlaceMT
         'location' => [
             'city-municipality' => 'Floriana',
             'state' => 'Southern Harbour District',
-            'country' => 'Republic of Malta',
+            'country' => 'Malta',
         ],
     ];
 
@@ -42,7 +42,7 @@ class PlaceMT
         'location' => [
             'city-municipality' => 'Valletta',
             'state' => 'Southern Harbour District',
-            'country' => 'Republic of Malta',
+            'country' => 'Malta',
         ],
     ];
 
@@ -54,7 +54,7 @@ class PlaceMT
         'location' => [
             'city-municipality' => 'Victoria',
             'state' => 'Gozo and Comino District',
-            'country' => 'Republic of Malta',
+            'country' => 'Malta',
         ],
     ];
 }

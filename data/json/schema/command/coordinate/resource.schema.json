@@ -118,19 +118,59 @@
                     "type": "object",
                     "properties": {
                         "district-locality": {
-                            "type": ["string", "null"]
+                            "type": ["object", "null"],
+                            "properties": {
+                                "location-id": {
+                                    "type": "integer"
+                                },
+                                "name": {
+                                    "type": "string"
+                                }
+                            }
                         },
                         "borough-locality": {
-                            "type": ["string", "null"]
+                            "type": ["object", "null"],
+                            "properties": {
+                                "location-id": {
+                                    "type": "integer"
+                                },
+                                "name": {
+                                    "type": "string"
+                                }
+                            }
                         },
                         "city-municipality": {
-                            "type": "string"
+                            "type": "object",
+                            "properties": {
+                                "location-id": {
+                                    "type": "integer"
+                                },
+                                "name": {
+                                    "type": "string"
+                                }
+                            }
                         },
                         "state": {
-                            "type": "string"
+                            "type": "object",
+                            "properties": {
+                                "location-id": {
+                                    "type": "integer"
+                                },
+                                "name": {
+                                    "type": "string"
+                                }
+                            }
                         },
                         "country": {
-                            "type": "string"
+                            "type": "object",
+                            "properties": {
+                                "location-id": {
+                                    "type": "integer"
+                                },
+                                "name": {
+                                    "type": "string"
+                                }
+                            }
                         }
                     },
                     "required": [

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "1e6d9f7d73600b85843d2d9651d4180c",
+    "content-hash": "73c71a13fea7115aac578c47b0a508f9",
     "packages": [
         {
             "name": "adhocore/cli",
@@ -1986,22 +1986,24 @@
         },
         {
             "name": "ixnode/php-container",
-            "version": "0.1.10",
+            "version": "0.1.22",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ixnode/php-container.git",
-                "reference": "5dcbc5e643758abd87315d44af11354bbf11745e"
+                "reference": "6aee3e3dd1ecb5e6b0b2d888aab791c1a767e04c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ixnode/php-container/zipball/5dcbc5e643758abd87315d44af11354bbf11745e",
-                "reference": "5dcbc5e643758abd87315d44af11354bbf11745e",
+                "url": "https://api.github.com/repos/ixnode/php-container/zipball/6aee3e3dd1ecb5e6b0b2d888aab791c1a767e04c",
+                "reference": "6aee3e3dd1ecb5e6b0b2d888aab791c1a767e04c",
                 "shasum": ""
             },
             "require": {
                 "ext-curl": "*",
+                "ext-gd": "*",
                 "ixnode/php-checker": "^0.1.8",
                 "ixnode/php-exception": "^0.1.19",
+                "ixnode/php-naming-conventions": "^0.1.1",
                 "ixnode/php-size-byte": "^0.1.2",
                 "php": "^8.0"
             },
@@ -2044,9 +2046,9 @@
             ],
             "support": {
                 "issues": "https://github.com/ixnode/php-container/issues",
-                "source": "https://github.com/ixnode/php-container/tree/0.1.10"
+                "source": "https://github.com/ixnode/php-container/tree/0.1.22"
             },
-            "time": "2023-08-14T15:20:57+00:00"
+            "time": "2023-12-30T00:27:59+00:00"
         },
         {
             "name": "ixnode/php-coordinate",

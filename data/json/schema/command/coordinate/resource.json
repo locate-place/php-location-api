@@ -25,16 +25,28 @@
         "timezone": {
             "timezone": "Europe/Zurich",
             "country": "CH",
-            "current-time": "2023-08-27 23:14:57",
-            "offset": "+02:00",
+            "current-time": "2023-12-30 00:43:11",
+            "offset": "+01:00",
             "latitude": 47.38333,
             "longitude": 8.53333
         },
         "location": {
-            "district-locality": "Zürich (Kreis 3) / Friesenberg",
-            "city-municipality": "Zürich",
-            "state": "Kanton Zürich",
-            "country": "Switzerland"
+            "district-locality": {
+                "location-id": 2511481,
+                "name": "Zürich (Kreis 3) / Friesenberg"
+            },
+            "city-municipality": {
+                "location-id": 2502781,
+                "name": "Zurich"
+            },
+            "state": {
+                "location-id": 2502780,
+                "name": "Canton of Zurich"
+            },
+            "country": {
+                "location-id": 2503306,
+                "name": "Switzerland"
+            }
         },
         "link": {
             "google": "https://www.google.de/maps/place/47.366670+8.500000",
@@ -58,8 +70,8 @@
             }
         }
     },
-    "time-taken": "90ms",
-    "version": "0.1.20",
+    "time-taken": "152ms",
+    "version": "0.1.21",
     "data-licence": {
         "full": "Creative Commons Attribution 4.0 License",
         "short": "CC-BY 4.0",

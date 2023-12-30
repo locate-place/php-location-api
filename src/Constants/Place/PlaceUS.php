@@ -31,7 +31,7 @@ class PlaceUS
             'district-locality' => 'East Cesar Chavez',
             'city-municipality' => 'Austin',
             'state' => 'Texas',
-            'country' => 'United States',
+            'country' => 'Vereinigte Staaten',
         ],
     ];
 
@@ -43,7 +43,7 @@ class PlaceUS
         'location' => [
             'city-municipality' => 'Binghamton',
             'state' => 'New York',
-            'country' => 'United States',
+            'country' => 'Vereinigte Staaten',
         ],
     ];
 
@@ -56,7 +56,7 @@ class PlaceUS
             'district-locality' => 'East Downtown',
             'city-municipality' => 'Houston',
             'state' => 'Texas',
-            'country' => 'United States',
+            'country' => 'Vereinigte Staaten',
         ],
     ];
 
@@ -70,7 +70,7 @@ class PlaceUS
             'borough-locality' => 'Brooklyn',
             'city-municipality' => 'New York City',
             'state' => 'New York',
-            'country' => 'United States',
+            'country' => 'Vereinigte Staaten',
         ],
     ];
 
@@ -84,7 +84,7 @@ class PlaceUS
             'borough-locality' => 'Manhattan',
             'city-municipality' => 'New York City',
             'state' => 'New York',
-            'country' => 'United States',
+            'country' => 'Vereinigte Staaten',
         ],
     ];
 
@@ -96,8 +96,8 @@ class PlaceUS
         'location' => [
             'district-locality' => 'Franklin McPherson Square',
             'city-municipality' => 'Washington',
-            'state' => 'District of Columbia',
-            'country' => 'United States',
+            'state' => 'Washington, D.C.',
+            'country' => 'Vereinigte Staaten',
         ],
     ];
 }
