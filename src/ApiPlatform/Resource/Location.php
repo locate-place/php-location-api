@@ -84,11 +84,11 @@ class Location extends BasePublicResource
     protected array $timezone;
 
     /** @var array{
-     *      district-locality?: array{name: string|null, location-id: int|null}|null,
-     *      borough-locality?: array{name: string|null, location-id: int|null}|null,
-     *      city-municipality?: array{name: string|null, location-id: int|null}|null,
-     *      state?: array{name: string|null, location-id: int|null}|null,
-     *      country?: array{name: string|null, location-id: int|null}|null
+     *      district-locality?: array{name: string|null, geoname-id: int|null}|null,
+     *      borough-locality?: array{name: string|null, geoname-id: int|null}|null,
+     *      city-municipality?: array{name: string|null, geoname-id: int|null}|null,
+     *      state?: array{name: string|null, geoname-id: int|null}|null,
+     *      country?: array{name: string|null, geoname-id: int|null}|null
      * } $location */
     protected array $location;
 
@@ -215,11 +215,11 @@ class Location extends BasePublicResource
      * Returns the location array.
      *
      * @return array{
-     *     district-locality?: array{name: string|null, location-id: int|null}|null,
-     *     borough-locality?: array{name: string|null, location-id: int|null}|null,
-     *     city-municipality?: array{name: string|null, location-id: int|null}|null,
-     *     state?: array{name: string|null, location-id: int|null}|null,
-     *     country?: array{name: string|null, location-id: int|null}|null
+     *     district-locality?: array{name: string|null, geoname-id: int|null}|null,
+     *     borough-locality?: array{name: string|null, geoname-id: int|null}|null,
+     *     city-municipality?: array{name: string|null, geoname-id: int|null}|null,
+     *     state?: array{name: string|null, geoname-id: int|null}|null,
+     *     country?: array{name: string|null, geoname-id: int|null}|null
      * }
      */
     public function getLocation(): array
@@ -231,11 +231,11 @@ class Location extends BasePublicResource
      * Sets the location array.
      *
      * @param array{
-     *     district-locality?: array{name: string|null, location-id: int|null}|null,
-     *     borough-locality?: array{name: string|null, location-id: int|null}|null,
-     *     city-municipality?: array{name: string|null, location-id: int|null}|null,
-     *     state?: array{name: string|null, location-id: int|null}|null,
-     *     country?: array{name: string|null, location-id: int|null}|null
+     *     district-locality?: array{name: string|null, geoname-id: int|null}|null,
+     *     borough-locality?: array{name: string|null, geoname-id: int|null}|null,
+     *     city-municipality?: array{name: string|null, geoname-id: int|null}|null,
+     *     state?: array{name: string|null, geoname-id: int|null}|null,
+     *     country?: array{name: string|null, geoname-id: int|null}|null
      * } $location
      * @return Location
      */

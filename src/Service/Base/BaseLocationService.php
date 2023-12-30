@@ -215,35 +215,35 @@ abstract class BaseLocationService extends BaseHelperLocationService
 
         if ($this->locationContainer->hasDistrict()) {
             $locationInformation['district-locality'] = [
-                'location-id' => $this->locationContainer->getDistrict()?->getId(),
+                'geoname-id' => $this->locationContainer->getDistrict()?->getId(),
                 'name' => $this->locationContainer->getDistrictName($isoLanguage)
             ];
         }
 
         if ($this->locationContainer->hasBorough()) {
             $locationInformation['borough-locality'] = is_null($this->locationContainer->getBorough()) ? null : [
-                'location-id' => $this->locationContainer->getBorough()->getId(),
+                'geoname-id' => $this->locationContainer->getBorough()->getGeonameId(),
                 'name' => $this->locationContainer->getBoroughName($isoLanguage)
             ];
         }
 
         if ($this->locationContainer->hasCity()) {
             $locationInformation['city-municipality'] = is_null($this->locationContainer->getCity()) ? null : [
-                'location-id' => $this->locationContainer->getCity()->getId(),
+                'geoname-id' => $this->locationContainer->getCity()->getGeonameId(),
                 'name' => $this->locationContainer->getCityName($isoLanguage),
             ];
         }
 
         if ($this->locationContainer->hasState()) {
             $locationInformation['state'] = is_null($this->locationContainer->getState()) ? null : [
-                'location-id' => $this->locationContainer->getState()->getId(),
+                'geoname-id' => $this->locationContainer->getState()->getGeonameId(),
                 'name' => $this->locationContainer->getStateName($isoLanguage),
             ];
         }
 
         if ($this->locationContainer->hasCountry()) {
             $locationInformation['country'] = is_null($this->locationContainer->getCountry()) ? null : [
-                'location-id' => $this->locationContainer->getCountry()->getId(),
+                'geoname-id' => $this->locationContainer->getCountry()->getGeonameId(),
                 'name' => $this->locationContainer->getCountryName($isoLanguage)
             ];
         }
