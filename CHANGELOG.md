@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Releases
 
+### [0.1.22] - 2023-08-30
+
+* Add order by population
+* Add id-location to district, city, borough and country (beside name)
+* Add de to LocationServiceAlternateName
+
 ### [0.1.21] - 2023-08-28
 
 * Add state config
