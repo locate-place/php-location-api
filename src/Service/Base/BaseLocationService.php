@@ -37,6 +37,7 @@ use LogicException;
  * @author Björn Hempel <bjoern@hempel.li>
  * @version 0.1.0 (2023-07-31)
  * @since 0.1.0 (2023-07-31) First version.
+ * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
  */
 abstract class BaseLocationService extends BaseHelperLocationService
 {
@@ -122,6 +123,7 @@ abstract class BaseLocationService extends BaseHelperLocationService
      * @throws Exception
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      * @SuppressWarnings(PHPMD.NPathComplexity)
+     * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
      */
     protected function getLocationResourceSimple(LocationEntity $location, Coordinate|null $coordinate): Location
     {
@@ -183,7 +185,9 @@ abstract class BaseLocationService extends BaseHelperLocationService
             throw new CaseUnsupportedException('Unable to get timezone location.');
         }
 
-        return (new Location())
+        $locationResource = new Location();
+
+        $locationResource
             ->setGeonameId($location->getGeonameId() ?: 0)
             ->setName($location->getName() ?: '')
             ->setFeature([
@@ -202,6 +206,24 @@ abstract class BaseLocationService extends BaseHelperLocationService
                 'longitude' => $locationArray['longitude'],
             ])
         ;
+
+        $population = $location->getPopulationInt();
+        $elevation = $location->getElevationInt();
+        $dem = $location->getDemInt();
+
+        if (is_int($population)) {
+            $locationResource->setPopulation($population);
+        }
+
+        if (is_int($elevation)) {
+            $locationResource->setElevation($elevation);
+        }
+
+        if (is_int($dem)) {
+            $locationResource->setDem($dem);
+        }
+
+        return $locationResource;
     }
 
     /**
@@ -276,6 +298,8 @@ abstract class BaseLocationService extends BaseHelperLocationService
      * @param Location $location
      * @param string $isoLanguage
      * @return void
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+     * @SuppressWarnings(PHPMD.NPathComplexity)
      */
     private function addLocation(array &$locationInformation, string $type, Location $location, string $isoLanguage = Language::EN): void
     {
@@ -292,7 +316,7 @@ abstract class BaseLocationService extends BaseHelperLocationService
             return;
         }
 
-        $locationElement = match ($type) {
+        $locationEntity = match ($type) {
             LocationContainer::TYPE_DISTRICT => $this->locationContainer->getDistrict(),
             LocationContainer::TYPE_BOROUGH => $this->locationContainer->getBorough(),
             LocationContainer::TYPE_CITY => $this->locationContainer->getCity(),
@@ -301,7 +325,7 @@ abstract class BaseLocationService extends BaseHelperLocationService
             default => null,
         };
 
-        if (!$locationElement instanceof LocationEntity) {
+        if (!$locationEntity instanceof LocationEntity) {
             return;
         }
 
@@ -314,17 +338,24 @@ abstract class BaseLocationService extends BaseHelperLocationService
             default => throw new LogicException(sprintf('Invalid type given: "%s"', $type)),
         };
 
-        $geonameId = $locationElement->getGeonameId();
-        $name = $this->locationContainer->getAlternateName($locationElement, $isoLanguage);
-        $wikipediaLink = $this->locationContainer->getAlternateName($locationElement, Language::LINK);
+        $geonameId = $locationEntity->getGeonameId();
+        $name = $this->locationContainer->getAlternateName($locationEntity, $isoLanguage);
+        $wikipediaLink = $this->locationContainer->getAlternateName($locationEntity, Language::LINK);
+        $isWikipediaLink = is_string($wikipediaLink) && str_starts_with($wikipediaLink, 'http');
+        $population = $locationEntity->getPopulationInt();
+        $elevation = $locationEntity->getElevationInt();
+        $dem = $locationEntity->getDemInt();
 
         $locationInformation[$key] = [
             ...(is_int($geonameId) ? [KeyArray::GEONAME_ID => $geonameId] : []),
             ...(is_string($name) ? [KeyArray::NAME => $name] : []),
-            ...(is_string($wikipediaLink) ? [KeyArray::WIKIPEDIA => $wikipediaLink] : []),
+            ...($isWikipediaLink ? [KeyArray::WIKIPEDIA => $wikipediaLink] : []),
+            ...(is_int($population) ? [KeyArray::POPULATION => $population] : []),
+            ...(is_int($elevation) ? [KeyArray::ELEVATION => $elevation] : []),
+            ...(is_int($dem) ? [KeyArray::DEM => $dem] : []),
         ];
 
-        if (is_string($wikipediaLink)) {
+        if ($isWikipediaLink) {
             $location->addLink([KeyArray::WIKIPEDIA, KeyArray::LOCATION, $key], $wikipediaLink);
         }
     }

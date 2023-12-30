@@ -34,6 +34,7 @@ use Symfony\Component\Serializer\Annotation\Ignore;
  * @version 0.1.0 (2023-06-27)
  * @since 0.1.0 (2023-06-27) First version.
  * @SuppressWarnings(PHPMD.TooManyFields)
+ * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
  */
 #[ORM\Entity(repositoryClass: LocationRepository::class)]
 #[ORM\Index(columns: ['coordinate'], flags: ['gist'])]
@@ -221,6 +222,26 @@ class Location
     }
 
     /**
+     * @return int|null
+     */
+    public function getPopulationInt(): ?int
+    {
+        $population = $this->population;
+
+        if (is_null($population)) {
+            return null;
+        }
+
+        $population = (int) $population;
+
+        if ($population <= 0) {
+            return null;
+        }
+
+        return $population;
+    }
+
+    /**
      * @param string|null $population
      * @return $this
      */
@@ -240,6 +261,24 @@ class Location
     }
 
     /**
+     * @return int|null
+     */
+    public function getElevationInt(): ?int
+    {
+        $elevation = $this->elevation;
+
+        if (is_null($elevation)) {
+            return null;
+        }
+
+        if ($elevation < 0) {
+            return null;
+        }
+
+        return $elevation;
+    }
+
+    /**
      * @param int|null $elevation
      * @return $this
      */
@@ -256,6 +295,24 @@ class Location
     public function getDem(): ?int
     {
         return $this->dem;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getDemInt(): ?int
+    {
+        $dem = $this->dem;
+
+        if (is_null($dem)) {
+            return null;
+        }
+
+        if ($dem < 0) {
+            return null;
+        }
+
+        return $dem;
     }
 
     /**

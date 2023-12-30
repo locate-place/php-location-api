@@ -25,7 +25,7 @@
         "timezone": {
             "timezone": "Europe/Zurich",
             "country": "CH",
-            "current-time": "2023-12-30 11:58:22",
+            "current-time": "2023-12-30 12:34:24",
             "offset": "+01:00",
             "latitude": 47.38333,
             "longitude": 8.53333
@@ -34,22 +34,34 @@
             "district-locality": {
                 "geoname-id": 6295497,
                 "name": "Zürich (Kreis 3) / Friesenberg",
-                "wikipedia": "https://en.wikipedia.org/wiki/Friesenberg"
+                "wikipedia": "https://en.wikipedia.org/wiki/Friesenberg",
+                "population": 9909,
+                "elevation": 0,
+                "dem": 465
             },
             "city-municipality": {
                 "geoname-id": 2657896,
                 "name": "Zürich",
-                "wikipedia": "https://en.wikipedia.org/wiki/Z%C3%BCrich"
+                "wikipedia": "https://en.wikipedia.org/wiki/Z%C3%BCrich",
+                "population": 341730,
+                "elevation": 0,
+                "dem": 429
             },
             "state": {
                 "geoname-id": 2657895,
                 "name": "Zürich",
-                "wikipedia": "https://en.wikipedia.org/wiki/Canton_of_Zurich"
+                "wikipedia": "https://en.wikipedia.org/wiki/Canton_of_Zurich",
+                "population": 1553423,
+                "elevation": 0,
+                "dem": 526
             },
             "country": {
                 "geoname-id": 2658434,
                 "name": "Schweizerische Eidgenossenschaft",
-                "wikipedia": "https://en.wikipedia.org/wiki/Switzerland"
+                "wikipedia": "https://en.wikipedia.org/wiki/Switzerland",
+                "population": 8516543,
+                "elevation": 0,
+                "dem": 931
             }
         },
         "link": {
@@ -63,7 +75,10 @@
             },
             "google": "https://www.google.de/maps/place/47.366670+8.500000",
             "openstreetmap": "https://www.openstreetmap.org/?lat=47.366670&lon=8.500000&mlat=47.366670&mlon=8.500000&zoom=14&layers=M"
-        }
+        },
+        "population": 9909,
+        "elevation": 0,
+        "dem": 465
     },
     "given": {
         "coordinate": {
@@ -82,7 +97,7 @@
             }
         }
     },
-    "time-taken": "174ms",
+    "time-taken": "195ms",
     "version": "0.1.24",
     "data-licence": {
         "full": "Creative Commons Attribution 4.0 License",

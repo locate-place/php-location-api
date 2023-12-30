@@ -28,7 +28,11 @@ class KeyArray
 
     final public const COUNTRY = 'country';
 
+    final public const DEM = 'dem';
+
     final public const DISTRICT_LOCALITY = 'district-locality';
+
+    final public const ELEVATION = 'elevation';
 
     final public const GEONAME_ID = 'geoname-id';
 
@@ -39,6 +43,8 @@ class KeyArray
     final public const NAME = 'name';
 
     final public const OPENSTREETMAP = 'openstreetmap';
+
+    final public const POPULATION = 'population';
 
     final public const STATE = 'state';
 

@@ -16,236 +16,31 @@
                     "type": "string"
                 },
                 "feature": {
-                    "type": "object",
-                    "properties": {
-                        "class": {
-                            "type": "string",
-                            "enum": ["P"]
-                        },
-                        "class-name": {
-                            "type": "string"
-                        },
-                        "code": {
-                            "type": "string",
-                            "enum": ["PPL", "PPLX", "PPLA", "PPLA2", "PPLC"]
-                        },
-                        "code-name": {
-                            "type": "string"
-                        }
-                    },
-                    "required": ["class"],
-                    "additionalProperties": false
-
+                    "$ref": "#/$defs/feature"
                 },
                 "coordinate": {
-                    "type": "object",
-                    "properties": {
-                        "latitude": {
-                            "type": "number"
-                        },
-                        "longitude": {
-                            "type": "number"
-                        },
-                        "srid": {
-                            "type": "number"
-                        },
-                        "distance": {
-                            "type": "object",
-                            "properties": {
-                                "meters": {
-                                    "type": "number"
-                                },
-                                "kilometers": {
-                                    "type": "number"
-                                }
-                            }
-                        },
-                        "direction": {
-                            "type": "object",
-                            "properties": {
-                                "degrees": {
-                                    "type": "number"
-                                },
-                                "direction": {
-                                    "type": "string",
-                                    "enum": ["N", "NE", "E", "SE", "S", "SW", "W", "NW"]
-                                }
-                            }
-                        }
-                    },
-                    "required": [
-                        "latitude",
-                        "longitude",
-                        "srid",
-                        "distance",
-                        "direction"
-                    ],
-                    "additionalProperties": false
+                    "$ref": "#/$defs/coordinate"
                 },
                 "timezone": {
-                    "type": "object",
-                    "properties": {
-                        "timezone": {
-                            "type": "string"
-                        },
-                        "country": {
-                            "type": "string"
-                        },
-                        "current-time": {
-                            "type": "string"
-                        },
-                        "offset": {
-                            "type": "string"
-                        },
-                        "latitude": {
-                            "type": "number"
-                        },
-                        "longitude": {
-                            "type": "number"
-                        }
-                    },
-                    "required": [
-                        "timezone",
-                        "country",
-                        "current-time",
-                        "offset",
-                        "latitude",
-                        "longitude"
-                    ],
-                    "additionalProperties": false
+                    "$ref": "#/$defs/timezone"
                 },
                 "location": {
-                    "type": "object",
-                    "properties": {
-                        "district-locality": {
-                            "type": ["object", "null"],
-                            "properties": {
-                                "geoname-id": {
-                                    "type": "integer"
-                                },
-                                "name": {
-                                    "type": "string"
-                                },
-                                "wikipedia": {
-                                    "type": "string"
-                                }
-                            },
-                            "required": ["geoname-id", "name"],
-                            "additionalProperties": false
-                        },
-                        "borough-locality": {
-                            "type": ["object", "null"],
-                            "properties": {
-                                "geoname-id": {
-                                    "type": "integer"
-                                },
-                                "name": {
-                                    "type": "string"
-                                },
-                                "wikipedia": {
-                                    "type": "string"
-                                }
-                            },
-                            "required": ["geoname-id", "name"],
-                            "additionalProperties": false
-                        },
-                        "city-municipality": {
-                            "type": "object",
-                            "properties": {
-                                "geoname-id": {
-                                    "type": "integer"
-                                },
-                                "name": {
-                                    "type": "string"
-                                },
-                                "wikipedia": {
-                                    "type": "string"
-                                }
-                            },
-                            "required": ["geoname-id", "name"],
-                            "additionalProperties": false
-                        },
-                        "state": {
-                            "type": "object",
-                            "properties": {
-                                "geoname-id": {
-                                    "type": "integer"
-                                },
-                                "name": {
-                                    "type": "string"
-                                },
-                                "wikipedia": {
-                                    "type": "string"
-                                }
-                            },
-                            "required": ["geoname-id", "name"],
-                            "additionalProperties": false
-                        },
-                        "country": {
-                            "type": "object",
-                            "properties": {
-                                "geoname-id": {
-                                    "type": "integer"
-                                },
-                                "name": {
-                                    "type": "string"
-                                },
-                                "wikipedia": {
-                                    "type": "string"
-                                }
-                            },
-                            "required": ["geoname-id", "name"],
-                            "additionalProperties": false
-                        }
-                    },
-                    "required": [
-                        "state",
-                        "country"
-                    ],
-                    "additionalProperties": false
+                    "$ref": "#/$defs/location"
                 },
                 "link": {
-                    "type": "object",
-                    "properties": {
-                        "google": {
-                            "type": "string"
-                        },
-                        "openstreetmap": {
-                            "type": "string"
-                        },
-                        "wikipedia": {
-                            "type": "object",
-                            "properties": {
-                                "location": {
-                                    "type": "object",
-                                    "properties": {
-                                        "district-locality": {
-                                            "type": "string"
-                                        },
-                                        "borough-locality": {
-                                            "type": "string"
-                                        },
-                                        "city-municipality": {
-                                            "type": "string"
-                                        },
-                                        "state": {
-                                            "type": "string"
-                                        },
-                                        "country": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            },
-                            "required": [],
-                            "additionalProperties": false
-                        }
-                    },
-                    "required": [
-                        "google",
-                        "openstreetmap"
-                    ],
-                    "additionalProperties": false
+                    "$ref": "#/$defs/link"
+                },
+                "population": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "elevation": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "dem": {
+                    "type": "integer",
+                    "minimum": 0
                 }
             },
             "required": [
@@ -257,6 +52,111 @@
                 "location",
                 "link"
             ],
+            "additionalProperties": false
+        },
+        "given": {
+            "$ref": "#/$defs/given"
+        },
+        "time-taken": {
+            "type": "string"
+        },
+        "version": {
+            "type": "string"
+        },
+        "data-licence": {
+            "$ref": "#/$defs/dataLicense"
+        }
+    },
+    "required": ["data", "given", "time-taken", "version", "data-licence"],
+    "additionalProperties": false,
+
+
+
+    "$defs": {
+        "coordinate": {
+            "type": "object",
+            "properties": {
+                "latitude": {
+                    "type": "number"
+                },
+                "longitude": {
+                    "type": "number"
+                },
+                "srid": {
+                    "type": "number"
+                },
+                "distance": {
+                    "type": "object",
+                    "properties": {
+                        "meters": {
+                            "type": "number"
+                        },
+                        "kilometers": {
+                            "type": "number"
+                        }
+                    }
+                },
+                "direction": {
+                    "type": "object",
+                    "properties": {
+                        "degrees": {
+                            "type": "number"
+                        },
+                        "direction": {
+                            "type": "string",
+                            "enum": ["N", "NE", "E", "SE", "S", "SW", "W", "NW"]
+                        }
+                    }
+                }
+            },
+            "required": [
+                "latitude",
+                "longitude",
+                "srid",
+                "distance",
+                "direction"
+            ],
+            "additionalProperties": false
+        },
+        "dataLicense": {
+            "type": "object",
+            "properties": {
+                "full": {
+                    "type": "string"
+                },
+                "short": {
+                    "type": "string"
+                },
+                "url": {
+                    "type": "string"
+                }
+            },
+            "additionalProperties": false,
+            "required": [
+                "full",
+                "short",
+                "url"
+            ]
+        },
+        "feature": {
+            "type": "object",
+            "properties": {
+                "class": {
+                    "type": "string",
+                    "enum": ["P"]
+                },
+                "class-name": {
+                    "type": "string"
+                },
+                "code": {
+                    "type": "string",
+                    "enum": ["PPL", "PPLX", "PPLA", "PPLA2", "PPLC"]
+                },
+                "code-name": {
+                    "type": "string"
+                }
+            },
+            "required": ["class"],
             "additionalProperties": false
         },
         "given": {
@@ -315,33 +215,133 @@
             "required": ["coordinate"],
             "additionalProperties": false
         },
-        "time-taken": {
-            "type": "string"
-        },
-        "version": {
-            "type": "string"
-        },
-        "data-licence": {
+        "link": {
             "type": "object",
             "properties": {
-                "full": {
+                "google": {
                     "type": "string"
                 },
-                "short": {
+                "openstreetmap": {
                     "type": "string"
                 },
-                "url": {
-                    "type": "string"
+                "wikipedia": {
+                    "type": "object",
+                    "properties": {
+                        "location": {
+                            "type": "object",
+                            "properties": {
+                                "district-locality": {
+                                    "type": "string"
+                                },
+                                "borough-locality": {
+                                    "type": "string"
+                                },
+                                "city-municipality": {
+                                    "type": "string"
+                                },
+                                "state": {
+                                    "type": "string"
+                                },
+                                "country": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "required": [],
+                    "additionalProperties": false
                 }
             },
-            "additionalProperties": false,
             "required": [
-                "full",
-                "short",
-                "url"
-            ]
+                "google",
+                "openstreetmap"
+            ],
+            "additionalProperties": false
+        },
+        "location": {
+            "type": "object",
+            "properties": {
+                "district-locality": {
+                    "$ref": "#/$defs/locationSingle"
+                },
+                "borough-locality": {
+                    "$ref": "#/$defs/locationSingle"
+                },
+                "city-municipality": {
+                    "$ref": "#/$defs/locationSingle"
+                },
+                "state": {
+                    "$ref": "#/$defs/locationSingle"
+                },
+                "country": {
+                    "$ref": "#/$defs/locationSingle"
+                }
+            },
+            "required": [
+                "state",
+                "country"
+            ],
+            "additionalProperties": false
+        },
+        "locationSingle": {
+            "type": ["object", "null"],
+            "properties": {
+                "geoname-id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "wikipedia": {
+                    "type": "string"
+                },
+                "population": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "elevation": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "dem": {
+                    "type": "integer",
+                    "minimum": 0
+                }
+            },
+            "required": ["geoname-id", "name"],
+            "additionalProperties": false
+        },
+        "timezone": {
+            "type": "object",
+            "properties": {
+                "timezone": {
+                    "type": "string"
+                },
+                "country": {
+                    "type": "string"
+                },
+                "current-time": {
+                    "type": "string"
+                },
+                "offset": {
+                    "type": "string"
+                },
+                "latitude": {
+                    "type": "number"
+                },
+                "longitude": {
+                    "type": "number"
+                }
+            },
+            "required": [
+                "timezone",
+                "country",
+                "current-time",
+                "offset",
+                "latitude",
+                "longitude"
+            ],
+            "additionalProperties": false
         }
-    },
-    "required": ["data", "given", "time-taken", "version", "data-licence"],
-    "additionalProperties": false
+    }
 }
