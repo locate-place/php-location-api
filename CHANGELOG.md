@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Releases
 
+### [0.1.25] - 2023-12-30
+
+* Add population, elevation and dem to api endpoint
+* Refactoring
+
 ### [0.1.24] - 2023-12-30
 
 * Add wikipedia links
