@@ -28,7 +28,7 @@ class KeyArray
 
     final public const COUNTRY = 'country';
 
-    final public const DEM = 'dem';
+    final public const DEM = 'digital-elevation-model';
 
     final public const DISTRICT_LOCALITY = 'district-locality';
 

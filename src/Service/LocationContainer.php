@@ -18,6 +18,19 @@ use App\Entity\Location;
 /**
  * Class LocationContainer
  *
+ * Location wrapper class for the following places (XXX):
+ * - district
+ * - borough
+ * - city
+ * - state
+ * - country
+ *
+ * Offers the following setter and getter methods:
+ * - getXXX (App\Entity\Location)
+ * - setXXX (App\Entity\Location)
+ * - hasXXX (bool)
+ * - getXXXName (string)
+ *
  * @author Björn Hempel <bjoern@hempel.li>
  * @version 0.1.0 (2023-08-28)
  * @since 0.1.0 (2023-08-28) First version.
@@ -34,6 +47,8 @@ final class LocationContainer
 
     final public const TYPE_COUNTRY = 'country';
 
+
+
     protected Location|null $district = null;
 
     protected Location|null $borough = null;
@@ -44,20 +59,16 @@ final class LocationContainer
 
     protected Location|null $country = null;
 
+
+
+    /**
+     * @param LocationServiceAlternateName|null $locationServiceAlternateName
+     */
     public function __construct(protected LocationServiceAlternateName|null $locationServiceAlternateName = null)
     {
     }
 
-    /**
-     * @param LocationServiceAlternateName $locationServiceAlternateName
-     * @return self
-     */
-    public function setLocationServiceAlternateName(LocationServiceAlternateName $locationServiceAlternateName): self
-    {
-        $this->locationServiceAlternateName = $locationServiceAlternateName;
 
-        return $this;
-    }
 
     /**
      * @return Location|null
@@ -65,6 +76,25 @@ final class LocationContainer
     public function getDistrict(): ?Location
     {
         return $this->district;
+    }
+
+    /**
+     * @param Location|null $district
+     * @return self
+     */
+    public function setDistrict(?Location $district): self
+    {
+        $this->district = $district;
+
+        return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function hasDistrict(): bool
+    {
+        return $this->district instanceof Location;
     }
 
     /**
@@ -84,24 +114,7 @@ final class LocationContainer
         return $this->locationServiceAlternateName->getNameByIsoLanguage($this->district, $isoLanguage);
     }
 
-    /**
-     * @return bool
-     */
-    public function hasDistrict(): bool
-    {
-        return $this->district instanceof Location;
-    }
 
-    /**
-     * @param Location|null $district
-     * @return self
-     */
-    public function setDistrict(?Location $district): self
-    {
-        $this->district = $district;
-
-        return $this;
-    }
 
     /**
      * @return Location|null
@@ -109,6 +122,25 @@ final class LocationContainer
     public function getBorough(): ?Location
     {
         return $this->borough;
+    }
+
+    /**
+     * @param Location|null $borough
+     * @return self
+     */
+    public function setBorough(?Location $borough): self
+    {
+        $this->borough = $borough;
+
+        return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function hasBorough(): bool
+    {
+        return $this->borough instanceof Location;
     }
 
     /**
@@ -128,24 +160,7 @@ final class LocationContainer
         return $this->locationServiceAlternateName->getNameByIsoLanguage($this->borough, $isoLanguage);
     }
 
-    /**
-     * @return bool
-     */
-    public function hasBorough(): bool
-    {
-        return $this->borough instanceof Location;
-    }
 
-    /**
-     * @param Location|null $borough
-     * @return self
-     */
-    public function setBorough(?Location $borough): self
-    {
-        $this->borough = $borough;
-
-        return $this;
-    }
 
     /**
      * @return Location|null
@@ -153,6 +168,25 @@ final class LocationContainer
     public function getCity(): ?Location
     {
         return $this->city;
+    }
+
+    /**
+     * @param Location|null $city
+     * @return self
+     */
+    public function setCity(?Location $city): self
+    {
+        $this->city = $city;
+
+        return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function hasCity(): bool
+    {
+        return $this->city instanceof Location;
     }
 
     /**
@@ -172,24 +206,7 @@ final class LocationContainer
         return $this->locationServiceAlternateName->getNameByIsoLanguage($this->city, $isoLanguage);
     }
 
-    /**
-     * @return bool
-     */
-    public function hasCity(): bool
-    {
-        return $this->city instanceof Location;
-    }
 
-    /**
-     * @param Location|null $city
-     * @return self
-     */
-    public function setCity(?Location $city): self
-    {
-        $this->city = $city;
-
-        return $this;
-    }
 
     /**
      * @return Location|null
@@ -197,6 +214,25 @@ final class LocationContainer
     public function getState(): ?Location
     {
         return $this->state;
+    }
+
+    /**
+     * @param Location|null $state
+     * @return self
+     */
+    public function setState(?Location $state): self
+    {
+        $this->state = $state;
+
+        return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function hasState(): bool
+    {
+        return $this->state instanceof Location;
     }
 
     /**
@@ -216,24 +252,7 @@ final class LocationContainer
         return $this->locationServiceAlternateName->getNameByIsoLanguage($this->state, $isoLanguage);
     }
 
-    /**
-     * @return bool
-     */
-    public function hasState(): bool
-    {
-        return $this->state instanceof Location;
-    }
 
-    /**
-     * @param Location|null $state
-     * @return self
-     */
-    public function setState(?Location $state): self
-    {
-        $this->state = $state;
-
-        return $this;
-    }
 
     /**
      * @return Location|null
@@ -241,6 +260,25 @@ final class LocationContainer
     public function getCountry(): ?Location
     {
         return $this->country;
+    }
+
+    /**
+     * @param Location|null $country
+     * @return self
+     */
+    public function setCountry(?Location $country): self
+    {
+        $this->country = $country;
+
+        return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function hasCountry(): bool
+    {
+        return $this->country instanceof Location;
     }
 
     /**
@@ -260,24 +298,7 @@ final class LocationContainer
         return $this->locationServiceAlternateName->getNameByIsoLanguage($this->country, $isoLanguage);
     }
 
-    /**
-     * @return bool
-     */
-    public function hasCountry(): bool
-    {
-        return $this->country instanceof Location;
-    }
 
-    /**
-     * @param Location|null $country
-     * @return self
-     */
-    public function setCountry(?Location $country): self
-    {
-        $this->country = $country;
-
-        return $this;
-    }
 
     /**
      * Returns the alternate name of the given location type and language.

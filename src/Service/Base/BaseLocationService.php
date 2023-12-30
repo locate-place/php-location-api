@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace App\Service\Base;
 
-use App\ApiPlatform\Resource\Location;
+use App\ApiPlatform\Resource\Location as LocationResource;
 use App\Constants\Key\KeyArray;
 use App\Constants\Language\Language;
 use App\DBAL\GeoLocation\ValueObject\Point;
@@ -42,83 +42,12 @@ use LogicException;
 abstract class BaseLocationService extends BaseHelperLocationService
 {
     /**
-     * Returns the service LocationContainer (location helper class).
-     *
-     * @param LocationEntity $locationEntity
-     * @return LocationContainer
-     * @throws CaseUnsupportedException
-     * @throws ClassInvalidException
-     * @throws NonUniqueResultException
-     * @throws ParserException
-     * @throws TypeInvalidException
-     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
-     * @SuppressWarnings(PHPMD.NPathComplexity)
-     */
-    public function getServiceLocationContainer(LocationEntity $locationEntity): LocationContainer
-    {
-        $isDistrictVisible = $this->locationServiceConfig->isDistrictVisible($locationEntity);
-        $isBoroughVisible = $this->locationServiceConfig->isBoroughVisible($locationEntity);
-        $isCityVisible = $this->locationServiceConfig->isCityVisible($locationEntity);
-
-        $district = $isDistrictVisible ? $this->locationRepository->findDistrictByLocation($locationEntity, $this->coordinate) : null;
-        $borough = $isBoroughVisible? $this->locationRepository->findBoroughByLocation($locationEntity, $this->coordinate) : null;
-        $city = $isCityVisible ? $this->locationRepository->findCityByLocation($district ?: $locationEntity, $this->coordinate) : null;
-        $state = $this->locationRepository->findStateByLocation(($district ?: $city) ?: $locationEntity);
-        $country = $this->locationRepository->findCountryByLocation($state);
-
-        if (is_null($city) && !is_null($district)) {
-            $city = $district;
-            $district = null;
-        }
-
-        $locationContainer = new LocationContainer($this->locationServiceAlternateName);
-
-        if ($isDistrictVisible && !is_null($district)) {
-            $locationContainer->setDistrict($district);
-        }
-
-        if ($isBoroughVisible && !is_null($borough)) {
-            $locationContainer->setBorough($borough);
-        }
-
-        if ($isCityVisible &&!is_null($city)) {
-            $locationContainer->setCity($city);
-        }
-
-        if (!is_null($state)) {
-            $locationContainer->setState($state);
-        }
-
-        if (!is_null($country)) {
-            $locationContainer->setCountry($country);
-        }
-
-        return $locationContainer;
-    }
-
-    /**
-     * Sets the service LocationContainer (location helper class).
-     *
-     * @param LocationEntity $locationEntity
-     * @return void
-     * @throws CaseUnsupportedException
-     * @throws ClassInvalidException
-     * @throws NonUniqueResultException
-     * @throws ParserException
-     * @throws TypeInvalidException
-     */
-    public function setServiceLocationContainer(LocationEntity $locationEntity): void
-    {
-        $this->locationContainer = $this->getServiceLocationContainer($locationEntity);
-    }
-
-    /**
      * Returns a Location entity.
      *
      * @param LocationEntity $locationEntity
      * @param Coordinate|null $coordinate
      * @param string $isoLanguage
-     * @return Location
+     * @return LocationResource
      * @throws CaseUnsupportedException
      * @throws ParserException
      * @throws Exception
@@ -130,9 +59,9 @@ abstract class BaseLocationService extends BaseHelperLocationService
         LocationEntity $locationEntity,
         Coordinate|null $coordinate,
         string $isoLanguage = Language::EN
-    ): Location
+    ): LocationResource
     {
-        $location = new Location();
+        $location = new LocationResource();
 
         /* Add base information (geoname-id, name, wikipedia links, etc.) */
         $locationBaseInformation = $this->getLocationBaseInformation($locationEntity, $isoLanguage);
@@ -165,7 +94,7 @@ abstract class BaseLocationService extends BaseHelperLocationService
      *
      * @param LocationEntity $locationEntity
      * @param string $isoLanguage
-     * @return Location
+     * @return LocationResource
      * @throws CaseUnsupportedException
      * @throws ClassInvalidException
      * @throws NonUniqueResultException
@@ -174,7 +103,7 @@ abstract class BaseLocationService extends BaseHelperLocationService
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      * @SuppressWarnings(PHPMD.NPathComplexity)
      */
-    protected function getLocationResourceFull(LocationEntity $locationEntity, string $isoLanguage = Language::EN): Location
+    protected function getLocationResourceFull(LocationEntity $locationEntity, string $isoLanguage = Language::EN): LocationResource
     {
         /* Adds location helper class. */
         $this->setServiceLocationContainer($locationEntity);
@@ -194,11 +123,11 @@ abstract class BaseLocationService extends BaseHelperLocationService
     /**
      * Adds links (Google Maps, OpenStreetMap, etc.).
      *
-     * @param Location $locationResource
+     * @param LocationResource $locationResource
      * @return void
      * @throws CaseUnsupportedException
      */
-    private function addLinks(Location $locationResource): void
+    private function addLinks(LocationResource $locationResource): void
     {
         $locationResource->addLink(KeyArray::GOOGLE, $this->coordinate->getLinkGoogle());
         $locationResource->addLink(KeyArray::OPENSTREETMAP, $this->coordinate->getLinkOpenStreetMap());
@@ -207,11 +136,11 @@ abstract class BaseLocationService extends BaseHelperLocationService
     /**
      * Adds additional locations (district, borough, city, state, country, etc.).
      *
-     * @param Location $locationResource
+     * @param LocationResource $locationResource
      * @param string $isoLanguage
      * @return void
      */
-    private function addLocations(Location $locationResource, string $isoLanguage = Language::EN): void
+    private function addLocations(LocationResource $locationResource, string $isoLanguage = Language::EN): void
     {
         $locationInformation = [];
 
@@ -229,13 +158,13 @@ abstract class BaseLocationService extends BaseHelperLocationService
      *
      * @param array<string, mixed> $locationInformation
      * @param string $type
-     * @param Location $location
+     * @param LocationResource $location
      * @param string $isoLanguage
      * @return void
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      * @SuppressWarnings(PHPMD.NPathComplexity)
      */
-    private function addLocation(array &$locationInformation, string $type, Location $location, string $isoLanguage = Language::EN): void
+    private function addLocation(array &$locationInformation, string $type, LocationResource $location, string $isoLanguage = Language::EN): void
     {
         $hasElement = match ($type) {
             LocationContainer::TYPE_DISTRICT => $this->locationContainer->hasDistrict(),
@@ -330,6 +259,7 @@ abstract class BaseLocationService extends BaseHelperLocationService
     {
         $latitude = $locationEntity->getCoordinate()?->getLatitude() ?: .0;
         $longitude = $locationEntity->getCoordinate()?->getLongitude() ?: .0;
+        /* See: https://de.wikipedia.org/wiki/SRID, https://de.wikipedia.org/wiki/World_Geodetic_System_1984, etc. */
         $srid = $locationEntity->getCoordinate()?->getSrid() ?: Point::SRID_WSG84;
 
         $coordinateTarget = new Coordinate($latitude, $longitude);
@@ -408,9 +338,8 @@ abstract class BaseLocationService extends BaseHelperLocationService
         $name = $this->locationContainer->getAlternateName($locationEntity, $isoLanguage);
         $wikipediaLink = $this->locationContainer->getAlternateName($locationEntity, Language::LINK);
         $isWikipediaLink = is_string($wikipediaLink) && str_starts_with($wikipediaLink, 'http');
-        $population = $locationEntity->getPopulationInt();
-        $elevation = $locationEntity->getElevationInt();
-        $dem = $locationEntity->getDemInt();
+        $population = $locationEntity->getPopulationCompiled();
+        $elevation = $locationEntity->getElevationOverall();
 
         return [
             ...(is_int($geonameId) ? [KeyArray::GEONAME_ID => $geonameId] : []),
@@ -418,7 +347,6 @@ abstract class BaseLocationService extends BaseHelperLocationService
             ...($isWikipediaLink ? [KeyArray::WIKIPEDIA => $wikipediaLink] : []),
             ...(is_int($population) ? [KeyArray::POPULATION => $population] : []),
             ...(is_int($elevation) ? [KeyArray::ELEVATION => $elevation] : []),
-            ...(is_int($dem) ? [KeyArray::DEM => $dem] : []),
         ];
     }
 
@@ -445,5 +373,77 @@ abstract class BaseLocationService extends BaseHelperLocationService
 
         $this->setError(sprintf('Unable to find location with coordinate "%s".', $coordinate->getRaw()));
         return null;
+    }
+
+
+    /**
+     * Returns the service LocationContainer (location helper class).
+     *
+     * @param LocationEntity $locationEntity
+     * @return LocationContainer
+     * @throws CaseUnsupportedException
+     * @throws ClassInvalidException
+     * @throws NonUniqueResultException
+     * @throws ParserException
+     * @throws TypeInvalidException
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+     * @SuppressWarnings(PHPMD.NPathComplexity)
+     */
+    public function getServiceLocationContainerFromLocationRepository(LocationEntity $locationEntity): LocationContainer
+    {
+        $isDistrictVisible = $this->locationServiceConfig->isDistrictVisible($locationEntity);
+        $isBoroughVisible = $this->locationServiceConfig->isBoroughVisible($locationEntity);
+        $isCityVisible = $this->locationServiceConfig->isCityVisible($locationEntity);
+
+        $district = $isDistrictVisible ? $this->locationRepository->findDistrictByLocation($locationEntity, $this->coordinate) : null;
+        $borough = $isBoroughVisible? $this->locationRepository->findBoroughByLocation($locationEntity, $this->coordinate) : null;
+        $city = $isCityVisible ? $this->locationRepository->findCityByLocation($district ?: $locationEntity, $this->coordinate) : null;
+        $state = $this->locationRepository->findStateByLocation(($district ?: $city) ?: $locationEntity);
+        $country = $this->locationRepository->findCountryByLocation($state);
+
+        if (is_null($city) && !is_null($district)) {
+            $city = $district;
+            $district = null;
+        }
+
+        $locationContainer = new LocationContainer($this->locationServiceAlternateName);
+
+        if ($isDistrictVisible && !is_null($district)) {
+            $locationContainer->setDistrict($district);
+        }
+
+        if ($isBoroughVisible && !is_null($borough)) {
+            $locationContainer->setBorough($borough);
+        }
+
+        if ($isCityVisible &&!is_null($city)) {
+            $locationContainer->setCity($city);
+        }
+
+        if (!is_null($state)) {
+            $locationContainer->setState($state);
+        }
+
+        if (!is_null($country)) {
+            $locationContainer->setCountry($country);
+        }
+
+        return $locationContainer;
+    }
+
+    /**
+     * Sets the service LocationContainer (location helper class).
+     *
+     * @param LocationEntity $locationEntity
+     * @return void
+     * @throws CaseUnsupportedException
+     * @throws ClassInvalidException
+     * @throws NonUniqueResultException
+     * @throws ParserException
+     * @throws TypeInvalidException
+     */
+    public function setServiceLocationContainer(LocationEntity $locationEntity): void
+    {
+        $this->locationContainer = $this->getServiceLocationContainerFromLocationRepository($locationEntity);
     }
 }

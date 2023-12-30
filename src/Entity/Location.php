@@ -213,6 +213,8 @@ class Location
         return $this;
     }
 
+
+
     /**
      * @return string|null
      */
@@ -224,9 +226,9 @@ class Location
     /**
      * @return int|null
      */
-    public function getPopulationInt(): ?int
+    public function getPopulationCompiled(): ?int
     {
-        $population = $this->population;
+        $population = $this->getPopulation();
 
         if (is_null($population)) {
             return null;
@@ -252,6 +254,8 @@ class Location
         return $this;
     }
 
+
+
     /**
      * @return int|null
      */
@@ -263,9 +267,9 @@ class Location
     /**
      * @return int|null
      */
-    public function getElevationInt(): ?int
+    public function getElevationCompiled(): ?int
     {
-        $elevation = $this->elevation;
+        $elevation = $this->getElevation();
 
         if (is_null($elevation)) {
             return null;
@@ -289,7 +293,14 @@ class Location
         return $this;
     }
 
+
+
     /**
+     * Returns the elevation in meters (digital elevation model).
+     *
+     * See: https://de.wikipedia.org/wiki/Digitales_H%C3%B6henmodell
+     * See: https://en.wikipedia.org/wiki/Digital_elevation_model
+     *
      * @return int|null
      */
     public function getDem(): ?int
@@ -298,11 +309,13 @@ class Location
     }
 
     /**
+     * Returns the elevation in meters (digital elevation model).
+     *
      * @return int|null
      */
-    public function getDemInt(): ?int
+    public function getDemCompiled(): ?int
     {
-        $dem = $this->dem;
+        $dem = $this->getDem();
 
         if (is_null($dem)) {
             return null;
@@ -325,6 +338,8 @@ class Location
 
         return $this;
     }
+
+
 
     /**
      * @return DateTimeInterface|null
@@ -458,7 +473,7 @@ class Location
     }
 
     /**
-     * Get distance to a second location.
+     * Get the distance to a second location.
      *
      * @param Location $locationTarget
      * @return float
@@ -530,6 +545,10 @@ class Location
         return $this->alternateNames;
     }
 
+    /**
+     * @param AlternateName $alternateName
+     * @return $this
+     */
     public function addAlternateName(AlternateName $alternateName): static
     {
         if (!$this->alternateNames->contains($alternateName)) {
@@ -540,6 +559,10 @@ class Location
         return $this;
     }
 
+    /**
+     * @param AlternateName $alternateName
+     * @return $this
+     */
     public function removeAlternateName(AlternateName $alternateName): static
     {
         if ($this->alternateNames->removeElement($alternateName)) {
@@ -550,5 +573,24 @@ class Location
         }
 
         return $this;
+    }
+
+
+
+    /**
+     * Returns the first valid elevation value from dem or elevation.
+     *
+     * @return int|null
+     */
+    public function getElevationOverall(): ?int
+    {
+        $elevation = $this->getElevationCompiled();
+        $dem = $this->getDemCompiled();
+
+        return match (true) {
+            !is_null($dem) => $dem,
+            !is_null($elevation) => $elevation,
+            default => null,
+        };
     }
 }

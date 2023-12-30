@@ -411,7 +411,7 @@ class LocationServiceDebug
         $direction = $location ? $this->coordinate->getDirection($location->getCoordinateIxnode()) : 0;
         $featureCode = $location?->getFeatureCode()?->getCode() ?: self::TEXT_NOT_AVAILABLE;
         $distance = number_format($distanceKm, 3, ',', '.').' km';
-        $inhabitants = number_format((int) $location?->getPopulation() ?: 0, 0, ',', '.');
+        $population = number_format((int) $location?->getPopulationCompiled() ?: 0, 0, ',', '.');
         $adminCode1 = $location?->getAdminCode()?->getAdmin1Code() ?: self::TEXT_NOT_AVAILABLE;
         $adminCode2 = $location?->getAdminCode()?->getAdmin2Code() ?: self::TEXT_NOT_AVAILABLE;
         $adminCode3 = $location?->getAdminCode()?->getAdmin3Code() ?: self::TEXT_NOT_AVAILABLE;
@@ -428,7 +428,7 @@ class LocationServiceDebug
             $featureCode,
             $distance,
             $direction,
-            $inhabitants,
+            $population,
             $adminCode1,
             $adminCode2,
             $adminCode3,
