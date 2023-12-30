@@ -32,7 +32,11 @@ class KeyArray
 
     final public const GEONAME_ID = 'geoname-id';
 
+    final public const GOOGLE = 'google';
+
     final public const NAME = 'name';
+
+    final public const OPENSTREETMAP = 'openstreetmap';
 
     final public const STATE = 'state';
 

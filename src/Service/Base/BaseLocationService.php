@@ -37,12 +37,11 @@ use LogicException;
  * @author Björn Hempel <bjoern@hempel.li>
  * @version 0.1.0 (2023-07-31)
  * @since 0.1.0 (2023-07-31) First version.
- * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
  */
 abstract class BaseLocationService extends BaseHelperLocationService
 {
     /**
-     * Returns the LocationContainer.
+     * Returns the service LocationContainer (location helper class).
      *
      * @param LocationEntity $locationEntity
      * @return LocationContainer
@@ -54,7 +53,7 @@ abstract class BaseLocationService extends BaseHelperLocationService
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      * @SuppressWarnings(PHPMD.NPathComplexity)
      */
-    public function getLocationContainer(LocationEntity $locationEntity): LocationContainer
+    public function getServiceLocationContainer(LocationEntity $locationEntity): LocationContainer
     {
         $isDistrictVisible = $this->locationServiceConfig->isDistrictVisible($locationEntity);
         $isBoroughVisible = $this->locationServiceConfig->isBoroughVisible($locationEntity);
@@ -97,6 +96,22 @@ abstract class BaseLocationService extends BaseHelperLocationService
     }
 
     /**
+     * Sets the service LocationContainer (location helper class).
+     *
+     * @param LocationEntity $locationEntity
+     * @return void
+     * @throws CaseUnsupportedException
+     * @throws ClassInvalidException
+     * @throws NonUniqueResultException
+     * @throws ParserException
+     * @throws TypeInvalidException
+     */
+    public function setServiceLocationContainer(LocationEntity $locationEntity): void
+    {
+        $this->locationContainer = $this->getServiceLocationContainer($locationEntity);
+    }
+
+    /**
      * Returns a Location entity.
      *
      * @param LocationEntity $location
@@ -108,7 +123,7 @@ abstract class BaseLocationService extends BaseHelperLocationService
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      * @SuppressWarnings(PHPMD.NPathComplexity)
      */
-    protected function getLocation(LocationEntity $location, Coordinate|null $coordinate): Location
+    protected function getLocationResourceSimple(LocationEntity $location, Coordinate|null $coordinate): Location
     {
         $featureClass = $location->getFeatureClass()?->getClass() ?: '';
         $featureClassName = $this->translator->trans(
@@ -190,7 +205,71 @@ abstract class BaseLocationService extends BaseHelperLocationService
     }
 
     /**
-     * Adds a district, borough or city (etc.) to the given location entity.
+     * Returns the full location api plattform resource.
+     *
+     * @param LocationEntity $locationEntity
+     * @param string $isoLanguage
+     * @return Location
+     * @throws CaseUnsupportedException
+     * @throws ClassInvalidException
+     * @throws NonUniqueResultException
+     * @throws ParserException
+     * @throws TypeInvalidException
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+     * @SuppressWarnings(PHPMD.NPathComplexity)
+     */
+    protected function getLocationResourceFull(LocationEntity $locationEntity, string $isoLanguage = Language::EN): Location
+    {
+        /* Adds location helper class. */
+        $this->setServiceLocationContainer($locationEntity);
+
+        /* Adds simple location api plattform resource (geoname-id, name, features and codes, coordinate, timezone, etc.). */
+        $locationResource = $this->getLocationResourceSimple($locationEntity, $this->coordinate);
+
+        /* Adds additional locations (district, borough, city, state, country, etc.). */
+        $this->addLocations($locationResource, $isoLanguage);
+
+        /* Add links (google maps, openstreetmap, etc.) */
+        $this->addLinks($locationResource);
+
+        return $locationResource;
+    }
+
+    /**
+     * Adds links (Google Maps, OpenStreetMap, etc.).
+     *
+     * @param Location $locationResource
+     * @return void
+     * @throws CaseUnsupportedException
+     */
+    private function addLinks(Location $locationResource): void
+    {
+        $locationResource->addLink(KeyArray::GOOGLE, $this->coordinate->getLinkGoogle());
+        $locationResource->addLink(KeyArray::OPENSTREETMAP, $this->coordinate->getLinkOpenStreetMap());
+    }
+
+    /**
+     * Adds additional locations (district, borough, city, state, country, etc.).
+     *
+     * @param Location $locationResource
+     * @param string $isoLanguage
+     * @return void
+     */
+    private function addLocations(Location $locationResource, string $isoLanguage = Language::EN): void
+    {
+        $locationInformation = [];
+
+        $this->addLocation($locationInformation, LocationContainer::TYPE_DISTRICT, $locationResource, $isoLanguage);
+        $this->addLocation($locationInformation, LocationContainer::TYPE_BOROUGH, $locationResource, $isoLanguage);
+        $this->addLocation($locationInformation, LocationContainer::TYPE_CITY, $locationResource, $isoLanguage);
+        $this->addLocation($locationInformation, LocationContainer::TYPE_STATE, $locationResource, $isoLanguage);
+        $this->addLocation($locationInformation, LocationContainer::TYPE_COUNTRY, $locationResource, $isoLanguage);
+
+        $locationResource->setLocation($locationInformation);
+    }
+
+    /**
+     * Adds a single district, borough or city (etc.) to the given location entity.
      *
      * @param array<string, mixed> $locationInformation
      * @param string $type
@@ -244,44 +323,6 @@ abstract class BaseLocationService extends BaseHelperLocationService
         if (is_string($wikipediaLink)) {
             $location->addLink([KeyArray::WIKIPEDIA, $key], $wikipediaLink);
         }
-    }
-
-    /**
-     * Returns the full location.
-     *
-     * @param LocationEntity $locationEntity
-     * @param string $isoLanguage
-     * @return Location
-     * @throws CaseUnsupportedException
-     * @throws ClassInvalidException
-     * @throws NonUniqueResultException
-     * @throws ParserException
-     * @throws TypeInvalidException
-     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
-     * @SuppressWarnings(PHPMD.NPathComplexity)
-     */
-    protected function getLocationFull(LocationEntity $locationEntity, string $isoLanguage = Language::EN): Location
-    {
-        $location = $this->getLocation($locationEntity, $this->coordinate)
-            ->setLink([
-                'google' => $this->coordinate->getLinkGoogle(),
-                'openstreetmap' => $this->coordinate->getLinkOpenStreetMap(),
-            ])
-        ;
-
-        $this->locationContainer = $this->getLocationContainer($locationEntity);
-
-        $locationInformation = [];
-
-        $this->addLocation($locationInformation, LocationContainer::TYPE_DISTRICT, $location, $isoLanguage);
-        $this->addLocation($locationInformation, LocationContainer::TYPE_BOROUGH, $location, $isoLanguage);
-        $this->addLocation($locationInformation, LocationContainer::TYPE_CITY, $location, $isoLanguage);
-        $this->addLocation($locationInformation, LocationContainer::TYPE_STATE, $location, $isoLanguage);
-        $this->addLocation($locationInformation, LocationContainer::TYPE_COUNTRY, $location, $isoLanguage);
-
-        $location->setLocation($locationInformation);
-
-        return $location;
     }
 
     /**

@@ -236,7 +236,7 @@ EOT
         $this->locationServiceDebug->setDebugLimit($debugLimit);
         $this->locationServiceDebug->setCoordinate($coordinate);
         $this->locationServiceDebug->setOutput($this->output);
-        $this->locationServiceDebug->setLocationContainer($this->locationService->getLocationContainer($location));
+        $this->locationServiceDebug->setLocationContainer($this->locationService->getServiceLocationContainer($location));
         $this->locationServiceDebug->printDebug($location, $isoLanguage);
     }
 

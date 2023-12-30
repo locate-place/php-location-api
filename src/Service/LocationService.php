@@ -64,7 +64,7 @@ final class LocationService extends BaseLocationService
 
         $this->setCoordinate(new Coordinate($point->getLatitude(), $point->getLongitude()));
 
-        return $this->getLocationFull($location, $isoLanguage);
+        return $this->getLocationResourceFull($location, $isoLanguage);
     }
 
     /**
@@ -95,7 +95,7 @@ final class LocationService extends BaseLocationService
             return $this->getEmptyLocation();
         }
 
-        return $this->getLocationFull($location, $isoLanguage);
+        return $this->getLocationResourceFull($location, $isoLanguage);
     }
 
     /**
@@ -129,7 +129,7 @@ final class LocationService extends BaseLocationService
                 continue;
             }
 
-            $locations[] = $this->getLocation($locationEntity, $this->coordinate);
+            $locations[] = $this->getLocationResourceSimple($locationEntity, $this->coordinate);
         }
 
         return $locations;

@@ -94,8 +94,8 @@ class Location extends BasePublicResource
     protected array $location;
 
     /** @var array{
-     *      google: string,
-     *      openstreetmap: string,
+     *      google?: string,
+     *      openstreetmap?: string,
      *      wikipedia?: array<string, string>|null
      *  }
      */
@@ -256,8 +256,8 @@ class Location extends BasePublicResource
      * Gets the link array.
      *
      * @return array{
-     *     google: string,
-     *     openstreetmap: string,
+     *     google?: string,
+     *     openstreetmap?: string,
      *     wikipedia?: array<string, string>|null
      * }
      */
@@ -270,8 +270,8 @@ class Location extends BasePublicResource
      * Sets the link array.
      *
      * @param array{
-     *     google: string,
-     *     openstreetmap: string,
+     *     google?: string,
+     *     openstreetmap?: string,
      *     wikipedia?: array<string, string>|null
      * } $link
      * @return self
@@ -296,6 +296,10 @@ class Location extends BasePublicResource
 
         if (count($path) <= 0) {
             throw new LogicException('Path must contain at least one element');
+        }
+
+        if (!isset($this->link)) {
+            $this->link = [];
         }
 
         $linkLoop = &$this->link;
