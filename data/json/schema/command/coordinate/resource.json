@@ -25,7 +25,7 @@
         "timezone": {
             "timezone": "Europe/Zurich",
             "country": "CH",
-            "current-time": "2023-12-30 11:08:21",
+            "current-time": "2023-12-30 11:58:22",
             "offset": "+01:00",
             "latitude": 47.38333,
             "longitude": 8.53333
@@ -33,30 +33,36 @@
         "location": {
             "district-locality": {
                 "geoname-id": 6295497,
-                "name": "Zürich (Kreis 3) / Friesenberg"
+                "name": "Zürich (Kreis 3) / Friesenberg",
+                "wikipedia": "https://en.wikipedia.org/wiki/Friesenberg"
             },
             "city-municipality": {
                 "geoname-id": 2657896,
-                "name": "Zürich"
+                "name": "Zürich",
+                "wikipedia": "https://en.wikipedia.org/wiki/Z%C3%BCrich"
             },
             "state": {
                 "geoname-id": 2657895,
-                "name": "Zürich"
+                "name": "Zürich",
+                "wikipedia": "https://en.wikipedia.org/wiki/Canton_of_Zurich"
             },
             "country": {
                 "geoname-id": 2658434,
-                "name": "Schweizerische Eidgenossenschaft"
+                "name": "Schweizerische Eidgenossenschaft",
+                "wikipedia": "https://en.wikipedia.org/wiki/Switzerland"
             }
         },
         "link": {
-            "google": "https://www.google.de/maps/place/47.366670+8.500000",
-            "openstreetmap": "https://www.openstreetmap.org/?lat=47.366670&lon=8.500000&mlat=47.366670&mlon=8.500000&zoom=14&layers=M",
             "wikipedia": {
-                "district-locality": "https://en.wikipedia.org/wiki/Friesenberg",
-                "city-municipality": "https://en.wikipedia.org/wiki/Z%C3%BCrich",
-                "state": "https://en.wikipedia.org/wiki/Canton_of_Zurich",
-                "country": "https://en.wikipedia.org/wiki/Switzerland"
-            }
+                "location": {
+                    "district-locality": "https://en.wikipedia.org/wiki/Friesenberg",
+                    "city-municipality": "https://en.wikipedia.org/wiki/Z%C3%BCrich",
+                    "state": "https://en.wikipedia.org/wiki/Canton_of_Zurich",
+                    "country": "https://en.wikipedia.org/wiki/Switzerland"
+                }
+            },
+            "google": "https://www.google.de/maps/place/47.366670+8.500000",
+            "openstreetmap": "https://www.openstreetmap.org/?lat=47.366670&lon=8.500000&mlat=47.366670&mlon=8.500000&zoom=14&layers=M"
         }
     },
     "given": {
@@ -76,8 +82,8 @@
             }
         }
     },
-    "time-taken": "277ms",
-    "version": "0.1.23",
+    "time-taken": "174ms",
+    "version": "0.1.24",
     "data-licence": {
         "full": "Creative Commons Attribution 4.0 License",
         "short": "CC-BY 4.0",

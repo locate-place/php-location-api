@@ -34,6 +34,8 @@ class KeyArray
 
     final public const GOOGLE = 'google';
 
+    final public const LOCATION = 'location';
+
     final public const NAME = 'name';
 
     final public const OPENSTREETMAP = 'openstreetmap';

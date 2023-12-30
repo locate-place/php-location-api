@@ -314,14 +314,18 @@ abstract class BaseLocationService extends BaseHelperLocationService
             default => throw new LogicException(sprintf('Invalid type given: "%s"', $type)),
         };
 
+        $geonameId = $locationElement->getGeonameId();
+        $name = $this->locationContainer->getAlternateName($locationElement, $isoLanguage);
+        $wikipediaLink = $this->locationContainer->getAlternateName($locationElement, Language::LINK);
+
         $locationInformation[$key] = [
-            KeyArray::GEONAME_ID => $locationElement->getGeonameId(),
-            KeyArray::NAME => $this->locationContainer->getAlternateName($locationElement, $isoLanguage),
+            ...(is_int($geonameId) ? [KeyArray::GEONAME_ID => $geonameId] : []),
+            ...(is_string($name) ? [KeyArray::NAME => $name] : []),
+            ...(is_string($wikipediaLink) ? [KeyArray::WIKIPEDIA => $wikipediaLink] : []),
         ];
 
-        $wikipediaLink = $this->locationContainer->getAlternateName($locationElement, Language::LINK);
         if (is_string($wikipediaLink)) {
-            $location->addLink([KeyArray::WIKIPEDIA, $key], $wikipediaLink);
+            $location->addLink([KeyArray::WIKIPEDIA, KeyArray::LOCATION, $key], $wikipediaLink);
         }
     }
 

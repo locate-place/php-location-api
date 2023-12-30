@@ -120,57 +120,82 @@
                         "district-locality": {
                             "type": ["object", "null"],
                             "properties": {
-                                "location-id": {
+                                "geoname-id": {
                                     "type": "integer"
                                 },
                                 "name": {
                                     "type": "string"
+                                },
+                                "wikipedia": {
+                                    "type": "string"
                                 }
-                            }
+                            },
+                            "required": ["geoname-id", "name"],
+                            "additionalProperties": false
                         },
                         "borough-locality": {
                             "type": ["object", "null"],
                             "properties": {
-                                "location-id": {
+                                "geoname-id": {
                                     "type": "integer"
                                 },
                                 "name": {
                                     "type": "string"
+                                },
+                                "wikipedia": {
+                                    "type": "string"
                                 }
-                            }
+                            },
+                            "required": ["geoname-id", "name"],
+                            "additionalProperties": false
                         },
                         "city-municipality": {
                             "type": "object",
                             "properties": {
-                                "location-id": {
+                                "geoname-id": {
                                     "type": "integer"
                                 },
                                 "name": {
                                     "type": "string"
+                                },
+                                "wikipedia": {
+                                    "type": "string"
                                 }
-                            }
+                            },
+                            "required": ["geoname-id", "name"],
+                            "additionalProperties": false
                         },
                         "state": {
                             "type": "object",
                             "properties": {
-                                "location-id": {
+                                "geoname-id": {
                                     "type": "integer"
                                 },
                                 "name": {
                                     "type": "string"
+                                },
+                                "wikipedia": {
+                                    "type": "string"
                                 }
-                            }
+                            },
+                            "required": ["geoname-id", "name"],
+                            "additionalProperties": false
                         },
                         "country": {
                             "type": "object",
                             "properties": {
-                                "location-id": {
+                                "geoname-id": {
                                     "type": "integer"
                                 },
                                 "name": {
                                     "type": "string"
+                                },
+                                "wikipedia": {
+                                    "type": "string"
                                 }
-                            }
+                            },
+                            "required": ["geoname-id", "name"],
+                            "additionalProperties": false
                         }
                     },
                     "required": [
@@ -191,20 +216,25 @@
                         "wikipedia": {
                             "type": "object",
                             "properties": {
-                                "district-locality": {
-                                    "type": "string"
-                                },
-                                "borough-locality": {
-                                    "type": "string"
-                                },
-                                "city-municipality": {
-                                    "type": "string"
-                                },
-                                "state": {
-                                    "type": "string"
-                                },
-                                "country": {
-                                    "type": "string"
+                                "location": {
+                                    "type": "object",
+                                    "properties": {
+                                        "district-locality": {
+                                            "type": "string"
+                                        },
+                                        "borough-locality": {
+                                            "type": "string"
+                                        },
+                                        "city-municipality": {
+                                            "type": "string"
+                                        },
+                                        "state": {
+                                            "type": "string"
+                                        },
+                                        "country": {
+                                            "type": "string"
+                                        }
+                                    }
                                 }
                             },
                             "required": [],
