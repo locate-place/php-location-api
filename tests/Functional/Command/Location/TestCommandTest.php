@@ -117,7 +117,7 @@ class TestCommandTest extends BaseFunctionalCommandTest
         /* Assert */
         $this->assertIsNumeric($number); // To avoid phpmd warning.
         $this->assertTrue($this->validateAndWriteOutput($validator), BaseFunctionalCommandTest::MESSAGE_JSON_RESPONSE_INVALID);
-        $this->assertEquals(array_values($location), array_values($json->getKeyArray(['data', 'location', ['name']])));
+        $this->assertEquals(array_values($location), $json->getKeyArray(['data', 'location', ['name']]));
     }
 
     /**

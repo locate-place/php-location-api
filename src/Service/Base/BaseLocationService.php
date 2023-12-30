@@ -14,6 +14,8 @@ declare(strict_types=1);
 namespace App\Service\Base;
 
 use App\ApiPlatform\Resource\Location;
+use App\Constants\Key\KeyArray;
+use App\Constants\Language\Language;
 use App\DBAL\GeoLocation\ValueObject\Point;
 use App\Entity\Location as LocationEntity;
 use App\Service\Base\Helper\BaseHelperLocationService;
@@ -27,6 +29,7 @@ use Ixnode\PhpException\Case\CaseUnsupportedException;
 use Ixnode\PhpException\Class\ClassInvalidException;
 use Ixnode\PhpException\Parser\ParserException;
 use Ixnode\PhpException\Type\TypeInvalidException;
+use LogicException;
 
 /**
  * Class BaseLocationService
@@ -187,6 +190,63 @@ abstract class BaseLocationService extends BaseHelperLocationService
     }
 
     /**
+     * Adds a district, borough or city (etc.) to the given location entity.
+     *
+     * @param array<string, mixed> $locationInformation
+     * @param string $type
+     * @param Location $location
+     * @param string $isoLanguage
+     * @return void
+     */
+    private function addLocation(array &$locationInformation, string $type, Location $location, string $isoLanguage = Language::EN): void
+    {
+        $hasElement = match ($type) {
+            LocationContainer::TYPE_DISTRICT => $this->locationContainer->hasDistrict(),
+            LocationContainer::TYPE_BOROUGH => $this->locationContainer->hasBorough(),
+            LocationContainer::TYPE_CITY => $this->locationContainer->hasCity(),
+            LocationContainer::TYPE_STATE => $this->locationContainer->hasState(),
+            LocationContainer::TYPE_COUNTRY => $this->locationContainer->hasCountry(),
+            default => false,
+        };
+
+        if (!$hasElement) {
+            return;
+        }
+
+        $locationElement = match ($type) {
+            LocationContainer::TYPE_DISTRICT => $this->locationContainer->getDistrict(),
+            LocationContainer::TYPE_BOROUGH => $this->locationContainer->getBorough(),
+            LocationContainer::TYPE_CITY => $this->locationContainer->getCity(),
+            LocationContainer::TYPE_STATE => $this->locationContainer->getState(),
+            LocationContainer::TYPE_COUNTRY => $this->locationContainer->getCountry(),
+            default => null,
+        };
+
+        if (!$locationElement instanceof LocationEntity) {
+            return;
+        }
+
+        $key = match ($type) {
+            LocationContainer::TYPE_DISTRICT => KeyArray::DISTRICT_LOCALITY,
+            LocationContainer::TYPE_BOROUGH => KeyArray::BOROUGH_LOCALITY,
+            LocationContainer::TYPE_CITY => KeyArray::CITY_MUNICIPALITY,
+            LocationContainer::TYPE_STATE => KeyArray::STATE,
+            LocationContainer::TYPE_COUNTRY => KeyArray::COUNTRY,
+            default => throw new LogicException(sprintf('Invalid type given: "%s"', $type)),
+        };
+
+        $locationInformation[$key] = [
+            KeyArray::GEONAME_ID => $locationElement->getGeonameId(),
+            KeyArray::NAME => $this->locationContainer->getAlternateName($locationElement, $isoLanguage),
+        ];
+
+        $wikipediaLink = $this->locationContainer->getAlternateName($locationElement, Language::LINK);
+        if (is_string($wikipediaLink)) {
+            $location->addLink([KeyArray::WIKIPEDIA, $key], $wikipediaLink);
+        }
+    }
+
+    /**
      * Returns the full location.
      *
      * @param LocationEntity $locationEntity
@@ -200,7 +260,7 @@ abstract class BaseLocationService extends BaseHelperLocationService
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      * @SuppressWarnings(PHPMD.NPathComplexity)
      */
-    protected function getLocationFull(LocationEntity $locationEntity, string $isoLanguage = 'en'): Location
+    protected function getLocationFull(LocationEntity $locationEntity, string $isoLanguage = Language::EN): Location
     {
         $location = $this->getLocation($locationEntity, $this->coordinate)
             ->setLink([
@@ -213,44 +273,13 @@ abstract class BaseLocationService extends BaseHelperLocationService
 
         $locationInformation = [];
 
-        if ($this->locationContainer->hasDistrict()) {
-            $locationInformation['district-locality'] = [
-                'geoname-id' => $this->locationContainer->getDistrict()?->getId(),
-                'name' => $this->locationContainer->getDistrictName($isoLanguage)
-            ];
-        }
+        $this->addLocation($locationInformation, LocationContainer::TYPE_DISTRICT, $location, $isoLanguage);
+        $this->addLocation($locationInformation, LocationContainer::TYPE_BOROUGH, $location, $isoLanguage);
+        $this->addLocation($locationInformation, LocationContainer::TYPE_CITY, $location, $isoLanguage);
+        $this->addLocation($locationInformation, LocationContainer::TYPE_STATE, $location, $isoLanguage);
+        $this->addLocation($locationInformation, LocationContainer::TYPE_COUNTRY, $location, $isoLanguage);
 
-        if ($this->locationContainer->hasBorough()) {
-            $locationInformation['borough-locality'] = is_null($this->locationContainer->getBorough()) ? null : [
-                'geoname-id' => $this->locationContainer->getBorough()->getGeonameId(),
-                'name' => $this->locationContainer->getBoroughName($isoLanguage)
-            ];
-        }
-
-        if ($this->locationContainer->hasCity()) {
-            $locationInformation['city-municipality'] = is_null($this->locationContainer->getCity()) ? null : [
-                'geoname-id' => $this->locationContainer->getCity()->getGeonameId(),
-                'name' => $this->locationContainer->getCityName($isoLanguage),
-            ];
-        }
-
-        if ($this->locationContainer->hasState()) {
-            $locationInformation['state'] = is_null($this->locationContainer->getState()) ? null : [
-                'geoname-id' => $this->locationContainer->getState()->getGeonameId(),
-                'name' => $this->locationContainer->getStateName($isoLanguage),
-            ];
-        }
-
-        if ($this->locationContainer->hasCountry()) {
-            $locationInformation['country'] = is_null($this->locationContainer->getCountry()) ? null : [
-                'geoname-id' => $this->locationContainer->getCountry()->getGeonameId(),
-                'name' => $this->locationContainer->getCountryName($isoLanguage)
-            ];
-        }
-
-        $location
-            ->setLocation($locationInformation)
-        ;
+        $location->setLocation($locationInformation);
 
         return $location;
     }

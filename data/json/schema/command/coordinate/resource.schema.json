@@ -187,6 +187,28 @@
                         },
                         "openstreetmap": {
                             "type": "string"
+                        },
+                        "wikipedia": {
+                            "type": "object",
+                            "properties": {
+                                "district-locality": {
+                                    "type": "string"
+                                },
+                                "borough-locality": {
+                                    "type": "string"
+                                },
+                                "city-municipality": {
+                                    "type": "string"
+                                },
+                                "state": {
+                                    "type": "string"
+                                },
+                                "country": {
+                                    "type": "string"
+                                }
+                            },
+                            "required": [],
+                            "additionalProperties": false
                         }
                     },
                     "required": [

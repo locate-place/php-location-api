@@ -20,6 +20,7 @@ use App\ApiPlatform\OpenApiContext\Parameter;
 use App\ApiPlatform\Route\LocationRoute;
 use App\ApiPlatform\State\LocationProvider;
 use Ixnode\PhpApiVersionBundle\ApiPlatform\Resource\Base\BasePublicResource;
+use LogicException;
 use Symfony\Component\Serializer\Annotation\Ignore;
 use Symfony\Component\Serializer\Annotation\SerializedName;
 
@@ -89,10 +90,15 @@ class Location extends BasePublicResource
      *      city-municipality?: array{name: string|null, geoname-id: int|null}|null,
      *      state?: array{name: string|null, geoname-id: int|null}|null,
      *      country?: array{name: string|null, geoname-id: int|null}|null
-     * } $location */
+     *  } $location */
     protected array $location;
 
-    /** @var array{google: string, openstreetmap: string} */
+    /** @var array{
+     *      google: string,
+     *      openstreetmap: string,
+     *      wikipedia?: array<string, string>|null
+     *  }
+     */
     protected array $link;
 
     /**
@@ -249,7 +255,11 @@ class Location extends BasePublicResource
     /**
      * Gets the link array.
      *
-     * @return array{google: string, openstreetmap: string}
+     * @return array{
+     *     google: string,
+     *     openstreetmap: string,
+     *     wikipedia?: array<string, string>|null
+     * }
      */
     public function getLink(): array
     {
@@ -259,7 +269,11 @@ class Location extends BasePublicResource
     /**
      * Sets the link array.
      *
-     * @param array{google: string, openstreetmap: string} $link
+     * @param array{
+     *     google: string,
+     *     openstreetmap: string,
+     *     wikipedia?: array<string, string>|null
+     * } $link
      * @return self
      */
     public function setLink(array $link): self
@@ -267,6 +281,37 @@ class Location extends BasePublicResource
         $this->link = $link;
 
         return $this;
+    }
+
+    /**
+     * Adds a link to array.
+     *
+     * @param string[]|string $path
+     * @param string $value
+     * @return void
+     */
+    public function addLink(array|string $path, string $value): void
+    {
+        $path = is_string($path) ? [$path] : $path;
+
+        if (count($path) <= 0) {
+            throw new LogicException('Path must contain at least one element');
+        }
+
+        $linkLoop = &$this->link;
+        foreach ($path as $key) {
+            if (!is_array($linkLoop)) {
+                throw new LogicException('Link must be an array');
+            }
+
+            if (!array_key_exists($key, $linkLoop)) {
+                $linkLoop[$key] = [];
+            }
+
+            $linkLoop = &$linkLoop[$key];
+        }
+
+        $linkLoop = $value;
     }
 
     /**

@@ -24,6 +24,16 @@ use App\Entity\Location;
  */
 final class LocationContainer
 {
+    final public const TYPE_DISTRICT = 'district';
+
+    final public const TYPE_BOROUGH = 'borough';
+
+    final public const TYPE_CITY = 'city';
+
+    final public const TYPE_STATE ='state';
+
+    final public const TYPE_COUNTRY = 'country';
+
     protected Location|null $district = null;
 
     protected Location|null $borough = null;
@@ -267,5 +277,27 @@ final class LocationContainer
         $this->country = $country;
 
         return $this;
+    }
+
+    /**
+     * Returns the alternate name of the given location type and language.
+     *
+     * @param Location|null $location
+     * @param string $isoLanguage
+     * @param bool $useLocationName
+     * @return string|null
+     * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
+     */
+    public function getAlternateName(Location|null $location, string $isoLanguage, bool $useLocationName = false): string|null
+    {
+        if (is_null($location)) {
+            return null;
+        }
+
+        if (is_null($this->locationServiceAlternateName)) {
+            return $useLocationName ? $location->getName() : null;
+        }
+
+        return $this->locationServiceAlternateName->getNameByIsoLanguage($location, $isoLanguage);
     }
 }

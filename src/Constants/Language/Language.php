@@ -22,6 +22,10 @@ namespace App\Constants\Language;
  */
 class Language
 {
+    final public const EN = 'en';
+
+    final public const LINK = 'link';
+
     final public const LANGUAGE_ISO_639_1 = [
         'aa',
         'ab',
