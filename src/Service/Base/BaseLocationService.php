@@ -115,8 +115,9 @@ abstract class BaseLocationService extends BaseHelperLocationService
     /**
      * Returns a Location entity.
      *
-     * @param LocationEntity $location
+     * @param LocationEntity $locationEntity
      * @param Coordinate|null $coordinate
+     * @param string $isoLanguage
      * @return Location
      * @throws CaseUnsupportedException
      * @throws ParserException
@@ -125,105 +126,38 @@ abstract class BaseLocationService extends BaseHelperLocationService
      * @SuppressWarnings(PHPMD.NPathComplexity)
      * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
      */
-    protected function getLocationResourceSimple(LocationEntity $location, Coordinate|null $coordinate): Location
+    protected function getLocationResourceSimple(
+        LocationEntity $locationEntity,
+        Coordinate|null $coordinate,
+        string $isoLanguage = Language::EN
+    ): Location
     {
-        $featureClass = $location->getFeatureClass()?->getClass() ?: '';
-        $featureClassName = $this->translator->trans(
-            $featureClass,
-            domain: 'feature-code',
-            locale: 'de_DE'
-        );
+        $location = new Location();
 
-        $featureCode = $location->getFeatureCode()?->getCode() ?: '';
-        $featureCodeName = $this->translator->trans(
-            sprintf('%s.%s', $featureClass, $featureCode),
-            domain: 'place',
-            locale: 'de_DE'
-        );
-
-        $latitude = $location->getCoordinate()?->getLatitude() ?: .0;
-        $longitude = $location->getCoordinate()?->getLongitude() ?: .0;
-        $srid = $location->getCoordinate()?->getSrid() ?: Point::SRID_WSG84;
-
-        $coordinateTarget = new Coordinate($latitude, $longitude);
-
-        $distance = is_null($coordinate) ? null : [
-            'meters' => $coordinate->getDistance($coordinateTarget),
-            'kilometers' => $coordinate->getDistance($coordinateTarget, Coordinate::RETURN_KILOMETERS),
-        ];
-
-        $direction = is_null($coordinate) ? null : [
-            'degree' => $coordinate->getDegree($coordinateTarget),
-            'direction' => $coordinate->getDirection($coordinateTarget),
-        ];
-
-        $coordinateArray = [
-            'latitude' => $latitude,
-            'longitude' => $longitude,
-            'srid' => $srid,
-        ];
-
-        if (!is_null($distance)) {
-            $coordinateArray['distance'] = $distance;
+        /* Add base information (geoname-id, name, wikipedia links, etc.) */
+        $locationBaseInformation = $this->getLocationBaseInformation($locationEntity, $isoLanguage);
+        foreach ($locationBaseInformation as $key => $value) {
+            match ($key) {
+                KeyArray::GEONAME_ID => $location->setGeonameId(is_int($value) ? $value : 0),
+                KeyArray::NAME => $location->setName(is_string($value) ? $value : ''),
+                KeyArray::POPULATION => is_int($value) ? $location->setPopulation($value) : null,
+                KeyArray::ELEVATION => is_int($value) ? $location->setElevation($value) : null,
+                KeyArray::DEM => is_int($value) ? $location->setDem($value) : null,
+                KeyArray::WIKIPEDIA => null, /* Already done with $this->addLocation(), $location->addLink(). */
+                default => throw new LogicException(sprintf('Unknown key "%s".', $key)),
+            };
         }
 
-        if (!is_null($direction)) {
-            $coordinateArray['direction'] = $direction;
-        }
+        /* Add feature information (feature classes, feature codes, etc.). */
+        $location->setFeature($this->getFeatureArray($locationEntity));
 
-        $timezoneString = $location->getTimezone()?->getTimezone();
+        /* Add coordinate information (latitude, longitude, srid, etc.). */
+        $location->setCoordinate($this->getCoordinateArray($locationEntity, $coordinate));
 
-        if (is_null($timezoneString)) {
-            throw new CaseUnsupportedException('Unable to get timezone.');
-        }
+        /* Add timezone information (timezone id, timezone name, timezone offset, etc.). */
+        $location->setTimezone($this->getTimezoneArray($locationEntity));
 
-        $timezone = new DateTimeZone($timezoneString);
-        $dateTime = new DateTime('now', $timezone);
-        $locationArray = $timezone->getLocation();
-
-        if ($locationArray === false) {
-            throw new CaseUnsupportedException('Unable to get timezone location.');
-        }
-
-        $locationResource = new Location();
-
-        $locationResource
-            ->setGeonameId($location->getGeonameId() ?: 0)
-            ->setName($location->getName() ?: '')
-            ->setFeature([
-                'class' => $featureClass,
-                'class-name' => $featureClassName,
-                'code' => $featureCode,
-                'code-name' => $featureCodeName,
-            ])
-            ->setCoordinate($coordinateArray)
-            ->setTimezone([
-                'timezone' => $location->getTimezone()?->getTimezone(),
-                'country' => $location->getTimezone()?->getCountry()?->getCode(),
-                'current-time' => $dateTime->format('Y-m-d H:i:s'),
-                'offset' => $dateTime->format('P'),
-                'latitude' => $locationArray['latitude'],
-                'longitude' => $locationArray['longitude'],
-            ])
-        ;
-
-        $population = $location->getPopulationInt();
-        $elevation = $location->getElevationInt();
-        $dem = $location->getDemInt();
-
-        if (is_int($population)) {
-            $locationResource->setPopulation($population);
-        }
-
-        if (is_int($elevation)) {
-            $locationResource->setElevation($elevation);
-        }
-
-        if (is_int($dem)) {
-            $locationResource->setDem($dem);
-        }
-
-        return $locationResource;
+        return $location;
     }
 
     /**
@@ -246,7 +180,7 @@ abstract class BaseLocationService extends BaseHelperLocationService
         $this->setServiceLocationContainer($locationEntity);
 
         /* Adds simple location api plattform resource (geoname-id, name, features and codes, coordinate, timezone, etc.). */
-        $locationResource = $this->getLocationResourceSimple($locationEntity, $this->coordinate);
+        $locationResource = $this->getLocationResourceSimple($locationEntity, $this->coordinate, $isoLanguage);
 
         /* Adds additional locations (district, borough, city, state, country, etc.). */
         $this->addLocations($locationResource, $isoLanguage);
@@ -338,6 +272,138 @@ abstract class BaseLocationService extends BaseHelperLocationService
             default => throw new LogicException(sprintf('Invalid type given: "%s"', $type)),
         };
 
+        $locationBaseInformation = $this->getLocationBaseInformation($locationEntity, $isoLanguage);
+
+        $locationInformation[$key] = [...$locationBaseInformation];
+
+        if (array_key_exists(KeyArray::WIKIPEDIA, $locationBaseInformation) && is_string($locationBaseInformation[KeyArray::WIKIPEDIA])) {
+            $location->addLink([KeyArray::WIKIPEDIA, KeyArray::LOCATION, $key], $locationBaseInformation[KeyArray::WIKIPEDIA]);
+        }
+    }
+
+    /**
+     * Returns the feature array.
+     *
+     * @param LocationEntity $locationEntity
+     * @return array{class: string, class-name: string, code: string, code-name: string}
+     */
+    private function getFeatureArray(LocationEntity $locationEntity): array
+    {
+        $featureClass = $locationEntity->getFeatureClass()?->getClass() ?: '';
+        $featureClassName = $this->translator->trans(
+            $featureClass,
+            domain: 'feature-code',
+            locale: 'de_DE'
+        );
+
+        $featureCode = $locationEntity->getFeatureCode()?->getCode() ?: '';
+        $featureCodeName = $this->translator->trans(
+            sprintf('%s.%s', $featureClass, $featureCode),
+            domain: 'place',
+            locale: 'de_DE'
+        );
+
+        return [
+            'class' => $featureClass,
+            'class-name' => $featureClassName,
+            'code' => $featureCode,
+            'code-name' => $featureCodeName,
+        ];
+    }
+
+    /**
+     * Returns the coordinate array.
+     *
+     * @param LocationEntity $locationEntity
+     * @param Coordinate|null $coordinate
+     * @return array{
+     *     latitude: float,
+     *     longitude: float,
+     *     srid: int,
+     *     distance?: null|array{meters: float, kilometers: float},
+     *     direction?: null|array{degree: float, direction: string},
+     * }
+     * @throws CaseUnsupportedException
+     * @throws ParserException
+     */
+    private function getCoordinateArray(LocationEntity $locationEntity, Coordinate|null $coordinate): array
+    {
+        $latitude = $locationEntity->getCoordinate()?->getLatitude() ?: .0;
+        $longitude = $locationEntity->getCoordinate()?->getLongitude() ?: .0;
+        $srid = $locationEntity->getCoordinate()?->getSrid() ?: Point::SRID_WSG84;
+
+        $coordinateTarget = new Coordinate($latitude, $longitude);
+
+        $distance = is_null($coordinate) ? null : [
+            'meters' => $coordinate->getDistance($coordinateTarget),
+            'kilometers' => $coordinate->getDistance($coordinateTarget, Coordinate::RETURN_KILOMETERS),
+        ];
+
+        $direction = is_null($coordinate) ? null : [
+            'degree' => $coordinate->getDegree($coordinateTarget),
+            'direction' => $coordinate->getDirection($coordinateTarget),
+        ];
+
+        $coordinateArray = [
+            'latitude' => $latitude,
+            'longitude' => $longitude,
+            'srid' => $srid,
+        ];
+
+        if (!is_null($distance)) {
+            $coordinateArray['distance'] = $distance;
+        }
+
+        if (!is_null($direction)) {
+            $coordinateArray['direction'] = $direction;
+        }
+
+        return $coordinateArray;
+    }
+
+    /**
+     * Returns the coordinate array.
+     *
+     * @param LocationEntity $locationEntity
+     * @return array{timezone: string|null, country: string|null, current-time: string, offset: string, latitude: double, longitude: double}
+     * @throws CaseUnsupportedException
+     * @throws Exception
+     */
+    private function getTimezoneArray(LocationEntity $locationEntity): array
+    {
+        $timezoneString = $locationEntity->getTimezone()?->getTimezone();
+
+        if (is_null($timezoneString)) {
+            throw new CaseUnsupportedException('Unable to get timezone.');
+        }
+
+        $timezone = new DateTimeZone($timezoneString);
+        $dateTime = new DateTime('now', $timezone);
+        $locationArray = $timezone->getLocation();
+
+        if ($locationArray === false) {
+            throw new CaseUnsupportedException('Unable to get timezone location.');
+        }
+
+        return [
+            'timezone' => $locationEntity->getTimezone()?->getTimezone(),
+            'country' => $locationEntity->getTimezone()?->getCountry()?->getCode(),
+            'current-time' => $dateTime->format('Y-m-d H:i:s'),
+            'offset' => $dateTime->format('P'),
+            'latitude' => $locationArray['latitude'],
+            'longitude' => $locationArray['longitude'],
+        ];
+    }
+
+    /**
+     * Returns the base information of a location entity.
+     *
+     * @param LocationEntity $locationEntity
+     * @param string $isoLanguage
+     * @return array<string, mixed>
+     */
+    private function getLocationBaseInformation(LocationEntity $locationEntity, string $isoLanguage = Language::EN): array
+    {
         $geonameId = $locationEntity->getGeonameId();
         $name = $this->locationContainer->getAlternateName($locationEntity, $isoLanguage);
         $wikipediaLink = $this->locationContainer->getAlternateName($locationEntity, Language::LINK);
@@ -346,7 +412,7 @@ abstract class BaseLocationService extends BaseHelperLocationService
         $elevation = $locationEntity->getElevationInt();
         $dem = $locationEntity->getDemInt();
 
-        $locationInformation[$key] = [
+        return [
             ...(is_int($geonameId) ? [KeyArray::GEONAME_ID => $geonameId] : []),
             ...(is_string($name) ? [KeyArray::NAME => $name] : []),
             ...($isWikipediaLink ? [KeyArray::WIKIPEDIA => $wikipediaLink] : []),
@@ -354,10 +420,6 @@ abstract class BaseLocationService extends BaseHelperLocationService
             ...(is_int($elevation) ? [KeyArray::ELEVATION => $elevation] : []),
             ...(is_int($dem) ? [KeyArray::DEM => $dem] : []),
         ];
-
-        if ($isWikipediaLink) {
-            $location->addLink([KeyArray::WIKIPEDIA, KeyArray::LOCATION, $key], $wikipediaLink);
-        }
     }
 
     /**

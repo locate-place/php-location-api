@@ -15,6 +15,7 @@ namespace App\Service;
 
 use App\ApiPlatform\Resource\Location;
 use App\Constants\DB\Limit;
+use App\Constants\Language\Language;
 use App\DBAL\GeoLocation\ValueObject\Point;
 use App\Entity\Location as LocationEntity;
 use App\Service\Base\BaseLocationService;
@@ -79,7 +80,9 @@ final class LocationService extends BaseLocationService
      * @throws ParserException
      * @throws TypeInvalidException
      */
-    public function getLocationByCoordinate(Coordinate $coordinate, string $isoLanguage = 'en'): Location
+    public function getLocationByCoordinate(
+        Coordinate $coordinate,
+        string $isoLanguage = Language::EN): Location
     {
         $this->setCoordinate($coordinate);
 
@@ -105,13 +108,20 @@ final class LocationService extends BaseLocationService
      * @param int|null $limit
      * @param int|null $distance
      * @param array<int, string>|string|null $featureClass
+     * @param string $isoLanguage
      * @return array<int, Location>
      * @throws CaseUnsupportedException
      * @throws ClassInvalidException
      * @throws ParserException
      * @throws TypeInvalidException
      */
-    public function getLocationsByCoordinate(Coordinate $coordinate, int|null $limit = Limit::LIMIT_10, int|null $distance = null, array|string|null $featureClass = null): array
+    public function getLocationsByCoordinate(
+        Coordinate $coordinate,
+        int|null $limit = Limit::LIMIT_10,
+        int|null $distance = null,
+        array|string|null $featureClass = null,
+        string $isoLanguage = Language::EN
+    ): array
     {
         $this->setCoordinate($coordinate);
 
@@ -129,7 +139,7 @@ final class LocationService extends BaseLocationService
                 continue;
             }
 
-            $locations[] = $this->getLocationResourceSimple($locationEntity, $this->coordinate);
+            $locations[] = $this->getLocationResourceSimple($locationEntity, $this->coordinate, $isoLanguage);
         }
 
         return $locations;
