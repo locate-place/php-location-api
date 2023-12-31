@@ -157,6 +157,9 @@ abstract class BaseLocationService extends BaseHelperLocationService
             $this->getDataTypeNextPlaces($locationEntity, $isoLanguage)
         );
 
+        /* Sets the full name of the location resource. */
+        $locationResource->setNameFullFromLocationResource();
+
         /* Collects all wikipedia links and add them to the main link section. */
         $locationResource->setMainWikipediaLinks();
 

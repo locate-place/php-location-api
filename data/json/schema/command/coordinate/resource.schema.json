@@ -15,6 +15,9 @@
                 "name": {
                     "type": "string"
                 },
+                "name-full": {
+                    "type": "string"
+                },
                 "updated-at": {
                     "$ref": "#/$defs/updatedAt"
                 },

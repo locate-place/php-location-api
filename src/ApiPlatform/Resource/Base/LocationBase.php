@@ -52,6 +52,9 @@ abstract class LocationBase extends BasePublicResource
     #[SerializedName('name')]
     private string $name;
 
+    #[SerializedName('name-full')]
+    private string $nameFull;
+
     #[SerializedName('updated-at')]
     private DateTimeImmutable $updatedAt;
 
@@ -124,6 +127,25 @@ abstract class LocationBase extends BasePublicResource
     public function setName(string $name): self
     {
         $this->name = $name;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getNameFull(): string
+    {
+        return $this->nameFull;
+    }
+
+    /**
+     * @param string $nameFull
+     * @return self
+     */
+    public function setNameFull(string $nameFull): self
+    {
+        $this->nameFull = $nameFull;
 
         return $this;
     }
@@ -361,7 +383,36 @@ abstract class LocationBase extends BasePublicResource
     }
 
     /**
-     * Sets all sub links to main part.
+     * Sets the full name.
+     *
+     * @return void
+     * @throws ArrayKeyNotFoundException
+     * @throws CaseInvalidException
+     * @throws FileNotFoundException
+     * @throws FileNotReadableException
+     * @throws FunctionJsonEncodeException
+     * @throws FunctionReplaceException
+     * @throws JsonException
+     * @throws TypeInvalidException
+     */
+    public function setNameFullFromLocationResource(): void
+    {
+        $locations = $this->getLocations();
+
+        $nameFull = [];
+
+        foreach (['district-locality', 'city-municipality', 'state', 'country'] as $key) {
+            $path = [$key, KeyArray::NAME];
+            if ($locations->hasKey($path)) {
+                $nameFull[] = $locations->getKeyString($path);
+            }
+        }
+
+        $this->setNameFull(implode(', ', $nameFull));
+    }
+
+    /**
+     * Sets all sub links to the main part.
      *
      * @return void
      * @throws FileNotFoundException

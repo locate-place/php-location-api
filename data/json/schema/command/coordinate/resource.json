@@ -3,6 +3,7 @@
     "data": {
         "geoname-id": 6295497,
         "name": "Zürich (Kreis 3) / Friesenberg",
+        "name-full": "Zürich (Kreis 3) / Friesenberg, Zürich, Zürich, Schweizerische Eidgenossenschaft",
         "updated-at": "2023-08-21T23:08:34+00:00",
         "properties": {
             "population": {
@@ -54,8 +55,8 @@
             "timezone": "Europe/Zurich",
             "country": "CH",
             "current-time": {
-                "timezone": "2024-01-04T01:22:45+01:00",
-                "utc": "2024-01-04T00:22:45+00:00"
+                "timezone": "2024-01-04T02:20:31+01:00",
+                "utc": "2024-01-04T01:20:31+00:00"
             },
             "offset": "+01:00",
             "coordinate": {
@@ -3634,8 +3635,8 @@
             }
         }
     },
-    "time-taken": "657 ms",
-    "memory-taken": "52 MB",
+    "time-taken": "609 ms",
+    "memory-taken": "53 MB",
     "version": "0.1.25",
     "data-licence": {
         "full": "Creative Commons Attribution 4.0 License",
