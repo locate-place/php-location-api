@@ -18,6 +18,10 @@ framework:
     php_errors:
         log: true
 
+    # Serializer configuration
+    serializer:
+        enable_annotations: true
+
 when@test:
     framework:
         test: true

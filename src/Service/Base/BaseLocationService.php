@@ -14,22 +14,43 @@ declare(strict_types=1);
 namespace App\Service\Base;
 
 use App\ApiPlatform\Resource\Location as LocationResource;
+use App\Constants\DB\FeatureClass;
 use App\Constants\Key\KeyArray;
-use App\Constants\Language\Language;
+use App\Constants\Language\CountryCode;
+use App\Constants\Language\LanguageCode;
+use App\Constants\Path\Path;
+use App\Constants\Unit\Length;
+use App\Constants\Unit\Numero;
+use App\DataTypes\Coordinate;
+use App\DataTypes\Feature;
+use App\DataTypes\Links;
+use App\DataTypes\Locations;
+use App\DataTypes\NextPlaces;
+use App\DataTypes\Properties;
+use App\DataTypes\Timezone;
 use App\DBAL\GeoLocation\ValueObject\Point;
 use App\Entity\Location as LocationEntity;
 use App\Service\Base\Helper\BaseHelperLocationService;
 use App\Service\LocationContainer;
 use DateTime;
+use DateTimeImmutable;
 use DateTimeZone;
 use Doctrine\ORM\NonUniqueResultException;
 use Exception;
-use Ixnode\PhpCoordinate\Coordinate;
+use Ixnode\PhpCoordinate\Coordinate as CoordinateIxnode;
+use Ixnode\PhpException\ArrayType\ArrayKeyNotFoundException;
+use Ixnode\PhpException\Case\CaseInvalidException;
 use Ixnode\PhpException\Case\CaseUnsupportedException;
 use Ixnode\PhpException\Class\ClassInvalidException;
+use Ixnode\PhpException\File\FileNotFoundException;
+use Ixnode\PhpException\File\FileNotReadableException;
+use Ixnode\PhpException\Function\FunctionJsonEncodeException;
 use Ixnode\PhpException\Parser\ParserException;
 use Ixnode\PhpException\Type\TypeInvalidException;
+use Ixnode\PhpNamingConventions\Exception\FunctionReplaceException;
+use JsonException;
 use LogicException;
+use NumberFormatter;
 
 /**
  * Class BaseLocationService
@@ -41,50 +62,50 @@ use LogicException;
  */
 abstract class BaseLocationService extends BaseHelperLocationService
 {
+    private const DEFAULT_DISTANCE_METER = 100_000;
+
+    private const DEFAULT_LIMIT = 100;
+
     /**
      * Returns a Location entity.
      *
      * @param LocationEntity $locationEntity
-     * @param Coordinate|null $coordinate
      * @param string $isoLanguage
      * @return LocationResource
      * @throws CaseUnsupportedException
      * @throws ParserException
      * @throws Exception
-     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
-     * @SuppressWarnings(PHPMD.NPathComplexity)
-     * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
      */
     protected function getLocationResourceSimple(
         LocationEntity $locationEntity,
-        Coordinate|null $coordinate,
-        string $isoLanguage = Language::EN
+        string $isoLanguage = LanguageCode::EN
     ): LocationResource
     {
         $location = new LocationResource();
 
         /* Add base information (geoname-id, name, wikipedia links, etc.) */
-        $locationBaseInformation = $this->getLocationBaseInformation($locationEntity, $isoLanguage);
+        $locationBaseInformation = $this->getLocationBaseInformation($locationEntity, $isoLanguage, true);
         foreach ($locationBaseInformation as $key => $value) {
-            match ($key) {
-                KeyArray::GEONAME_ID => $location->setGeonameId(is_int($value) ? $value : 0),
-                KeyArray::NAME => $location->setName(is_string($value) ? $value : ''),
-                KeyArray::POPULATION => is_int($value) ? $location->setPopulation($value) : null,
-                KeyArray::ELEVATION => is_int($value) ? $location->setElevation($value) : null,
-                KeyArray::DEM => is_int($value) ? $location->setDem($value) : null,
-                KeyArray::WIKIPEDIA => null, /* Already done with $this->addLocation(), $location->addLink(). */
+            match (true) {
+                /* Single fields */
+                $key === KeyArray::GEONAME_ID => $location->setGeonameId(is_int($value) ? $value : 0),
+                $key === KeyArray::NAME => $location->setName(is_string($value) ? $value : ''),
+                $key === KeyArray::UPDATED_AT => $value instanceof DateTimeImmutable ? $location->setUpdatedAt($value) : null,
+
+                /* Complex structure */
+                $value instanceof Coordinate => $location->setCoordinate($value),
+                $value instanceof Feature => $location->setFeature($value),
+                $value instanceof Links => $location->setLinks($value),
+                $value instanceof Properties => $location->setProperties($value),
+                $value instanceof Timezone => $location->setTimezone($value),
+
+                /* Unknown type */
                 default => throw new LogicException(sprintf('Unknown key "%s".', $key)),
             };
         }
 
-        /* Add feature information (feature classes, feature codes, etc.). */
-        $location->setFeature($this->getFeatureArray($locationEntity));
-
-        /* Add coordinate information (latitude, longitude, srid, etc.). */
-        $location->setCoordinate($this->getCoordinateArray($locationEntity, $coordinate));
-
         /* Add timezone information (timezone id, timezone name, timezone offset, etc.). */
-        $location->setTimezone($this->getTimezoneArray($locationEntity));
+        $location->setTimezone($this->getDataTypeTimezone($locationEntity, $isoLanguage));
 
         return $location;
     }
@@ -95,78 +116,441 @@ abstract class BaseLocationService extends BaseHelperLocationService
      * @param LocationEntity $locationEntity
      * @param string $isoLanguage
      * @return LocationResource
+     * @throws ArrayKeyNotFoundException
+     * @throws CaseInvalidException
      * @throws CaseUnsupportedException
      * @throws ClassInvalidException
+     * @throws FileNotFoundException
+     * @throws FileNotReadableException
+     * @throws FunctionJsonEncodeException
+     * @throws FunctionReplaceException
+     * @throws JsonException
      * @throws NonUniqueResultException
      * @throws ParserException
      * @throws TypeInvalidException
-     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
-     * @SuppressWarnings(PHPMD.NPathComplexity)
      */
-    protected function getLocationResourceFull(LocationEntity $locationEntity, string $isoLanguage = Language::EN): LocationResource
+    protected function getLocationResourceFull(LocationEntity $locationEntity, string $isoLanguage = LanguageCode::EN): LocationResource
     {
         /* Adds location helper class. */
         $this->setServiceLocationContainer($locationEntity);
 
         /* Adds simple location api plattform resource (geoname-id, name, features and codes, coordinate, timezone, etc.). */
-        $locationResource = $this->getLocationResourceSimple($locationEntity, $this->coordinate, $isoLanguage);
+        $locationResource = $this->getLocationResourceSimple($locationEntity, $isoLanguage);
 
         /* Adds additional locations (district, borough, city, state, country, etc.). */
-        $this->addLocations($locationResource, $isoLanguage);
+        $locationResource->setLocations(
+            $this->getDataTypeLocations($isoLanguage)
+        );
 
-        /* Add links (google maps, openstreetmap, etc.) */
-        $this->addLinks($locationResource);
+        /* Adds next places:
+         * - A: country, state, region,...
+         * - H: stream, lake, ...
+         * - L: parks,area, ...
+         * - P: city, village,...
+         * - R: road, railroad
+         * - S: spot, building, farm
+         * - T: mountain,hill,rock,...
+         * - U: undersea
+         * - V: forest,heath,...
+         */
+        $locationResource->setNextPlaces(
+            $this->getDataTypeNextPlaces($locationEntity, $isoLanguage)
+        );
+
+        /* Collects all wikipedia links and add them to the main link section. */
+        $locationResource->setMainWikipediaLinks();
 
         return $locationResource;
     }
 
     /**
-     * Adds links (Google Maps, OpenStreetMap, etc.).
+     * Gets all places from the given feature class.
      *
-     * @param LocationResource $locationResource
-     * @return void
+     * @param LocationEntity $locationEntity
+     * @param string $featureClass
+     * @param int $distanceMeter
+     * @param int $limit
+     * @param string $isoLanguage
+     * @return array<int, array<string, mixed>>
      * @throws CaseUnsupportedException
+     * @throws ClassInvalidException
+     * @throws FileNotFoundException
+     * @throws FileNotReadableException
+     * @throws FunctionJsonEncodeException
+     * @throws FunctionReplaceException
+     * @throws JsonException
+     * @throws ParserException
+     * @throws TypeInvalidException
      */
-    private function addLinks(LocationResource $locationResource): void
+    private function getPlacesFromFeatureClass(
+        LocationEntity $locationEntity,
+        string $featureClass,
+        int $distanceMeter,
+        int $limit,
+        string $isoLanguage = LanguageCode::EN
+    ): array
     {
-        $locationResource->addLink(KeyArray::GOOGLE, $this->coordinate->getLinkGoogle());
-        $locationResource->addLink(KeyArray::OPENSTREETMAP, $this->coordinate->getLinkOpenStreetMap());
+        $featureCodes = $this->locationServiceConfig->getFeatureCodesByFeatureClass($featureClass);
+
+        $locations = $this->locationRepository->findLocationsByCoordinate(
+            coordinate: $locationEntity->getCoordinateIxnode(),
+            distanceMeter: $distanceMeter,
+            featureClasses: $featureClass,
+            featureCodes: $featureCodes,
+            limit: $limit,
+        );
+
+        $locationArray = [];
+
+        foreach ($locations as $location) {
+            $locationArray[] = $this->getLocationBaseInformation($location, $isoLanguage);
+        }
+
+        return $locationArray;
     }
 
     /**
-     * Adds additional locations (district, borough, city, state, country, etc.).
+     * Returns the coordinate data type.
      *
-     * @param LocationResource $locationResource
+     * @param CoordinateIxnode|null $coordinateEntity
+     * @param CoordinateIxnode|null $coordinateSource
+     * @param int|null $srid
      * @param string $isoLanguage
-     * @return void
+     * @return Coordinate
+     * @throws CaseUnsupportedException
+     * @throws FunctionReplaceException
+     * @throws TypeInvalidException
      */
-    private function addLocations(LocationResource $locationResource, string $isoLanguage = Language::EN): void
+    private function getDataTypeCoordinate(
+        CoordinateIxnode|null $coordinateEntity,
+        CoordinateIxnode|null $coordinateSource,
+        int|null $srid = null,
+        string $isoLanguage = LanguageCode::EN
+    ): Coordinate
     {
-        $locationInformation = [];
+        /* Creates the new Coordinate data type. */
+        $coordinate = new Coordinate();
 
-        $this->addLocation($locationInformation, LocationContainer::TYPE_DISTRICT, $locationResource, $isoLanguage);
-        $this->addLocation($locationInformation, LocationContainer::TYPE_BOROUGH, $locationResource, $isoLanguage);
-        $this->addLocation($locationInformation, LocationContainer::TYPE_CITY, $locationResource, $isoLanguage);
-        $this->addLocation($locationInformation, LocationContainer::TYPE_STATE, $locationResource, $isoLanguage);
-        $this->addLocation($locationInformation, LocationContainer::TYPE_COUNTRY, $locationResource, $isoLanguage);
+        if (is_null($coordinateEntity)) {
+            return $coordinate;
+        }
 
-        $locationResource->setLocation($locationInformation);
+        /* See: https://de.wikipedia.org/wiki/Geographische_Breite */
+        $coordinate->addValue(KeyArray::LATITUDE, [
+            KeyArray::DECIMAL => $coordinateEntity->getLatitudeDecimal(),
+            KeyArray::DMS => $coordinateEntity->getLatitudeDMS(),
+        ]);
+
+        /* See: https://de.wikipedia.org/wiki/Geographische_L%C3%A4nge */
+        $coordinate->addValue(KeyArray::LONGITUDE, [
+            KeyArray::DECIMAL => $coordinateEntity->getLongitudeDecimal(),
+            KeyArray::DMS => $coordinateEntity->getLongitudeDMS(),
+        ]);
+
+        /* See: https://de.wikipedia.org/wiki/SRID, https://de.wikipedia.org/wiki/World_Geodetic_System_1984, etc. */
+        $coordinate->addValue(KeyArray::SRID, $srid ?: Point::SRID_WSG84);
+
+        if (is_null($coordinateSource)) {
+            return $coordinate;
+        }
+
+        $distanceMeters = $coordinateSource->getDistance($coordinateEntity);
+        $distanceKilometers = $coordinateSource->getDistance($coordinateEntity, CoordinateIxnode::RETURN_KILOMETERS);
+        $coordinate->addValue(KeyArray::DISTANCE, [
+            KeyArray::METERS => [
+                KeyArray::VALUE => $distanceMeters,
+                KeyArray::UNIT => Length::METERS_SHORT,
+                KeyArray::VALUE_FORMATTED => $this->getFloatWithUnitFormatted($distanceMeters, Length::METERS_SHORT, $isoLanguage),
+            ],
+            KeyArray::KILOMETERS => [
+                KeyArray::VALUE => $distanceKilometers,
+                KeyArray::UNIT => Length::KILOMETERS_SHORT,
+                KeyArray::VALUE_FORMATTED => $this->getFloatWithUnitFormatted($distanceKilometers, Length::KILOMETERS_SHORT, $isoLanguage),
+            ],
+        ]);
+
+        $direction = $coordinateSource->getDirection($coordinateEntity);
+        $directionTranslated = $this->translateCardinalDirection($direction);
+        $coordinate->addValue(KeyArray::DIRECTION, [
+            KeyArray::DEGREE => $coordinateSource->getDegree($coordinateEntity),
+            KeyArray::CARDINAL_DIRECTION => $direction,
+            KeyArray::CARDINAL_DIRECTION_TRANSLATED => $directionTranslated,
+        ]);
+
+        return $coordinate;
+    }
+
+    /**
+     * Returns the feature data type.
+     *
+     * @param LocationEntity $locationEntity
+     * @param string $isoLanguage
+     * @param bool $detailed
+     * @return Feature
+     * @throws TypeInvalidException
+     * @throws FileNotFoundException
+     * @throws FileNotReadableException
+     * @throws FunctionJsonEncodeException
+     * @throws FunctionReplaceException
+     * @throws JsonException
+     * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
+     */
+    private function getDataTypeFeature(
+        LocationEntity $locationEntity,
+        string $isoLanguage = LanguageCode::EN,
+        bool $detailed = false
+    ): Feature
+    {
+        $feature = new Feature([]);
+
+        $featureCode = $locationEntity->getFeatureCode()?->getCode() ?: '';
+        $featureClass = $locationEntity->getFeatureClass()?->getClass() ?: '';
+
+        $feature->addValue(KeyArray::FEATURE_CODE, $featureCode);
+        $feature->addValue(KeyArray::FEATURE_CODE_NAME, $this->translator->trans(
+            sprintf('%s.%s', $featureClass, $featureCode),
+            domain: 'place',
+            locale: $this->getLocale($isoLanguage),
+        ));
+
+        if ($detailed) {
+            $feature->addValue(KeyArray::FEATURE_CLASS, $featureClass);
+            $feature->addValue(KeyArray::FEATURE_CLASS_NAME, $this->translator->trans(
+                $featureClass,
+                domain: 'feature-code',
+                locale: $this->getLocale($isoLanguage),
+            ));
+        }
+
+        return $feature;
+    }
+
+    /**
+     * Returns the feature data type.
+     *
+     * @param LocationEntity $locationEntity
+     * @return Links
+     * @throws CaseUnsupportedException
+     * @throws FunctionReplaceException
+     * @throws ParserException
+     * @throws TypeInvalidException
+     */
+    private function getDataTypeLinks(
+        LocationEntity $locationEntity
+    ): Links
+    {
+        $links = new Links();
+
+        $wikipediaLink = $this->locationContainer->getAlternateName($locationEntity, LanguageCode::LINK);
+        $isWikipediaLink = is_string($wikipediaLink) && str_starts_with($wikipediaLink, 'http');
+
+        if ($isWikipediaLink) {
+            $links->addValue(Path::WIKIPEDIA_THIS, $wikipediaLink);
+        }
+
+        $coordinateEntity = $locationEntity->getCoordinateIxnode();
+
+        $links->addValue([KeyArray::MAPS, KeyArray::GOOGLE], $coordinateEntity->getLinkGoogle());
+        $links->addValue([KeyArray::MAPS, KeyArray::OPENSTREETMAP], $coordinateEntity->getLinkOpenStreetMap());
+
+        return $links;
+    }
+
+    /**
+     * Returns the "Locations" data type (with district, borough, city, state, country, etc.).
+     *
+     * @param string $isoLanguage
+     * @return Locations
+     * @throws CaseUnsupportedException
+     * @throws FileNotFoundException
+     * @throws FileNotReadableException
+     * @throws FunctionJsonEncodeException
+     * @throws FunctionReplaceException
+     * @throws JsonException
+     * @throws ParserException
+     * @throws TypeInvalidException
+     */
+    private function getDataTypeLocations(string $isoLanguage = LanguageCode::EN): Locations
+    {
+        $locations = new Locations();
+
+        foreach (LocationContainer::ALLOWED_LOCATION_TYPES as $locationType) {
+            $this->addDataToLocations($locations, $locationType, $isoLanguage);
+        }
+
+        return $locations;
+    }
+
+    /**
+     * Returns the "NextPlaces" data type:
+     *
+     * - A: country, state, region,...
+     * - H: stream, lake, ...
+     * - L: parks,area, ...
+     * - P: city, village,...
+     * - R: road, railroad
+     * - S: spot, building, farm
+     * - T: mountain,hill,rock,...
+     * - U: undersea
+     * - V: forest,heath,...
+     *
+     * @param LocationEntity $locationEntity
+     * @param string $isoLanguage
+     * @return NextPlaces
+     * @throws CaseUnsupportedException
+     * @throws ClassInvalidException
+     * @throws FileNotFoundException
+     * @throws FileNotReadableException
+     * @throws FunctionJsonEncodeException
+     * @throws FunctionReplaceException
+     * @throws JsonException
+     * @throws ParserException
+     * @throws TypeInvalidException
+     */
+    private function getDataTypeNextPlaces(
+        LocationEntity $locationEntity,
+        string $isoLanguage = LanguageCode::EN
+    ): NextPlaces
+    {
+        $nextPlaces = new NextPlaces();
+
+        foreach (FeatureClass::FEATURE_CLASSES_ALL as $featureClass) {
+            if ($featureClass === FeatureClass::FEATURE_CLASS_A) {
+                continue;
+            }
+
+            $distanceMeter = $this->locationServiceConfig->getDistance($featureClass);
+            $limit = $this->locationServiceConfig->getLimit($featureClass);
+
+            $this->addDataToNextPlaces(
+                $nextPlaces,
+                $locationEntity,
+                $featureClass,
+                is_null($distanceMeter) ? self::DEFAULT_DISTANCE_METER : $distanceMeter,
+                $limit,
+                $isoLanguage
+            );
+        }
+
+        return $nextPlaces;
+    }
+
+    /**
+     * Returns the "properties" data type.
+     *
+     * @param LocationEntity $locationEntity
+     * @param string $isoLanguage
+     * @return Properties
+     * @throws FunctionReplaceException
+     * @throws TypeInvalidException
+     */
+    private function getDataTypeProperties(
+        LocationEntity $locationEntity,
+        string $isoLanguage = LanguageCode::EN
+    ): Properties
+    {
+        $properties = new Properties();
+
+        $population = $locationEntity->getPopulationCompiled();
+        if (is_int($population)) {
+            $properties->addValue(KeyArray::POPULATION, [
+                KeyArray::VALUE => $population,
+                KeyArray::UNIT => Numero::NUMERO_V1,
+                KeyArray::VALUE_FORMATTED => $this->getNumberFormatted($population, $isoLanguage),
+            ]);
+        }
+
+        $elevation = $locationEntity->getElevationOverall();
+        if (is_int($elevation)) {
+            $properties->addValue(KeyArray::ELEVATION, [
+                KeyArray::VALUE => $elevation,
+                KeyArray::UNIT => Length::METERS_SHORT,
+                KeyArray::VALUE_FORMATTED => $this->getFloatWithUnitFormatted($elevation, Length::METERS_SHORT, $isoLanguage),
+            ]);
+        }
+
+        return $properties;
+    }
+
+    /**
+     * Returns the coordinate data type.
+     *
+     * @param LocationEntity $locationEntity
+     * @param string $isoLanguage
+     * @return Timezone
+     * @throws CaseUnsupportedException
+     * @throws FunctionReplaceException
+     * @throws ParserException
+     * @throws TypeInvalidException
+     * @throws Exception
+     */
+    private function getDataTypeTimezone(
+        LocationEntity $locationEntity,
+        string $isoLanguage = LanguageCode::EN
+    ): Timezone
+    {
+        $timezoneString = $locationEntity->getTimezone()?->getTimezone();
+
+        if (is_null($timezoneString)) {
+            throw new CaseUnsupportedException('Unable to get timezone.');
+        }
+
+        $dateTimeZone = new DateTimeZone($timezoneString);
+        $dateTime = new DateTime('now', $dateTimeZone);
+        $locationArray = $dateTimeZone->getLocation();
+
+        if ($locationArray === false) {
+            throw new CaseUnsupportedException('Unable to get timezone location.');
+        }
+
+        $offset = $dateTime->format('P');
+        $currentTimeTimezone = $dateTime->format('c');
+        $currentTimeUtc = $dateTime->setTimezone(new DateTimeZone(CountryCode::UTC))->format('c');
+        $coordinateEntity = new CoordinateIxnode($locationArray['latitude'], $locationArray['longitude']);
+
+        $timezone = new Timezone();
+        $timezone->addValue(KeyArray::TIMEZONE, $locationEntity->getTimezone()?->getTimezone());
+        $timezone->addValue(KeyArray::COUNTRY, $locationEntity->getTimezone()?->getCountry()?->getCode());
+        $timezone->addValue(KeyArray::CURRENT_TIME, [
+            KeyArray::TIMEZONE => $currentTimeTimezone,
+            KeyArray::UTC => $currentTimeUtc,
+        ]);
+        $timezone->addValue(KeyArray::OFFSET, $offset);
+        $timezone->addValue(KeyArray::COORDINATE, $this->getDataTypeCoordinate(
+            $coordinateEntity,
+            $this->coordinate,
+            null,
+            $isoLanguage
+        )->getArray());
+
+        return $timezone;
     }
 
     /**
      * Adds a single district, borough or city (etc.) to the given location entity.
      *
-     * @param array<string, mixed> $locationInformation
-     * @param string $type
-     * @param LocationResource $location
+     * @param Locations $locations
+     * @param string $locationType
      * @param string $isoLanguage
      * @return void
+     * @throws CaseUnsupportedException
+     * @throws FileNotFoundException
+     * @throws FileNotReadableException
+     * @throws FunctionJsonEncodeException
+     * @throws FunctionReplaceException
+     * @throws JsonException
+     * @throws ParserException
+     * @throws TypeInvalidException
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      * @SuppressWarnings(PHPMD.NPathComplexity)
      */
-    private function addLocation(array &$locationInformation, string $type, LocationResource $location, string $isoLanguage = Language::EN): void
+    private function addDataToLocations(
+        Locations $locations,
+        string $locationType,
+        string $isoLanguage = LanguageCode::EN
+    ): void
     {
-        $hasElement = match ($type) {
+        $hasElement = match ($locationType) {
             LocationContainer::TYPE_DISTRICT => $this->locationContainer->hasDistrict(),
             LocationContainer::TYPE_BOROUGH => $this->locationContainer->hasBorough(),
             LocationContainer::TYPE_CITY => $this->locationContainer->hasCity(),
@@ -179,7 +563,7 @@ abstract class BaseLocationService extends BaseHelperLocationService
             return;
         }
 
-        $locationEntity = match ($type) {
+        $locationEntity = match ($locationType) {
             LocationContainer::TYPE_DISTRICT => $this->locationContainer->getDistrict(),
             LocationContainer::TYPE_BOROUGH => $this->locationContainer->getBorough(),
             LocationContainer::TYPE_CITY => $this->locationContainer->getCity(),
@@ -192,137 +576,65 @@ abstract class BaseLocationService extends BaseHelperLocationService
             return;
         }
 
-        $key = match ($type) {
-            LocationContainer::TYPE_DISTRICT => KeyArray::DISTRICT_LOCALITY,
-            LocationContainer::TYPE_BOROUGH => KeyArray::BOROUGH_LOCALITY,
-            LocationContainer::TYPE_CITY => KeyArray::CITY_MUNICIPALITY,
-            LocationContainer::TYPE_STATE => KeyArray::STATE,
-            LocationContainer::TYPE_COUNTRY => KeyArray::COUNTRY,
-            default => throw new LogicException(sprintf('Invalid type given: "%s"', $type)),
-        };
+        $key = $this->getLocationKey($locationType);
 
-        $locationBaseInformation = $this->getLocationBaseInformation($locationEntity, $isoLanguage);
+        $locationBaseInformation = $this->getLocationBaseInformation($locationEntity, $isoLanguage, true);
 
-        $locationInformation[$key] = [...$locationBaseInformation];
-
-        if (array_key_exists(KeyArray::WIKIPEDIA, $locationBaseInformation) && is_string($locationBaseInformation[KeyArray::WIKIPEDIA])) {
-            $location->addLink([KeyArray::WIKIPEDIA, KeyArray::LOCATION, $key], $locationBaseInformation[KeyArray::WIKIPEDIA]);
-        }
+        $locations->addValue($key, $locationBaseInformation);
     }
 
     /**
-     * Returns the feature array.
+     * Adds the NextPlaces data to the container.
      *
+     * @param NextPlaces $nextPlaces
      * @param LocationEntity $locationEntity
-     * @return array{class: string, class-name: string, code: string, code-name: string}
+     * @param string $featureClass
+     * @param int $distanceMeter
+     * @param int $limit
+     * @param string $isoLanguage
+     * @return void
+     * @throws CaseUnsupportedException
+     * @throws ClassInvalidException
+     * @throws FileNotFoundException
+     * @throws FileNotReadableException
+     * @throws FunctionJsonEncodeException
+     * @throws FunctionReplaceException
+     * @throws JsonException
+     * @throws ParserException
+     * @throws TypeInvalidException
      */
-    private function getFeatureArray(LocationEntity $locationEntity): array
+    public function addDataToNextPlaces(
+        NextPlaces $nextPlaces,
+        LocationEntity $locationEntity,
+        string $featureClass = FeatureClass::FEATURE_CLASS_P,
+        int $distanceMeter = self::DEFAULT_DISTANCE_METER,
+        int $limit = self::DEFAULT_LIMIT,
+        string $isoLanguage = LanguageCode::EN,
+    ): void
     {
-        $featureClass = $locationEntity->getFeatureClass()?->getClass() ?: '';
         $featureClassName = $this->translator->trans(
             $featureClass,
             domain: 'feature-code',
-            locale: 'de_DE'
+            locale: $this->getLocale($isoLanguage),
         );
 
-        $featureCode = $locationEntity->getFeatureCode()?->getCode() ?: '';
-        $featureCodeName = $this->translator->trans(
-            sprintf('%s.%s', $featureClass, $featureCode),
-            domain: 'place',
-            locale: 'de_DE'
-        );
+        $nextPlaces->addValue([$featureClass, KeyArray::CONFIG], [
+            KeyArray::DISTANCE_METER => $distanceMeter,
+            KeyArray::LIMIT => $limit,
+        ]);
+        $nextPlaces->addValue([$featureClass, KeyArray::FEATURE], [
+            KeyArray::FEATURE_CLASS => $featureClass,
+            KeyArray::FEATURE_CLASS_NAME => $featureClassName,
+        ]);
 
-        return [
-            'class' => $featureClass,
-            'class-name' => $featureClassName,
-            'code' => $featureCode,
-            'code-name' => $featureCodeName,
-        ];
-    }
-
-    /**
-     * Returns the coordinate array.
-     *
-     * @param LocationEntity $locationEntity
-     * @param Coordinate|null $coordinate
-     * @return array{
-     *     latitude: float,
-     *     longitude: float,
-     *     srid: int,
-     *     distance?: null|array{meters: float, kilometers: float},
-     *     direction?: null|array{degree: float, direction: string},
-     * }
-     * @throws CaseUnsupportedException
-     * @throws ParserException
-     */
-    private function getCoordinateArray(LocationEntity $locationEntity, Coordinate|null $coordinate): array
-    {
-        $latitude = $locationEntity->getCoordinate()?->getLatitude() ?: .0;
-        $longitude = $locationEntity->getCoordinate()?->getLongitude() ?: .0;
-        /* See: https://de.wikipedia.org/wiki/SRID, https://de.wikipedia.org/wiki/World_Geodetic_System_1984, etc. */
-        $srid = $locationEntity->getCoordinate()?->getSrid() ?: Point::SRID_WSG84;
-
-        $coordinateTarget = new Coordinate($latitude, $longitude);
-
-        $distance = is_null($coordinate) ? null : [
-            'meters' => $coordinate->getDistance($coordinateTarget),
-            'kilometers' => $coordinate->getDistance($coordinateTarget, Coordinate::RETURN_KILOMETERS),
-        ];
-
-        $direction = is_null($coordinate) ? null : [
-            'degree' => $coordinate->getDegree($coordinateTarget),
-            'direction' => $coordinate->getDirection($coordinateTarget),
-        ];
-
-        $coordinateArray = [
-            'latitude' => $latitude,
-            'longitude' => $longitude,
-            'srid' => $srid,
-        ];
-
-        if (!is_null($distance)) {
-            $coordinateArray['distance'] = $distance;
-        }
-
-        if (!is_null($direction)) {
-            $coordinateArray['direction'] = $direction;
-        }
-
-        return $coordinateArray;
-    }
-
-    /**
-     * Returns the coordinate array.
-     *
-     * @param LocationEntity $locationEntity
-     * @return array{timezone: string|null, country: string|null, current-time: string, offset: string, latitude: double, longitude: double}
-     * @throws CaseUnsupportedException
-     * @throws Exception
-     */
-    private function getTimezoneArray(LocationEntity $locationEntity): array
-    {
-        $timezoneString = $locationEntity->getTimezone()?->getTimezone();
-
-        if (is_null($timezoneString)) {
-            throw new CaseUnsupportedException('Unable to get timezone.');
-        }
-
-        $timezone = new DateTimeZone($timezoneString);
-        $dateTime = new DateTime('now', $timezone);
-        $locationArray = $timezone->getLocation();
-
-        if ($locationArray === false) {
-            throw new CaseUnsupportedException('Unable to get timezone location.');
-        }
-
-        return [
-            'timezone' => $locationEntity->getTimezone()?->getTimezone(),
-            'country' => $locationEntity->getTimezone()?->getCountry()?->getCode(),
-            'current-time' => $dateTime->format('Y-m-d H:i:s'),
-            'offset' => $dateTime->format('P'),
-            'latitude' => $locationArray['latitude'],
-            'longitude' => $locationArray['longitude'],
-        ];
+        /* Adds next places. */
+        $nextPlaces->addValue([$featureClass, KeyArray::PLACES], $this->getPlacesFromFeatureClass(
+            $locationEntity,
+            $featureClass,
+            $distanceMeter,
+            $limit,
+            $isoLanguage
+        ));
     }
 
     /**
@@ -330,36 +642,57 @@ abstract class BaseLocationService extends BaseHelperLocationService
      *
      * @param LocationEntity $locationEntity
      * @param string $isoLanguage
+     * @param bool $featureDetailed
      * @return array<string, mixed>
+     * @throws CaseUnsupportedException
+     * @throws FileNotFoundException
+     * @throws FileNotReadableException
+     * @throws FunctionJsonEncodeException
+     * @throws FunctionReplaceException
+     * @throws JsonException
+     * @throws ParserException
+     * @throws TypeInvalidException
+     * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
      */
-    private function getLocationBaseInformation(LocationEntity $locationEntity, string $isoLanguage = Language::EN): array
+    private function getLocationBaseInformation(
+        LocationEntity $locationEntity,
+        string $isoLanguage = LanguageCode::EN,
+        bool $featureDetailed = false
+    ): array
     {
         $geonameId = $locationEntity->getGeonameId();
         $name = $this->locationContainer->getAlternateName($locationEntity, $isoLanguage);
-        $wikipediaLink = $this->locationContainer->getAlternateName($locationEntity, Language::LINK);
-        $isWikipediaLink = is_string($wikipediaLink) && str_starts_with($wikipediaLink, 'http');
-        $population = $locationEntity->getPopulationCompiled();
-        $elevation = $locationEntity->getElevationOverall();
+        $updateAt = $locationEntity->getUpdatedAt();
 
         return [
+            /* Single fields. */
             ...(is_int($geonameId) ? [KeyArray::GEONAME_ID => $geonameId] : []),
             ...(is_string($name) ? [KeyArray::NAME => $name] : []),
-            ...($isWikipediaLink ? [KeyArray::WIKIPEDIA => $wikipediaLink] : []),
-            ...(is_int($population) ? [KeyArray::POPULATION => $population] : []),
-            ...(is_int($elevation) ? [KeyArray::ELEVATION => $elevation] : []),
+            ...(!is_null($updateAt) ? [KeyArray::UPDATED_AT => $updateAt] : []),
+
+            /* Complex structures. */
+            KeyArray::COORDINATE => $this->getDataTypeCoordinate(
+                $locationEntity->getCoordinateIxnode(),
+                $this->coordinate,
+                $locationEntity->getCoordinate()?->getSrid(),
+                $isoLanguage
+            ),
+            KeyArray::FEATURE => $this->getDataTypeFeature($locationEntity, $isoLanguage, $featureDetailed),
+            KeyArray::LINKS => $this->getDataTypeLinks($locationEntity),
+            KeyArray::PROPERTIES => $this->getDataTypeProperties($locationEntity, $isoLanguage),
         ];
     }
 
     /**
      * Returns the first location by given coordinate.
      *
-     * @param Coordinate $coordinate
+     * @param CoordinateIxnode $coordinate
      * @return LocationEntity|null
      * @throws CaseUnsupportedException
      * @throws ClassInvalidException
      * @throws TypeInvalidException
      */
-    public function getLocationEntityByCoordinate(Coordinate $coordinate): LocationEntity|null
+    public function getLocationEntityByCoordinate(CoordinateIxnode $coordinate): LocationEntity|null
     {
         $location = $this->locationRepository->findNextLocationByCoordinate(
             coordinate: $coordinate,
@@ -445,5 +778,91 @@ abstract class BaseLocationService extends BaseHelperLocationService
     public function setServiceLocationContainer(LocationEntity $locationEntity): void
     {
         $this->locationContainer = $this->getServiceLocationContainerFromLocationRepository($locationEntity);
+    }
+
+    /**
+     * Returns the locale from given language code.
+     *
+     * @param string $isoLanguage
+     * @return string
+     */
+    private function getLocale(string $isoLanguage = LanguageCode::EN): string
+    {
+        return match ($isoLanguage) {
+            LanguageCode::DE => 'de_DE',
+            default => 'en_US',
+        };
+    }
+
+    /**
+     * Returns the formatted number.
+     *
+     * @param int $value
+     * @param string $isoLanguage
+     * @return string
+     */
+    private function getNumberFormatted(int $value, string $isoLanguage = LanguageCode::EN): string
+    {
+        $numberFormatted = (new NumberFormatter($this->getLocale($isoLanguage), NumberFormatter::DEFAULT_STYLE))
+            ->format($value);
+
+        if ($numberFormatted === false) {
+            throw new LogicException(sprintf('Unable to format number "%d".', $value));
+        }
+
+        return $numberFormatted;
+    }
+
+    /**
+     * Returns the formatted number.
+     *
+     * @param float $value
+     * @param string|null $unit
+     * @param string $isoLanguage
+     * @return string
+     */
+    private function getFloatWithUnitFormatted(float $value, string|null $unit = null, string $isoLanguage = LanguageCode::EN): string
+    {
+        return (new NumberFormatter($this->getLocale($isoLanguage), NumberFormatter::DEFAULT_STYLE))
+            ->format($value).(!is_null($unit) ? ' '.$unit : '');
+    }
+
+    /**
+     * Translates the given short cardinal direction into a long one.
+     *
+     * @param string $cardinalDirection
+     * @return string
+     */
+    private function translateCardinalDirection(string $cardinalDirection): string
+    {
+        return match ($cardinalDirection) {
+            'N' => 'North',
+            'NE' => 'North-East',
+            'E' => 'East',
+            'SE' => 'South-East',
+            'S' => 'South',
+            'SW' => 'South-West',
+            'W' => 'West',
+            'NW' => 'North-West',
+            default => throw new LogicException(sprintf('Unexpected cardinal direction given "%s".', $cardinalDirection)),
+        };
+    }
+
+    /**
+     * Returns the location key from the given location type.
+     *
+     * @param string $locationType
+     * @return string
+     */
+    private function getLocationKey(string $locationType): string
+    {
+        return match ($locationType) {
+            LocationContainer::TYPE_DISTRICT => KeyArray::DISTRICT_LOCALITY,
+            LocationContainer::TYPE_BOROUGH => KeyArray::BOROUGH_LOCALITY,
+            LocationContainer::TYPE_CITY => KeyArray::CITY_MUNICIPALITY,
+            LocationContainer::TYPE_STATE => KeyArray::STATE,
+            LocationContainer::TYPE_COUNTRY => KeyArray::COUNTRY,
+            default => throw new LogicException(sprintf('Invalid location type given: "%s"', $locationType)),
+        };
     }
 }

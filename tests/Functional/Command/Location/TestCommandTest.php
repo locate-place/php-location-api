@@ -15,6 +15,7 @@ namespace App\Tests\Functional\Command\Location;
 
 use App\Command\Location\CoordinateCommand;
 use App\Constants\Command\CommandSchema;
+use App\Constants\Key\KeyArray;
 use App\Constants\Place\Search;
 use App\Repository\AlternateNameRepository;
 use App\Repository\LocationRepository;
@@ -55,6 +56,7 @@ class TestCommandTest extends BaseFunctionalCommandTest
             ->setServiceRepositoryClass(Repository::class)
             ->setConfigUseDb()
             ->setConfigUseParameterBag()
+            ->setConfigUseSerializer()
             ->setConfigUseRequestStack()
             ->setConfigUseTranslator()
             ->setConfigUseCommand(
@@ -71,7 +73,8 @@ class TestCommandTest extends BaseFunctionalCommandTest
                         $this->translator,
                         new LocationServiceConfig($this->parameterBag)
                     ),
-                    $this->parameterBag
+                    $this->parameterBag,
+                    $this->serializer
                 ]
             );
     }
@@ -100,6 +103,7 @@ class TestCommandTest extends BaseFunctionalCommandTest
     {
         /* Arrange */
         $search = new Json(Search::VALUES[$key]);
+
         $latitude = $search->getKeyFloat(['coordinate', 'latitude']);
         $longitude = $search->getKeyFloat(['coordinate', 'longitude']);
         $location = $search->getKeyArray(['location']);
@@ -117,7 +121,7 @@ class TestCommandTest extends BaseFunctionalCommandTest
         /* Assert */
         $this->assertIsNumeric($number); // To avoid phpmd warning.
         $this->assertTrue($this->validateAndWriteOutput($validator), BaseFunctionalCommandTest::MESSAGE_JSON_RESPONSE_INVALID);
-        $this->assertEquals(array_values($location), $json->getKeyArray(['data', 'location', ['name']]));
+        $this->assertEquals(array_values($location), $json->getKeyArray([KeyArray::DATA, KeyArray::LOCATIONS, ['name']]));
     }
 
     /**

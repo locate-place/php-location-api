@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace App\ApiPlatform\State\Base;
 
+use App\Constants\Key\KeyArray;
 use Ixnode\PhpApiVersionBundle\ApiPlatform\Resource\Base\BasePublicResource;
 use Ixnode\PhpApiVersionBundle\ApiPlatform\State\Base\Wrapper\BaseResourceWrapperProvider;
 use Ixnode\PhpApiVersionBundle\Utils\TypeCasting\TypeCastingHelper;
@@ -60,13 +61,14 @@ class BaseProvider extends BaseResourceWrapperProvider
                 'short' => (new TypeCastingHelper($this->parameterBag->get('data_license_short')))->strval(),
                 'url' => (new TypeCastingHelper($this->parameterBag->get('data_license_url')))->strval(),
             ])
+            ->setMemoryTaken(sprintf('%.2f MB', memory_get_usage() / 1024 / 1024))
         ;
     }
 
     /**
      * Extends the getUriVariablesOutput method.
      *
-     * @return array<int|string, array<string, array<string, string>|string>|bool|int|string>
+     * @return array<int|string, array<string, array<string, array<string, float|string>|string>|string>|bool|int|string>
      * @throws ArrayKeyNotFoundException
      * @throws CaseInvalidException
      * @throws CaseUnsupportedException
@@ -77,18 +79,22 @@ class BaseProvider extends BaseResourceWrapperProvider
     {
         $uriVariablesOutput = parent::getUriVariablesOutput();
 
-        if (array_key_exists('coordinate', $uriVariablesOutput)) {
-            $language = (string) $uriVariablesOutput['coordinate'];
+        if (array_key_exists(KeyArray::COORDINATE, $uriVariablesOutput)) {
+            $language = (string) $uriVariablesOutput[KeyArray::COORDINATE];
 
             $coordinateInstance = new Coordinate($language);
 
-            $uriVariablesOutput['coordinate'] = [
-                'raw' => $language,
-                'parsed' => [
-                    'latitude' => (string) $coordinateInstance->getLatitude(),
-                    'longitude' => (string) $coordinateInstance->getLongitude(),
-                    'latitudeDms' => $coordinateInstance->getLatitudeDMS(),
-                    'longitudeDms' => $coordinateInstance->getLongitudeDMS(),
+            $uriVariablesOutput[KeyArray::COORDINATE] = [
+                KeyArray::RAW => $language,
+                KeyArray::PARSED => [
+                    KeyArray::LATITUDE => [
+                        KeyArray::DECIMAL => $coordinateInstance->getLatitudeDecimal(),
+                        KeyArray::DMS => $coordinateInstance->getLatitudeDMS(),
+                    ],
+                    KeyArray::LONGITUDE => [
+                        KeyArray::DECIMAL => $coordinateInstance->getLongitudeDecimal(),
+                        KeyArray::DMS => $coordinateInstance->getLongitudeDMS(),
+                    ],
                 ]
             ];
         }

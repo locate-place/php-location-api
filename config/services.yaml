@@ -43,3 +43,8 @@ services:
         public: true
         arguments:
             - '@doctrine.orm.entity_manager'
+
+    # Add App\DataTypes\Base\DataTypeNormalizer
+    App\DataTypes\Base\DataTypeNormalizer:
+        tags:
+            - { name: 'serializer.normalizer' }

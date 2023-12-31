@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace App\Service;
 
+use App\Constants\DB\FeatureClass;
 use App\Entity\Location;
 use Ixnode\PhpApiVersionBundle\Utils\TypeCasting\TypeCastingHelper;
 use Ixnode\PhpException\Case\CaseUnsupportedException;
@@ -31,6 +32,24 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
  */
 final class LocationServiceConfig
 {
+    private const FEATURE_CODES_A_ALL = 'feature_codes_a_all';
+
+    private const FEATURE_CODES_H_ALL = 'feature_codes_h_all';
+
+    private const FEATURE_CODES_L_ALL = 'feature_codes_l_all';
+
+    private const FEATURE_CODES_P_ALL = 'feature_codes_p_all';
+
+    private const FEATURE_CODES_R_ALL = 'feature_codes_r_all';
+
+    private const FEATURE_CODES_S_ALL = 'feature_codes_s_all';
+
+    private const FEATURE_CODES_T_ALL = 'feature_codes_t_all';
+
+    private const FEATURE_CODES_U_ALL = 'feature_codes_u_all';
+
+    private const FEATURE_CODES_V_ALL = 'feature_codes_v_all';
+
     /**
      * @param ParameterBagInterface $parameterBag
      */
@@ -1129,5 +1148,34 @@ final class LocationServiceConfig
         }
 
         throw new TypeInvalidException('bool', gettype($useLocationCountry));
+    }
+
+    /**
+     * Returns the feature codes by given feature class.
+     *
+     * @param string $featureClass
+     * @return array<int, string>
+     * @throws CaseUnsupportedException
+     */
+    public function getFeatureCodesByFeatureClass(string $featureClass = FeatureClass::FEATURE_CLASS_P): array
+    {
+        $featureCodes = match ($featureClass) {
+            FeatureClass::FEATURE_CLASS_A => $this->parameterBag->get(self::FEATURE_CODES_A_ALL),
+            FeatureClass::FEATURE_CLASS_H => $this->parameterBag->get(self::FEATURE_CODES_H_ALL),
+            FeatureClass::FEATURE_CLASS_L => $this->parameterBag->get(self::FEATURE_CODES_L_ALL),
+            FeatureClass::FEATURE_CLASS_P => $this->parameterBag->get(self::FEATURE_CODES_P_ALL),
+            FeatureClass::FEATURE_CLASS_R => $this->parameterBag->get(self::FEATURE_CODES_R_ALL),
+            FeatureClass::FEATURE_CLASS_S => $this->parameterBag->get(self::FEATURE_CODES_S_ALL),
+            FeatureClass::FEATURE_CLASS_T => $this->parameterBag->get(self::FEATURE_CODES_T_ALL),
+            FeatureClass::FEATURE_CLASS_U => $this->parameterBag->get(self::FEATURE_CODES_U_ALL),
+            FeatureClass::FEATURE_CLASS_V => $this->parameterBag->get(self::FEATURE_CODES_V_ALL),
+            default => throw new CaseUnsupportedException(sprintf('Feature class "%s" is not supported.', $featureClass)),
+        };
+
+        if (!is_array($featureCodes)) {
+            throw new CaseUnsupportedException('The feature_codes array is not an array.');
+        }
+
+        return $featureCodes;
     }
 }

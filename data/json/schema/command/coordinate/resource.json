@@ -1,93 +1,3630 @@
 {
     "$schema": "resource.schema.json",
     "data": {
-        "geonameId": 6295497,
+        "geoname-id": 6295497,
         "name": "Zürich (Kreis 3) / Friesenberg",
+        "updated-at": "2023-08-21T23:08:34+00:00",
+        "properties": {
+            "population": {
+                "value": 9909,
+                "unit": "#",
+                "value-formatted": "9.909"
+            },
+            "elevation": {
+                "value": 465,
+                "unit": "m",
+                "value-formatted": "465 m"
+            }
+        },
         "feature": {
-            "class": "P",
-            "class-name": "Städte, Dörfer, etc.",
             "code": "PPLX",
-            "code-name": "Ausschnitt eines Wohngebiets (Stadtteil)"
+            "code-name": "Ausschnitt eines Wohngebiets (Stadtteil)",
+            "class": "P",
+            "class-name": "Städte, Dörfer, etc."
         },
         "coordinate": {
-            "latitude": 47.36372,
-            "longitude": 8.50417,
+            "latitude": {
+                "decimal": 47.36372,
+                "dms": "47°21′49.392″N"
+            },
+            "longitude": {
+                "decimal": 8.50417,
+                "dms": "8°30′15.012″E"
+            },
             "srid": 4326,
             "distance": {
-                "meters": 454.1,
-                "kilometers": 0.454
+                "meters": {
+                    "value": 454.1,
+                    "unit": "m",
+                    "value-formatted": "454,1 m"
+                },
+                "kilometers": {
+                    "value": 0.454,
+                    "unit": "km",
+                    "value-formatted": "0,454 km"
+                }
             },
             "direction": {
                 "degree": 125.28,
-                "direction": "SE"
+                "cardinal-direction": "SE",
+                "cardinal-direction-translated": "South-East"
             }
         },
         "timezone": {
             "timezone": "Europe/Zurich",
             "country": "CH",
-            "current-time": "2023-12-30 12:34:24",
+            "current-time": {
+                "timezone": "2024-01-04T01:22:45+01:00",
+                "utc": "2024-01-04T00:22:45+00:00"
+            },
             "offset": "+01:00",
-            "latitude": 47.38333,
-            "longitude": 8.53333
-        },
-        "location": {
-            "district-locality": {
-                "geoname-id": 6295497,
-                "name": "Zürich (Kreis 3) / Friesenberg",
-                "wikipedia": "https://en.wikipedia.org/wiki/Friesenberg",
-                "population": 9909,
-                "elevation": 0,
-                "dem": 465
-            },
-            "city-municipality": {
-                "geoname-id": 2657896,
-                "name": "Zürich",
-                "wikipedia": "https://en.wikipedia.org/wiki/Z%C3%BCrich",
-                "population": 341730,
-                "elevation": 0,
-                "dem": 429
-            },
-            "state": {
-                "geoname-id": 2657895,
-                "name": "Zürich",
-                "wikipedia": "https://en.wikipedia.org/wiki/Canton_of_Zurich",
-                "population": 1553423,
-                "elevation": 0,
-                "dem": 526
-            },
-            "country": {
-                "geoname-id": 2658434,
-                "name": "Schweizerische Eidgenossenschaft",
-                "wikipedia": "https://en.wikipedia.org/wiki/Switzerland",
-                "population": 8516543,
-                "elevation": 0,
-                "dem": 931
+            "coordinate": {
+                "latitude": {
+                    "decimal": 47.38333,
+                    "dms": "47°22′59.988″N"
+                },
+                "longitude": {
+                    "decimal": 8.53333,
+                    "dms": "8°31′59.988″E"
+                },
+                "srid": 4326,
+                "distance": {
+                    "meters": {
+                        "value": 3119.4,
+                        "unit": "m",
+                        "value-formatted": "3.119,4 m"
+                    },
+                    "kilometers": {
+                        "value": 3.119,
+                        "unit": "km",
+                        "value-formatted": "3,119 km"
+                    }
+                },
+                "direction": {
+                    "degree": 63.44,
+                    "cardinal-direction": "NE",
+                    "cardinal-direction-translated": "North-East"
+                }
             }
         },
-        "link": {
+        "links": {
             "wikipedia": {
-                "location": {
+                "this": "https://en.wikipedia.org/wiki/Friesenberg",
+                "locations": {
                     "district-locality": "https://en.wikipedia.org/wiki/Friesenberg",
                     "city-municipality": "https://en.wikipedia.org/wiki/Z%C3%BCrich",
                     "state": "https://en.wikipedia.org/wiki/Canton_of_Zurich",
                     "country": "https://en.wikipedia.org/wiki/Switzerland"
+                },
+                "next-places": {
+                    "H": [
+                        {
+                            "link": "https://en.wikipedia.org/wiki/Sihl",
+                            "number": 0
+                        },
+                        {
+                            "link": "https://en.wikipedia.org/wiki/Katzensee",
+                            "number": 5
+                        }
+                    ],
+                    "L": [
+                        {
+                            "link": "https://en.wikipedia.org/wiki/Paradeplatz",
+                            "number": 1
+                        },
+                        {
+                            "link": "https://en.wikipedia.org/wiki/Schipfe",
+                            "number": 4
+                        }
+                    ],
+                    "P": [
+                        {
+                            "link": "https://en.wikipedia.org/wiki/Friesenberg",
+                            "number": 0
+                        },
+                        {
+                            "link": "https://en.wikipedia.org/wiki/District_3_%28Zurich%29",
+                            "number": 1
+                        },
+                        {
+                            "link": "https://en.wikipedia.org/wiki/Alt-Wiedikon",
+                            "number": 3
+                        },
+                        {
+                            "link": "https://en.wikipedia.org/wiki/Sihlfeld",
+                            "number": 5
+                        },
+                        {
+                            "link": "https://en.wikipedia.org/wiki/Albisrieden",
+                            "number": 6
+                        },
+                        {
+                            "link": "https://en.wikipedia.org/wiki/Werd_%28Z%C3%BCrich%29",
+                            "number": 7
+                        },
+                        {
+                            "link": "https://en.wikipedia.org/wiki/Aussersihl",
+                            "number": 8
+                        },
+                        {
+                            "link": "https://en.wikipedia.org/wiki/Enge_%28Z%C3%BCrich%29",
+                            "number": 9
+                        }
+                    ],
+                    "R": [
+                        {
+                            "link": "https://en.wikipedia.org/wiki/Bahnhofstrasse",
+                            "number": 4
+                        }
+                    ],
+                    "T": [
+                        {
+                            "link": "https://en.wikipedia.org/wiki/Uetliberg",
+                            "number": 1
+                        },
+                        {
+                            "link": "https://en.wikipedia.org/wiki/Werdinsel",
+                            "number": 9
+                        }
+                    ]
                 }
             },
-            "google": "https://www.google.de/maps/place/47.366670+8.500000",
-            "openstreetmap": "https://www.openstreetmap.org/?lat=47.366670&lon=8.500000&mlat=47.366670&mlon=8.500000&zoom=14&layers=M"
+            "maps": {
+                "google": "https://www.google.de/maps/place/47.363720+8.504170",
+                "openstreetmap": "https://www.openstreetmap.org/?lat=47.363720&lon=8.504170&mlat=47.363720&mlon=8.504170&zoom=14&layers=M"
+            }
         },
-        "population": 9909,
-        "elevation": 0,
-        "dem": 465
+        "locations": {
+            "district-locality": {
+                "geoname-id": 6295497,
+                "name": "Zürich (Kreis 3) / Friesenberg",
+                "updated-at": "2023-08-21T23:08:34+00:00",
+                "coordinate": {
+                    "latitude": {
+                        "decimal": 47.36372,
+                        "dms": "47°21′49.392″N"
+                    },
+                    "longitude": {
+                        "decimal": 8.50417,
+                        "dms": "8°30′15.012″E"
+                    },
+                    "srid": 4326,
+                    "distance": {
+                        "meters": {
+                            "value": 454.1,
+                            "unit": "m",
+                            "value-formatted": "454,1 m"
+                        },
+                        "kilometers": {
+                            "value": 0.454,
+                            "unit": "km",
+                            "value-formatted": "0,454 km"
+                        }
+                    },
+                    "direction": {
+                        "degree": 125.28,
+                        "cardinal-direction": "SE",
+                        "cardinal-direction-translated": "South-East"
+                    }
+                },
+                "feature": {
+                    "code": "PPLX",
+                    "code-name": "Ausschnitt eines Wohngebiets (Stadtteil)",
+                    "class": "P",
+                    "class-name": "Städte, Dörfer, etc."
+                },
+                "links": {
+                    "wikipedia": {
+                        "this": "https://en.wikipedia.org/wiki/Friesenberg"
+                    },
+                    "maps": {
+                        "google": "https://www.google.de/maps/place/47.363720+8.504170",
+                        "openstreetmap": "https://www.openstreetmap.org/?lat=47.363720&lon=8.504170&mlat=47.363720&mlon=8.504170&zoom=14&layers=M"
+                    }
+                },
+                "properties": {
+                    "population": {
+                        "value": 9909,
+                        "unit": "#",
+                        "value-formatted": "9.909"
+                    },
+                    "elevation": {
+                        "value": 465,
+                        "unit": "m",
+                        "value-formatted": "465 m"
+                    }
+                }
+            },
+            "city-municipality": {
+                "geoname-id": 2657896,
+                "name": "Zürich",
+                "updated-at": "2023-08-21T23:08:27+00:00",
+                "coordinate": {
+                    "latitude": {
+                        "decimal": 47.36667,
+                        "dms": "47°22′0.012″N"
+                    },
+                    "longitude": {
+                        "decimal": 8.55,
+                        "dms": "8°33′0″E"
+                    },
+                    "srid": 4326,
+                    "distance": {
+                        "meters": {
+                            "value": 3765.6,
+                            "unit": "m",
+                            "value-formatted": "3.765,6 m"
+                        },
+                        "kilometers": {
+                            "value": 3.766,
+                            "unit": "km",
+                            "value-formatted": "3,766 km"
+                        }
+                    },
+                    "direction": {
+                        "degree": 90,
+                        "cardinal-direction": "E",
+                        "cardinal-direction-translated": "East"
+                    }
+                },
+                "feature": {
+                    "code": "PPLA",
+                    "code-name": "Sitz einer Verwaltungseinheit erster Ordnung",
+                    "class": "P",
+                    "class-name": "Städte, Dörfer, etc."
+                },
+                "links": {
+                    "wikipedia": {
+                        "this": "https://en.wikipedia.org/wiki/Z%C3%BCrich"
+                    },
+                    "maps": {
+                        "google": "https://www.google.de/maps/place/47.366670+8.550000",
+                        "openstreetmap": "https://www.openstreetmap.org/?lat=47.366670&lon=8.550000&mlat=47.366670&mlon=8.550000&zoom=14&layers=M"
+                    }
+                },
+                "properties": {
+                    "population": {
+                        "value": 341730,
+                        "unit": "#",
+                        "value-formatted": "341.730"
+                    },
+                    "elevation": {
+                        "value": 429,
+                        "unit": "m",
+                        "value-formatted": "429 m"
+                    }
+                }
+            },
+            "state": {
+                "geoname-id": 2657895,
+                "name": "Zürich",
+                "updated-at": "2023-08-21T23:08:27+00:00",
+                "coordinate": {
+                    "latitude": {
+                        "decimal": 47.41667,
+                        "dms": "47°25′0.012″N"
+                    },
+                    "longitude": {
+                        "decimal": 8.66667,
+                        "dms": "8°40′0.012″E"
+                    },
+                    "srid": 4326,
+                    "distance": {
+                        "meters": {
+                            "value": 13723.1,
+                            "unit": "m",
+                            "value-formatted": "13.723,1 m"
+                        },
+                        "kilometers": {
+                            "value": 13.723,
+                            "unit": "km",
+                            "value-formatted": "13,723 km"
+                        }
+                    },
+                    "direction": {
+                        "degree": 73.3,
+                        "cardinal-direction": "E",
+                        "cardinal-direction-translated": "East"
+                    }
+                },
+                "feature": {
+                    "code": "ADM1",
+                    "code-name": "Verwaltungsgliederung erster Ordnung / Bundesland",
+                    "class": "A",
+                    "class-name": "Länder, Bundesländer, Regionen, etc."
+                },
+                "links": {
+                    "wikipedia": {
+                        "this": "https://en.wikipedia.org/wiki/Canton_of_Zurich"
+                    },
+                    "maps": {
+                        "google": "https://www.google.de/maps/place/47.416670+8.666670",
+                        "openstreetmap": "https://www.openstreetmap.org/?lat=47.416670&lon=8.666670&mlat=47.416670&mlon=8.666670&zoom=14&layers=M"
+                    }
+                },
+                "properties": {
+                    "population": {
+                        "value": 1553423,
+                        "unit": "#",
+                        "value-formatted": "1.553.423"
+                    },
+                    "elevation": {
+                        "value": 526,
+                        "unit": "m",
+                        "value-formatted": "526 m"
+                    }
+                }
+            },
+            "country": {
+                "geoname-id": 2658434,
+                "name": "Schweizerische Eidgenossenschaft",
+                "updated-at": "2023-08-21T23:08:27+00:00",
+                "coordinate": {
+                    "latitude": {
+                        "decimal": 47.00016,
+                        "dms": "47°0′0.576″N"
+                    },
+                    "longitude": {
+                        "decimal": 8.01427,
+                        "dms": "8°0′51.372″E"
+                    },
+                    "srid": 4326,
+                    "distance": {
+                        "meters": {
+                            "value": 54848.8,
+                            "unit": "m",
+                            "value-formatted": "54.848,8 m"
+                        },
+                        "kilometers": {
+                            "value": 54.849,
+                            "unit": "km",
+                            "value-formatted": "54,849 km"
+                        }
+                    },
+                    "direction": {
+                        "degree": -127.04,
+                        "cardinal-direction": "SW",
+                        "cardinal-direction-translated": "South-West"
+                    }
+                },
+                "feature": {
+                    "code": "PCLI",
+                    "code-name": "Unabhängige politische Instanz",
+                    "class": "A",
+                    "class-name": "Länder, Bundesländer, Regionen, etc."
+                },
+                "links": {
+                    "wikipedia": {
+                        "this": "https://en.wikipedia.org/wiki/Switzerland"
+                    },
+                    "maps": {
+                        "google": "https://www.google.de/maps/place/47.000160+8.014270",
+                        "openstreetmap": "https://www.openstreetmap.org/?lat=47.000160&lon=8.014270&mlat=47.000160&mlon=8.014270&zoom=14&layers=M"
+                    }
+                },
+                "properties": {
+                    "population": {
+                        "value": 8516543,
+                        "unit": "#",
+                        "value-formatted": "8.516.543"
+                    },
+                    "elevation": {
+                        "value": 931,
+                        "unit": "m",
+                        "value-formatted": "931 m"
+                    }
+                }
+            }
+        },
+        "next-places": {
+            "H": {
+                "config": {
+                    "distance-meter": 10000,
+                    "limit": 10
+                },
+                "feature": {
+                    "class": "H",
+                    "class-name": "Flüsse, Seen, etc."
+                },
+                "places": [
+                    {
+                        "geoname-id": 2658596,
+                        "name": "Sihl",
+                        "updated-at": "2023-08-21T23:08:27+00:00",
+                        "coordinate": {
+                            "latitude": {
+                                "decimal": 47.37717,
+                                "dms": "47°22′37.812″N"
+                            },
+                            "longitude": {
+                                "decimal": 8.5359,
+                                "dms": "8°32′9.24″E"
+                            },
+                            "srid": 4326,
+                            "distance": {
+                                "meters": {
+                                    "value": 2944.8,
+                                    "unit": "m",
+                                    "value-formatted": "2.944,8 m"
+                                },
+                                "kilometers": {
+                                    "value": 2.945,
+                                    "unit": "km",
+                                    "value-formatted": "2,945 km"
+                                }
+                            },
+                            "direction": {
+                                "degree": 73.7,
+                                "cardinal-direction": "E",
+                                "cardinal-direction-translated": "East"
+                            }
+                        },
+                        "feature": {
+                            "code": "STM",
+                            "code-name": "Fluss"
+                        },
+                        "links": {
+                            "wikipedia": {
+                                "this": "https://en.wikipedia.org/wiki/Sihl"
+                            },
+                            "maps": {
+                                "google": "https://www.google.de/maps/place/47.377170+8.535900",
+                                "openstreetmap": "https://www.openstreetmap.org/?lat=47.377170&lon=8.535900&mlat=47.377170&mlon=8.535900&zoom=14&layers=M"
+                            }
+                        },
+                        "properties": {
+                            "elevation": {
+                                "value": 410,
+                                "unit": "m",
+                                "value-formatted": "410 m"
+                            }
+                        }
+                    },
+                    {
+                        "geoname-id": 11397068,
+                        "name": "Fridgrabenweiher",
+                        "updated-at": "2023-08-21T23:09:50+00:00",
+                        "coordinate": {
+                            "latitude": {
+                                "decimal": 47.33035,
+                                "dms": "47°19′49.26″N"
+                            },
+                            "longitude": {
+                                "decimal": 8.46903,
+                                "dms": "8°28′8.508″E"
+                            },
+                            "srid": 4326,
+                            "distance": {
+                                "meters": {
+                                    "value": 4664.1,
+                                    "unit": "m",
+                                    "value-formatted": "4.664,1 m"
+                                },
+                                "kilometers": {
+                                    "value": 4.664,
+                                    "unit": "km",
+                                    "value-formatted": "4,664 km"
+                                }
+                            },
+                            "direction": {
+                                "degree": -139.55,
+                                "cardinal-direction": "SW",
+                                "cardinal-direction-translated": "South-West"
+                            }
+                        },
+                        "feature": {
+                            "code": "LK",
+                            "code-name": "See"
+                        },
+                        "links": {
+                            "maps": {
+                                "google": "https://www.google.de/maps/place/47.330350+8.469030",
+                                "openstreetmap": "https://www.openstreetmap.org/?lat=47.330350&lon=8.469030&mlat=47.330350&mlon=8.469030&zoom=14&layers=M"
+                            }
+                        },
+                        "properties": {
+                            "elevation": {
+                                "value": 522,
+                                "unit": "m",
+                                "value-formatted": "522 m"
+                            }
+                        }
+                    },
+                    {
+                        "geoname-id": 6252015,
+                        "name": "Ziegeleiweiher",
+                        "updated-at": "2023-08-21T23:08:31+00:00",
+                        "coordinate": {
+                            "latitude": {
+                                "decimal": 47.32922,
+                                "dms": "47°19′45.192″N"
+                            },
+                            "longitude": {
+                                "decimal": 8.46943,
+                                "dms": "8°28′9.948″E"
+                            },
+                            "srid": 4326,
+                            "distance": {
+                                "meters": {
+                                    "value": 4758.7,
+                                    "unit": "m",
+                                    "value-formatted": "4.758,7 m"
+                                },
+                                "kilometers": {
+                                    "value": 4.759,
+                                    "unit": "km",
+                                    "value-formatted": "4,759 km"
+                                }
+                            },
+                            "direction": {
+                                "degree": -140.78,
+                                "cardinal-direction": "SW",
+                                "cardinal-direction-translated": "South-West"
+                            }
+                        },
+                        "feature": {
+                            "code": "PND",
+                            "code-name": "Teich"
+                        },
+                        "links": {
+                            "maps": {
+                                "google": "https://www.google.de/maps/place/47.329220+8.469430",
+                                "openstreetmap": "https://www.openstreetmap.org/?lat=47.329220&lon=8.469430&mlat=47.329220&mlon=8.469430&zoom=14&layers=M"
+                            }
+                        },
+                        "properties": {
+                            "elevation": {
+                                "value": 525,
+                                "unit": "m",
+                                "value-formatted": "525 m"
+                            }
+                        }
+                    },
+                    {
+                        "geoname-id": 11397085,
+                        "name": "Fischbachweiher",
+                        "updated-at": "2023-08-21T23:09:50+00:00",
+                        "coordinate": {
+                            "latitude": {
+                                "decimal": 47.32942,
+                                "dms": "47°19′45.912″N"
+                            },
+                            "longitude": {
+                                "decimal": 8.467,
+                                "dms": "8°28′1.2″E"
+                            },
+                            "srid": 4326,
+                            "distance": {
+                                "meters": {
+                                    "value": 4830.9,
+                                    "unit": "m",
+                                    "value-formatted": "4.830,9 m"
+                                },
+                                "kilometers": {
+                                    "value": 4.831,
+                                    "unit": "km",
+                                    "value-formatted": "4,831 km"
+                                }
+                            },
+                            "direction": {
+                                "degree": -138.46,
+                                "cardinal-direction": "SW",
+                                "cardinal-direction-translated": "South-West"
+                            }
+                        },
+                        "feature": {
+                            "code": "LK",
+                            "code-name": "See"
+                        },
+                        "links": {
+                            "maps": {
+                                "google": "https://www.google.de/maps/place/47.329420+8.467000",
+                                "openstreetmap": "https://www.openstreetmap.org/?lat=47.329420&lon=8.467000&mlat=47.329420&mlon=8.467000&zoom=14&layers=M"
+                            }
+                        },
+                        "properties": {
+                            "elevation": {
+                                "value": 522,
+                                "unit": "m",
+                                "value-formatted": "522 m"
+                            }
+                        }
+                    },
+                    {
+                        "geoname-id": 11397189,
+                        "name": "Büsisee",
+                        "updated-at": "2023-08-21T23:09:50+00:00",
+                        "coordinate": {
+                            "latitude": {
+                                "decimal": 47.43097,
+                                "dms": "47°25′51.492″N"
+                            },
+                            "longitude": {
+                                "decimal": 8.5106,
+                                "dms": "8°30′38.16″E"
+                            },
+                            "srid": 4326,
+                            "distance": {
+                                "meters": {
+                                    "value": 7194.2,
+                                    "unit": "m",
+                                    "value-formatted": "7.194,2 m"
+                                },
+                                "kilometers": {
+                                    "value": 7.194,
+                                    "unit": "km",
+                                    "value-formatted": "7,194 km"
+                                }
+                            },
+                            "direction": {
+                                "degree": 9.36,
+                                "cardinal-direction": "N",
+                                "cardinal-direction-translated": "North"
+                            }
+                        },
+                        "feature": {
+                            "code": "LK",
+                            "code-name": "See"
+                        },
+                        "links": {
+                            "maps": {
+                                "google": "https://www.google.de/maps/place/47.430970+8.510600",
+                                "openstreetmap": "https://www.openstreetmap.org/?lat=47.430970&lon=8.510600&mlat=47.430970&mlon=8.510600&zoom=14&layers=M"
+                            }
+                        },
+                        "properties": {
+                            "elevation": {
+                                "value": 438,
+                                "unit": "m",
+                                "value-formatted": "438 m"
+                            }
+                        }
+                    },
+                    {
+                        "geoname-id": 2660179,
+                        "name": "Katzensee",
+                        "updated-at": "2023-08-21T23:08:29+00:00",
+                        "coordinate": {
+                            "latitude": {
+                                "decimal": 47.43141,
+                                "dms": "47°25′53.076″N"
+                            },
+                            "longitude": {
+                                "decimal": 8.49124,
+                                "dms": "8°29′28.464″E"
+                            },
+                            "srid": 4326,
+                            "distance": {
+                                "meters": {
+                                    "value": 7228.9,
+                                    "unit": "m",
+                                    "value-formatted": "7.228,9 m"
+                                },
+                                "kilometers": {
+                                    "value": 7.229,
+                                    "unit": "km",
+                                    "value-formatted": "7,229 km"
+                                }
+                            },
+                            "direction": {
+                                "degree": -7.71,
+                                "cardinal-direction": "N",
+                                "cardinal-direction-translated": "North"
+                            }
+                        },
+                        "feature": {
+                            "code": "LK",
+                            "code-name": "See"
+                        },
+                        "links": {
+                            "wikipedia": {
+                                "this": "https://en.wikipedia.org/wiki/Katzensee"
+                            },
+                            "maps": {
+                                "google": "https://www.google.de/maps/place/47.431410+8.491240",
+                                "openstreetmap": "https://www.openstreetmap.org/?lat=47.431410&lon=8.491240&mlat=47.431410&mlon=8.491240&zoom=14&layers=M"
+                            }
+                        },
+                        "properties": {
+                            "elevation": {
+                                "value": 439,
+                                "unit": "m",
+                                "value-formatted": "439 m"
+                            }
+                        }
+                    },
+                    {
+                        "geoname-id": 11397102,
+                        "name": "Unterer Chatzensee",
+                        "updated-at": "2023-08-21T23:09:50+00:00",
+                        "coordinate": {
+                            "latitude": {
+                                "decimal": 47.43151,
+                                "dms": "47°25′53.436″N"
+                            },
+                            "longitude": {
+                                "decimal": 8.49028,
+                                "dms": "8°29′25.008″E"
+                            },
+                            "srid": 4326,
+                            "distance": {
+                                "meters": {
+                                    "value": 7246.9,
+                                    "unit": "m",
+                                    "value-formatted": "7.246,9 m"
+                                },
+                                "kilometers": {
+                                    "value": 7.247,
+                                    "unit": "km",
+                                    "value-formatted": "7,247 km"
+                                }
+                            },
+                            "direction": {
+                                "degree": -8.53,
+                                "cardinal-direction": "N",
+                                "cardinal-direction-translated": "North"
+                            }
+                        },
+                        "feature": {
+                            "code": "LK",
+                            "code-name": "See"
+                        },
+                        "links": {
+                            "maps": {
+                                "google": "https://www.google.de/maps/place/47.431510+8.490280",
+                                "openstreetmap": "https://www.openstreetmap.org/?lat=47.431510&lon=8.490280&mlat=47.431510&mlon=8.490280&zoom=14&layers=M"
+                            }
+                        },
+                        "properties": {
+                            "elevation": {
+                                "value": 439,
+                                "unit": "m",
+                                "value-formatted": "439 m"
+                            }
+                        }
+                    },
+                    {
+                        "geoname-id": 11396630,
+                        "name": "Rumensee",
+                        "updated-at": "2023-08-21T23:09:49+00:00",
+                        "coordinate": {
+                            "latitude": {
+                                "decimal": 47.32836,
+                                "dms": "47°19′42.096″N"
+                            },
+                            "longitude": {
+                                "decimal": 8.59194,
+                                "dms": "8°35′30.984″E"
+                            },
+                            "srid": 4326,
+                            "distance": {
+                                "meters": {
+                                    "value": 8131.8,
+                                    "unit": "m",
+                                    "value-formatted": "8.131,8 m"
+                                },
+                                "kilometers": {
+                                    "value": 8.132,
+                                    "unit": "km",
+                                    "value-formatted": "8,132 km"
+                                }
+                            },
+                            "direction": {
+                                "degree": 112.62,
+                                "cardinal-direction": "SE",
+                                "cardinal-direction-translated": "South-East"
+                            }
+                        },
+                        "feature": {
+                            "code": "LK",
+                            "code-name": "See"
+                        },
+                        "links": {
+                            "maps": {
+                                "google": "https://www.google.de/maps/place/47.328360+8.591940",
+                                "openstreetmap": "https://www.openstreetmap.org/?lat=47.328360&lon=8.591940&mlat=47.328360&mlon=8.591940&zoom=14&layers=M"
+                            }
+                        },
+                        "properties": {
+                            "elevation": {
+                                "value": 548,
+                                "unit": "m",
+                                "value-formatted": "548 m"
+                            }
+                        }
+                    },
+                    {
+                        "geoname-id": 11397108,
+                        "name": "Oberer Chatzensee",
+                        "updated-at": "2023-08-21T23:09:50+00:00",
+                        "coordinate": {
+                            "latitude": {
+                                "decimal": 47.43386,
+                                "dms": "47°26′1.896″N"
+                            },
+                            "longitude": {
+                                "decimal": 8.49762,
+                                "dms": "8°29′51.432″E"
+                            },
+                            "srid": 4326,
+                            "distance": {
+                                "meters": {
+                                    "value": 7473.3,
+                                    "unit": "m",
+                                    "value-formatted": "7.473,3 m"
+                                },
+                                "kilometers": {
+                                    "value": 7.473,
+                                    "unit": "km",
+                                    "value-formatted": "7,473 km"
+                                }
+                            },
+                            "direction": {
+                                "degree": -2.03,
+                                "cardinal-direction": "N",
+                                "cardinal-direction-translated": "North"
+                            }
+                        },
+                        "feature": {
+                            "code": "LK",
+                            "code-name": "See"
+                        },
+                        "links": {
+                            "maps": {
+                                "google": "https://www.google.de/maps/place/47.433860+8.497620",
+                                "openstreetmap": "https://www.openstreetmap.org/?lat=47.433860&lon=8.497620&mlat=47.433860&mlon=8.497620&zoom=14&layers=M"
+                            }
+                        },
+                        "properties": {
+                            "elevation": {
+                                "value": 440,
+                                "unit": "m",
+                                "value-formatted": "440 m"
+                            }
+                        }
+                    },
+                    {
+                        "geoname-id": 11396522,
+                        "name": "Schübelweiher",
+                        "updated-at": "2023-08-21T23:09:49+00:00",
+                        "coordinate": {
+                            "latitude": {
+                                "decimal": 47.32334,
+                                "dms": "47°19′24.024″N"
+                            },
+                            "longitude": {
+                                "decimal": 8.59431,
+                                "dms": "8°35′39.516″E"
+                            },
+                            "srid": 4326,
+                            "distance": {
+                                "meters": {
+                                    "value": 8585.1,
+                                    "unit": "m",
+                                    "value-formatted": "8.585,1 m"
+                                },
+                                "kilometers": {
+                                    "value": 8.585,
+                                    "unit": "km",
+                                    "value-formatted": "8,585 km"
+                                }
+                            },
+                            "direction": {
+                                "degree": 114.68,
+                                "cardinal-direction": "SE",
+                                "cardinal-direction-translated": "South-East"
+                            }
+                        },
+                        "feature": {
+                            "code": "LK",
+                            "code-name": "See"
+                        },
+                        "links": {
+                            "maps": {
+                                "google": "https://www.google.de/maps/place/47.323340+8.594310",
+                                "openstreetmap": "https://www.openstreetmap.org/?lat=47.323340&lon=8.594310&mlat=47.323340&mlon=8.594310&zoom=14&layers=M"
+                            }
+                        },
+                        "properties": {
+                            "elevation": {
+                                "value": 521,
+                                "unit": "m",
+                                "value-formatted": "521 m"
+                            }
+                        }
+                    }
+                ]
+            },
+            "L": {
+                "config": {
+                    "distance-meter": 10000,
+                    "limit": 10
+                },
+                "feature": {
+                    "class": "L",
+                    "class-name": "Parks, Gebiete, etc."
+                },
+                "places": [
+                    {
+                        "geoname-id": 6946265,
+                        "name": "Quaianlage",
+                        "updated-at": "2023-08-21T23:08:49+00:00",
+                        "coordinate": {
+                            "latitude": {
+                                "decimal": 47.369,
+                                "dms": "47°22′8.4″N"
+                            },
+                            "longitude": {
+                                "decimal": 8.53803,
+                                "dms": "8°32′16.908″E"
+                            },
+                            "srid": 4326,
+                            "distance": {
+                                "meters": {
+                                    "value": 2875.8,
+                                    "unit": "m",
+                                    "value-formatted": "2.875,8 m"
+                                },
+                                "kilometers": {
+                                    "value": 2.876,
+                                    "unit": "km",
+                                    "value-formatted": "2,876 km"
+                                }
+                            },
+                            "direction": {
+                                "degree": 86.49,
+                                "cardinal-direction": "E",
+                                "cardinal-direction-translated": "East"
+                            }
+                        },
+                        "feature": {
+                            "code": "AREA",
+                            "code-name": "Gebiet"
+                        },
+                        "links": {
+                            "maps": {
+                                "google": "https://www.google.de/maps/place/47.369000+8.538030",
+                                "openstreetmap": "https://www.openstreetmap.org/?lat=47.369000&lon=8.538030&mlat=47.369000&mlon=8.538030&zoom=14&layers=M"
+                            }
+                        },
+                        "properties": {
+                            "elevation": {
+                                "value": 416,
+                                "unit": "m",
+                                "value-formatted": "416 m"
+                            }
+                        }
+                    },
+                    {
+                        "geoname-id": 6946276,
+                        "name": "Paradeplatz",
+                        "updated-at": "2023-08-21T23:08:49+00:00",
+                        "coordinate": {
+                            "latitude": {
+                                "decimal": 47.3697,
+                                "dms": "47°22′10.92″N"
+                            },
+                            "longitude": {
+                                "decimal": 8.53886,
+                                "dms": "8°32′19.896″E"
+                            },
+                            "srid": 4326,
+                            "distance": {
+                                "meters": {
+                                    "value": 2945.9,
+                                    "unit": "m",
+                                    "value-formatted": "2.945,9 m"
+                                },
+                                "kilometers": {
+                                    "value": 2.946,
+                                    "unit": "km",
+                                    "value-formatted": "2,946 km"
+                                }
+                            },
+                            "direction": {
+                                "degree": 85.54,
+                                "cardinal-direction": "E",
+                                "cardinal-direction-translated": "East"
+                            }
+                        },
+                        "feature": {
+                            "code": "LCTY",
+                            "code-name": "Ortschaft"
+                        },
+                        "links": {
+                            "wikipedia": {
+                                "this": "https://en.wikipedia.org/wiki/Paradeplatz"
+                            },
+                            "maps": {
+                                "google": "https://www.google.de/maps/place/47.369700+8.538860",
+                                "openstreetmap": "https://www.openstreetmap.org/?lat=47.369700&lon=8.538860&mlat=47.369700&mlon=8.538860&zoom=14&layers=M"
+                            }
+                        },
+                        "properties": {
+                            "elevation": {
+                                "value": 419,
+                                "unit": "m",
+                                "value-formatted": "419 m"
+                            }
+                        }
+                    },
+                    {
+                        "geoname-id": 6946278,
+                        "name": "Schanzengraben",
+                        "updated-at": "2023-08-21T23:08:49+00:00",
+                        "coordinate": {
+                            "latitude": {
+                                "decimal": 47.3659,
+                                "dms": "47°21′57.24″N"
+                            },
+                            "longitude": {
+                                "decimal": 8.5399,
+                                "dms": "8°32′23.64″E"
+                            },
+                            "srid": 4326,
+                            "distance": {
+                                "meters": {
+                                    "value": 3006.2,
+                                    "unit": "m",
+                                    "value-formatted": "3.006,2 m"
+                                },
+                                "kilometers": {
+                                    "value": 3.006,
+                                    "unit": "km",
+                                    "value-formatted": "3,006 km"
+                                }
+                            },
+                            "direction": {
+                                "degree": 91.11,
+                                "cardinal-direction": "E",
+                                "cardinal-direction-translated": "East"
+                            }
+                        },
+                        "feature": {
+                            "code": "LCTY",
+                            "code-name": "Ortschaft"
+                        },
+                        "links": {
+                            "maps": {
+                                "google": "https://www.google.de/maps/place/47.365900+8.539900",
+                                "openstreetmap": "https://www.openstreetmap.org/?lat=47.365900&lon=8.539900&mlat=47.365900&mlon=8.539900&zoom=14&layers=M"
+                            }
+                        },
+                        "properties": {
+                            "elevation": {
+                                "value": 405,
+                                "unit": "m",
+                                "value-formatted": "405 m"
+                            }
+                        }
+                    },
+                    {
+                        "geoname-id": 6269468,
+                        "name": "Josefswiese",
+                        "updated-at": "2023-08-21T23:08:31+00:00",
+                        "coordinate": {
+                            "latitude": {
+                                "decimal": 47.38589,
+                                "dms": "47°23′9.204″N"
+                            },
+                            "longitude": {
+                                "decimal": 8.52363,
+                                "dms": "8°31′25.068″E"
+                            },
+                            "srid": 4326,
+                            "distance": {
+                                "meters": {
+                                    "value": 2780.9,
+                                    "unit": "m",
+                                    "value-formatted": "2.780,9 m"
+                                },
+                                "kilometers": {
+                                    "value": 2.781,
+                                    "unit": "km",
+                                    "value-formatted": "2,781 km"
+                                }
+                            },
+                            "direction": {
+                                "degree": 50.88,
+                                "cardinal-direction": "NE",
+                                "cardinal-direction-translated": "North-East"
+                            }
+                        },
+                        "feature": {
+                            "code": "AREA",
+                            "code-name": "Gebiet"
+                        },
+                        "links": {
+                            "maps": {
+                                "google": "https://www.google.de/maps/place/47.385890+8.523630",
+                                "openstreetmap": "https://www.openstreetmap.org/?lat=47.385890&lon=8.523630&mlat=47.385890&mlon=8.523630&zoom=14&layers=M"
+                            }
+                        },
+                        "properties": {
+                            "elevation": {
+                                "value": 406,
+                                "unit": "m",
+                                "value-formatted": "406 m"
+                            }
+                        }
+                    },
+                    {
+                        "geoname-id": 6946279,
+                        "name": "Schipfe",
+                        "updated-at": "2023-08-21T23:08:49+00:00",
+                        "coordinate": {
+                            "latitude": {
+                                "decimal": 47.373,
+                                "dms": "47°22′22.8″N"
+                            },
+                            "longitude": {
+                                "decimal": 8.54168,
+                                "dms": "8°32′30.048″E"
+                            },
+                            "srid": 4326,
+                            "distance": {
+                                "meters": {
+                                    "value": 3216.8,
+                                    "unit": "m",
+                                    "value-formatted": "3.216,8 m"
+                                },
+                                "kilometers": {
+                                    "value": 3.217,
+                                    "unit": "km",
+                                    "value-formatted": "3,217 km"
+                                }
+                            },
+                            "direction": {
+                                "degree": 81.36,
+                                "cardinal-direction": "E",
+                                "cardinal-direction-translated": "East"
+                            }
+                        },
+                        "feature": {
+                            "code": "AREA",
+                            "code-name": "Gebiet"
+                        },
+                        "links": {
+                            "wikipedia": {
+                                "this": "https://en.wikipedia.org/wiki/Schipfe"
+                            },
+                            "maps": {
+                                "google": "https://www.google.de/maps/place/47.373000+8.541680",
+                                "openstreetmap": "https://www.openstreetmap.org/?lat=47.373000&lon=8.541680&mlat=47.373000&mlon=8.541680&zoom=14&layers=M"
+                            }
+                        },
+                        "properties": {
+                            "elevation": {
+                                "value": 417,
+                                "unit": "m",
+                                "value-formatted": "417 m"
+                            }
+                        }
+                    },
+                    {
+                        "geoname-id": 6946275,
+                        "name": "Niederdorf",
+                        "updated-at": "2023-08-21T23:08:49+00:00",
+                        "coordinate": {
+                            "latitude": {
+                                "decimal": 47.3733,
+                                "dms": "47°22′23.88″N"
+                            },
+                            "longitude": {
+                                "decimal": 8.545,
+                                "dms": "8°32′42″E"
+                            },
+                            "srid": 4326,
+                            "distance": {
+                                "meters": {
+                                    "value": 3468.1,
+                                    "unit": "m",
+                                    "value-formatted": "3.468,1 m"
+                                },
+                                "kilometers": {
+                                    "value": 3.468,
+                                    "unit": "km",
+                                    "value-formatted": "3,468 km"
+                                }
+                            },
+                            "direction": {
+                                "degree": 81.62,
+                                "cardinal-direction": "E",
+                                "cardinal-direction-translated": "East"
+                            }
+                        },
+                        "feature": {
+                            "code": "AREA",
+                            "code-name": "Gebiet"
+                        },
+                        "links": {
+                            "maps": {
+                                "google": "https://www.google.de/maps/place/47.373300+8.545000",
+                                "openstreetmap": "https://www.openstreetmap.org/?lat=47.373300&lon=8.545000&mlat=47.373300&mlon=8.545000&zoom=14&layers=M"
+                            }
+                        },
+                        "properties": {
+                            "elevation": {
+                                "value": 418,
+                                "unit": "m",
+                                "value-formatted": "418 m"
+                            }
+                        }
+                    },
+                    {
+                        "geoname-id": 12003661,
+                        "name": "Flussbad Oberer Letten",
+                        "updated-at": "2023-08-21T23:10:33+00:00",
+                        "coordinate": {
+                            "latitude": {
+                                "decimal": 47.38516,
+                                "dms": "47°23′6.576″N"
+                            },
+                            "longitude": {
+                                "decimal": 8.53529,
+                                "dms": "8°32′7.044″E"
+                            },
+                            "srid": 4326,
+                            "distance": {
+                                "meters": {
+                                    "value": 3359.8,
+                                    "unit": "m",
+                                    "value-formatted": "3.359,8 m"
+                                },
+                                "kilometers": {
+                                    "value": 3.36,
+                                    "unit": "km",
+                                    "value-formatted": "3,36 km"
+                                }
+                            },
+                            "direction": {
+                                "degree": 62.35,
+                                "cardinal-direction": "NE",
+                                "cardinal-direction-translated": "North-East"
+                            }
+                        },
+                        "feature": {
+                            "code": "PRK",
+                            "code-name": "Park"
+                        },
+                        "links": {
+                            "maps": {
+                                "google": "https://www.google.de/maps/place/47.385160+8.535290",
+                                "openstreetmap": "https://www.openstreetmap.org/?lat=47.385160&lon=8.535290&mlat=47.385160&mlon=8.535290&zoom=14&layers=M"
+                            }
+                        },
+                        "properties": {
+                            "elevation": {
+                                "value": 407,
+                                "unit": "m",
+                                "value-formatted": "407 m"
+                            }
+                        }
+                    },
+                    {
+                        "geoname-id": 12003660,
+                        "name": "Flussbad Unterer Letten",
+                        "updated-at": "2023-08-21T23:10:33+00:00",
+                        "coordinate": {
+                            "latitude": {
+                                "decimal": 47.38936,
+                                "dms": "47°23′21.696″N"
+                            },
+                            "longitude": {
+                                "decimal": 8.5292,
+                                "dms": "8°31′45.12″E"
+                            },
+                            "srid": 4326,
+                            "distance": {
+                                "meters": {
+                                    "value": 3346.6,
+                                    "unit": "m",
+                                    "value-formatted": "3.346,6 m"
+                                },
+                                "kilometers": {
+                                    "value": 3.347,
+                                    "unit": "km",
+                                    "value-formatted": "3,347 km"
+                                }
+                            },
+                            "direction": {
+                                "degree": 52.15,
+                                "cardinal-direction": "NE",
+                                "cardinal-direction-translated": "North-East"
+                            }
+                        },
+                        "feature": {
+                            "code": "PRK",
+                            "code-name": "Park"
+                        },
+                        "links": {
+                            "maps": {
+                                "google": "https://www.google.de/maps/place/47.389360+8.529200",
+                                "openstreetmap": "https://www.openstreetmap.org/?lat=47.389360&lon=8.529200&mlat=47.389360&mlon=8.529200&zoom=14&layers=M"
+                            }
+                        },
+                        "properties": {
+                            "elevation": {
+                                "value": 404,
+                                "unit": "m",
+                                "value-formatted": "404 m"
+                            }
+                        }
+                    },
+                    {
+                        "geoname-id": 12003662,
+                        "name": "Flussbad Au-Höngg",
+                        "updated-at": "2023-08-21T23:10:33+00:00",
+                        "coordinate": {
+                            "latitude": {
+                                "decimal": 47.39933,
+                                "dms": "47°23′57.588″N"
+                            },
+                            "longitude": {
+                                "decimal": 8.48981,
+                                "dms": "8°29′23.316″E"
+                            },
+                            "srid": 4326,
+                            "distance": {
+                                "meters": {
+                                    "value": 3711.8,
+                                    "unit": "m",
+                                    "value-formatted": "3.711,8 m"
+                                },
+                                "kilometers": {
+                                    "value": 3.712,
+                                    "unit": "km",
+                                    "value-formatted": "3,712 km"
+                                }
+                            },
+                            "direction": {
+                                "degree": -17.33,
+                                "cardinal-direction": "N",
+                                "cardinal-direction-translated": "North"
+                            }
+                        },
+                        "feature": {
+                            "code": "PRK",
+                            "code-name": "Park"
+                        },
+                        "links": {
+                            "maps": {
+                                "google": "https://www.google.de/maps/place/47.399330+8.489810",
+                                "openstreetmap": "https://www.openstreetmap.org/?lat=47.399330&lon=8.489810&mlat=47.399330&mlon=8.489810&zoom=14&layers=M"
+                            }
+                        },
+                        "properties": {
+                            "elevation": {
+                                "value": 396,
+                                "unit": "m",
+                                "value-formatted": "396 m"
+                            }
+                        }
+                    },
+                    {
+                        "geoname-id": 11856327,
+                        "name": "Limmattal",
+                        "updated-at": "2023-08-21T23:10:23+00:00",
+                        "coordinate": {
+                            "latitude": {
+                                "decimal": 47.38626,
+                                "dms": "47°23′10.536″N"
+                            },
+                            "longitude": {
+                                "decimal": 8.42965,
+                                "dms": "8°25′46.74″E"
+                            },
+                            "srid": 4326,
+                            "distance": {
+                                "meters": {
+                                    "value": 5727.7,
+                                    "unit": "m",
+                                    "value-formatted": "5.727,7 m"
+                                },
+                                "kilometers": {
+                                    "value": 5.728,
+                                    "unit": "km",
+                                    "value-formatted": "5,728 km"
+                                }
+                            },
+                            "direction": {
+                                "degree": -74.44,
+                                "cardinal-direction": "W",
+                                "cardinal-direction-translated": "West"
+                            }
+                        },
+                        "feature": {
+                            "code": "RGN",
+                            "code-name": "Region"
+                        },
+                        "links": {
+                            "maps": {
+                                "google": "https://www.google.de/maps/place/47.386260+8.429650",
+                                "openstreetmap": "https://www.openstreetmap.org/?lat=47.386260&lon=8.429650&mlat=47.386260&mlon=8.429650&zoom=14&layers=M"
+                            }
+                        },
+                        "properties": {
+                            "population": {
+                                "value": 90000,
+                                "unit": "#",
+                                "value-formatted": "90.000"
+                            },
+                            "elevation": {
+                                "value": 447,
+                                "unit": "m",
+                                "value-formatted": "447 m"
+                            }
+                        }
+                    }
+                ]
+            },
+            "P": {
+                "config": {
+                    "distance-meter": 10000,
+                    "limit": 10
+                },
+                "feature": {
+                    "class": "P",
+                    "class-name": "Städte, Dörfer, etc."
+                },
+                "places": [
+                    {
+                        "geoname-id": 6295497,
+                        "name": "Zürich (Kreis 3) / Friesenberg",
+                        "updated-at": "2023-08-21T23:08:34+00:00",
+                        "coordinate": {
+                            "latitude": {
+                                "decimal": 47.36372,
+                                "dms": "47°21′49.392″N"
+                            },
+                            "longitude": {
+                                "decimal": 8.50417,
+                                "dms": "8°30′15.012″E"
+                            },
+                            "srid": 4326,
+                            "distance": {
+                                "meters": {
+                                    "value": 454.1,
+                                    "unit": "m",
+                                    "value-formatted": "454,1 m"
+                                },
+                                "kilometers": {
+                                    "value": 0.454,
+                                    "unit": "km",
+                                    "value-formatted": "0,454 km"
+                                }
+                            },
+                            "direction": {
+                                "degree": 125.28,
+                                "cardinal-direction": "SE",
+                                "cardinal-direction-translated": "South-East"
+                            }
+                        },
+                        "feature": {
+                            "code": "PPLX",
+                            "code-name": "Ausschnitt eines Wohngebiets (Stadtteil)"
+                        },
+                        "links": {
+                            "wikipedia": {
+                                "this": "https://en.wikipedia.org/wiki/Friesenberg"
+                            },
+                            "maps": {
+                                "google": "https://www.google.de/maps/place/47.363720+8.504170",
+                                "openstreetmap": "https://www.openstreetmap.org/?lat=47.363720&lon=8.504170&mlat=47.363720&mlon=8.504170&zoom=14&layers=M"
+                            }
+                        },
+                        "properties": {
+                            "population": {
+                                "value": 9909,
+                                "unit": "#",
+                                "value-formatted": "9.909"
+                            },
+                            "elevation": {
+                                "value": 465,
+                                "unit": "m",
+                                "value-formatted": "465 m"
+                            }
+                        }
+                    },
+                    {
+                        "geoname-id": 6295532,
+                        "name": "Zürich (Kreis 3)",
+                        "updated-at": "2023-08-21T23:08:34+00:00",
+                        "coordinate": {
+                            "latitude": {
+                                "decimal": 47.35785,
+                                "dms": "47°21′28.26″N"
+                            },
+                            "longitude": {
+                                "decimal": 8.50296,
+                                "dms": "8°30′10.656″E"
+                            },
+                            "srid": 4326,
+                            "distance": {
+                                "meters": {
+                                    "value": 1005.8,
+                                    "unit": "m",
+                                    "value-formatted": "1.005,8 m"
+                                },
+                                "kilometers": {
+                                    "value": 1.006,
+                                    "unit": "km",
+                                    "value-formatted": "1,006 km"
+                                }
+                            },
+                            "direction": {
+                                "degree": 161.45,
+                                "cardinal-direction": "S",
+                                "cardinal-direction-translated": "South"
+                            }
+                        },
+                        "feature": {
+                            "code": "PPLX",
+                            "code-name": "Ausschnitt eines Wohngebiets (Stadtteil)"
+                        },
+                        "links": {
+                            "wikipedia": {
+                                "this": "https://en.wikipedia.org/wiki/District_3_%28Zurich%29"
+                            },
+                            "maps": {
+                                "google": "https://www.google.de/maps/place/47.357850+8.502960",
+                                "openstreetmap": "https://www.openstreetmap.org/?lat=47.357850&lon=8.502960&mlat=47.357850&mlon=8.502960&zoom=14&layers=M"
+                            }
+                        },
+                        "properties": {
+                            "population": {
+                                "value": 46018,
+                                "unit": "#",
+                                "value-formatted": "46.018"
+                            },
+                            "elevation": {
+                                "value": 507,
+                                "unit": "m",
+                                "value-formatted": "507 m"
+                            }
+                        }
+                    },
+                    {
+                        "geoname-id": 6295451,
+                        "name": "Zürich (Kreis 3) / Friesenberg (Siedlung)",
+                        "updated-at": "2023-08-21T23:08:34+00:00",
+                        "coordinate": {
+                            "latitude": {
+                                "decimal": 47.35834,
+                                "dms": "47°21′30.024″N"
+                            },
+                            "longitude": {
+                                "decimal": 8.49847,
+                                "dms": "8°29′54.492″E"
+                            },
+                            "srid": 4326,
+                            "distance": {
+                                "meters": {
+                                    "value": 933.4,
+                                    "unit": "m",
+                                    "value-formatted": "933,4 m"
+                                },
+                                "kilometers": {
+                                    "value": 0.933,
+                                    "unit": "km",
+                                    "value-formatted": "0,933 km"
+                                }
+                            },
+                            "direction": {
+                                "degree": -169.59,
+                                "cardinal-direction": "S",
+                                "cardinal-direction-translated": "South"
+                            }
+                        },
+                        "feature": {
+                            "code": "PPLX",
+                            "code-name": "Ausschnitt eines Wohngebiets (Stadtteil)"
+                        },
+                        "links": {
+                            "maps": {
+                                "google": "https://www.google.de/maps/place/47.358340+8.498470",
+                                "openstreetmap": "https://www.openstreetmap.org/?lat=47.358340&lon=8.498470&mlat=47.358340&mlon=8.498470&zoom=14&layers=M"
+                            }
+                        },
+                        "properties": {
+                            "population": {
+                                "value": 133,
+                                "unit": "#",
+                                "value-formatted": "133"
+                            },
+                            "elevation": {
+                                "value": 543,
+                                "unit": "m",
+                                "value-formatted": "543 m"
+                            }
+                        }
+                    },
+                    {
+                        "geoname-id": 2658007,
+                        "name": "Zürich (Kreis 3) / Alt-Wiedikon",
+                        "updated-at": "2023-08-21T23:08:27+00:00",
+                        "coordinate": {
+                            "latitude": {
+                                "decimal": 47.36201,
+                                "dms": "47°21′43.236″N"
+                            },
+                            "longitude": {
+                                "decimal": 8.51497,
+                                "dms": "8°30′53.892″E"
+                            },
+                            "srid": 4326,
+                            "distance": {
+                                "meters": {
+                                    "value": 1240.9,
+                                    "unit": "m",
+                                    "value-formatted": "1.240,9 m"
+                                },
+                                "kilometers": {
+                                    "value": 1.241,
+                                    "unit": "km",
+                                    "value-formatted": "1,241 km"
+                                }
+                            },
+                            "direction": {
+                                "degree": 107.29,
+                                "cardinal-direction": "E",
+                                "cardinal-direction-translated": "East"
+                            }
+                        },
+                        "feature": {
+                            "code": "PPLX",
+                            "code-name": "Ausschnitt eines Wohngebiets (Stadtteil)"
+                        },
+                        "links": {
+                            "wikipedia": {
+                                "this": "https://en.wikipedia.org/wiki/Alt-Wiedikon"
+                            },
+                            "maps": {
+                                "google": "https://www.google.de/maps/place/47.362010+8.514970",
+                                "openstreetmap": "https://www.openstreetmap.org/?lat=47.362010&lon=8.514970&mlat=47.362010&mlon=8.514970&zoom=14&layers=M"
+                            }
+                        },
+                        "properties": {
+                            "population": {
+                                "value": 14931,
+                                "unit": "#",
+                                "value-formatted": "14.931"
+                            },
+                            "elevation": {
+                                "value": 431,
+                                "unit": "m",
+                                "value-formatted": "431 m"
+                            }
+                        }
+                    },
+                    {
+                        "geoname-id": 6295454,
+                        "name": "Zürich (Kreis 3) / Oberer Kolbenhof",
+                        "updated-at": "2023-08-21T23:08:34+00:00",
+                        "coordinate": {
+                            "latitude": {
+                                "decimal": 47.3528,
+                                "dms": "47°21′10.08″N"
+                            },
+                            "longitude": {
+                                "decimal": 8.50112,
+                                "dms": "8°30′4.032″E"
+                            },
+                            "srid": 4326,
+                            "distance": {
+                                "meters": {
+                                    "value": 1544.6,
+                                    "unit": "m",
+                                    "value-formatted": "1.544,6 m"
+                                },
+                                "kilometers": {
+                                    "value": 1.545,
+                                    "unit": "km",
+                                    "value-formatted": "1,545 km"
+                                }
+                            },
+                            "direction": {
+                                "degree": 175.38,
+                                "cardinal-direction": "S",
+                                "cardinal-direction-translated": "South"
+                            }
+                        },
+                        "feature": {
+                            "code": "PPLX",
+                            "code-name": "Ausschnitt eines Wohngebiets (Stadtteil)"
+                        },
+                        "links": {
+                            "maps": {
+                                "google": "https://www.google.de/maps/place/47.352800+8.501120",
+                                "openstreetmap": "https://www.openstreetmap.org/?lat=47.352800&lon=8.501120&mlat=47.352800&mlon=8.501120&zoom=14&layers=M"
+                            }
+                        },
+                        "properties": {
+                            "population": {
+                                "value": 37,
+                                "unit": "#",
+                                "value-formatted": "37"
+                            },
+                            "elevation": {
+                                "value": 571,
+                                "unit": "m",
+                                "value-formatted": "571 m"
+                            }
+                        }
+                    },
+                    {
+                        "geoname-id": 6295498,
+                        "name": "Zürich (Kreis 3) / Sihlfeld",
+                        "updated-at": "2023-08-21T23:08:34+00:00",
+                        "coordinate": {
+                            "latitude": {
+                                "decimal": 47.37382,
+                                "dms": "47°22′25.752″N"
+                            },
+                            "longitude": {
+                                "decimal": 8.51164,
+                                "dms": "8°30′41.904″E"
+                            },
+                            "srid": 4326,
+                            "distance": {
+                                "meters": {
+                                    "value": 1183.4,
+                                    "unit": "m",
+                                    "value-formatted": "1.183,4 m"
+                                },
+                                "kilometers": {
+                                    "value": 1.183,
+                                    "unit": "km",
+                                    "value-formatted": "1,183 km"
+                                }
+                            },
+                            "direction": {
+                                "degree": 58.44,
+                                "cardinal-direction": "NE",
+                                "cardinal-direction-translated": "North-East"
+                            }
+                        },
+                        "feature": {
+                            "code": "PPLX",
+                            "code-name": "Ausschnitt eines Wohngebiets (Stadtteil)"
+                        },
+                        "links": {
+                            "wikipedia": {
+                                "this": "https://en.wikipedia.org/wiki/Sihlfeld"
+                            },
+                            "maps": {
+                                "google": "https://www.google.de/maps/place/47.373820+8.511640",
+                                "openstreetmap": "https://www.openstreetmap.org/?lat=47.373820&lon=8.511640&mlat=47.373820&mlon=8.511640&zoom=14&layers=M"
+                            }
+                        },
+                        "properties": {
+                            "population": {
+                                "value": 20977,
+                                "unit": "#",
+                                "value-formatted": "20.977"
+                            },
+                            "elevation": {
+                                "value": 416,
+                                "unit": "m",
+                                "value-formatted": "416 m"
+                            }
+                        }
+                    },
+                    {
+                        "geoname-id": 6295512,
+                        "name": "Zürich (Kreis 9) / Albisrieden",
+                        "updated-at": "2023-08-21T23:08:34+00:00",
+                        "coordinate": {
+                            "latitude": {
+                                "decimal": 47.37398,
+                                "dms": "47°22′26.328″N"
+                            },
+                            "longitude": {
+                                "decimal": 8.49007,
+                                "dms": "8°29′24.252″E"
+                            },
+                            "srid": 4326,
+                            "distance": {
+                                "meters": {
+                                    "value": 1104.5,
+                                    "unit": "m",
+                                    "value-formatted": "1.104,5 m"
+                                },
+                                "kilometers": {
+                                    "value": 1.104,
+                                    "unit": "km",
+                                    "value-formatted": "1,104 km"
+                                }
+                            },
+                            "direction": {
+                                "degree": -53.64,
+                                "cardinal-direction": "NW",
+                                "cardinal-direction-translated": "North-West"
+                            }
+                        },
+                        "feature": {
+                            "code": "PPLX",
+                            "code-name": "Ausschnitt eines Wohngebiets (Stadtteil)"
+                        },
+                        "links": {
+                            "wikipedia": {
+                                "this": "https://en.wikipedia.org/wiki/Albisrieden"
+                            },
+                            "maps": {
+                                "google": "https://www.google.de/maps/place/47.373980+8.490070",
+                                "openstreetmap": "https://www.openstreetmap.org/?lat=47.373980&lon=8.490070&mlat=47.373980&mlon=8.490070&zoom=14&layers=M"
+                            }
+                        },
+                        "properties": {
+                            "population": {
+                                "value": 16480,
+                                "unit": "#",
+                                "value-formatted": "16.480"
+                            },
+                            "elevation": {
+                                "value": 428,
+                                "unit": "m",
+                                "value-formatted": "428 m"
+                            }
+                        }
+                    },
+                    {
+                        "geoname-id": 6295499,
+                        "name": "Zürich (Kreis 4) / Werd",
+                        "updated-at": "2023-08-21T23:08:34+00:00",
+                        "coordinate": {
+                            "latitude": {
+                                "decimal": 47.37178,
+                                "dms": "47°22′18.408″N"
+                            },
+                            "longitude": {
+                                "decimal": 8.52584,
+                                "dms": "8°31′33.024″E"
+                            },
+                            "srid": 4326,
+                            "distance": {
+                                "meters": {
+                                    "value": 2027.2,
+                                    "unit": "m",
+                                    "value-formatted": "2.027,2 m"
+                                },
+                                "kilometers": {
+                                    "value": 2.027,
+                                    "unit": "km",
+                                    "value-formatted": "2,027 km"
+                                }
+                            },
+                            "direction": {
+                                "degree": 78.81,
+                                "cardinal-direction": "E",
+                                "cardinal-direction-translated": "East"
+                            }
+                        },
+                        "feature": {
+                            "code": "PPLX",
+                            "code-name": "Ausschnitt eines Wohngebiets (Stadtteil)"
+                        },
+                        "links": {
+                            "wikipedia": {
+                                "this": "https://en.wikipedia.org/wiki/Werd_%28Z%C3%BCrich%29"
+                            },
+                            "maps": {
+                                "google": "https://www.google.de/maps/place/47.371780+8.525840",
+                                "openstreetmap": "https://www.openstreetmap.org/?lat=47.371780&lon=8.525840&mlat=47.371780&mlon=8.525840&zoom=14&layers=M"
+                            }
+                        },
+                        "properties": {
+                            "population": {
+                                "value": 3911,
+                                "unit": "#",
+                                "value-formatted": "3.911"
+                            },
+                            "elevation": {
+                                "value": 418,
+                                "unit": "m",
+                                "value-formatted": "418 m"
+                            }
+                        }
+                    },
+                    {
+                        "geoname-id": 2661666,
+                        "name": "Zürich (Kreis 4)",
+                        "updated-at": "2023-08-21T23:08:30+00:00",
+                        "coordinate": {
+                            "latitude": {
+                                "decimal": 47.37752,
+                                "dms": "47°22′39.072″N"
+                            },
+                            "longitude": {
+                                "decimal": 8.52127,
+                                "dms": "8°31′16.572″E"
+                            },
+                            "srid": 4326,
+                            "distance": {
+                                "meters": {
+                                    "value": 2005.3,
+                                    "unit": "m",
+                                    "value-formatted": "2.005,3 m"
+                                },
+                                "kilometers": {
+                                    "value": 2.005,
+                                    "unit": "km",
+                                    "value-formatted": "2,005 km"
+                                }
+                            },
+                            "direction": {
+                                "degree": 62.97,
+                                "cardinal-direction": "NE",
+                                "cardinal-direction-translated": "North-East"
+                            }
+                        },
+                        "feature": {
+                            "code": "PPLX",
+                            "code-name": "Ausschnitt eines Wohngebiets (Stadtteil)"
+                        },
+                        "links": {
+                            "wikipedia": {
+                                "this": "https://en.wikipedia.org/wiki/Aussersihl"
+                            },
+                            "maps": {
+                                "google": "https://www.google.de/maps/place/47.377520+8.521270",
+                                "openstreetmap": "https://www.openstreetmap.org/?lat=47.377520&lon=8.521270&mlat=47.377520&mlon=8.521270&zoom=14&layers=M"
+                            }
+                        },
+                        "properties": {
+                            "population": {
+                                "value": 27273,
+                                "unit": "#",
+                                "value-formatted": "27.273"
+                            },
+                            "elevation": {
+                                "value": 416,
+                                "unit": "m",
+                                "value-formatted": "416 m"
+                            }
+                        }
+                    },
+                    {
+                        "geoname-id": 6295496,
+                        "name": "Zürich (Kreis 2) / Enge",
+                        "updated-at": "2023-08-21T23:08:34+00:00",
+                        "coordinate": {
+                            "latitude": {
+                                "decimal": 47.3605,
+                                "dms": "47°21′37.8″N"
+                            },
+                            "longitude": {
+                                "decimal": 8.53127,
+                                "dms": "8°31′52.572″E"
+                            },
+                            "srid": 4326,
+                            "distance": {
+                                "meters": {
+                                    "value": 2453.1,
+                                    "unit": "m",
+                                    "value-formatted": "2.453,1 m"
+                                },
+                                "kilometers": {
+                                    "value": 2.453,
+                                    "unit": "km",
+                                    "value-formatted": "2,453 km"
+                                }
+                            },
+                            "direction": {
+                                "degree": 101.16,
+                                "cardinal-direction": "E",
+                                "cardinal-direction-translated": "East"
+                            }
+                        },
+                        "feature": {
+                            "code": "PPLX",
+                            "code-name": "Ausschnitt eines Wohngebiets (Stadtteil)"
+                        },
+                        "links": {
+                            "wikipedia": {
+                                "this": "https://en.wikipedia.org/wiki/Enge_%28Z%C3%BCrich%29"
+                            },
+                            "maps": {
+                                "google": "https://www.google.de/maps/place/47.360500+8.531270",
+                                "openstreetmap": "https://www.openstreetmap.org/?lat=47.360500&lon=8.531270&mlat=47.360500&mlon=8.531270&zoom=14&layers=M"
+                            }
+                        },
+                        "properties": {
+                            "population": {
+                                "value": 8253,
+                                "unit": "#",
+                                "value-formatted": "8.253"
+                            },
+                            "elevation": {
+                                "value": 421,
+                                "unit": "m",
+                                "value-formatted": "421 m"
+                            }
+                        }
+                    }
+                ]
+            },
+            "R": {
+                "config": {
+                    "distance-meter": 10000,
+                    "limit": 10
+                },
+                "feature": {
+                    "class": "R",
+                    "class-name": "Straßen, Schienenwege, etc."
+                },
+                "places": [
+                    {
+                        "geoname-id": 7931949,
+                        "name": "Zürich-Friesenberg",
+                        "updated-at": "2023-08-21T23:09:01+00:00",
+                        "coordinate": {
+                            "latitude": {
+                                "decimal": 47.36469,
+                                "dms": "47°21′52.884″N"
+                            },
+                            "longitude": {
+                                "decimal": 8.50825,
+                                "dms": "8°30′29.7″E"
+                            },
+                            "srid": 4326,
+                            "distance": {
+                                "meters": {
+                                    "value": 659.2,
+                                    "unit": "m",
+                                    "value-formatted": "659,2 m"
+                                },
+                                "kilometers": {
+                                    "value": 0.659,
+                                    "unit": "km",
+                                    "value-formatted": "0,659 km"
+                                }
+                            },
+                            "direction": {
+                                "degree": 103.5,
+                                "cardinal-direction": "E",
+                                "cardinal-direction-translated": "East"
+                            }
+                        },
+                        "feature": {
+                            "code": "RR",
+                            "code-name": "railroad"
+                        },
+                        "links": {
+                            "maps": {
+                                "google": "https://www.google.de/maps/place/47.364690+8.508250",
+                                "openstreetmap": "https://www.openstreetmap.org/?lat=47.364690&lon=8.508250&mlat=47.364690&mlon=8.508250&zoom=14&layers=M"
+                            }
+                        },
+                        "properties": {
+                            "elevation": {
+                                "value": 437,
+                                "unit": "m",
+                                "value-formatted": "437 m"
+                            }
+                        }
+                    },
+                    {
+                        "geoname-id": 7931948,
+                        "name": "Zürich-Giesshübel",
+                        "updated-at": "2023-08-21T23:09:01+00:00",
+                        "coordinate": {
+                            "latitude": {
+                                "decimal": 47.36205,
+                                "dms": "47°21′43.38″N"
+                            },
+                            "longitude": {
+                                "decimal": 8.52095,
+                                "dms": "8°31′15.42″E"
+                            },
+                            "srid": 4326,
+                            "distance": {
+                                "meters": {
+                                    "value": 1659.4,
+                                    "unit": "m",
+                                    "value-formatted": "1.659,4 m"
+                                },
+                                "kilometers": {
+                                    "value": 1.659,
+                                    "unit": "km",
+                                    "value-formatted": "1,659 km"
+                                }
+                            },
+                            "direction": {
+                                "degree": 102.44,
+                                "cardinal-direction": "E",
+                                "cardinal-direction-translated": "East"
+                            }
+                        },
+                        "feature": {
+                            "code": "RYD",
+                            "code-name": "railroad yard"
+                        },
+                        "links": {
+                            "maps": {
+                                "google": "https://www.google.de/maps/place/47.362050+8.520950",
+                                "openstreetmap": "https://www.openstreetmap.org/?lat=47.362050&lon=8.520950&mlat=47.362050&mlon=8.520950&zoom=14&layers=M"
+                            }
+                        },
+                        "properties": {
+                            "elevation": {
+                                "value": 419,
+                                "unit": "m",
+                                "value-formatted": "419 m"
+                            }
+                        }
+                    },
+                    {
+                        "geoname-id": 7871001,
+                        "name": "Zürich (Kreis 2) Sihlcity station",
+                        "updated-at": "2023-08-21T23:09:01+00:00",
+                        "coordinate": {
+                            "latitude": {
+                                "decimal": 47.35752,
+                                "dms": "47°21′27.072″N"
+                            },
+                            "longitude": {
+                                "decimal": 8.52203,
+                                "dms": "8°31′19.308″E"
+                            },
+                            "srid": 4326,
+                            "distance": {
+                                "meters": {
+                                    "value": 1946.4,
+                                    "unit": "m",
+                                    "value-formatted": "1.946,4 m"
+                                },
+                                "kilometers": {
+                                    "value": 1.946,
+                                    "unit": "km",
+                                    "value-formatted": "1,946 km"
+                                }
+                            },
+                            "direction": {
+                                "degree": 112.56,
+                                "cardinal-direction": "SE",
+                                "cardinal-direction-translated": "South-East"
+                            }
+                        },
+                        "feature": {
+                            "code": "RR",
+                            "code-name": "railroad"
+                        },
+                        "links": {
+                            "maps": {
+                                "google": "https://www.google.de/maps/place/47.357520+8.522030",
+                                "openstreetmap": "https://www.openstreetmap.org/?lat=47.357520&lon=8.522030&mlat=47.357520&mlon=8.522030&zoom=14&layers=M"
+                            }
+                        },
+                        "properties": {
+                            "elevation": {
+                                "value": 419,
+                                "unit": "m",
+                                "value-formatted": "419 m"
+                            }
+                        }
+                    },
+                    {
+                        "geoname-id": 8347331,
+                        "name": "Hardbrücke",
+                        "updated-at": "2023-08-21T23:09:01+00:00",
+                        "coordinate": {
+                            "latitude": {
+                                "decimal": 47.38475,
+                                "dms": "47°23′5.1″N"
+                            },
+                            "longitude": {
+                                "decimal": 8.51648,
+                                "dms": "8°30′59.328″E"
+                            },
+                            "srid": 4326,
+                            "distance": {
+                                "meters": {
+                                    "value": 2362.6,
+                                    "unit": "m",
+                                    "value-formatted": "2.362,6 m"
+                                },
+                                "kilometers": {
+                                    "value": 2.363,
+                                    "unit": "km",
+                                    "value-formatted": "2,363 km"
+                                }
+                            },
+                            "direction": {
+                                "degree": 42.35,
+                                "cardinal-direction": "NE",
+                                "cardinal-direction-translated": "North-East"
+                            }
+                        },
+                        "feature": {
+                            "code": "RYD",
+                            "code-name": "railroad yard"
+                        },
+                        "links": {
+                            "maps": {
+                                "google": "https://www.google.de/maps/place/47.384750+8.516480",
+                                "openstreetmap": "https://www.openstreetmap.org/?lat=47.384750&lon=8.516480&mlat=47.384750&mlon=8.516480&zoom=14&layers=M"
+                            }
+                        },
+                        "properties": {
+                            "elevation": {
+                                "value": 408,
+                                "unit": "m",
+                                "value-formatted": "408 m"
+                            }
+                        }
+                    },
+                    {
+                        "geoname-id": 6946266,
+                        "name": "Bahnhofstraße",
+                        "updated-at": "2023-08-21T23:08:49+00:00",
+                        "coordinate": {
+                            "latitude": {
+                                "decimal": 47.3716,
+                                "dms": "47°22′17.76″N"
+                            },
+                            "longitude": {
+                                "decimal": 8.53859,
+                                "dms": "8°32′18.924″E"
+                            },
+                            "srid": 4326,
+                            "distance": {
+                                "meters": {
+                                    "value": 2957.4,
+                                    "unit": "m",
+                                    "value-formatted": "2.957,4 m"
+                                },
+                                "kilometers": {
+                                    "value": 2.957,
+                                    "unit": "km",
+                                    "value-formatted": "2,957 km"
+                                }
+                            },
+                            "direction": {
+                                "degree": 82.72,
+                                "cardinal-direction": "E",
+                                "cardinal-direction-translated": "East"
+                            }
+                        },
+                        "feature": {
+                            "code": "RD",
+                            "code-name": "road"
+                        },
+                        "links": {
+                            "wikipedia": {
+                                "this": "https://en.wikipedia.org/wiki/Bahnhofstrasse"
+                            },
+                            "maps": {
+                                "google": "https://www.google.de/maps/place/47.371600+8.538590",
+                                "openstreetmap": "https://www.openstreetmap.org/?lat=47.371600&lon=8.538590&mlat=47.371600&mlon=8.538590&zoom=14&layers=M"
+                            }
+                        },
+                        "properties": {
+                            "elevation": {
+                                "value": 416,
+                                "unit": "m",
+                                "value-formatted": "416 m"
+                            }
+                        }
+                    },
+                    {
+                        "geoname-id": 6252013,
+                        "name": "Üetlibergtunnel",
+                        "updated-at": "2023-08-21T23:08:31+00:00",
+                        "coordinate": {
+                            "latitude": {
+                                "decimal": 47.34993,
+                                "dms": "47°20′59.748″N"
+                            },
+                            "longitude": {
+                                "decimal": 8.47308,
+                                "dms": "8°28′23.088″E"
+                            },
+                            "srid": 4326,
+                            "distance": {
+                                "meters": {
+                                    "value": 2752.6,
+                                    "unit": "m",
+                                    "value-formatted": "2.752,6 m"
+                                },
+                                "kilometers": {
+                                    "value": 2.753,
+                                    "unit": "km",
+                                    "value-formatted": "2,753 km"
+                                }
+                            },
+                            "direction": {
+                                "degree": -121.88,
+                                "cardinal-direction": "SW",
+                                "cardinal-direction-translated": "South-West"
+                            }
+                        },
+                        "feature": {
+                            "code": "TNL",
+                            "code-name": "tunnel"
+                        },
+                        "links": {
+                            "maps": {
+                                "google": "https://www.google.de/maps/place/47.349930+8.473080",
+                                "openstreetmap": "https://www.openstreetmap.org/?lat=47.349930&lon=8.473080&mlat=47.349930&mlon=8.473080&zoom=14&layers=M"
+                            }
+                        },
+                        "properties": {
+                            "elevation": {
+                                "value": 531,
+                                "unit": "m",
+                                "value-formatted": "531 m"
+                            }
+                        }
+                    },
+                    {
+                        "geoname-id": 7911071,
+                        "name": "Zürich Käferbergbrücke",
+                        "updated-at": "2023-08-21T23:09:01+00:00",
+                        "coordinate": {
+                            "latitude": {
+                                "decimal": 47.39186,
+                                "dms": "47°23′30.696″N"
+                            },
+                            "longitude": {
+                                "decimal": 8.51163,
+                                "dms": "8°30′41.868″E"
+                            },
+                            "srid": 4326,
+                            "distance": {
+                                "meters": {
+                                    "value": 2934.7,
+                                    "unit": "m",
+                                    "value-formatted": "2.934,7 m"
+                                },
+                                "kilometers": {
+                                    "value": 2.935,
+                                    "unit": "km",
+                                    "value-formatted": "2,935 km"
+                                }
+                            },
+                            "direction": {
+                                "degree": 24.78,
+                                "cardinal-direction": "NE",
+                                "cardinal-direction-translated": "North-East"
+                            }
+                        },
+                        "feature": {
+                            "code": "RR",
+                            "code-name": "railroad"
+                        },
+                        "links": {
+                            "maps": {
+                                "google": "https://www.google.de/maps/place/47.391860+8.511630",
+                                "openstreetmap": "https://www.openstreetmap.org/?lat=47.391860&lon=8.511630&mlat=47.391860&mlon=8.511630&zoom=14&layers=M"
+                            }
+                        },
+                        "properties": {
+                            "elevation": {
+                                "value": 407,
+                                "unit": "m",
+                                "value-formatted": "407 m"
+                            }
+                        }
+                    },
+                    {
+                        "geoname-id": 7931969,
+                        "name": "Zürich (Dammweg)",
+                        "updated-at": "2023-08-21T23:09:01+00:00",
+                        "coordinate": {
+                            "latitude": {
+                                "decimal": 47.38835,
+                                "dms": "47°23′18.06″N"
+                            },
+                            "longitude": {
+                                "decimal": 8.52613,
+                                "dms": "8°31′34.068″E"
+                            },
+                            "srid": 4326,
+                            "distance": {
+                                "meters": {
+                                    "value": 3111.7,
+                                    "unit": "m",
+                                    "value-formatted": "3.111,7 m"
+                                },
+                                "kilometers": {
+                                    "value": 3.112,
+                                    "unit": "km",
+                                    "value-formatted": "3,112 km"
+                                }
+                            },
+                            "direction": {
+                                "degree": 50.32,
+                                "cardinal-direction": "NE",
+                                "cardinal-direction-translated": "North-East"
+                            }
+                        },
+                        "feature": {
+                            "code": "RR",
+                            "code-name": "railroad"
+                        },
+                        "links": {
+                            "maps": {
+                                "google": "https://www.google.de/maps/place/47.388350+8.526130",
+                                "openstreetmap": "https://www.openstreetmap.org/?lat=47.388350&lon=8.526130&mlat=47.388350&mlon=8.526130&zoom=14&layers=M"
+                            }
+                        },
+                        "properties": {
+                            "elevation": {
+                                "value": 409,
+                                "unit": "m",
+                                "value-formatted": "409 m"
+                            }
+                        }
+                    },
+                    {
+                        "geoname-id": 7911072,
+                        "name": "Zürich - Mülligen",
+                        "updated-at": "2023-08-21T23:09:01+00:00",
+                        "coordinate": {
+                            "latitude": {
+                                "decimal": 47.39421,
+                                "dms": "47°23′39.156″N"
+                            },
+                            "longitude": {
+                                "decimal": 8.47684,
+                                "dms": "8°28′36.624″E"
+                            },
+                            "srid": 4326,
+                            "distance": {
+                                "meters": {
+                                    "value": 3524,
+                                    "unit": "m",
+                                    "value-formatted": "3.524 m"
+                                },
+                                "kilometers": {
+                                    "value": 3.524,
+                                    "unit": "km",
+                                    "value-formatted": "3,524 km"
+                                }
+                            },
+                            "direction": {
+                                "degree": -40.06,
+                                "cardinal-direction": "NW",
+                                "cardinal-direction-translated": "North-West"
+                            }
+                        },
+                        "feature": {
+                            "code": "RR",
+                            "code-name": "railroad"
+                        },
+                        "links": {
+                            "maps": {
+                                "google": "https://www.google.de/maps/place/47.394210+8.476840",
+                                "openstreetmap": "https://www.openstreetmap.org/?lat=47.394210&lon=8.476840&mlat=47.394210&mlon=8.476840&zoom=14&layers=M"
+                            }
+                        },
+                        "properties": {
+                            "elevation": {
+                                "value": 395,
+                                "unit": "m",
+                                "value-formatted": "395 m"
+                            }
+                        }
+                    },
+                    {
+                        "geoname-id": 6252012,
+                        "name": "Fildern",
+                        "updated-at": "2023-08-21T23:08:31+00:00",
+                        "coordinate": {
+                            "latitude": {
+                                "decimal": 47.34103,
+                                "dms": "47°20′27.708″N"
+                            },
+                            "longitude": {
+                                "decimal": 8.45857,
+                                "dms": "8°27′30.852″E"
+                            },
+                            "srid": 4326,
+                            "distance": {
+                                "meters": {
+                                    "value": 4227.2,
+                                    "unit": "m",
+                                    "value-formatted": "4.227,2 m"
+                                },
+                                "kilometers": {
+                                    "value": 4.227,
+                                    "unit": "km",
+                                    "value-formatted": "4,227 km"
+                                }
+                            },
+                            "direction": {
+                                "degree": -121.75,
+                                "cardinal-direction": "SW",
+                                "cardinal-direction-translated": "South-West"
+                            }
+                        },
+                        "feature": {
+                            "code": "RDJCT",
+                            "code-name": "road junction"
+                        },
+                        "links": {
+                            "maps": {
+                                "google": "https://www.google.de/maps/place/47.341030+8.458570",
+                                "openstreetmap": "https://www.openstreetmap.org/?lat=47.341030&lon=8.458570&mlat=47.341030&mlon=8.458570&zoom=14&layers=M"
+                            }
+                        },
+                        "properties": {
+                            "elevation": {
+                                "value": 528,
+                                "unit": "m",
+                                "value-formatted": "528 m"
+                            }
+                        }
+                    }
+                ]
+            },
+            "S": {
+                "config": {
+                    "distance-meter": 10000,
+                    "limit": 10
+                },
+                "feature": {
+                    "class": "S",
+                    "class-name": "Orte, Gebäude, Betriebe, etc."
+                },
+                "places": [
+                    {
+                        "geoname-id": 12470287,
+                        "name": "Zürich-Schweighof",
+                        "updated-at": "2023-08-21T23:10:34+00:00",
+                        "coordinate": {
+                            "latitude": {
+                                "decimal": 47.36499,
+                                "dms": "47°21′53.964″N"
+                            },
+                            "longitude": {
+                                "decimal": 8.50317,
+                                "dms": "8°30′11.412″E"
+                            },
+                            "srid": 4326,
+                            "distance": {
+                                "meters": {
+                                    "value": 303.1,
+                                    "unit": "m",
+                                    "value-formatted": "303,1 m"
+                                },
+                                "kilometers": {
+                                    "value": 0.303,
+                                    "unit": "km",
+                                    "value-formatted": "0,303 km"
+                                }
+                            },
+                            "direction": {
+                                "degree": 117.92,
+                                "cardinal-direction": "SE",
+                                "cardinal-direction-translated": "South-East"
+                            }
+                        },
+                        "feature": {
+                            "code": "RSTP",
+                            "code-name": "Bahnstation"
+                        },
+                        "links": {
+                            "maps": {
+                                "google": "https://www.google.de/maps/place/47.364990+8.503170",
+                                "openstreetmap": "https://www.openstreetmap.org/?lat=47.364990&lon=8.503170&mlat=47.364990&mlon=8.503170&zoom=14&layers=M"
+                            }
+                        },
+                        "properties": {
+                            "elevation": {
+                                "value": 435,
+                                "unit": "m",
+                                "value-formatted": "435 m"
+                            }
+                        }
+                    },
+                    {
+                        "geoname-id": 10398531,
+                        "name": "Zürich, Friesenbergstrasse",
+                        "updated-at": "2023-08-21T23:09:34+00:00",
+                        "coordinate": {
+                            "latitude": {
+                                "decimal": 47.36216,
+                                "dms": "47°21′43.776″N"
+                            },
+                            "longitude": {
+                                "decimal": 8.50499,
+                                "dms": "8°30′17.964″E"
+                            },
+                            "srid": 4326,
+                            "distance": {
+                                "meters": {
+                                    "value": 626.7,
+                                    "unit": "m",
+                                    "value-formatted": "626,7 m"
+                                },
+                                "kilometers": {
+                                    "value": 0.627,
+                                    "unit": "km",
+                                    "value-formatted": "0,627 km"
+                                }
+                            },
+                            "direction": {
+                                "degree": 132.11,
+                                "cardinal-direction": "SE",
+                                "cardinal-direction-translated": "South-East"
+                            }
+                        },
+                        "feature": {
+                            "code": "BUSTP",
+                            "code-name": "Bushaltestelle"
+                        },
+                        "links": {
+                            "maps": {
+                                "google": "https://www.google.de/maps/place/47.362160+8.504990",
+                                "openstreetmap": "https://www.openstreetmap.org/?lat=47.362160&lon=8.504990&mlat=47.362160&mlon=8.504990&zoom=14&layers=M"
+                            }
+                        },
+                        "properties": {
+                            "elevation": {
+                                "value": 465,
+                                "unit": "m",
+                                "value-formatted": "465 m"
+                            }
+                        }
+                    },
+                    {
+                        "geoname-id": 10396014,
+                        "name": "Zürich, Friesenberghalde",
+                        "updated-at": "2023-08-21T23:09:32+00:00",
+                        "coordinate": {
+                            "latitude": {
+                                "decimal": 47.36125,
+                                "dms": "47°21′40.5″N"
+                            },
+                            "longitude": {
+                                "decimal": 8.50243,
+                                "dms": "8°30′8.748″E"
+                            },
+                            "srid": 4326,
+                            "distance": {
+                                "meters": {
+                                    "value": 629.9,
+                                    "unit": "m",
+                                    "value-formatted": "629,9 m"
+                                },
+                                "kilometers": {
+                                    "value": 0.63,
+                                    "unit": "km",
+                                    "value-formatted": "0,63 km"
+                                }
+                            },
+                            "direction": {
+                                "degree": 155.85,
+                                "cardinal-direction": "SE",
+                                "cardinal-direction-translated": "South-East"
+                            }
+                        },
+                        "feature": {
+                            "code": "BUSTP",
+                            "code-name": "Bushaltestelle"
+                        },
+                        "links": {
+                            "maps": {
+                                "google": "https://www.google.de/maps/place/47.361250+8.502430",
+                                "openstreetmap": "https://www.openstreetmap.org/?lat=47.361250&lon=8.502430&mlat=47.361250&mlon=8.502430&zoom=14&layers=M"
+                            }
+                        },
+                        "properties": {
+                            "elevation": {
+                                "value": 481,
+                                "unit": "m",
+                                "value-formatted": "481 m"
+                            }
+                        }
+                    },
+                    {
+                        "geoname-id": 10383495,
+                        "name": "Zürich, Friesenberg",
+                        "updated-at": "2023-08-21T23:09:07+00:00",
+                        "coordinate": {
+                            "latitude": {
+                                "decimal": 47.36451,
+                                "dms": "47°21′52.236″N"
+                            },
+                            "longitude": {
+                                "decimal": 8.50805,
+                                "dms": "8°30′28.98″E"
+                            },
+                            "srid": 4326,
+                            "distance": {
+                                "meters": {
+                                    "value": 652.1,
+                                    "unit": "m",
+                                    "value-formatted": "652,1 m"
+                                },
+                                "kilometers": {
+                                    "value": 0.652,
+                                    "unit": "km",
+                                    "value-formatted": "0,652 km"
+                                }
+                            },
+                            "direction": {
+                                "degree": 105.02,
+                                "cardinal-direction": "E",
+                                "cardinal-direction-translated": "East"
+                            }
+                        },
+                        "feature": {
+                            "code": "BUSTP",
+                            "code-name": "Bushaltestelle"
+                        },
+                        "links": {
+                            "maps": {
+                                "google": "https://www.google.de/maps/place/47.364510+8.508050",
+                                "openstreetmap": "https://www.openstreetmap.org/?lat=47.364510&lon=8.508050&mlat=47.364510&mlon=8.508050&zoom=14&layers=M"
+                            }
+                        },
+                        "properties": {
+                            "elevation": {
+                                "value": 440,
+                                "unit": "m",
+                                "value-formatted": "440 m"
+                            }
+                        }
+                    },
+                    {
+                        "geoname-id": 6469194,
+                        "name": "Atlantis Guesthouse",
+                        "updated-at": "2023-08-21T23:08:44+00:00",
+                        "coordinate": {
+                            "latitude": {
+                                "decimal": 47.367,
+                                "dms": "47°22′1.2″N"
+                            },
+                            "longitude": {
+                                "decimal": 8.507,
+                                "dms": "8°30′25.2″E"
+                            },
+                            "srid": 4326,
+                            "distance": {
+                                "meters": {
+                                    "value": 528.5,
+                                    "unit": "m",
+                                    "value-formatted": "528,5 m"
+                                },
+                                "kilometers": {
+                                    "value": 0.528,
+                                    "unit": "km",
+                                    "value-formatted": "0,528 km"
+                                }
+                            },
+                            "direction": {
+                                "degree": 87.3,
+                                "cardinal-direction": "E",
+                                "cardinal-direction-translated": "East"
+                            }
+                        },
+                        "feature": {
+                            "code": "HTL",
+                            "code-name": "Hotel"
+                        },
+                        "links": {
+                            "maps": {
+                                "google": "https://www.google.de/maps/place/47.367000+8.507000",
+                                "openstreetmap": "https://www.openstreetmap.org/?lat=47.367000&lon=8.507000&mlat=47.367000&mlon=8.507000&zoom=14&layers=M"
+                            }
+                        },
+                        "properties": {
+                            "elevation": {
+                                "value": 439,
+                                "unit": "m",
+                                "value-formatted": "439 m"
+                            }
+                        }
+                    },
+                    {
+                        "geoname-id": 9781553,
+                        "name": "Guests House",
+                        "updated-at": "2023-08-21T23:09:02+00:00",
+                        "coordinate": {
+                            "latitude": {
+                                "decimal": 47.367,
+                                "dms": "47°22′1.2″N"
+                            },
+                            "longitude": {
+                                "decimal": 8.507,
+                                "dms": "8°30′25.2″E"
+                            },
+                            "srid": 4326,
+                            "distance": {
+                                "meters": {
+                                    "value": 528.5,
+                                    "unit": "m",
+                                    "value-formatted": "528,5 m"
+                                },
+                                "kilometers": {
+                                    "value": 0.528,
+                                    "unit": "km",
+                                    "value-formatted": "0,528 km"
+                                }
+                            },
+                            "direction": {
+                                "degree": 87.3,
+                                "cardinal-direction": "E",
+                                "cardinal-direction-translated": "East"
+                            }
+                        },
+                        "feature": {
+                            "code": "HTL",
+                            "code-name": "Hotel"
+                        },
+                        "links": {
+                            "maps": {
+                                "google": "https://www.google.de/maps/place/47.367000+8.507000",
+                                "openstreetmap": "https://www.openstreetmap.org/?lat=47.367000&lon=8.507000&mlat=47.367000&mlon=8.507000&zoom=14&layers=M"
+                            }
+                        },
+                        "properties": {
+                            "elevation": {
+                                "value": 439,
+                                "unit": "m",
+                                "value-formatted": "439 m"
+                            }
+                        }
+                    },
+                    {
+                        "geoname-id": 10381758,
+                        "name": "Zürich, Im Hagacker",
+                        "updated-at": "2023-08-21T23:09:06+00:00",
+                        "coordinate": {
+                            "latitude": {
+                                "decimal": 47.35959,
+                                "dms": "47°21′34.524″N"
+                            },
+                            "longitude": {
+                                "decimal": 8.50742,
+                                "dms": "8°30′26.712″E"
+                            },
+                            "srid": 4326,
+                            "distance": {
+                                "meters": {
+                                    "value": 965.5,
+                                    "unit": "m",
+                                    "value-formatted": "965,5 m"
+                                },
+                                "kilometers": {
+                                    "value": 0.965,
+                                    "unit": "km",
+                                    "value-formatted": "0,965 km"
+                                }
+                            },
+                            "direction": {
+                                "degree": 133.66,
+                                "cardinal-direction": "SE",
+                                "cardinal-direction-translated": "South-East"
+                            }
+                        },
+                        "feature": {
+                            "code": "BUSTP",
+                            "code-name": "Bushaltestelle"
+                        },
+                        "links": {
+                            "maps": {
+                                "google": "https://www.google.de/maps/place/47.359590+8.507420",
+                                "openstreetmap": "https://www.openstreetmap.org/?lat=47.359590&lon=8.507420&mlat=47.359590&mlon=8.507420&zoom=14&layers=M"
+                            }
+                        },
+                        "properties": {
+                            "elevation": {
+                                "value": 468,
+                                "unit": "m",
+                                "value-formatted": "468 m"
+                            }
+                        }
+                    },
+                    {
+                        "geoname-id": 6469601,
+                        "name": "Minotel Atlantis Guesthouse",
+                        "updated-at": "2023-08-21T23:08:44+00:00",
+                        "coordinate": {
+                            "latitude": {
+                                "decimal": 47.36412,
+                                "dms": "47°21′50.832″N"
+                            },
+                            "longitude": {
+                                "decimal": 8.49725,
+                                "dms": "8°29′50.1″E"
+                            },
+                            "srid": 4326,
+                            "distance": {
+                                "meters": {
+                                    "value": 351.1,
+                                    "unit": "m",
+                                    "value-formatted": "351,1 m"
+                                },
+                                "kilometers": {
+                                    "value": 0.351,
+                                    "unit": "km",
+                                    "value-formatted": "0,351 km"
+                                }
+                            },
+                            "direction": {
+                                "degree": -132.84,
+                                "cardinal-direction": "SW",
+                                "cardinal-direction-translated": "South-West"
+                            }
+                        },
+                        "feature": {
+                            "code": "HTL",
+                            "code-name": "Hotel"
+                        },
+                        "links": {
+                            "maps": {
+                                "google": "https://www.google.de/maps/place/47.364120+8.497250",
+                                "openstreetmap": "https://www.openstreetmap.org/?lat=47.364120&lon=8.497250&mlat=47.364120&mlon=8.497250&zoom=14&layers=M"
+                            }
+                        },
+                        "properties": {
+                            "elevation": {
+                                "value": 481,
+                                "unit": "m",
+                                "value-formatted": "481 m"
+                            }
+                        }
+                    },
+                    {
+                        "geoname-id": 9781980,
+                        "name": "The Guests' House Hotel",
+                        "updated-at": "2023-08-21T23:09:03+00:00",
+                        "coordinate": {
+                            "latitude": {
+                                "decimal": 47.36427,
+                                "dms": "47°21′51.372″N"
+                            },
+                            "longitude": {
+                                "decimal": 8.49693,
+                                "dms": "8°29′48.948″E"
+                            },
+                            "srid": 4326,
+                            "distance": {
+                                "meters": {
+                                    "value": 353.1,
+                                    "unit": "m",
+                                    "value-formatted": "353,1 m"
+                                },
+                                "kilometers": {
+                                    "value": 0.353,
+                                    "unit": "km",
+                                    "value-formatted": "0,353 km"
+                                }
+                            },
+                            "direction": {
+                                "degree": -128.02,
+                                "cardinal-direction": "SW",
+                                "cardinal-direction-translated": "South-West"
+                            }
+                        },
+                        "feature": {
+                            "code": "HTL",
+                            "code-name": "Hotel"
+                        },
+                        "links": {
+                            "maps": {
+                                "google": "https://www.google.de/maps/place/47.364270+8.496930",
+                                "openstreetmap": "https://www.openstreetmap.org/?lat=47.364270&lon=8.496930&mlat=47.364270&mlon=8.496930&zoom=14&layers=M"
+                            }
+                        },
+                        "properties": {
+                            "elevation": {
+                                "value": 484,
+                                "unit": "m",
+                                "value-formatted": "484 m"
+                            }
+                        }
+                    },
+                    {
+                        "geoname-id": 10392091,
+                        "name": "Zürich, Binz Center",
+                        "updated-at": "2023-08-21T23:09:21+00:00",
+                        "coordinate": {
+                            "latitude": {
+                                "decimal": 47.36195,
+                                "dms": "47°21′43.02″N"
+                            },
+                            "longitude": {
+                                "decimal": 8.51106,
+                                "dms": "8°30′39.816″E"
+                            },
+                            "srid": 4326,
+                            "distance": {
+                                "meters": {
+                                    "value": 984.6,
+                                    "unit": "m",
+                                    "value-formatted": "984,6 m"
+                                },
+                                "kilometers": {
+                                    "value": 0.985,
+                                    "unit": "km",
+                                    "value-formatted": "0,985 km"
+                                }
+                            },
+                            "direction": {
+                                "degree": 113.11,
+                                "cardinal-direction": "SE",
+                                "cardinal-direction-translated": "South-East"
+                            }
+                        },
+                        "feature": {
+                            "code": "BUSTP",
+                            "code-name": "Bushaltestelle"
+                        },
+                        "links": {
+                            "maps": {
+                                "google": "https://www.google.de/maps/place/47.361950+8.511060",
+                                "openstreetmap": "https://www.openstreetmap.org/?lat=47.361950&lon=8.511060&mlat=47.361950&mlon=8.511060&zoom=14&layers=M"
+                            }
+                        },
+                        "properties": {
+                            "elevation": {
+                                "value": 434,
+                                "unit": "m",
+                                "value-formatted": "434 m"
+                            }
+                        }
+                    }
+                ]
+            },
+            "T": {
+                "config": {
+                    "distance-meter": 10000,
+                    "limit": 10
+                },
+                "feature": {
+                    "class": "T",
+                    "class-name": "Berge, Hügel, Felsen, etc."
+                },
+                "places": [
+                    {
+                        "geoname-id": 11998077,
+                        "name": "Bernegg",
+                        "updated-at": "2023-08-21T23:10:24+00:00",
+                        "coordinate": {
+                            "latitude": {
+                                "decimal": 47.34844,
+                                "dms": "47°20′54.384″N"
+                            },
+                            "longitude": {
+                                "decimal": 8.50288,
+                                "dms": "8°30′10.368″E"
+                            },
+                            "srid": 4326,
+                            "distance": {
+                                "meters": {
+                                    "value": 2038.7,
+                                    "unit": "m",
+                                    "value-formatted": "2.038,7 m"
+                                },
+                                "kilometers": {
+                                    "value": 2.039,
+                                    "unit": "km",
+                                    "value-formatted": "2,039 km"
+                                }
+                            },
+                            "direction": {
+                                "degree": 171.02,
+                                "cardinal-direction": "S",
+                                "cardinal-direction-translated": "South"
+                            }
+                        },
+                        "feature": {
+                            "code": "RDGE",
+                            "code-name": "Bergzug / Bergzüge"
+                        },
+                        "links": {
+                            "maps": {
+                                "google": "https://www.google.de/maps/place/47.348440+8.502880",
+                                "openstreetmap": "https://www.openstreetmap.org/?lat=47.348440&lon=8.502880&mlat=47.348440&mlon=8.502880&zoom=14&layers=M"
+                            }
+                        },
+                        "properties": {
+                            "elevation": {
+                                "value": 652,
+                                "unit": "m",
+                                "value-formatted": "652 m"
+                            }
+                        }
+                    },
+                    {
+                        "geoname-id": 2658214,
+                        "name": "Uetliberg",
+                        "updated-at": "2023-08-21T23:08:27+00:00",
+                        "coordinate": {
+                            "latitude": {
+                                "decimal": 47.34946,
+                                "dms": "47°20′58.056″N"
+                            },
+                            "longitude": {
+                                "decimal": 8.49197,
+                                "dms": "8°29′31.092″E"
+                            },
+                            "srid": 4326,
+                            "distance": {
+                                "meters": {
+                                    "value": 2007,
+                                    "unit": "m",
+                                    "value-formatted": "2.007 m"
+                                },
+                                "kilometers": {
+                                    "value": 2.007,
+                                    "unit": "km",
+                                    "value-formatted": "2,007 km"
+                                }
+                            },
+                            "direction": {
+                                "degree": -154.99,
+                                "cardinal-direction": "SW",
+                                "cardinal-direction-translated": "South-West"
+                            }
+                        },
+                        "feature": {
+                            "code": "MT",
+                            "code-name": "Berg"
+                        },
+                        "links": {
+                            "wikipedia": {
+                                "this": "https://en.wikipedia.org/wiki/Uetliberg"
+                            },
+                            "maps": {
+                                "google": "https://www.google.de/maps/place/47.349460+8.491970",
+                                "openstreetmap": "https://www.openstreetmap.org/?lat=47.349460&lon=8.491970&mlat=47.349460&mlon=8.491970&zoom=14&layers=M"
+                            }
+                        },
+                        "properties": {
+                            "elevation": {
+                                "value": 848,
+                                "unit": "m",
+                                "value-formatted": "848 m"
+                            }
+                        }
+                    },
+                    {
+                        "geoname-id": 11999656,
+                        "name": "Juchegg",
+                        "updated-at": "2023-08-21T23:10:32+00:00",
+                        "coordinate": {
+                            "latitude": {
+                                "decimal": 47.34625,
+                                "dms": "47°20′46.5″N"
+                            },
+                            "longitude": {
+                                "decimal": 8.50403,
+                                "dms": "8°30′14.508″E"
+                            },
+                            "srid": 4326,
+                            "distance": {
+                                "meters": {
+                                    "value": 2290.8,
+                                    "unit": "m",
+                                    "value-formatted": "2.290,8 m"
+                                },
+                                "kilometers": {
+                                    "value": 2.291,
+                                    "unit": "km",
+                                    "value-formatted": "2,291 km"
+                                }
+                            },
+                            "direction": {
+                                "degree": 168.84,
+                                "cardinal-direction": "S",
+                                "cardinal-direction-translated": "South"
+                            }
+                        },
+                        "feature": {
+                            "code": "RDGE",
+                            "code-name": "Bergzug / Bergzüge"
+                        },
+                        "links": {
+                            "maps": {
+                                "google": "https://www.google.de/maps/place/47.346250+8.504030",
+                                "openstreetmap": "https://www.openstreetmap.org/?lat=47.346250&lon=8.504030&mlat=47.346250&mlon=8.504030&zoom=14&layers=M"
+                            }
+                        },
+                        "properties": {
+                            "elevation": {
+                                "value": 610,
+                                "unit": "m",
+                                "value-formatted": "610 m"
+                            }
+                        }
+                    },
+                    {
+                        "geoname-id": 11999687,
+                        "name": "Höckleregg",
+                        "updated-at": "2023-08-21T23:10:32+00:00",
+                        "coordinate": {
+                            "latitude": {
+                                "decimal": 47.34261,
+                                "dms": "47°20′33.396″N"
+                            },
+                            "longitude": {
+                                "decimal": 8.50698,
+                                "dms": "8°30′25.128″E"
+                            },
+                            "srid": 4326,
+                            "distance": {
+                                "meters": {
+                                    "value": 2726.5,
+                                    "unit": "m",
+                                    "value-formatted": "2.726,5 m"
+                                },
+                                "kilometers": {
+                                    "value": 2.727,
+                                    "unit": "km",
+                                    "value-formatted": "2,727 km"
+                                }
+                            },
+                            "direction": {
+                                "degree": 163.82,
+                                "cardinal-direction": "S",
+                                "cardinal-direction-translated": "South"
+                            }
+                        },
+                        "feature": {
+                            "code": "RDGE",
+                            "code-name": "Bergzug / Bergzüge"
+                        },
+                        "links": {
+                            "maps": {
+                                "google": "https://www.google.de/maps/place/47.342610+8.506980",
+                                "openstreetmap": "https://www.openstreetmap.org/?lat=47.342610&lon=8.506980&mlat=47.342610&mlon=8.506980&zoom=14&layers=M"
+                            }
+                        },
+                        "properties": {
+                            "elevation": {
+                                "value": 609,
+                                "unit": "m",
+                                "value-formatted": "609 m"
+                            }
+                        }
+                    },
+                    {
+                        "geoname-id": 12002886,
+                        "name": "Strandbad Mythenquai",
+                        "updated-at": "2023-08-21T23:10:33+00:00",
+                        "coordinate": {
+                            "latitude": {
+                                "decimal": 47.35364,
+                                "dms": "47°21′13.104″N"
+                            },
+                            "longitude": {
+                                "decimal": 8.53565,
+                                "dms": "8°32′8.34″E"
+                            },
+                            "srid": 4326,
+                            "distance": {
+                                "meters": {
+                                    "value": 3051.2,
+                                    "unit": "m",
+                                    "value-formatted": "3.051,2 m"
+                                },
+                                "kilometers": {
+                                    "value": 3.051,
+                                    "unit": "km",
+                                    "value-formatted": "3,051 km"
+                                }
+                            },
+                            "direction": {
+                                "degree": 110.08,
+                                "cardinal-direction": "E",
+                                "cardinal-direction-translated": "East"
+                            }
+                        },
+                        "feature": {
+                            "code": "SHOR",
+                            "code-name": "Ufer / Strand"
+                        },
+                        "links": {
+                            "maps": {
+                                "google": "https://www.google.de/maps/place/47.353640+8.535650",
+                                "openstreetmap": "https://www.openstreetmap.org/?lat=47.353640&lon=8.535650&mlat=47.353640&mlon=8.535650&zoom=14&layers=M"
+                            }
+                        },
+                        "properties": {
+                            "elevation": {
+                                "value": 402,
+                                "unit": "m",
+                                "value-formatted": "402 m"
+                            }
+                        }
+                    },
+                    {
+                        "geoname-id": 11903815,
+                        "name": "Saffa Insel",
+                        "updated-at": "2023-08-21T23:10:23+00:00",
+                        "coordinate": {
+                            "latitude": {
+                                "decimal": 47.34972,
+                                "dms": "47°20′58.992″N"
+                            },
+                            "longitude": {
+                                "decimal": 8.53661,
+                                "dms": "8°32′11.796″E"
+                            },
+                            "srid": 4326,
+                            "distance": {
+                                "meters": {
+                                    "value": 3340.2,
+                                    "unit": "m",
+                                    "value-formatted": "3.340,2 m"
+                                },
+                                "kilometers": {
+                                    "value": 3.34,
+                                    "unit": "km",
+                                    "value-formatted": "3,34 km"
+                                }
+                            },
+                            "direction": {
+                                "degree": 114.84,
+                                "cardinal-direction": "SE",
+                                "cardinal-direction-translated": "South-East"
+                            }
+                        },
+                        "feature": {
+                            "code": "ISL",
+                            "code-name": "Insel"
+                        },
+                        "links": {
+                            "maps": {
+                                "google": "https://www.google.de/maps/place/47.349720+8.536610",
+                                "openstreetmap": "https://www.openstreetmap.org/?lat=47.349720&lon=8.536610&mlat=47.349720&mlon=8.536610&zoom=14&layers=M"
+                            }
+                        },
+                        "properties": {
+                            "elevation": {
+                                "value": 400,
+                                "unit": "m",
+                                "value-formatted": "400 m"
+                            }
+                        }
+                    },
+                    {
+                        "geoname-id": 12003169,
+                        "name": "Seebad Utoquai",
+                        "updated-at": "2023-08-21T23:10:33+00:00",
+                        "coordinate": {
+                            "latitude": {
+                                "decimal": 47.36165,
+                                "dms": "47°21′41.94″N"
+                            },
+                            "longitude": {
+                                "decimal": 8.5466,
+                                "dms": "8°32′47.76″E"
+                            },
+                            "srid": 4326,
+                            "distance": {
+                                "meters": {
+                                    "value": 3553.9,
+                                    "unit": "m",
+                                    "value-formatted": "3.553,9 m"
+                                },
+                                "kilometers": {
+                                    "value": 3.554,
+                                    "unit": "km",
+                                    "value-formatted": "3,554 km"
+                                }
+                            },
+                            "direction": {
+                                "degree": 96.15,
+                                "cardinal-direction": "E",
+                                "cardinal-direction-translated": "East"
+                            }
+                        },
+                        "feature": {
+                            "code": "SHOR",
+                            "code-name": "Ufer / Strand"
+                        },
+                        "links": {
+                            "maps": {
+                                "google": "https://www.google.de/maps/place/47.361650+8.546600",
+                                "openstreetmap": "https://www.openstreetmap.org/?lat=47.361650&lon=8.546600&mlat=47.361650&mlon=8.546600&zoom=14&layers=M"
+                            }
+                        },
+                        "properties": {
+                            "elevation": {
+                                "value": 403,
+                                "unit": "m",
+                                "value-formatted": "403 m"
+                            }
+                        }
+                    },
+                    {
+                        "geoname-id": 12002855,
+                        "name": "Strandbad Wollishofen",
+                        "updated-at": "2023-08-21T23:10:33+00:00",
+                        "coordinate": {
+                            "latitude": {
+                                "decimal": 47.34115,
+                                "dms": "47°20′28.14″N"
+                            },
+                            "longitude": {
+                                "decimal": 8.53792,
+                                "dms": "8°32′16.512″E"
+                            },
+                            "srid": 4326,
+                            "distance": {
+                                "meters": {
+                                    "value": 4026.5,
+                                    "unit": "m",
+                                    "value-formatted": "4.026,5 m"
+                                },
+                                "kilometers": {
+                                    "value": 4.026,
+                                    "unit": "km",
+                                    "value-formatted": "4,026 km"
+                                }
+                            },
+                            "direction": {
+                                "degree": 123.94,
+                                "cardinal-direction": "SE",
+                                "cardinal-direction-translated": "South-East"
+                            }
+                        },
+                        "feature": {
+                            "code": "SHOR",
+                            "code-name": "Ufer / Strand"
+                        },
+                        "links": {
+                            "maps": {
+                                "google": "https://www.google.de/maps/place/47.341150+8.537920",
+                                "openstreetmap": "https://www.openstreetmap.org/?lat=47.341150&lon=8.537920&mlat=47.341150&mlon=8.537920&zoom=14&layers=M"
+                            }
+                        },
+                        "properties": {
+                            "elevation": {
+                                "value": 403,
+                                "unit": "m",
+                                "value-formatted": "403 m"
+                            }
+                        }
+                    },
+                    {
+                        "geoname-id": 12002866,
+                        "name": "Strandbad Tiefenbrunnen",
+                        "updated-at": "2023-08-21T23:10:33+00:00",
+                        "coordinate": {
+                            "latitude": {
+                                "decimal": 47.35223,
+                                "dms": "47°21′8.028″N"
+                            },
+                            "longitude": {
+                                "decimal": 8.55607,
+                                "dms": "8°33′21.852″E"
+                            },
+                            "srid": 4326,
+                            "distance": {
+                                "meters": {
+                                    "value": 4518.3,
+                                    "unit": "m",
+                                    "value-formatted": "4.518,3 m"
+                                },
+                                "kilometers": {
+                                    "value": 4.518,
+                                    "unit": "km",
+                                    "value-formatted": "4,518 km"
+                                }
+                            },
+                            "direction": {
+                                "degree": 104.44,
+                                "cardinal-direction": "E",
+                                "cardinal-direction-translated": "East"
+                            }
+                        },
+                        "feature": {
+                            "code": "SHOR",
+                            "code-name": "Ufer / Strand"
+                        },
+                        "links": {
+                            "maps": {
+                                "google": "https://www.google.de/maps/place/47.352230+8.556070",
+                                "openstreetmap": "https://www.openstreetmap.org/?lat=47.352230&lon=8.556070&mlat=47.352230&mlon=8.556070&zoom=14&layers=M"
+                            }
+                        },
+                        "properties": {
+                            "elevation": {
+                                "value": 408,
+                                "unit": "m",
+                                "value-formatted": "408 m"
+                            }
+                        }
+                    },
+                    {
+                        "geoname-id": 6269469,
+                        "name": "Werdinsel",
+                        "updated-at": "2023-08-21T23:08:31+00:00",
+                        "coordinate": {
+                            "latitude": {
+                                "decimal": 47.40015,
+                                "dms": "47°24′0.54″N"
+                            },
+                            "longitude": {
+                                "decimal": 8.48752,
+                                "dms": "8°29′15.072″E"
+                            },
+                            "srid": 4326,
+                            "distance": {
+                                "meters": {
+                                    "value": 3839.5,
+                                    "unit": "m",
+                                    "value-formatted": "3.839,5 m"
+                                },
+                                "kilometers": {
+                                    "value": 3.84,
+                                    "unit": "km",
+                                    "value-formatted": "3,84 km"
+                                }
+                            },
+                            "direction": {
+                                "degree": -20.44,
+                                "cardinal-direction": "N",
+                                "cardinal-direction-translated": "North"
+                            }
+                        },
+                        "feature": {
+                            "code": "ISL",
+                            "code-name": "Insel"
+                        },
+                        "links": {
+                            "wikipedia": {
+                                "this": "https://en.wikipedia.org/wiki/Werdinsel"
+                            },
+                            "maps": {
+                                "google": "https://www.google.de/maps/place/47.400150+8.487520",
+                                "openstreetmap": "https://www.openstreetmap.org/?lat=47.400150&lon=8.487520&mlat=47.400150&mlon=8.487520&zoom=14&layers=M"
+                            }
+                        },
+                        "properties": {
+                            "elevation": {
+                                "value": 395,
+                                "unit": "m",
+                                "value-formatted": "395 m"
+                            }
+                        }
+                    }
+                ]
+            },
+            "U": {
+                "config": {
+                    "distance-meter": 10000,
+                    "limit": 10
+                },
+                "feature": {
+                    "class": "U",
+                    "class-name": "Unterwasserwelt, etc."
+                },
+                "places": []
+            },
+            "V": {
+                "config": {
+                    "distance-meter": 15000,
+                    "limit": 10
+                },
+                "feature": {
+                    "class": "V",
+                    "class-name": "Wälder, Heidelandschaften, etc."
+                },
+                "places": []
+            }
+        }
     },
     "given": {
         "coordinate": {
             "raw": "47.36667 8.5",
             "parsed": {
-                "latitude": 47.36667,
-                "longitude": 8.5,
-                "latitudeDms": "47°22′0.012″N",
-                "longitudeDms": "8°30′0″E"
+                "latitude": {
+                    "decimal": 47.36667,
+                    "dms": "47°22′0.012″N"
+                },
+                "longitude": {
+                    "decimal": 8.5,
+                    "dms": "8°30′0″E"
+                }
             }
         },
         "language": {
@@ -97,8 +3634,9 @@
             }
         }
     },
-    "time-taken": "195ms",
-    "version": "0.1.24",
+    "time-taken": "657 ms",
+    "memory-taken": "52 MB",
+    "version": "0.1.25",
     "data-licence": {
         "full": "Creative Commons Attribution 4.0 License",
         "short": "CC-BY 4.0",

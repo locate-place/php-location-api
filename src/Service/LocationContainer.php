@@ -47,7 +47,13 @@ final class LocationContainer
 
     final public const TYPE_COUNTRY = 'country';
 
-
+    final public const ALLOWED_LOCATION_TYPES = [
+        self::TYPE_DISTRICT,
+        self::TYPE_BOROUGH,
+        self::TYPE_CITY,
+        self::TYPE_STATE,
+        self::TYPE_COUNTRY,
+    ];
 
     protected Location|null $district = null;
 

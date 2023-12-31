@@ -20,6 +20,15 @@ use App\ApiPlatform\OpenApiContext\Parameter;
 use App\ApiPlatform\Resource\Base\LocationBase;
 use App\ApiPlatform\Route\LocationRoute;
 use App\ApiPlatform\State\LocationProvider;
+use App\Constants\Key\KeyArray;
+use Ixnode\PhpException\ArrayType\ArrayKeyNotFoundException;
+use Ixnode\PhpException\Case\CaseInvalidException;
+use Ixnode\PhpException\File\FileNotFoundException;
+use Ixnode\PhpException\File\FileNotReadableException;
+use Ixnode\PhpException\Function\FunctionJsonEncodeException;
+use Ixnode\PhpException\Type\TypeInvalidException;
+use Ixnode\PhpNamingConventions\Exception\FunctionReplaceException;
+use JsonException;
 use Symfony\Component\Serializer\Annotation\Ignore;
 
 /**
@@ -72,18 +81,26 @@ class Location extends LocationBase
      * Returns the distance in meters.
      *
      * @return float|null
+     * @throws CaseInvalidException
+     * @throws FileNotFoundException
+     * @throws FileNotReadableException
+     * @throws FunctionJsonEncodeException
+     * @throws FunctionReplaceException
+     * @throws JsonException
+     * @throws TypeInvalidException
+     * @throws ArrayKeyNotFoundException
      */
     #[Ignore]
     public function getMeters(): ?float
     {
         $coordinate = $this->getCoordinate();
 
-        $distance = array_key_exists('distance', $coordinate) ? $coordinate['distance'] : null;
+        $path = [KeyArray::DISTANCE, KeyArray::METERS, KeyArray::VALUE];
 
-        if (is_null($distance)) {
+        if (!$coordinate->hasKey($path)) {
             return null;
         }
 
-        return $distance['meters'];
+        return $coordinate->getKeyFloat($path);
     }
 }

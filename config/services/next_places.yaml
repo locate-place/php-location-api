@@ -4,20 +4,24 @@ parameters:
         limit:
             default: 1
             feature_class:
-                H: 2
-                L: 2
-                R: 2
-                S: 2
-                T: 2
-                U: 2
-                V: 2
+                A: 10
+                H: 10
+                L: 10
+                P: 10
+                R: 10
+                S: 10
+                T: 10
+                U: 10
+                V: 10
             feature_code:
                 S.AIRP: 3 # Airports
         distance:
             default: null
             feature_class:
+                A: 10000
                 H: 10000
                 L: 10000
+                P: 10000
                 R: 10000
                 S: 10000
                 T: 10000

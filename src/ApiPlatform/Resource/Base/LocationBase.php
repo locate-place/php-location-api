@@ -13,7 +13,27 @@ declare(strict_types=1);
 
 namespace App\ApiPlatform\Resource\Base;
 
+use App\Constants\DB\FeatureClass;
+use App\Constants\Key\KeyArray;
+use App\Constants\Path\Path;
+use App\DataTypes\Base\DataType;
+use App\DataTypes\Coordinate;
+use App\DataTypes\Feature;
+use App\DataTypes\Links;
+use App\DataTypes\Locations;
+use App\DataTypes\NextPlaces;
+use App\DataTypes\Properties;
+use App\DataTypes\Timezone;
+use DateTimeImmutable;
 use Ixnode\PhpApiVersionBundle\ApiPlatform\Resource\Base\BasePublicResource;
+use Ixnode\PhpException\ArrayType\ArrayKeyNotFoundException;
+use Ixnode\PhpException\Case\CaseInvalidException;
+use Ixnode\PhpException\File\FileNotFoundException;
+use Ixnode\PhpException\File\FileNotReadableException;
+use Ixnode\PhpException\Function\FunctionJsonEncodeException;
+use Ixnode\PhpException\Type\TypeInvalidException;
+use Ixnode\PhpNamingConventions\Exception\FunctionReplaceException;
+use JsonException;
 use LogicException;
 use Symfony\Component\Serializer\Annotation\SerializedName;
 
@@ -27,41 +47,40 @@ use Symfony\Component\Serializer\Annotation\SerializedName;
 abstract class LocationBase extends BasePublicResource
 {
     #[SerializedName('geoname-id')]
-    protected int $geonameId;
+    private int $geonameId;
 
-    protected string $name;
+    #[SerializedName('name')]
+    private string $name;
 
-    /** @var array{class: string, class-name: string, code: string, code-name: string} $feature */
-    protected array $feature;
+    #[SerializedName('updated-at')]
+    private DateTimeImmutable $updatedAt;
 
-    /** @var array{latitude: float, longitude: float, srid: int, distance?: null|array{meters: float, kilometers: float}, direction?: null|array{degree: float, direction: string}} $coordinate */
-    protected array $coordinate;
 
-    /** @var array{timezone: string|null, country: string|null, current-time: string, offset: string, latitude: double, longitude: double} $timezone */
-    protected array $timezone;
+    #[SerializedName('properties')]
+    private Properties $properties;
 
-    /** @var array{
-     *      district-locality?: array{name: string|null, geoname-id: int|null}|null,
-     *      borough-locality?: array{name: string|null, geoname-id: int|null}|null,
-     *      city-municipality?: array{name: string|null, geoname-id: int|null}|null,
-     *      state?: array{name: string|null, geoname-id: int|null}|null,
-     *      country?: array{name: string|null, geoname-id: int|null}|null
-     *  } $location */
-    protected array $location;
 
-    /** @var array{
-     *      google?: string,
-     *      openstreetmap?: string,
-     *      wikipedia?: array<string, string>|null
-     *  }
-     */
-    protected array $link;
+    #[SerializedName('feature')]
+    private Feature $feature;
 
-    protected int $population;
 
-    protected int $elevation;
+    #[SerializedName('coordinate')]
+    private Coordinate $coordinate;
 
-    protected int $dem;
+
+    #[SerializedName('timezone')]
+    private Timezone $timezone;
+
+
+    #[SerializedName('links')]
+    private Links $links;
+
+
+    #[SerializedName('locations')]
+    private Locations $locations;
+
+    #[SerializedName('next-places')]
+    private NextPlaces $nextPlaces;
 
     /**
      * Gets the geoname ID.
@@ -110,11 +129,56 @@ abstract class LocationBase extends BasePublicResource
     }
 
     /**
+     * Gets the updated at date.
+     *
+     * @return DateTimeImmutable
+     */
+    public function getUpdatedAt(): DateTimeImmutable
+    {
+        return $this->updatedAt;
+    }
+
+    /**
+     * Sets the updated at date.
+     *
+     * @param DateTimeImmutable $updatedAt
+     * @return $this
+     */
+    public function setUpdatedAt(DateTimeImmutable $updatedAt): LocationBase
+    {
+        $this->updatedAt = $updatedAt;
+
+        return $this;
+    }
+
+    /**
+     * Gets the properties.
+     *
+     * @return Properties
+     */
+    public function getProperties(): Properties
+    {
+        return $this->properties;
+    }
+
+    /**
+     * Sets the properties.
+     *
+     * @param Properties $properties
+     * @return $this
+     */
+    public function setProperties(Properties $properties): LocationBase
+    {
+        $this->properties = $properties;
+        return $this;
+    }
+
+    /**
      * Gets the feature.
      *
-     * @return array{class: string, class-name: string, code: string, code-name: string}
+     * @return Feature
      */
-    public function getFeature(): array
+    public function getFeature(): Feature
     {
         return $this->feature;
     }
@@ -122,10 +186,10 @@ abstract class LocationBase extends BasePublicResource
     /**
      * Sets the feature.
      *
-     * @param array{class: string, class-name: string, code: string, code-name: string} $feature
+     * @param Feature $feature
      * @return self
      */
-    public function setFeature(array $feature): self
+    public function setFeature(Feature $feature): self
     {
         $this->feature = $feature;
 
@@ -135,9 +199,9 @@ abstract class LocationBase extends BasePublicResource
     /**
      * Gets the coordinate array.
      *
-     * @return array{latitude: float, longitude: float, srid: int, distance?: null|array{meters: float, kilometers: float}, direction?: null|array{degree: float, direction: string}}
+     * @return Coordinate
      */
-    public function getCoordinate(): array
+    public function getCoordinate(): Coordinate
     {
         return $this->coordinate;
     }
@@ -145,16 +209,10 @@ abstract class LocationBase extends BasePublicResource
     /**
      * Sets the coordinate array.
      *
-     * @param array{
-     *     latitude: float,
-     *     longitude: float,
-     *     srid: int,
-     *     distance?: null|array{meters: float, kilometers: float},
-     *     direction?: null|array{degree: float, direction: string},
-     * } $coordinate
+     * @param Coordinate $coordinate
      * @return self
      */
-    public function setCoordinate(array $coordinate): self
+    public function setCoordinate(Coordinate $coordinate): self
     {
         $this->coordinate = $coordinate;
 
@@ -162,18 +220,18 @@ abstract class LocationBase extends BasePublicResource
     }
 
     /**
-     * @return array{timezone: string|null, country: string|null, current-time: string, offset: string, latitude: double, longitude: double}
+     * @return Timezone
      */
-    public function getTimezone(): array
+    public function getTimezone(): Timezone
     {
         return $this->timezone;
     }
 
     /**
-     * @param array{timezone: string|null, country: string|null, current-time: string, offset: string, latitude: double, longitude: double} $timezone
+     * @param Timezone $timezone
      * @return self
      */
-    public function setTimezone(array $timezone): self
+    public function setTimezone(Timezone $timezone): self
     {
         $this->timezone = $timezone;
 
@@ -181,67 +239,24 @@ abstract class LocationBase extends BasePublicResource
     }
 
     /**
-     * Returns the location array.
-     *
-     * @return array{
-     *     district-locality?: array{name: string|null, geoname-id: int|null}|null,
-     *     borough-locality?: array{name: string|null, geoname-id: int|null}|null,
-     *     city-municipality?: array{name: string|null, geoname-id: int|null}|null,
-     *     state?: array{name: string|null, geoname-id: int|null}|null,
-     *     country?: array{name: string|null, geoname-id: int|null}|null
-     * }
-     */
-    public function getLocation(): array
-    {
-        return $this->location;
-    }
-
-    /**
-     * Sets the location array.
-     *
-     * @param array{
-     *     district-locality?: array{name: string|null, geoname-id: int|null}|null,
-     *     borough-locality?: array{name: string|null, geoname-id: int|null}|null,
-     *     city-municipality?: array{name: string|null, geoname-id: int|null}|null,
-     *     state?: array{name: string|null, geoname-id: int|null}|null,
-     *     country?: array{name: string|null, geoname-id: int|null}|null
-     * } $location
-     * @return self
-     */
-    public function setLocation(array $location): self
-    {
-        $this->location = $location;
-
-        return $this;
-    }
-
-    /**
      * Gets the link array.
      *
-     * @return array{
-     *     google?: string,
-     *     openstreetmap?: string,
-     *     wikipedia?: array<string, string>|null
-     * }
+     * @return Links
      */
-    public function getLink(): array
+    public function getLinks(): Links
     {
-        return $this->link;
+        return $this->links;
     }
 
     /**
      * Sets the link array.
      *
-     * @param array{
-     *     google?: string,
-     *     openstreetmap?: string,
-     *     wikipedia?: array<string, string>|null
-     * } $link
+     * @param Links $links
      * @return self
      */
-    public function setLink(array $link): self
+    public function setLinks(Links $links): self
     {
-        $this->link = $link;
+        $this->links = $links;
 
         return $this;
     }
@@ -251,9 +266,16 @@ abstract class LocationBase extends BasePublicResource
      *
      * @param string[]|string $path
      * @param string $value
+     * @param int|null $number
      * @return void
+     * @throws FileNotFoundException
+     * @throws FileNotReadableException
+     * @throws FunctionJsonEncodeException
+     * @throws FunctionReplaceException
+     * @throws JsonException
+     * @throws TypeInvalidException
      */
-    public function addLink(array|string $path, string $value): void
+    public function addLink(array|string $path, string $value, int|null $number = null): void
     {
         $path = is_string($path) ? [$path] : $path;
 
@@ -261,80 +283,176 @@ abstract class LocationBase extends BasePublicResource
             throw new LogicException('Path must contain at least one element');
         }
 
-        if (!isset($this->link)) {
-            $this->link = [];
+        if (!isset($this->links)) {
+            $this->links = new Links();
         }
 
-        $linkLoop = &$this->link;
+        $linkArray = $this->getLinks()->getArray();
+
+        $loop = &$linkArray;
+
         foreach ($path as $key) {
-            if (!is_array($linkLoop)) {
-                throw new LogicException('Link must be an array');
+            if (!is_array($loop)) {
+                throw new LogicException('Loop variable must be an array.');
             }
 
-            if (!array_key_exists($key, $linkLoop)) {
-                $linkLoop[$key] = [];
+            if (!array_key_exists($key, $loop)) {
+                $loop[$key] = [];
             }
 
-            $linkLoop = &$linkLoop[$key];
+            $loop = &$loop[$key];
         }
 
-        $linkLoop = $value;
+        match ($number) {
+            null => $loop = $value,
+            default => $loop[] = [
+                KeyArray::LINK => $value,
+                KeyArray::NUMBER => $number,
+            ],
+        };
+
+        $this->links = new Links($linkArray);
     }
 
     /**
-     * @return int
+     * Returns the Locations container.
+     *
+     * @return Locations
      */
-    public function getPopulation(): int
+    public function getLocations(): Locations
     {
-        return $this->population;
+        return $this->locations;
     }
 
     /**
-     * @param int $population
+     * Sets the Locations container.
+     *
+     * @param Locations $locations
      * @return self
      */
-    public function setPopulation(int $population): self
+    public function setLocations(Locations $locations): self
     {
-        $this->population = $population;
+        $this->locations = $locations;
 
         return $this;
     }
 
     /**
-     * @return int
+     * Returns the NextPlaces container.
+     *
+     * @return NextPlaces
      */
-    public function getElevation(): int
+    public function getNextPlaces(): NextPlaces
     {
-        return $this->elevation;
+        return $this->nextPlaces;
     }
 
     /**
-     * @param int $elevation
-     * @return self
+     * Sets the NextPlaces container.
+     *
+     * @param NextPlaces $nextPlaces
+     * @return $this
      */
-    public function setElevation(int $elevation): self
+    public function setNextPlaces(NextPlaces $nextPlaces): self
     {
-        $this->elevation = $elevation;
+        $this->nextPlaces = $nextPlaces;
 
         return $this;
     }
 
     /**
-     * @return int
+     * Sets all sub links to main part.
+     *
+     * @return void
+     * @throws FileNotFoundException
+     * @throws FileNotReadableException
+     * @throws FunctionJsonEncodeException
+     * @throws FunctionReplaceException
+     * @throws JsonException
+     * @throws TypeInvalidException
+     * @throws ArrayKeyNotFoundException
+     * @throws CaseInvalidException
      */
-    public function getDem(): int
+    public function setMainWikipediaLinks(): void
     {
-        return $this->dem;
+        /* Add wikipedia links from locations */
+        $this->addMainWikipediaLinks($this->getLocations(), [KeyArray::LOCATIONS]);
+
+        foreach (FeatureClass::FEATURE_CLASSES_ALL as $featureClass) {
+            $this->addMainWikipediaLinks(
+                $this->getNextPlaces(),
+                [KeyArray::NEXT_PLACES, $featureClass],
+                [$featureClass, KeyArray::PLACES]
+            );
+        }
     }
 
     /**
-     * @param int $dem
-     * @return self
+     * Adds all wikipedia links to the main links.
+     *
+     * @param DataType $dataType
+     * @param string|string[] $pathOutput
+     * @param int|string|array<int, mixed> $pathSource
+     * @return void
+     * @throws ArrayKeyNotFoundException
+     * @throws CaseInvalidException
+     * @throws FileNotFoundException
+     * @throws FileNotReadableException
+     * @throws FunctionJsonEncodeException
+     * @throws FunctionReplaceException
+     * @throws JsonException
+     * @throws TypeInvalidException
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+     * @SuppressWarnings(PHPMD.NPathComplexity)
      */
-    public function setDem(int $dem): self
+    private function addMainWikipediaLinks(
+        DataType $dataType,
+        string|array $pathOutput,
+        int|string|array $pathSource = [],
+    ): void
     {
-        $this->dem = $dem;
+        $pathOutput = is_string($pathOutput) ? [$pathOutput] : $pathOutput;
 
-        return $this;
+        if (!$dataType->hasKey($pathSource)) {
+            return;
+        }
+
+        $data = $dataType->getKeyArray($pathSource);
+
+        $isList = array_is_list($data);
+
+        foreach ($data as $key => $location) {
+
+            if (!is_array($location)) {
+                throw new LogicException(sprintf('Location data must be an array. Key: %s', $key));
+            }
+
+            /* No single links found to add to main links chapter. */
+            if (!array_key_exists(KeyArray::LINKS, $location)) {
+                continue;
+            }
+
+            $links = $location[KeyArray::LINKS];
+
+            if (!$links instanceof Links) {
+                continue;
+            }
+
+            if (!$links->hasKey(Path::WIKIPEDIA_THIS)) {
+                continue;
+            }
+
+            $path = array_merge([KeyArray::WIKIPEDIA], $pathOutput);
+
+            if (!$isList) {
+                $path[] = (string) $key;
+            }
+
+            $this->addLink(
+                $path,
+                $links->getKeyString(Path::WIKIPEDIA_THIS),
+                $isList ? (int) $key : null
+            );
+        }
     }
 }

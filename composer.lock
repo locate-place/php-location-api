@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "73c71a13fea7115aac578c47b0a508f9",
+    "content-hash": "39f4ff3afc192112c730efe74e24e20c",
     "packages": [
         {
             "name": "adhocore/cli",
@@ -1693,16 +1693,16 @@
         },
         {
             "name": "ixnode/php-api-version-bundle",
-            "version": "0.1.18",
+            "version": "0.1.19",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ixnode/php-api-version-bundle.git",
-                "reference": "fe70e35c7caddec8c026986b7b63af75cf126e2b"
+                "reference": "77e972c04bbbe4cff3b420a32eaa8ce01f9bcba3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ixnode/php-api-version-bundle/zipball/fe70e35c7caddec8c026986b7b63af75cf126e2b",
-                "reference": "fe70e35c7caddec8c026986b7b63af75cf126e2b",
+                "url": "https://api.github.com/repos/ixnode/php-api-version-bundle/zipball/77e972c04bbbe4cff3b420a32eaa8ce01f9bcba3",
+                "reference": "77e972c04bbbe4cff3b420a32eaa8ce01f9bcba3",
                 "shasum": ""
             },
             "require": {
@@ -1794,9 +1794,9 @@
             "description": "Provides the base API plattform functionality",
             "support": {
                 "issues": "https://github.com/ixnode/php-api-version-bundle/issues",
-                "source": "https://github.com/ixnode/php-api-version-bundle/tree/0.1.18"
+                "source": "https://github.com/ixnode/php-api-version-bundle/tree/0.1.19"
             },
-            "time": "2023-08-14T20:27:01+00:00"
+            "time": "2023-12-30T11:36:56+00:00"
         },
         {
             "name": "ixnode/php-array-to-object",
@@ -5056,6 +5056,88 @@
                 }
             ],
             "time": "2023-07-31T10:33:00+00:00"
+        },
+        {
+            "name": "symfony/intl",
+            "version": "v6.3.7",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/intl.git",
+                "reference": "4cc98c05f2c55150a6aa5b3e20667f7a6d06cca9"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/intl/zipball/4cc98c05f2c55150a6aa5b3e20667f7a6d06cca9",
+                "reference": "4cc98c05f2c55150a6aa5b3e20667f7a6d06cca9",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=8.1"
+            },
+            "require-dev": {
+                "symfony/filesystem": "^5.4|^6.0",
+                "symfony/finder": "^5.4|^6.0",
+                "symfony/var-exporter": "^5.4|^6.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Symfony\\Component\\Intl\\": ""
+                },
+                "exclude-from-classmap": [
+                    "/Tests/"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Bernhard Schussek",
+                    "email": "bschussek@gmail.com"
+                },
+                {
+                    "name": "Eriksen Costa",
+                    "email": "eriksen.costa@infranology.com.br"
+                },
+                {
+                    "name": "Igor Wiedler",
+                    "email": "igor@wiedler.ch"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                }
+            ],
+            "description": "Provides access to the localization data of the ICU library",
+            "homepage": "https://symfony.com",
+            "keywords": [
+                "i18n",
+                "icu",
+                "internationalization",
+                "intl",
+                "l10n",
+                "localization"
+            ],
+            "support": {
+                "source": "https://github.com/symfony/intl/tree/v6.3.7"
+            },
+            "funding": [
+                {
+                    "url": "https://symfony.com/sponsor",
+                    "type": "custom"
+                },
+                {
+                    "url": "https://github.com/fabpot",
+                    "type": "github"
+                },
+                {
+                    "url": "https://tidelift.com/funding/github/packagist/symfony/symfony",
+                    "type": "tidelift"
+                }
+            ],
+            "time": "2023-10-28T23:11:45+00:00"
         },
         {
             "name": "symfony/messenger",
@@ -11082,6 +11164,7 @@
         "php": ">=8.2",
         "ext-ctype": "*",
         "ext-iconv": "*",
+        "ext-intl": "*",
         "ext-zip": "*"
     },
     "platform-dev": [],

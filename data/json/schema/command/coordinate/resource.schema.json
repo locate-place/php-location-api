@@ -9,11 +9,17 @@
         "data": {
             "type": "object",
             "properties": {
-                "geonameId": {
+                "geoname-id": {
                     "type": "integer"
                 },
                 "name": {
                     "type": "string"
+                },
+                "updated-at": {
+                    "$ref": "#/$defs/updatedAt"
+                },
+                "properties": {
+                    "$ref": "#/$defs/properties"
                 },
                 "feature": {
                     "$ref": "#/$defs/feature"
@@ -24,11 +30,14 @@
                 "timezone": {
                     "$ref": "#/$defs/timezone"
                 },
-                "location": {
-                    "$ref": "#/$defs/location"
+                "locations": {
+                    "$ref": "#/$defs/locations"
                 },
-                "link": {
-                    "$ref": "#/$defs/link"
+                "next-places": {
+                    "$ref": "#/$defs/nextPlacesWithConfig"
+                },
+                "links": {
+                    "$ref": "#/$defs/links"
                 },
                 "population": {
                     "type": "integer",
@@ -44,13 +53,14 @@
                 }
             },
             "required": [
-                "geonameId",
+                "geoname-id",
                 "name",
+                "updated-at",
                 "feature",
                 "coordinate",
                 "timezone",
-                "location",
-                "link"
+                "locations",
+                "links"
             ],
             "additionalProperties": false
         },
@@ -60,6 +70,9 @@
         "time-taken": {
             "type": "string"
         },
+        "memory-taken": {
+            "type": "string"
+        },
         "version": {
             "type": "string"
         },
@@ -67,20 +80,235 @@
             "$ref": "#/$defs/dataLicense"
         }
     },
-    "required": ["data", "given", "time-taken", "version", "data-licence"],
+    "required": ["data", "given", "time-taken", "memory-taken", "version", "data-licence"],
     "additionalProperties": false,
 
 
 
     "$defs": {
+        "class": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "string",
+            "enum": [
+                "A",
+                "H",
+                "L",
+                "P",
+                "R",
+                "S",
+                "T",
+                "U",
+                "V"
+            ]
+        },
+        "code": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "string",
+            "pattern": "^[A-Z]+[0-9]?$"
+        },
+        "coordinateValue": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "properties": {
+                "decimal": {
+                    "type": "number"
+                },
+                "dms": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "decimal",
+                "dms"
+            ],
+            "additionalProperties": false
+        },
+        "locationsSimple": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "properties": {
+                "district-locality": {
+                    "type": "string"
+                },
+                "borough-locality": {
+                    "type": "string"
+                },
+                "city-municipality": {
+                    "type": "string"
+                },
+                "state": {
+                    "type": "string"
+                },
+                "country": {
+                    "type": "string"
+                }
+            },
+            "required": [],
+            "additionalProperties": false
+        },
+        "nextPlaces": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "patternProperties": {
+                "^[AHLPRSTUV]$": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "link": {
+                                "type": "string",
+                                "pattern": "^https?://.*$"
+                            },
+                            "number": {
+                                "type": "integer",
+                                "minimum": 0
+                            }
+                        },
+                        "required": [
+                            "link",
+                            "number"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "additionalProperties": false
+        },
+        "nextPlacesWithConfig": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "patternProperties": {
+                "^[AHLPRSTUV]$": {
+                    "type": "object",
+                    "properties": {
+                        "config": {
+                            "type": "object",
+                            "properties": {
+                                "distance-meter": {
+                                    "type": "integer",
+                                    "minimum": 0
+                                },
+                                "limit": {
+                                    "type": "integer",
+                                    "minimum": 0
+                                }
+                            },
+                            "required": [
+                                "distance-meter",
+                                "limit"
+                            ],
+                            "additionalProperties": false
+                        },
+                        "feature": {
+                            "type": "object",
+                            "properties": {
+                                "class": {
+                                    "$ref": "#/$defs/class"
+                                },
+                                "class-name": {
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "class",
+                                "class-name"
+                            ],
+                            "additionalProperties": false
+                        },
+                        "places": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "geoname-id": {
+                                        "type": "integer"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "updated-at": {
+                                        "$ref": "#/$defs/updatedAt"
+                                    },
+                                    "coordinate": {
+                                        "$ref": "#/$defs/coordinate"
+                                    },
+                                    "feature": {
+                                        "type": "object",
+                                        "properties": {
+                                            "code": {
+                                                "$ref": "#/$defs/code"
+                                            },
+                                            "code-name": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "required": [
+                                            "code",
+                                            "code-name"
+                                        ],
+                                        "additionalProperties": false
+                                    },
+                                    "links": {
+                                        "$ref": "#/$defs/links"
+                                    },
+                                    "properties": {
+                                        "$ref": "#/$defs/properties"
+                                    }
+                                },
+                                "required": [
+                                    "geoname-id",
+                                    "name",
+                                    "updated-at",
+                                    "coordinate"
+                                ],
+                                "additionalProperties": false
+                            }
+                        }
+                    },
+                    "required": ["config", "feature"],
+                    "additionalProperties": false
+                }
+            },
+            "additionalProperties": false
+        },
+        "valueUnitFormatted": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "properties": {
+                "value": {
+                    "type": "number"
+                },
+                "unit": {
+                    "type": "string"
+                },
+                "value-formatted": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "value",
+                "unit",
+                "value-formatted"
+            ],
+            "additionalProperties": false
+        },
+        "updatedAt": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "string",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\\+[0-9]{2}:[0-9]{2}$"
+        },
+
+
+
         "coordinate": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
             "type": "object",
             "properties": {
                 "latitude": {
-                    "type": "number"
+                    "$ref": "#/$defs/coordinateValue"
                 },
                 "longitude": {
-                    "type": "number"
+                    "$ref": "#/$defs/coordinateValue"
                 },
                 "srid": {
                     "type": "number"
@@ -89,12 +317,17 @@
                     "type": "object",
                     "properties": {
                         "meters": {
-                            "type": "number"
+                            "$ref": "#/$defs/valueUnitFormatted"
                         },
                         "kilometers": {
-                            "type": "number"
+                            "$ref": "#/$defs/valueUnitFormatted"
                         }
-                    }
+                    },
+                    "required": [
+                        "meters",
+                        "kilometers"
+                    ],
+                    "additionalProperties": false
                 },
                 "direction": {
                     "type": "object",
@@ -119,6 +352,7 @@
             "additionalProperties": false
         },
         "dataLicense": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
             "type": "object",
             "properties": {
                 "full": {
@@ -139,27 +373,27 @@
             ]
         },
         "feature": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
             "type": "object",
             "properties": {
                 "class": {
-                    "type": "string",
-                    "enum": ["P"]
+                    "$ref": "#/$defs/class"
                 },
                 "class-name": {
                     "type": "string"
                 },
                 "code": {
-                    "type": "string",
-                    "enum": ["PPL", "PPLX", "PPLA", "PPLA2", "PPLC"]
+                    "$ref": "#/$defs/code"
                 },
                 "code-name": {
                     "type": "string"
                 }
             },
-            "required": ["class"],
+            "required": ["class", "class-name", "code", "code-name"],
             "additionalProperties": false
         },
         "given": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
             "type": "object",
             "properties": {
                 "coordinate": {
@@ -172,19 +406,13 @@
                             "type": "object",
                             "properties": {
                                 "latitude": {
-                                    "type": "number"
+                                    "$ref": "#/$defs/coordinateValue"
                                 },
                                 "longitude": {
-                                    "type": "number"
-                                },
-                                "latitudeDms": {
-                                    "type": "string"
-                                },
-                                "longitudeDms": {
-                                    "type": "string"
+                                    "$ref": "#/$defs/coordinateValue"
                                 }
                             },
-                            "required": ["latitude", "longitude", "latitudeDms", "longitudeDms"],
+                            "required": ["latitude", "longitude"],
                             "additionalProperties": false
                         }
                     },
@@ -215,66 +443,69 @@
             "required": ["coordinate"],
             "additionalProperties": false
         },
-        "link": {
+        "links": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
             "type": "object",
             "properties": {
-                "google": {
-                    "type": "string"
-                },
-                "openstreetmap": {
-                    "type": "string"
-                },
                 "wikipedia": {
                     "type": "object",
                     "properties": {
-                        "location": {
-                            "type": "object",
-                            "properties": {
-                                "district-locality": {
-                                    "type": "string"
-                                },
-                                "borough-locality": {
-                                    "type": "string"
-                                },
-                                "city-municipality": {
-                                    "type": "string"
-                                },
-                                "state": {
-                                    "type": "string"
-                                },
-                                "country": {
-                                    "type": "string"
-                                }
-                            }
+                        "this": {
+                            "type": "string",
+                            "pattern": "^https?://.*$"
+                        },
+                        "locations": {
+                            "$ref": "#/$defs/locationsSimple"
+                        },
+                        "next-places": {
+                            "$ref": "#/$defs/nextPlaces"
                         }
                     },
                     "required": [],
                     "additionalProperties": false
+                },
+                "maps": {
+                    "type": "object",
+                    "properties": {
+                        "google": {
+                            "type": "string",
+                            "pattern": "^https?://.*$"
+                        },
+                        "openstreetmap": {
+                            "type": "string",
+                            "pattern": "^https?://.*$"
+                        }
+                    },
+                    "required": [
+                        "google",
+                        "openstreetmap"
+                    ],
+                    "additionalProperties": false
                 }
             },
             "required": [
-                "google",
-                "openstreetmap"
+                "maps"
             ],
             "additionalProperties": false
         },
-        "location": {
+        "locations": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
             "type": "object",
             "properties": {
                 "district-locality": {
-                    "$ref": "#/$defs/locationSingle"
+                    "$ref": "#/$defs/location"
                 },
                 "borough-locality": {
-                    "$ref": "#/$defs/locationSingle"
+                    "$ref": "#/$defs/location"
                 },
                 "city-municipality": {
-                    "$ref": "#/$defs/locationSingle"
+                    "$ref": "#/$defs/location"
                 },
                 "state": {
-                    "$ref": "#/$defs/locationSingle"
+                    "$ref": "#/$defs/location"
                 },
                 "country": {
-                    "$ref": "#/$defs/locationSingle"
+                    "$ref": "#/$defs/location"
                 }
             },
             "required": [
@@ -283,7 +514,8 @@
             ],
             "additionalProperties": false
         },
-        "locationSingle": {
+        "location": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
             "type": ["object", "null"],
             "properties": {
                 "geoname-id": {
@@ -292,26 +524,49 @@
                 "name": {
                     "type": "string"
                 },
-                "wikipedia": {
-                    "type": "string"
+                "updated-at": {
+                    "$ref": "#/$defs/updatedAt"
                 },
-                "population": {
-                    "type": "integer",
-                    "minimum": 1
+                "coordinate": {
+                    "$ref": "#/$defs/coordinate"
                 },
-                "elevation": {
-                    "type": "integer",
-                    "minimum": 0
+                "feature": {
+                    "$ref": "#/$defs/feature"
                 },
-                "dem": {
-                    "type": "integer",
-                    "minimum": 0
+                "links": {
+                    "$ref": "#/$defs/links"
+                },
+                "properties": {
+                    "$ref": "#/$defs/properties"
                 }
             },
-            "required": ["geoname-id", "name"],
+            "required": [
+                "geoname-id",
+                "name",
+                "updated-at",
+                "coordinate",
+                "feature",
+                "links",
+                "properties"
+            ],
+            "additionalProperties": false
+        },
+        "properties": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "properties": {
+                "population": {
+                    "$ref": "#/$defs/valueUnitFormatted"
+                },
+                "elevation": {
+                    "$ref": "#/$defs/valueUnitFormatted"
+                }
+            },
+            "required": [],
             "additionalProperties": false
         },
         "timezone": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
             "type": "object",
             "properties": {
                 "timezone": {
@@ -321,25 +576,31 @@
                     "type": "string"
                 },
                 "current-time": {
-                    "type": "string"
+                    "type": "object",
+                    "properties": {
+                        "timezone": {
+                            "type": "string"
+                        },
+                        "utc": {
+                            "type": "string"
+                        }
+                    },
+                    "required": ["timezone", "utc"],
+                    "additionalProperties": false
                 },
                 "offset": {
-                    "type": "string"
+                    "type": "string",
+                    "pattern": "^[+-]([0-9]{2}):([0-9]{2})$"
                 },
-                "latitude": {
-                    "type": "number"
-                },
-                "longitude": {
-                    "type": "number"
+                "coordinate": {
+                    "$ref": "#/$defs/coordinate"
                 }
             },
             "required": [
                 "timezone",
                 "country",
                 "current-time",
-                "offset",
-                "latitude",
-                "longitude"
+                "offset"
             ],
             "additionalProperties": false
         }

@@ -15,16 +15,23 @@ namespace App\Service;
 
 use App\ApiPlatform\Resource\Location;
 use App\Constants\DB\Limit;
-use App\Constants\Language\Language;
+use App\Constants\Language\LanguageCode;
 use App\DBAL\GeoLocation\ValueObject\Point;
 use App\Entity\Location as LocationEntity;
 use App\Service\Base\BaseLocationService;
 use Doctrine\ORM\NonUniqueResultException;
 use Ixnode\PhpCoordinate\Coordinate;
+use Ixnode\PhpException\ArrayType\ArrayKeyNotFoundException;
+use Ixnode\PhpException\Case\CaseInvalidException;
 use Ixnode\PhpException\Case\CaseUnsupportedException;
 use Ixnode\PhpException\Class\ClassInvalidException;
+use Ixnode\PhpException\File\FileNotFoundException;
+use Ixnode\PhpException\File\FileNotReadableException;
+use Ixnode\PhpException\Function\FunctionJsonEncodeException;
 use Ixnode\PhpException\Parser\ParserException;
 use Ixnode\PhpException\Type\TypeInvalidException;
+use Ixnode\PhpNamingConventions\Exception\FunctionReplaceException;
+use JsonException;
 
 /**
  * Class LocationService
@@ -46,6 +53,13 @@ final class LocationService extends BaseLocationService
      * @throws NonUniqueResultException
      * @throws ParserException
      * @throws TypeInvalidException
+     * @throws ArrayKeyNotFoundException
+     * @throws CaseInvalidException
+     * @throws FileNotFoundException
+     * @throws FileNotReadableException
+     * @throws FunctionJsonEncodeException
+     * @throws FunctionReplaceException
+     * @throws JsonException
      */
     public function getLocationByGeonameId(int $geonameId, string $isoLanguage = 'en'): Location
     {
@@ -74,15 +88,22 @@ final class LocationService extends BaseLocationService
      * @param Coordinate $coordinate
      * @param string $isoLanguage
      * @return Location
+     * @throws ArrayKeyNotFoundException
+     * @throws CaseInvalidException
      * @throws CaseUnsupportedException
      * @throws ClassInvalidException
+     * @throws FileNotFoundException
+     * @throws FileNotReadableException
+     * @throws FunctionJsonEncodeException
+     * @throws FunctionReplaceException
+     * @throws JsonException
      * @throws NonUniqueResultException
      * @throws ParserException
      * @throws TypeInvalidException
      */
     public function getLocationByCoordinate(
         Coordinate $coordinate,
-        string $isoLanguage = Language::EN): Location
+        string $isoLanguage = LanguageCode::EN): Location
     {
         $this->setCoordinate($coordinate);
 
@@ -120,7 +141,7 @@ final class LocationService extends BaseLocationService
         int|null $limit = Limit::LIMIT_10,
         int|null $distance = null,
         array|string|null $featureClass = null,
-        string $isoLanguage = Language::EN
+        string $isoLanguage = LanguageCode::EN
     ): array
     {
         $this->setCoordinate($coordinate);
@@ -139,7 +160,7 @@ final class LocationService extends BaseLocationService
                 continue;
             }
 
-            $locations[] = $this->getLocationResourceSimple($locationEntity, $this->coordinate, $isoLanguage);
+            $locations[] = $this->getLocationResourceSimple($locationEntity, $isoLanguage);
         }
 
         return $locations;

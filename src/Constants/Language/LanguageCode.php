@@ -14,14 +14,16 @@ declare(strict_types=1);
 namespace App\Constants\Language;
 
 /**
- * Class Language
+ * Class LanguageCode
  *
  * @author Björn Hempel <bjoern@hempel.li>
  * @version 0.1.0 (2023-08-27)
  * @since 0.1.0 (2023-08-27) First version.
  */
-class Language
+class LanguageCode
 {
+    final public const DE = 'de';
+
     final public const EN = 'en';
 
     final public const LINK = 'link';

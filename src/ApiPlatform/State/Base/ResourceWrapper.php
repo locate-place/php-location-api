@@ -27,6 +27,10 @@ class ResourceWrapper extends IxnodeResourceWrapper
     /** @var array{full: string, short: string, url: string} $dataLicence */
     protected array $dataLicence;
 
+    private string $timeTaken;
+
+    private string $memoryTaken;
+
     /**
      * @return array{full: string, short: string, url: string}
      */
@@ -42,6 +46,44 @@ class ResourceWrapper extends IxnodeResourceWrapper
     public function setDataLicence(array $dataLicence): self
     {
         $this->dataLicence = $dataLicence;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getTimeTaken(): string
+    {
+        return $this->timeTaken;
+    }
+
+    /**
+     * @param string $timeTaken
+     * @return self
+     */
+    public function setTimeTaken(string $timeTaken): self
+    {
+        $this->timeTaken = $timeTaken;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getMemoryTaken(): string
+    {
+        return $this->memoryTaken;
+    }
+
+    /**
+     * @param string $memoryTaken
+     * @return self
+     */
+    public function setMemoryTaken(string $memoryTaken): self
+    {
+        $this->memoryTaken = $memoryTaken;
 
         return $this;
     }

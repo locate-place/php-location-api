@@ -17,7 +17,7 @@ use App\Constants\DB\Distance;
 use App\Constants\DB\FeatureClass;
 use App\Constants\DB\Format;
 use App\Constants\DB\Limit;
-use App\Constants\Language\Language;
+use App\Constants\Language\LanguageCode;
 
 /**
  * Class Parameter
@@ -121,7 +121,7 @@ class Parameter
         'schema' => [
             'type' => 'string',
             'default' => 'en',
-            'enum' => Language::LANGUAGE_ISO_639_1,
+            'enum' => LanguageCode::LANGUAGE_ISO_639_1,
         ],
         'style' => 'simple', // simple, form
         'explode' => false,

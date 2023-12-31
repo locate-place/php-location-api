@@ -15,6 +15,7 @@ namespace App\Command\Location;
 
 use App\ApiPlatform\Resource\Location;
 use App\Command\Base\Base;
+use App\Constants\Key\KeyArray;
 use App\Entity\Location as LocationEntity;
 use App\Repository\LocationRepository;
 use App\Service\LocationService;
@@ -32,6 +33,7 @@ use Ixnode\PhpException\File\FileNotReadableException;
 use Ixnode\PhpException\Function\FunctionJsonEncodeException;
 use Ixnode\PhpException\Parser\ParserException;
 use Ixnode\PhpException\Type\TypeInvalidException;
+use Ixnode\PhpNamingConventions\Exception\FunctionReplaceException;
 use Ixnode\PhpTimezone\Constants\Language;
 use JsonException;
 use Symfony\Component\Console\Command\Command;
@@ -40,10 +42,8 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
-use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
-use Symfony\Component\Serializer\Serializer;
+use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
@@ -84,36 +84,22 @@ class CoordinateCommand extends Base
         self::FORMAT_PHP,
     ];
 
-    private readonly Serializer $serializer;
-
     /**
      * @param LocationRepository $locationRepository
      * @param LocationService $locationService
      * @param ParameterBagInterface $parameterBag
+     * @param SerializerInterface $serializer
      * @param LocationServiceDebug|null $locationServiceDebug
      */
     public function __construct(
         protected LocationRepository $locationRepository,
         protected LocationService $locationService,
         protected ParameterBagInterface $parameterBag,
-        protected LocationServiceDebug|null $locationServiceDebug = null
+        protected SerializerInterface $serializer,
+        protected LocationServiceDebug|null $locationServiceDebug = null,
     )
     {
-        $this->serializer = $this->getSerializer();
-
         parent::__construct();
-    }
-
-    /**
-     * Returns the symfony serializer.
-     *
-     * @return Serializer
-     */
-    private function getSerializer(): Serializer
-    {
-        $normalizers = [new ObjectNormalizer()];
-        $encoders = [new JsonEncoder()];
-        return new Serializer($normalizers, $encoders);
     }
 
     /**
@@ -155,10 +141,14 @@ EOT
      * @throws JsonException
      * @throws ParserException
      * @throws TypeInvalidException
+     * @throws FunctionReplaceException
      */
     private function getJson(Location $location, string $coordinateString, string $isoLanguage): Json
     {
-        $jsonContent = $this->serializer->serialize($location, 'json', [AbstractNormalizer::IGNORED_ATTRIBUTES => ['meters']]);
+        $jsonContent = $this->serializer->serialize($location, 'json', [
+            AbstractNormalizer::IGNORED_ATTRIBUTES => ['meters']
+        ]);
+
         $json = new Json($jsonContent);
 
         $coordinate = new Coordinate($coordinateString);
@@ -171,33 +161,35 @@ EOT
         ;
 
         $data = [
-            'data' => $json->getArray(),
-            'given' => [
-                'coordinate' => [
-                    'raw' => $coordinateString,
-                    'parsed' => [
-                        'latitude' => $coordinate->getLatitude(),
-                        'longitude' => $coordinate->getLongitude(),
-                        'latitudeDms' => $coordinate->getLatitudeDms(),
-                        'longitudeDms' => $coordinate->getLongitudeDms(),
+            KeyArray::DATA => $json->getArray(),
+            KeyArray::GIVEN => [
+                KeyArray::COORDINATE => [
+                    KeyArray::RAW => $coordinateString,
+                    KeyArray::PARSED => [
+                        KeyArray::LATITUDE => [
+                            KeyArray::DECIMAL => $coordinate->getLatitudeDecimal(),
+                            KeyArray::DMS => $coordinate->getLatitudeDMS(),
+                        ],
+                        KeyArray::LONGITUDE => [
+                            KeyArray::DECIMAL => $coordinate->getLongitudeDecimal(),
+                            KeyArray::DMS => $coordinate->getLongitudeDMS(),
+                        ],
                     ],
                 ],
-                'language' => [
-                    'raw' => $isoLanguage,
-                    'parsed' => [
-                        'name' => !is_null($languageValues) ? $languageValues['en'] : 'n/a',
+                KeyArray::LANGUAGE => [
+                    KeyArray::RAW => $isoLanguage,
+                    KeyArray::PARSED => [
+                        KeyArray::NAME => !is_null($languageValues) ? $languageValues['en'] : 'n/a',
                     ]
                 ],
             ],
-            'time-taken' => sprintf(
-                '%dms',
-                $duration * 1000
-            ),
-            'version' => (new Version())->getVersion(),
-            'data-licence' => [
-                'full' => (new TypeCastingHelper($this->parameterBag->get('data_license_full')))->strval(),
-                'short' => (new TypeCastingHelper($this->parameterBag->get('data_license_short')))->strval(),
-                'url' => (new TypeCastingHelper($this->parameterBag->get('data_license_url')))->strval(),
+            KeyArray::TIME_TAKEN => sprintf('%d ms', $duration * 1000),
+            KeyArray::MEMORY_TAKEN => sprintf('%d MB', memory_get_usage() / 1024 / 1024),
+            KeyArray::VERSION => (new Version())->getVersion(),
+            KeyArray::DATA_LICENCE => [
+                KeyArray::FULL => (new TypeCastingHelper($this->parameterBag->get('data_license_full')))->strval(),
+                KeyArray::SHORT => (new TypeCastingHelper($this->parameterBag->get('data_license_short')))->strval(),
+                KeyArray::URL => (new TypeCastingHelper($this->parameterBag->get('data_license_url')))->strval(),
             ],
         ];
 
