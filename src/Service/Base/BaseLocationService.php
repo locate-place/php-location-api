@@ -70,21 +70,19 @@ abstract class BaseLocationService extends BaseHelperLocationService
      * Returns a Location entity.
      *
      * @param LocationEntity $locationEntity
-     * @param string $isoLanguage
      * @return LocationResource
      * @throws CaseUnsupportedException
      * @throws ParserException
      * @throws Exception
      */
     protected function getLocationResourceSimple(
-        LocationEntity $locationEntity,
-        string $isoLanguage = LanguageCode::EN
+        LocationEntity $locationEntity
     ): LocationResource
     {
         $location = new LocationResource();
 
         /* Add base information (geoname-id, name, wikipedia links, etc.) */
-        $locationBaseInformation = $this->getLocationBaseInformation($locationEntity, $isoLanguage, true);
+        $locationBaseInformation = $this->getLocationBaseInformation($locationEntity, true);
         foreach ($locationBaseInformation as $key => $value) {
             match (true) {
                 /* Single fields */
@@ -105,7 +103,7 @@ abstract class BaseLocationService extends BaseHelperLocationService
         }
 
         /* Add timezone information (timezone id, timezone name, timezone offset, etc.). */
-        $location->setTimezone($this->getDataTypeTimezone($locationEntity, $isoLanguage));
+        $location->setTimezone($this->getDataTypeTimezone($locationEntity));
 
         return $location;
     }
@@ -114,7 +112,6 @@ abstract class BaseLocationService extends BaseHelperLocationService
      * Returns the full location api plattform resource.
      *
      * @param LocationEntity $locationEntity
-     * @param string $isoLanguage
      * @return LocationResource
      * @throws ArrayKeyNotFoundException
      * @throws CaseInvalidException
@@ -129,17 +126,17 @@ abstract class BaseLocationService extends BaseHelperLocationService
      * @throws ParserException
      * @throws TypeInvalidException
      */
-    protected function getLocationResourceFull(LocationEntity $locationEntity, string $isoLanguage = LanguageCode::EN): LocationResource
+    protected function getLocationResourceFull(LocationEntity $locationEntity): LocationResource
     {
         /* Adds location helper class. */
         $this->setServiceLocationContainer($locationEntity);
 
         /* Adds simple location api plattform resource (geoname-id, name, features and codes, coordinate, timezone, etc.). */
-        $locationResource = $this->getLocationResourceSimple($locationEntity, $isoLanguage);
+        $locationResource = $this->getLocationResourceSimple($locationEntity);
 
         /* Adds additional locations (district, borough, city, state, country, etc.). */
         $locationResource->setLocations(
-            $this->getDataTypeLocations($isoLanguage)
+            $this->getDataTypeLocations()
         );
 
         /* Adds next places:
@@ -154,7 +151,7 @@ abstract class BaseLocationService extends BaseHelperLocationService
          * - V: forest,heath,...
          */
         $locationResource->setNextPlaces(
-            $this->getDataTypeNextPlaces($locationEntity, $isoLanguage)
+            $this->getDataTypeNextPlaces($locationEntity)
         );
 
         /* Sets the full name of the location resource. */
@@ -173,7 +170,6 @@ abstract class BaseLocationService extends BaseHelperLocationService
      * @param string $featureClass
      * @param int $distanceMeter
      * @param int $limit
-     * @param string $isoLanguage
      * @return array<int, array<string, mixed>>
      * @throws CaseUnsupportedException
      * @throws ClassInvalidException
@@ -189,8 +185,7 @@ abstract class BaseLocationService extends BaseHelperLocationService
         LocationEntity $locationEntity,
         string $featureClass,
         int $distanceMeter,
-        int $limit,
-        string $isoLanguage = LanguageCode::EN
+        int $limit
     ): array
     {
         $featureCodes = $this->locationServiceConfig->getFeatureCodesByFeatureClass($featureClass);
@@ -206,7 +201,7 @@ abstract class BaseLocationService extends BaseHelperLocationService
         $locationArray = [];
 
         foreach ($locations as $location) {
-            $locationArray[] = $this->getLocationBaseInformation($location, $isoLanguage);
+            $locationArray[] = $this->getLocationBaseInformation($location);
         }
 
         return $locationArray;
@@ -218,7 +213,6 @@ abstract class BaseLocationService extends BaseHelperLocationService
      * @param CoordinateIxnode|null $coordinateEntity
      * @param CoordinateIxnode|null $coordinateSource
      * @param int|null $srid
-     * @param string $isoLanguage
      * @return Coordinate
      * @throws CaseUnsupportedException
      * @throws FunctionReplaceException
@@ -227,8 +221,7 @@ abstract class BaseLocationService extends BaseHelperLocationService
     private function getDataTypeCoordinate(
         CoordinateIxnode|null $coordinateEntity,
         CoordinateIxnode|null $coordinateSource,
-        int|null $srid = null,
-        string $isoLanguage = LanguageCode::EN
+        int|null $srid = null
     ): Coordinate
     {
         /* Creates the new Coordinate data type. */
@@ -263,12 +256,12 @@ abstract class BaseLocationService extends BaseHelperLocationService
             KeyArray::METERS => [
                 KeyArray::VALUE => $distanceMeters,
                 KeyArray::UNIT => Length::METERS_SHORT,
-                KeyArray::VALUE_FORMATTED => $this->getFloatWithUnitFormatted($distanceMeters, Length::METERS_SHORT, $isoLanguage),
+                KeyArray::VALUE_FORMATTED => $this->getFloatWithUnitFormatted($distanceMeters, Length::METERS_SHORT),
             ],
             KeyArray::KILOMETERS => [
                 KeyArray::VALUE => $distanceKilometers,
                 KeyArray::UNIT => Length::KILOMETERS_SHORT,
-                KeyArray::VALUE_FORMATTED => $this->getFloatWithUnitFormatted($distanceKilometers, Length::KILOMETERS_SHORT, $isoLanguage),
+                KeyArray::VALUE_FORMATTED => $this->getFloatWithUnitFormatted($distanceKilometers, Length::KILOMETERS_SHORT),
             ],
         ]);
 
@@ -287,7 +280,6 @@ abstract class BaseLocationService extends BaseHelperLocationService
      * Returns the feature data type.
      *
      * @param LocationEntity $locationEntity
-     * @param string $isoLanguage
      * @param bool $detailed
      * @return Feature
      * @throws TypeInvalidException
@@ -300,7 +292,6 @@ abstract class BaseLocationService extends BaseHelperLocationService
      */
     private function getDataTypeFeature(
         LocationEntity $locationEntity,
-        string $isoLanguage = LanguageCode::EN,
         bool $detailed = false
     ): Feature
     {
@@ -313,7 +304,7 @@ abstract class BaseLocationService extends BaseHelperLocationService
         $feature->addValue(KeyArray::FEATURE_CODE_NAME, $this->translator->trans(
             sprintf('%s.%s', $featureClass, $featureCode),
             domain: 'place',
-            locale: $this->getLocale($isoLanguage),
+            locale: $this->getLocale(),
         ));
 
         if ($detailed) {
@@ -321,7 +312,7 @@ abstract class BaseLocationService extends BaseHelperLocationService
             $feature->addValue(KeyArray::FEATURE_CLASS_NAME, $this->translator->trans(
                 $featureClass,
                 domain: 'feature-code',
-                locale: $this->getLocale($isoLanguage),
+                locale: $this->getLocale(),
             ));
         }
 
@@ -362,7 +353,6 @@ abstract class BaseLocationService extends BaseHelperLocationService
     /**
      * Returns the "Locations" data type (with district, borough, city, state, country, etc.).
      *
-     * @param string $isoLanguage
      * @return Locations
      * @throws CaseUnsupportedException
      * @throws FileNotFoundException
@@ -373,12 +363,12 @@ abstract class BaseLocationService extends BaseHelperLocationService
      * @throws ParserException
      * @throws TypeInvalidException
      */
-    private function getDataTypeLocations(string $isoLanguage = LanguageCode::EN): Locations
+    private function getDataTypeLocations(): Locations
     {
         $locations = new Locations();
 
         foreach (LocationContainer::ALLOWED_LOCATION_TYPES as $locationType) {
-            $this->addDataToLocations($locations, $locationType, $isoLanguage);
+            $this->addDataToLocations($locations, $locationType);
         }
 
         return $locations;
@@ -398,7 +388,6 @@ abstract class BaseLocationService extends BaseHelperLocationService
      * - V: forest,heath,...
      *
      * @param LocationEntity $locationEntity
-     * @param string $isoLanguage
      * @return NextPlaces
      * @throws CaseUnsupportedException
      * @throws ClassInvalidException
@@ -410,10 +399,7 @@ abstract class BaseLocationService extends BaseHelperLocationService
      * @throws ParserException
      * @throws TypeInvalidException
      */
-    private function getDataTypeNextPlaces(
-        LocationEntity $locationEntity,
-        string $isoLanguage = LanguageCode::EN
-    ): NextPlaces
+    private function getDataTypeNextPlaces(LocationEntity $locationEntity): NextPlaces
     {
         $nextPlaces = new NextPlaces();
 
@@ -430,8 +416,7 @@ abstract class BaseLocationService extends BaseHelperLocationService
                 $locationEntity,
                 $featureClass,
                 is_null($distanceMeter) ? self::DEFAULT_DISTANCE_METER : $distanceMeter,
-                $limit,
-                $isoLanguage
+                $limit
             );
         }
 
@@ -442,15 +427,11 @@ abstract class BaseLocationService extends BaseHelperLocationService
      * Returns the "properties" data type.
      *
      * @param LocationEntity $locationEntity
-     * @param string $isoLanguage
      * @return Properties
      * @throws FunctionReplaceException
      * @throws TypeInvalidException
      */
-    private function getDataTypeProperties(
-        LocationEntity $locationEntity,
-        string $isoLanguage = LanguageCode::EN
-    ): Properties
+    private function getDataTypeProperties(LocationEntity $locationEntity): Properties
     {
         $properties = new Properties();
 
@@ -459,7 +440,7 @@ abstract class BaseLocationService extends BaseHelperLocationService
             $properties->addValue(KeyArray::POPULATION, [
                 KeyArray::VALUE => $population,
                 KeyArray::UNIT => Numero::NUMERO_V1,
-                KeyArray::VALUE_FORMATTED => $this->getNumberFormatted($population, $isoLanguage),
+                KeyArray::VALUE_FORMATTED => $this->getNumberFormatted($population),
             ]);
         }
 
@@ -468,7 +449,7 @@ abstract class BaseLocationService extends BaseHelperLocationService
             $properties->addValue(KeyArray::ELEVATION, [
                 KeyArray::VALUE => $elevation,
                 KeyArray::UNIT => Length::METERS_SHORT,
-                KeyArray::VALUE_FORMATTED => $this->getFloatWithUnitFormatted($elevation, Length::METERS_SHORT, $isoLanguage),
+                KeyArray::VALUE_FORMATTED => $this->getFloatWithUnitFormatted($elevation, Length::METERS_SHORT),
             ]);
         }
 
@@ -479,7 +460,6 @@ abstract class BaseLocationService extends BaseHelperLocationService
      * Returns the coordinate data type.
      *
      * @param LocationEntity $locationEntity
-     * @param string $isoLanguage
      * @return Timezone
      * @throws CaseUnsupportedException
      * @throws FunctionReplaceException
@@ -487,10 +467,7 @@ abstract class BaseLocationService extends BaseHelperLocationService
      * @throws TypeInvalidException
      * @throws Exception
      */
-    private function getDataTypeTimezone(
-        LocationEntity $locationEntity,
-        string $isoLanguage = LanguageCode::EN
-    ): Timezone
+    private function getDataTypeTimezone(LocationEntity $locationEntity): Timezone
     {
         $timezoneString = $locationEntity->getTimezone()?->getTimezone();
 
@@ -521,9 +498,7 @@ abstract class BaseLocationService extends BaseHelperLocationService
         $timezone->addValue(KeyArray::OFFSET, $offset);
         $timezone->addValue(KeyArray::COORDINATE, $this->getDataTypeCoordinate(
             $coordinateEntity,
-            $this->coordinate,
-            null,
-            $isoLanguage
+            $this->coordinate
         )->getArray());
 
         return $timezone;
@@ -534,7 +509,6 @@ abstract class BaseLocationService extends BaseHelperLocationService
      *
      * @param Locations $locations
      * @param string $locationType
-     * @param string $isoLanguage
      * @return void
      * @throws CaseUnsupportedException
      * @throws FileNotFoundException
@@ -549,8 +523,7 @@ abstract class BaseLocationService extends BaseHelperLocationService
      */
     private function addDataToLocations(
         Locations $locations,
-        string $locationType,
-        string $isoLanguage = LanguageCode::EN
+        string $locationType
     ): void
     {
         $hasElement = match ($locationType) {
@@ -581,7 +554,7 @@ abstract class BaseLocationService extends BaseHelperLocationService
 
         $key = $this->getLocationKey($locationType);
 
-        $locationBaseInformation = $this->getLocationBaseInformation($locationEntity, $isoLanguage, true);
+        $locationBaseInformation = $this->getLocationBaseInformation($locationEntity, true);
 
         $locations->addValue($key, $locationBaseInformation);
     }
@@ -594,7 +567,6 @@ abstract class BaseLocationService extends BaseHelperLocationService
      * @param string $featureClass
      * @param int $distanceMeter
      * @param int $limit
-     * @param string $isoLanguage
      * @return void
      * @throws CaseUnsupportedException
      * @throws ClassInvalidException
@@ -611,14 +583,13 @@ abstract class BaseLocationService extends BaseHelperLocationService
         LocationEntity $locationEntity,
         string $featureClass = FeatureClass::FEATURE_CLASS_P,
         int $distanceMeter = self::DEFAULT_DISTANCE_METER,
-        int $limit = self::DEFAULT_LIMIT,
-        string $isoLanguage = LanguageCode::EN,
+        int $limit = self::DEFAULT_LIMIT
     ): void
     {
         $featureClassName = $this->translator->trans(
             $featureClass,
             domain: 'feature-code',
-            locale: $this->getLocale($isoLanguage),
+            locale: $this->getLocale(),
         );
 
         $nextPlaces->addValue([$featureClass, KeyArray::CONFIG], [
@@ -635,8 +606,7 @@ abstract class BaseLocationService extends BaseHelperLocationService
             $locationEntity,
             $featureClass,
             $distanceMeter,
-            $limit,
-            $isoLanguage
+            $limit
         ));
     }
 
@@ -644,7 +614,6 @@ abstract class BaseLocationService extends BaseHelperLocationService
      * Returns the base information of a location entity.
      *
      * @param LocationEntity $locationEntity
-     * @param string $isoLanguage
      * @param bool $featureDetailed
      * @return array<string, mixed>
      * @throws CaseUnsupportedException
@@ -659,12 +628,11 @@ abstract class BaseLocationService extends BaseHelperLocationService
      */
     private function getLocationBaseInformation(
         LocationEntity $locationEntity,
-        string $isoLanguage = LanguageCode::EN,
         bool $featureDetailed = false
     ): array
     {
         $geonameId = $locationEntity->getGeonameId();
-        $name = $this->locationContainer->getAlternateName($locationEntity, $isoLanguage);
+        $name = $this->locationContainer->getAlternateName($locationEntity, $this->getIsoLanguage());
         $updateAt = $locationEntity->getUpdatedAt();
 
         return [
@@ -677,12 +645,11 @@ abstract class BaseLocationService extends BaseHelperLocationService
             KeyArray::COORDINATE => $this->getDataTypeCoordinate(
                 $locationEntity->getCoordinateIxnode(),
                 $this->coordinate,
-                $locationEntity->getCoordinate()?->getSrid(),
-                $isoLanguage
+                $locationEntity->getCoordinate()?->getSrid()
             ),
-            KeyArray::FEATURE => $this->getDataTypeFeature($locationEntity, $isoLanguage, $featureDetailed),
+            KeyArray::FEATURE => $this->getDataTypeFeature($locationEntity, $featureDetailed),
             KeyArray::LINKS => $this->getDataTypeLinks($locationEntity),
-            KeyArray::PROPERTIES => $this->getDataTypeProperties($locationEntity, $isoLanguage),
+            KeyArray::PROPERTIES => $this->getDataTypeProperties($locationEntity),
         ];
     }
 
@@ -786,27 +753,22 @@ abstract class BaseLocationService extends BaseHelperLocationService
     /**
      * Returns the locale from given language code.
      *
-     * @param string $isoLanguage
      * @return string
      */
-    private function getLocale(string $isoLanguage = LanguageCode::EN): string
+    private function getLocale(): string
     {
-        return match ($isoLanguage) {
-            LanguageCode::DE => 'de_DE',
-            default => 'en_US',
-        };
+        return sprintf('%s-%s', $this->getIsoLanguage(), $this->getCountry());
     }
 
     /**
      * Returns the formatted number.
      *
      * @param int $value
-     * @param string $isoLanguage
      * @return string
      */
-    private function getNumberFormatted(int $value, string $isoLanguage = LanguageCode::EN): string
+    private function getNumberFormatted(int $value): string
     {
-        $numberFormatted = (new NumberFormatter($this->getLocale($isoLanguage), NumberFormatter::DEFAULT_STYLE))
+        $numberFormatted = (new NumberFormatter($this->getLocale(), NumberFormatter::DEFAULT_STYLE))
             ->format($value);
 
         if ($numberFormatted === false) {
@@ -821,12 +783,11 @@ abstract class BaseLocationService extends BaseHelperLocationService
      *
      * @param float $value
      * @param string|null $unit
-     * @param string $isoLanguage
      * @return string
      */
-    private function getFloatWithUnitFormatted(float $value, string|null $unit = null, string $isoLanguage = LanguageCode::EN): string
+    private function getFloatWithUnitFormatted(float $value, string|null $unit = null): string
     {
-        return (new NumberFormatter($this->getLocale($isoLanguage), NumberFormatter::DEFAULT_STYLE))
+        return (new NumberFormatter($this->getLocale(), NumberFormatter::DEFAULT_STYLE))
             ->format($value).(!is_null($unit) ? ' '.$unit : '');
     }
 

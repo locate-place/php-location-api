@@ -14,6 +14,8 @@ declare(strict_types=1);
 namespace App\Service\Base\Helper;
 
 use App\ApiPlatform\Resource\Location;
+use App\Constants\Language\CountryCode;
+use App\Constants\Language\LanguageCode;
 use App\Entity\Location as LocationEntity;
 use App\Repository\AlternateNameRepository;
 use App\Repository\LocationRepository;
@@ -40,7 +42,17 @@ abstract class BaseHelperLocationService
 
     protected float $timeStart;
 
+
+
     protected Coordinate $coordinate;
+
+    private string $isoLanguage = LanguageCode::EN;
+
+    private string $country = CountryCode::US;
+
+    private bool $nextPlaces = false;
+
+
 
     protected LocationContainer $locationContainer;
 
@@ -68,6 +80,82 @@ abstract class BaseHelperLocationService
         $this->setTimeStart(microtime(true));
 
         $this->locationServiceAlternateName = new LocationServiceAlternateName($alternateNameRepository);
+    }
+
+    /**
+     * @return Coordinate
+     */
+    public function getCoordinate(): Coordinate
+    {
+        return $this->coordinate;
+    }
+
+    /**
+     * @param Coordinate $coordinate
+     * @return self
+     */
+    public function setCoordinate(Coordinate $coordinate): self
+    {
+        $this->coordinate = $coordinate;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    protected function getIsoLanguage(): string
+    {
+        return $this->isoLanguage;
+    }
+
+    /**
+     * @param string $isoLanguage
+     * @return self
+     */
+    protected function setIsoLanguage(string $isoLanguage): self
+    {
+        $this->isoLanguage = $isoLanguage;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    protected function getCountry(): string
+    {
+        return $this->country;
+    }
+
+    /**
+     * @param string $country
+     * @return self
+     */
+    protected function setCountry(string $country): self
+    {
+        $this->country = $country;
+
+        return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    protected function isNextPlaces(): bool
+    {
+        return $this->nextPlaces;
+    }
+
+    /**
+     * @param bool $nextPlaces
+     * @return self
+     */
+    protected function setNextPlaces(bool $nextPlaces): self
+    {
+        $this->nextPlaces = $nextPlaces;
+
+        return $this;
     }
 
     /**
@@ -121,25 +209,6 @@ abstract class BaseHelperLocationService
     }
 
     /**
-     * @return Coordinate
-     */
-    public function getCoordinate(): Coordinate
-    {
-        return $this->coordinate;
-    }
-
-    /**
-     * @param Coordinate $coordinate
-     * @return self
-     */
-    public function setCoordinate(Coordinate $coordinate): self
-    {
-        $this->coordinate = $coordinate;
-
-        return $this;
-    }
-
-    /**
      * @return float
      */
     public function getTimeStart(): float
@@ -161,7 +230,7 @@ abstract class BaseHelperLocationService
     /**
      * @return LocationEntity|null
      */
-    public function getDistrict(): ?LocationEntity
+    public function getDistrictEntity(): ?LocationEntity
     {
         return $this->locationContainer->getDistrict();
     }
@@ -169,7 +238,7 @@ abstract class BaseHelperLocationService
     /**
      * @return LocationEntity|null
      */
-    public function getBorough(): ?LocationEntity
+    public function getBoroughEntity(): ?LocationEntity
     {
         return $this->locationContainer->getBorough();
     }
@@ -177,7 +246,7 @@ abstract class BaseHelperLocationService
     /**
      * @return LocationEntity|null
      */
-    public function getCity(): ?LocationEntity
+    public function getCityEntity(): ?LocationEntity
     {
         return $this->locationContainer->getCity();
     }
@@ -185,7 +254,7 @@ abstract class BaseHelperLocationService
     /**
      * @return LocationEntity|null
      */
-    public function getState(): ?LocationEntity
+    public function getStateEntity(): ?LocationEntity
     {
         return $this->locationContainer->getState();
     }
@@ -193,7 +262,7 @@ abstract class BaseHelperLocationService
     /**
      * @return LocationEntity|null
      */
-    public function getCountry(): ?LocationEntity
+    public function getCountryEntity(): ?LocationEntity
     {
         return $this->locationContainer->getCountry();
     }

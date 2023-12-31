@@ -15,7 +15,10 @@ namespace App\Command\Location;
 
 use App\ApiPlatform\Resource\Location;
 use App\Command\Base\Base;
+use App\Constants\Format\Format;
 use App\Constants\Key\KeyArray;
+use App\Constants\Language\CountryCode;
+use App\Constants\Language\LanguageCode;
 use App\Entity\Location as LocationEntity;
 use App\Repository\LocationRepository;
 use App\Service\LocationService;
@@ -75,13 +78,13 @@ class CoordinateCommand extends Base
 
     private const OPTION_ISO_LANGUAGE = 'iso-language';
 
-    private const FORMAT_JSON = 'json';
+    private const OPTION_COUNTRY = 'country';
 
-    private const FORMAT_PHP = 'php';
+    private const OPTION_NEXT_PLACES = 'next-places';
 
     private const FORMATS = [
-        self::FORMAT_JSON,
-        self::FORMAT_PHP,
+        Format::JSON,
+        Format::PHP,
     ];
 
     /**
@@ -114,8 +117,10 @@ class CoordinateCommand extends Base
                 new InputArgument(self::ARGUMENT_NAME_LATITUDE, InputArgument::REQUIRED, 'The latitude of the coordinate.'),
                 new InputArgument(self::ARGUMENT_NAME_LONGITUDE, InputArgument::OPTIONAL, 'The longitude of the coordinate.'),
             ])
-            ->addOption(self::OPTION_NAME_FORMAT, 'f', InputOption::VALUE_REQUIRED, 'Sets the output format.', 'json')
-            ->addOption(self::OPTION_ISO_LANGUAGE, 'i', InputOption::VALUE_REQUIRED, 'Sets the output language.', 'en')
+            ->addOption(self::OPTION_NAME_FORMAT, 'f', InputOption::VALUE_REQUIRED, 'Sets the output format.', Format::JSON)
+            ->addOption(self::OPTION_ISO_LANGUAGE, 'i', InputOption::VALUE_REQUIRED, 'Sets the output language.', LanguageCode::EN)
+            ->addOption(self::OPTION_COUNTRY, 'c', InputOption::VALUE_REQUIRED, 'Sets the output country.', CountryCode::US)
+            ->addOption(self::OPTION_NEXT_PLACES, 'p', InputOption::VALUE_NONE, 'Shows next places.')
             ->addOption(self::OPTION_NAME_DEBUG, 'd', InputOption::VALUE_NONE, 'Shows debug information.')
             ->addOption(self::OPTION_NAME_DEBUG_LIMIT, 'l', InputOption::VALUE_REQUIRED, 'Sets the debug limit.', LocationServiceDebug::DEBUG_LIMIT)
             ->setHelp(
@@ -259,6 +264,8 @@ EOT
         $debugLimit = (new TypeCastingHelper($input->getOption(self::OPTION_NAME_DEBUG_LIMIT)))->intval();
         $format = (new TypeCastingHelper($input->getOption(self::OPTION_NAME_FORMAT)))->strval();
         $isoLanguage = (new TypeCastingHelper($input->getOption(self::OPTION_ISO_LANGUAGE)))->strval();
+        $country = (new TypeCastingHelper($input->getOption(self::OPTION_COUNTRY)))->strval();
+        $nextPlaces = (bool) $input->getOption(self::OPTION_NEXT_PLACES);
 
         if (!in_array($isoLanguage, array_keys(Language::LANGUAGE_ISO_639_1))) {
             $this->output->writeln(sprintf(
@@ -284,14 +291,14 @@ EOT
             return Command::SUCCESS;
         }
 
-        $location = $this->locationService->getLocationByCoordinate($coordinate, $isoLanguage);
+        $location = $this->locationService->getLocationByCoordinate($coordinate, $isoLanguage, $country, $nextPlaces);
 
         $json = $this->getJson($location, $coordinateString, $isoLanguage);
 
         if (!$verbose) {
             $message = match ($format) {
-                self::FORMAT_JSON => $json->getJsonStringFormatted(),
-                self::FORMAT_PHP => var_export($json->getArray(), true),
+                Format::JSON => $json->getJsonStringFormatted(),
+                Format::PHP => var_export($json->getArray(), true),
             };
 
             $this->output->writeln($message);

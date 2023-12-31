@@ -24,6 +24,8 @@ class Name
 {
     final public const COORDINATE = 'coordinate';
 
+    final public const COUNTRY = 'country';
+
     final public const DISTANCE = 'distance';
 
     final public const FEATURE_CLASS = 'feature_class';
@@ -35,4 +37,6 @@ class Name
     final public const LANGUAGE = 'language';
 
     final public const LIMIT = 'limit';
+
+    final public const NEXT_PLACES = 'next_places';
 }

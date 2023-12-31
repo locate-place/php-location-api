@@ -14,10 +14,12 @@ declare(strict_types=1);
 namespace App\ApiPlatform\State;
 
 use App\ApiPlatform\OpenApiContext\Name;
+use App\ApiPlatform\Resource\Location as LocationResource;
 use App\ApiPlatform\Route\LocationRoute;
 use App\ApiPlatform\State\Base\BaseProvider;
 use App\Constants\DB\Distance;
 use App\Constants\DB\Limit;
+use App\Constants\Language\LocaleCode;
 use App\Repository\LocationRepository;
 use App\Service\LocationService;
 use Doctrine\ORM\NonUniqueResultException;
@@ -160,10 +162,33 @@ final class LocationProvider extends BaseProvider
      */
     private function doProvideGetWithCoordinate(): BasePublicResource
     {
-        $coordinate = $this->getFilterString(Name::COORDINATE);
-        $isoLanguage = $this->getFilterString(Name::LANGUAGE);
+        /* Check given coordinate. */
+        $coordinate = $this->getCoordinateByFilter();
+        if (is_null($coordinate)) {
+            $this->setError('No coordinate given.');
+            return (new LocationResource())
+                ->setGeonameId(0)
+            ;
+        }
 
-        $location = $this->locationService->getLocationByCoordinate(new Coordinate($coordinate), $isoLanguage);
+        /* Check locale */
+        $isoLanguage = $this->getIsoLanguageByFilter();
+        $country = $this->getCountryByFilter();
+        $locale = $this->getLocaleByFilter($isoLanguage, $country);
+        if (!in_array($locale, LocaleCode::ALL)) {
+            $this->setError(sprintf('Locale "%s" is not supported yet. Please choose on of them: %s', $locale, implode(', ', LocaleCode::ALL)));
+            return (new LocationResource())->setGeonameId(0);
+        }
+
+        /* Collect some url parameters. */
+        $nextPlaces = $this->isNextPlacesByFilter();
+
+        $location = $this->locationService->getLocationByCoordinate(
+            $coordinate,
+            $isoLanguage,
+            $country,
+            $nextPlaces
+        );
 
         if ($this->locationService->hasError()) {
             $this->setError($this->locationService->getError());

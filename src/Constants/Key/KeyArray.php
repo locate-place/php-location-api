@@ -84,17 +84,25 @@ class KeyArray
 
     final public const LANGUAGE = 'language';
 
+    final public const LATITUDE = 'latitude';
+
+    final public const LATITUDE_DMS = 'latitude-dms';
+
     final public const LIMIT = 'limit';
 
     final public const LINK = 'link';
 
-    final public const LINKS = 'links';
+    final public const LINK_GOOGLE = 'link-google';
 
-    final public const LATITUDE = 'latitude';
+    final public const LINK_OPEN_STREET_MAP = 'link-open-street-map';
+
+    final public const LINKS = 'links';
 
     final public const LOCATIONS = 'locations';
 
     final public const LONGITUDE = 'longitude';
+
+    final public const LONGITUDE_DMS = 'longitude-dms';
 
     final public const MAPS = 'maps';
 

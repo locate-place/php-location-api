@@ -16,6 +16,7 @@ namespace App\ApiPlatform\Resource\Base;
 use App\Constants\DB\FeatureClass;
 use App\Constants\Key\KeyArray;
 use App\Constants\Path\Path;
+use App\Constants\Place\Location;
 use App\DataTypes\Base\DataType;
 use App\DataTypes\Coordinate;
 use App\DataTypes\Feature;
@@ -46,6 +47,10 @@ use Symfony\Component\Serializer\Annotation\SerializedName;
  */
 abstract class LocationBase extends BasePublicResource
 {
+    private const TRANSLATE_NAME = [
+        'Bundesrepublik Deutschland' => 'Deutschland'
+    ];
+
     #[SerializedName('geoname-id')]
     private int $geonameId;
 
@@ -401,10 +406,18 @@ abstract class LocationBase extends BasePublicResource
 
         $nameFull = [];
 
-        foreach (['district-locality', 'city-municipality', 'state', 'country'] as $key) {
+        /* Add location parts */
+        foreach (Location::ALL as $key) {
             $path = [$key, KeyArray::NAME];
             if ($locations->hasKey($path)) {
-                $nameFull[] = $locations->getKeyString($path);
+                $name = $locations->getKeyString($path);
+
+                $name = match (true) {
+                    array_key_exists($name, self::TRANSLATE_NAME) => self::TRANSLATE_NAME[$name],
+                    default => $name,
+                };
+
+                $nameFull[] = $name;
             }
         }
 

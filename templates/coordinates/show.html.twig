@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Show coordinate examples</title>
+        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text></svg>">
+    </head>
+    <body>{% apply spaceless %}
+        <h1>Overview coordinates</h1>
+
+        {% for name, coordinate in coordinates %}
+            <h2>{{ loop.index }}) {{ coordinate.name }} <small>(German)</small></h2>
+            <p>
+                Coordinate: {{ coordinate.coordinate.latitude }}, {{ coordinate.coordinate.longitude }}
+            </p>
+            <ul>
+                <li>
+                    <a href="{{ coordinate.link ~ '&language=en&country=GB' }}" target="_blank">English (GB)</a> (<code>JSON</code>)
+                </li>
+                <li>
+                    <a href="{{ coordinate.link ~ '&language=en&country=US' }}" target="_blank">English (US)</a> (<code>JSON</code>)
+                </li>
+                <li>
+                    <a href="{{ coordinate.link ~ '&language=de&country=DE' }}" target="_blank">German (DE)</a> (<code>JSON</code>)
+                </li>
+                <li>
+                    <a href="{{ coordinate['link-google'] }}" target="_blank">Google</a>
+                </li>
+                <li>
+                    <a href="{{ coordinate['link-open-street-map'] }}" target="_blank">OpenStreetMap</a>
+                </li>
+            </ul>
+        {% endfor %}
+
+    {% endapply %}</body>
+</html>

@@ -15,6 +15,7 @@ namespace App\Service;
 
 use App\ApiPlatform\Resource\Location;
 use App\Constants\DB\Limit;
+use App\Constants\Language\CountryCode;
 use App\Constants\Language\LanguageCode;
 use App\DBAL\GeoLocation\ValueObject\Point;
 use App\Entity\Location as LocationEntity;
@@ -43,26 +44,89 @@ use JsonException;
 final class LocationService extends BaseLocationService
 {
     /**
-     * Returns Location ressource by given geoname id.
+     * Returns Location ressource by given coordinate string.
      *
-     * @param int $geonameId
+     * @param Coordinate $coordinate
      * @param string $isoLanguage
+     * @param string $country
+     * @param bool $nextPlaces
      * @return Location
-     * @throws CaseUnsupportedException
-     * @throws ClassInvalidException
-     * @throws NonUniqueResultException
-     * @throws ParserException
-     * @throws TypeInvalidException
      * @throws ArrayKeyNotFoundException
      * @throws CaseInvalidException
+     * @throws CaseUnsupportedException
+     * @throws ClassInvalidException
      * @throws FileNotFoundException
      * @throws FileNotReadableException
      * @throws FunctionJsonEncodeException
      * @throws FunctionReplaceException
      * @throws JsonException
+     * @throws NonUniqueResultException
+     * @throws ParserException
+     * @throws TypeInvalidException
+     * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
      */
-    public function getLocationByGeonameId(int $geonameId, string $isoLanguage = 'en'): Location
+    public function getLocationByCoordinate(
+        /* Search */
+        Coordinate $coordinate,
+
+        /* Configuration */
+        string $isoLanguage = LanguageCode::EN,
+        string $country = CountryCode::US,
+        bool $nextPlaces = false
+    ): Location
     {
+        $this->setCoordinate($coordinate);
+        $this->setIsoLanguage($isoLanguage);
+        $this->setCountry($country);
+        $this->setNextPlaces($nextPlaces);
+
+//        $adminConfiguration = $this->locationRepository->findNextAdminConfiguration(
+//            coordinate: $this->coordinate,
+//            featureClasses: FeatureClass::FEATURE_CLASS_P,
+//            featureCodes: FeatureClass::FEATURE_CODES_P_ALL,
+//        );
+
+        $location = $this->getLocationEntityByCoordinate($coordinate);
+
+        if (is_null($location)) {
+            return $this->getEmptyLocation();
+        }
+
+        return $this->getLocationResourceFull($location);
+    }
+
+    /**
+     * Returns Location ressource by given geoname id.
+     *
+     * @param int $geonameId
+     * @param string $isoLanguage
+     * @param string $country
+     * @return Location
+     * @throws ArrayKeyNotFoundException
+     * @throws CaseInvalidException
+     * @throws CaseUnsupportedException
+     * @throws ClassInvalidException
+     * @throws FileNotFoundException
+     * @throws FileNotReadableException
+     * @throws FunctionJsonEncodeException
+     * @throws FunctionReplaceException
+     * @throws JsonException
+     * @throws NonUniqueResultException
+     * @throws ParserException
+     * @throws TypeInvalidException
+     */
+    public function getLocationByGeonameId(
+        /* Search */
+        int $geonameId,
+
+        /* Configuration */
+        string $isoLanguage = LanguageCode::EN,
+        string $country = CountryCode::US
+    ): Location
+    {
+        $this->setIsoLanguage($isoLanguage);
+        $this->setCountry($country);
+
         $location = $this->locationRepository->findOneBy(['geonameId' => $geonameId]);
 
         if (!$location instanceof LocationEntity) {
@@ -79,47 +143,7 @@ final class LocationService extends BaseLocationService
 
         $this->setCoordinate(new Coordinate($point->getLatitude(), $point->getLongitude()));
 
-        return $this->getLocationResourceFull($location, $isoLanguage);
-    }
-
-    /**
-     * Returns Location ressource by given coordinate string.
-     *
-     * @param Coordinate $coordinate
-     * @param string $isoLanguage
-     * @return Location
-     * @throws ArrayKeyNotFoundException
-     * @throws CaseInvalidException
-     * @throws CaseUnsupportedException
-     * @throws ClassInvalidException
-     * @throws FileNotFoundException
-     * @throws FileNotReadableException
-     * @throws FunctionJsonEncodeException
-     * @throws FunctionReplaceException
-     * @throws JsonException
-     * @throws NonUniqueResultException
-     * @throws ParserException
-     * @throws TypeInvalidException
-     */
-    public function getLocationByCoordinate(
-        Coordinate $coordinate,
-        string $isoLanguage = LanguageCode::EN): Location
-    {
-        $this->setCoordinate($coordinate);
-
-//        $adminConfiguration = $this->locationRepository->findNextAdminConfiguration(
-//            coordinate: $this->coordinate,
-//            featureClasses: FeatureClass::FEATURE_CLASS_P,
-//            featureCodes: FeatureClass::FEATURE_CODES_P_ALL,
-//        );
-
-        $location = $this->getLocationEntityByCoordinate($coordinate);
-
-        if (is_null($location)) {
-            return $this->getEmptyLocation();
-        }
-
-        return $this->getLocationResourceFull($location, $isoLanguage);
+        return $this->getLocationResourceFull($location);
     }
 
     /**
@@ -130,24 +154,37 @@ final class LocationService extends BaseLocationService
      * @param int|null $distance
      * @param array<int, string>|string|null $featureClass
      * @param string $isoLanguage
+     * @param string $country
+     * @param bool $nextPlaces
      * @return array<int, Location>
      * @throws CaseUnsupportedException
      * @throws ClassInvalidException
      * @throws ParserException
      * @throws TypeInvalidException
+     * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
      */
     public function getLocationsByCoordinate(
+        /* Search */
         Coordinate $coordinate,
+
+        /* Search filter */
         int|null $limit = Limit::LIMIT_10,
         int|null $distance = null,
         array|string|null $featureClass = null,
-        string $isoLanguage = LanguageCode::EN
+
+        /* Configuration */
+        string $isoLanguage = LanguageCode::EN,
+        string $country = CountryCode::US,
+        bool $nextPlaces = false
     ): array
     {
         $this->setCoordinate($coordinate);
+        $this->setIsoLanguage($isoLanguage);
+        $this->setCountry($country);
+        $this->setNextPlaces($nextPlaces);
 
         $locationEntities = $this->locationRepository->findLocationsByCoordinate(
-            coordinate: $this->coordinate,
+            coordinate: $coordinate,
             distanceMeter: $distance,
             featureClasses: $featureClass,
             limit: $limit
@@ -160,7 +197,7 @@ final class LocationService extends BaseLocationService
                 continue;
             }
 
-            $locations[] = $this->getLocationResourceSimple($locationEntity, $isoLanguage);
+            $locations[] = $this->getLocationResourceSimple($locationEntity);
         }
 
         return $locations;

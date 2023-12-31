@@ -13,7 +13,10 @@ declare(strict_types=1);
 
 namespace App\ApiPlatform\State\Base;
 
+use App\ApiPlatform\OpenApiContext\Name;
 use App\Constants\Key\KeyArray;
+use App\Constants\Language\CountryCode;
+use App\Constants\Language\LanguageCode;
 use Ixnode\PhpApiVersionBundle\ApiPlatform\Resource\Base\BasePublicResource;
 use Ixnode\PhpApiVersionBundle\ApiPlatform\State\Base\Wrapper\BaseResourceWrapperProvider;
 use Ixnode\PhpApiVersionBundle\Utils\TypeCasting\TypeCastingHelper;
@@ -35,7 +38,7 @@ use Ixnode\PhpTimezone\Constants\Language;
 class BaseProvider extends BaseResourceWrapperProvider
 {
     /**
-     * Returns the resource wrapper.
+     * Add some additional data to ResourceWrapper (memory-taken, data-licence, etc.).
      *
      * @param BasePublicResource|BasePublicResource[] $baseResource
      * @param string $timeTaken
@@ -50,7 +53,7 @@ class BaseProvider extends BaseResourceWrapperProvider
         $resourceWrapper = parent::getResourceWrapper($baseResource, $timeTaken);
 
         /** @phpstan-ignore-next-line */
-        return (new ResourceWrapper())
+        $resourceWrapperNew = (new ResourceWrapper())
             ->setGiven($resourceWrapper->getGiven())
             ->setDate($resourceWrapper->getDate())
             ->setTimeTaken($resourceWrapper->getTimeTaken())
@@ -63,6 +66,14 @@ class BaseProvider extends BaseResourceWrapperProvider
             ])
             ->setMemoryTaken(sprintf('%.2f MB', memory_get_usage() / 1024 / 1024))
         ;
+
+        $error = $resourceWrapper->getError();
+
+        if (!is_null($error)) {
+            $resourceWrapperNew->setError($error);
+        }
+
+        return $resourceWrapperNew;
     }
 
     /**
@@ -116,5 +127,98 @@ class BaseProvider extends BaseResourceWrapperProvider
         }
 
         return $uriVariablesOutput;
+    }
+
+    /**
+     * Returns the Coordinate object from url parameters.
+     *
+     * @return Coordinate|null
+     * @throws ArrayKeyNotFoundException
+     * @throws CaseUnsupportedException
+     * @throws ParserException
+     * @throws TypeInvalidException
+     */
+    protected function getCoordinateByFilter(): Coordinate|null
+    {
+        if (!$this->hasFilter(Name::COORDINATE)) {
+            return null;
+        }
+
+        $coordinate = $this->getFilterString(Name::COORDINATE);
+
+        return new Coordinate($coordinate);
+    }
+
+    /**
+     * Returns the iso language from url parameters.
+     *
+     * @return string
+     * @throws ArrayKeyNotFoundException
+     * @throws TypeInvalidException
+     */
+    protected function getIsoLanguageByFilter(): string
+    {
+        if (!$this->hasFilter(Name::LANGUAGE)) {
+            return LanguageCode::EN;
+        }
+
+        $isoLanguage = $this->getFilterString(Name::LANGUAGE);
+
+        return strtolower($isoLanguage);
+    }
+
+    /**
+     * Returns the country from url parameters.
+     *
+     * @return string
+     * @throws ArrayKeyNotFoundException
+     * @throws TypeInvalidException
+     */
+    protected function getCountryByFilter(): string
+    {
+        if (!$this->hasFilter(Name::COUNTRY)) {
+            return CountryCode::US;
+        }
+
+        $country = $this->getFilterString(Name::COUNTRY);
+
+        return strtoupper($country);
+    }
+
+    /**
+     * Returns whether next places should be added.
+     *
+     * @return bool
+     * @throws TypeInvalidException
+     */
+    protected function isNextPlacesByFilter(): bool
+    {
+        if (!$this->hasFilter(Name::NEXT_PLACES)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Returns the locale from url parameters.
+     *
+     * @param string|null $isoLanguage
+     * @param string|null $country
+     * @return string
+     * @throws ArrayKeyNotFoundException
+     * @throws TypeInvalidException
+     */
+    protected function getLocaleByFilter(string|null $isoLanguage = null, string|null $country = null): string
+    {
+        if (is_null($isoLanguage)) {
+            $isoLanguage = $this->getIsoLanguageByFilter();
+        }
+
+        if (is_null($country)) {
+            $country = $this->getCountryByFilter();
+        }
+
+        return sprintf('%s_%s', $isoLanguage, $country);
     }
 }
