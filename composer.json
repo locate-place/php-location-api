@@ -12,7 +12,7 @@
         "ext-intl": "*",
         "ext-zip": "*",
         "ixnode/bash-version-manager": "^0.1.7",
-        "ixnode/php-api-version-bundle": "^0.1.19",
+        "ixnode/php-api-version-bundle": "^0.1.20",
         "ixnode/php-checker": "^0.1.9",
         "ixnode/php-container": "^0.1.22",
         "ixnode/php-coordinate": "^0.1.20",
