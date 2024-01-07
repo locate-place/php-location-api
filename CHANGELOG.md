@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Releases
 
+### [0.1.26] - 2024-01-07
+
+* Add schema endpoint
+  * /api/v1/location/coordinate.json?schema
+  * /api/v1/location.json?schema
+  * etc.
+* Add country and next_places to endpoint (given parameters)
+* Add feature code filter to endpoint /api/v1/location
+  * Next airports: /api/v1/location.json?coordinate=51.0504%2C%2013.7373&distance=1000&limit=10&feature_code=AIRP
+  * etc.
+* Add "Next places" overview
+  * Add "Next places groups" to config
+* Add /example endpoint
+* Add new indexes to boost coordinate queries
+* Add query parser and tests
+* Add Feature Codes as constants
+* Add performance logger
+* Replace long country names
+  * Bundesrepublik Deutschland > Deutschland
+  * Schweizerische Eidgenossenschaft > Schweiz
+* Add IATA and ICAO codes to airports
+
 ### [0.1.25] - 2023-12-30
 
 * Add population, elevation and dem to api endpoint
