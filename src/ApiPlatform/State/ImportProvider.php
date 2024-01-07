@@ -16,15 +16,13 @@ namespace App\ApiPlatform\State;
 use App\ApiPlatform\OpenApiContext\Name;
 use App\ApiPlatform\Resource\Import;
 use App\ApiPlatform\Route\ImportRoute;
-use App\ApiPlatform\State\Base\BaseProvider;
+use App\ApiPlatform\State\Base\BaseProviderCustom;
 use App\Constants\DB\Format;
 use App\Entity\Country;
 use App\Entity\Import as ImportEntity;
 use App\Repository\ImportRepository;
 use App\Repository\LocationRepository;
 use DateTimeImmutable;
-use Doctrine\ORM\NonUniqueResultException;
-use Doctrine\ORM\NoResultException;
 use Ixnode\PhpApiVersionBundle\ApiPlatform\Resource\Base\BasePublicResource;
 use Ixnode\PhpApiVersionBundle\ApiPlatform\State\Base\Wrapper\BaseResourceWrapperProvider;
 use Ixnode\PhpApiVersionBundle\Utils\Version\Version;
@@ -43,7 +41,7 @@ use Symfony\Contracts\Translation\TranslatorInterface;
  * @version 0.1.0 (2023-07-22)
  * @since 0.1.0 (2023-07-22) First version.
  */
-final class ImportProvider extends BaseProvider
+final class ImportProvider extends BaseProviderCustom
 {
     /**
      * @param Version $version
@@ -80,10 +78,9 @@ final class ImportProvider extends BaseProvider
      *
      * @param ImportEntity $importEntity
      * @return Import
-     * @throws ClassInvalidException
-     * @throws NonUniqueResultException
-     * @throws TypeInvalidException
      * @throws ArrayKeyNotFoundException
+     * @throws ClassInvalidException
+     * @throws TypeInvalidException
      */
     private function getImport(ImportEntity $importEntity): Import
     {
@@ -129,9 +126,8 @@ final class ImportProvider extends BaseProvider
      * Returns a collection of location resources that matches the given coordinate.
      *
      * @return BasePublicResource[]
+     * @throws ArrayKeyNotFoundException
      * @throws ClassInvalidException
-     * @throws NoResultException
-     * @throws NonUniqueResultException
      * @throws TypeInvalidException
      */
     private function doProvideGetCollection(): array
@@ -154,10 +150,9 @@ final class ImportProvider extends BaseProvider
      * Do the provided job.
      *
      * @return BasePublicResource|BasePublicResource[]
+     * @throws ArrayKeyNotFoundException
      * @throws CaseUnsupportedException
      * @throws ClassInvalidException
-     * @throws NoResultException
-     * @throws NonUniqueResultException
      * @throws TypeInvalidException
      */
     protected function doProvide(): BasePublicResource|array

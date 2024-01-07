@@ -17,6 +17,7 @@ use App\Constants\DB\Distance;
 use App\Constants\DB\FeatureClass;
 use App\Constants\DB\Format;
 use App\Constants\DB\Limit;
+use App\Constants\Language\CountryCode;
 use App\Constants\Language\LanguageCode;
 
 /**
@@ -38,6 +39,23 @@ class Parameter
         'schema' => [
             'type' => 'string',
             'default' => '51.0504, 13.7373' /* Dresden, Germany */
+        ],
+        'style' => 'simple', // simple, form
+        'explode' => false,
+        'allowReserved' => false,
+    ];
+
+    final public const COUNTRY = [
+        'name' => Name::COUNTRY,
+        'in' => 'query', // cookie, header, path, query
+        'description' => '<strong>Country</strong>',
+        'required' => true,
+        'deprecated' => false,
+        'allowEmptyValue' => false,
+        'schema' => [
+            'type' => 'string',
+            'default' => CountryCode::US,
+            'enum' => CountryCode::ALL,
         ],
         'style' => 'simple', // simple, form
         'explode' => false,
@@ -71,7 +89,7 @@ class Parameter
         'schema' => [
             'type' => 'string',
             'default' => null,
-            'enum' => FeatureClass::FEATURE_CLASSES_ALL,
+            'enum' => FeatureClass::ALL,
         ],
         'style' => 'simple', // simple, form
         'explode' => false,
@@ -139,6 +157,39 @@ class Parameter
             'type' => 'integer',
             'default' => Limit::LIMIT_10,
             'enum' => Limit::ALL_LIMITS,
+        ],
+        'style' => 'simple', // simple, form
+        'explode' => false,
+        'allowReserved' => false,
+    ];
+
+    final public const NEXT_PLACES = [
+        'name' => Name::NEXT_PLACES,
+        'in' => 'query', // cookie, header, path, query
+        'description' => '<strong>Next places</strong>',
+        'required' => true,
+        'deprecated' => false,
+        'allowEmptyValue' => false,
+        'schema' => [
+            'type' => 'boolean',
+            'default' => false,
+            'enum' => [true, false],
+        ],
+        'style' => 'simple', // simple, form
+        'explode' => false,
+        'allowReserved' => false,
+    ];
+
+    final public const QUERY = [
+        'name' => Name::QUERY,
+        'in' => 'query', // cookie, header, path, query
+        'description' => '<strong>Query</strong>',
+        'required' => true,
+        'deprecated' => false,
+        'allowEmptyValue' => false,
+        'schema' => [
+            'type' => 'sting',
+            'default' => 'AIRP 51.05811,13.74133', /* Dresden, Germany, The golden rider */
         ],
         'style' => 'simple', // simple, form
         'explode' => false,

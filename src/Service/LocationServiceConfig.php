@@ -13,11 +13,24 @@ declare(strict_types=1);
 
 namespace App\Service;
 
+use App\Constants\DB\Distance;
 use App\Constants\DB\FeatureClass;
+use App\Constants\DB\Limit;
+use App\Constants\Key\KeyArray;
+use App\Constants\Language\CountryCode;
 use App\Entity\Location;
 use Ixnode\PhpApiVersionBundle\Utils\TypeCasting\TypeCastingHelper;
+use Ixnode\PhpContainer\Json;
+use Ixnode\PhpException\ArrayType\ArrayKeyNotFoundException;
+use Ixnode\PhpException\Case\CaseInvalidException;
 use Ixnode\PhpException\Case\CaseUnsupportedException;
+use Ixnode\PhpException\File\FileNotFoundException;
+use Ixnode\PhpException\File\FileNotReadableException;
+use Ixnode\PhpException\Function\FunctionJsonEncodeException;
 use Ixnode\PhpException\Type\TypeInvalidException;
+use Ixnode\PhpNamingConventions\Exception\FunctionReplaceException;
+use JsonException;
+use LogicException;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
 /**
@@ -49,6 +62,9 @@ final class LocationServiceConfig
     private const FEATURE_CODES_U_ALL = 'feature_codes_u_all';
 
     private const FEATURE_CODES_V_ALL = 'feature_codes_v_all';
+
+    /** @var array<string, array<string, mixed>> $configNextPlacesGroupsCache */
+    private array $configNextPlacesGroupsCache = [];
 
     /**
      * @param ParameterBagInterface $parameterBag
@@ -610,13 +626,27 @@ final class LocationServiceConfig
      * @param string $key
      * @param string|null $featureClass
      * @param string|null $featureCode
+     * @param string|null $country
      * @param mixed|null $default
      * @return mixed
      * @throws TypeInvalidException
+     * @throws ArrayKeyNotFoundException
+     * @throws CaseInvalidException
+     * @throws FileNotFoundException
+     * @throws FileNotReadableException
+     * @throws FunctionJsonEncodeException
+     * @throws FunctionReplaceException
+     * @throws JsonException
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      * @SuppressWarnings(PHPMD.NPathComplexity)
      */
-    private function getConfig(string $key, string|null $featureClass = null, string|null $featureCode = null, mixed $default = null): mixed
+    private function getConfigNextPlaces(
+        string $key,
+        string|null $featureClass = null,
+        string|null $featureCode = null,
+        string|null $country = null,
+        mixed $default = null
+    ): mixed
     {
         $nextPlaces = $this->parameterBag->get('next_places');
 
@@ -628,6 +658,14 @@ final class LocationServiceConfig
 
         if (!is_array($config)) {
             throw new TypeInvalidException('array', gettype($config));
+        }
+
+        /* Try to find country overwrites and update config. */
+        if (!is_null($country) && array_key_exists('overwrites', $config)) {
+            $overwrites = new Json($config['overwrites']);
+            if ($overwrites->hasKey($country)) {
+                $config = array_merge($config, $overwrites->getKeyArray($country));
+            }
         }
 
         /* Try to get config for given feature code. */
@@ -645,6 +683,7 @@ final class LocationServiceConfig
             }
         }
 
+        /* Try to get config for given feature class. */
         if (!is_null($featureClass)) {
             $featureClassConfig = array_key_exists('feature_class', $config) ? $config['feature_class'] : [];
 
@@ -657,7 +696,100 @@ final class LocationServiceConfig
             }
         }
 
+        /* Last and least try to get default config, otherwise use the default parameter. */
         return array_key_exists('default', $config) ? $config['default'] : $default;
+    }
+
+    /**
+     * @param string|null $country
+     * @param array<string, int|string> $default
+     * @return array<string, mixed>
+     * @throws ArrayKeyNotFoundException
+     * @throws CaseInvalidException
+     * @throws FileNotFoundException
+     * @throws FileNotReadableException
+     * @throws FunctionJsonEncodeException
+     * @throws FunctionReplaceException
+     * @throws JsonException
+     * @throws TypeInvalidException
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+     * @SuppressWarnings(PHPMD.NPathComplexity)
+     */
+    public function getConfigNextPlacesGroups(
+        string|null $country = null,
+        array $default = [
+            KeyArray::DISTANCE => Distance::DISTANCE_100000,
+            KeyArray::LIMIT => Limit::LIMIT_10,
+        ]
+    ): array
+    {
+        $cacheKey = is_string($country) ? $country : CountryCode::DEFAULT;
+
+        if (array_key_exists($cacheKey, $this->configNextPlacesGroupsCache)) {
+            return $this->configNextPlacesGroupsCache[$cacheKey];
+        }
+
+        $nextPlacesGroups = $this->parameterBag->get('next_places_groups');
+
+        if (!is_array($nextPlacesGroups)) {
+            throw new TypeInvalidException('array', gettype($nextPlacesGroups));
+        }
+
+        /* Read overwrites configuration by given country. */
+        $overwritesConfigDefault = [];
+        $overwritesConfigNext = [];
+        if (!is_null($country) && array_key_exists('overwrites', $nextPlacesGroups)) {
+            $overwrites = new Json($nextPlacesGroups['overwrites']);
+            $overwritesConfig = [];
+
+            if ($overwrites->hasKey($country)) {
+                $overwritesConfig = $overwrites->getKeyArray($country);
+            }
+
+            if (array_key_exists('default', $overwritesConfig) && is_array($overwritesConfig['default'])) {
+                $overwritesConfigDefault = $overwritesConfig['default'];
+            }
+
+            if (array_key_exists('next', $overwritesConfig) && is_array($overwritesConfig['next'])) {
+                $overwritesConfigNext = $overwritesConfig['next'];
+            }
+
+            foreach ($overwritesConfigNext as $key => $value) {
+                if (!is_array($value)) {
+                    throw new LogicException('Each next_places_groups.next configuration must be an array.');
+                }
+
+                $overwritesConfigNext[$key] = array_replace_recursive($overwritesConfigDefault, $value);
+            }
+        }
+
+        $default = match (true) {
+            array_key_exists('default', $nextPlacesGroups) && is_array($nextPlacesGroups['default']) => $nextPlacesGroups['default'],
+            default => $default,
+        };
+
+        /* Overwrites the default configuration with the overwrites configuration from given country. */
+        $default = array_replace_recursive($default, $overwritesConfigDefault);
+
+        $next = match (true) {
+            array_key_exists('next', $nextPlacesGroups) && is_array($nextPlacesGroups['next']) => $nextPlacesGroups['next'],
+            default => [],
+        };
+
+        foreach ($next as $key => $value) {
+            if (!is_array($value)) {
+                throw new LogicException('Each next_places_groups.next configuration must be an array.');
+            }
+
+            $next[$key] = array_replace_recursive($default, $value);
+        }
+
+        /* Overwrites the country configuration */
+        $next = array_replace_recursive($next, $overwritesConfigNext);
+
+        $this->configNextPlacesGroupsCache[$cacheKey] = $next;
+
+        return $next;
     }
 
     /**
@@ -1065,14 +1197,27 @@ final class LocationServiceConfig
      *
      * @param string|null $featureClass
      * @param string|null $featureCode
+     * @param string|null $country
      * @param mixed|null $default
      * @return int
+     * @throws ArrayKeyNotFoundException
+     * @throws CaseInvalidException
      * @throws CaseUnsupportedException
+     * @throws FileNotFoundException
+     * @throws FileNotReadableException
+     * @throws FunctionJsonEncodeException
+     * @throws FunctionReplaceException
      * @throws TypeInvalidException
+     * @throws JsonException
      */
-    public function getLimit(string|null $featureClass = null, string|null $featureCode = null, mixed $default = null): int
+    public function getLimit(
+        string|null $featureClass = null,
+        string|null $featureCode = null,
+        string|null $country = null,
+        mixed $default = null
+    ): int
     {
-        $limit = $this->getConfig('limit', $featureClass, $featureCode, $default);
+        $limit = $this->getConfigNextPlaces('limit', $featureClass, $featureCode, $country, $default);
 
         if (is_int($limit)) {
             return $limit;
@@ -1090,14 +1235,27 @@ final class LocationServiceConfig
      *
      * @param string|null $featureClass
      * @param string|null $featureCode
+     * @param string|null $country
      * @param mixed|null $default
      * @return int|null
+     * @throws ArrayKeyNotFoundException
+     * @throws CaseInvalidException
      * @throws CaseUnsupportedException
+     * @throws FileNotFoundException
+     * @throws FileNotReadableException
+     * @throws FunctionJsonEncodeException
+     * @throws FunctionReplaceException
      * @throws TypeInvalidException
+     * @throws JsonException
      */
-    public function getDistance(string|null $featureClass = null, string|null $featureCode = null, mixed $default = null): int|null
+    public function getDistance(
+        string|null $featureClass = null,
+        string|null $featureCode = null,
+        string|null $country = null,
+        mixed $default = null
+    ): int|null
     {
-        $distance = $this->getConfig('distance', $featureClass, $featureCode, $default);
+        $distance = $this->getConfigNextPlaces('distance', $featureClass, $featureCode, $country, $default);
 
         if (is_null($distance) || is_int($distance)) {
             return $distance;
@@ -1117,11 +1275,24 @@ final class LocationServiceConfig
      * @param string|null $featureCode
      * @param mixed|null $default
      * @return bool
+     * @throws ArrayKeyNotFoundException
+     * @throws CaseInvalidException
+     * @throws FileNotFoundException
+     * @throws FileNotReadableException
+     * @throws FunctionJsonEncodeException
+     * @throws FunctionReplaceException
+     * @throws JsonException
      * @throws TypeInvalidException
      */
     public function isUseAdminCodesGeneral(string|null $featureClass = null, string|null $featureCode = null, mixed $default = null): bool
     {
-        $useAdminCodesGeneral = $this->getConfig('use_admin_codes_general', $featureClass, $featureCode, $default);
+        $useAdminCodesGeneral = $this->getConfigNextPlaces(
+            'use_admin_codes_general',
+            $featureClass,
+            $featureCode,
+            null,
+            $default
+        );
 
         if (is_bool($useAdminCodesGeneral)) {
             return $useAdminCodesGeneral;
@@ -1137,11 +1308,24 @@ final class LocationServiceConfig
      * @param string|null $featureCode
      * @param mixed|null $default
      * @return bool
+     * @throws ArrayKeyNotFoundException
+     * @throws CaseInvalidException
+     * @throws FileNotFoundException
+     * @throws FileNotReadableException
+     * @throws FunctionJsonEncodeException
+     * @throws FunctionReplaceException
+     * @throws JsonException
      * @throws TypeInvalidException
      */
     public function isUseLocationCountry(string|null $featureClass = null, string|null $featureCode = null, mixed $default = null): bool
     {
-        $useLocationCountry = $this->getConfig('use_location_country', $featureClass, $featureCode, $default);
+        $useLocationCountry = $this->getConfigNextPlaces(
+            'use_location_country',
+            $featureClass,
+            $featureCode,
+            null,
+            $default
+        );
 
         if (is_bool($useLocationCountry)) {
             return $useLocationCountry;
@@ -1157,18 +1341,18 @@ final class LocationServiceConfig
      * @return array<int, string>
      * @throws CaseUnsupportedException
      */
-    public function getFeatureCodesByFeatureClass(string $featureClass = FeatureClass::FEATURE_CLASS_P): array
+    public function getFeatureCodesByFeatureClass(string $featureClass = FeatureClass::P): array
     {
         $featureCodes = match ($featureClass) {
-            FeatureClass::FEATURE_CLASS_A => $this->parameterBag->get(self::FEATURE_CODES_A_ALL),
-            FeatureClass::FEATURE_CLASS_H => $this->parameterBag->get(self::FEATURE_CODES_H_ALL),
-            FeatureClass::FEATURE_CLASS_L => $this->parameterBag->get(self::FEATURE_CODES_L_ALL),
-            FeatureClass::FEATURE_CLASS_P => $this->parameterBag->get(self::FEATURE_CODES_P_ALL),
-            FeatureClass::FEATURE_CLASS_R => $this->parameterBag->get(self::FEATURE_CODES_R_ALL),
-            FeatureClass::FEATURE_CLASS_S => $this->parameterBag->get(self::FEATURE_CODES_S_ALL),
-            FeatureClass::FEATURE_CLASS_T => $this->parameterBag->get(self::FEATURE_CODES_T_ALL),
-            FeatureClass::FEATURE_CLASS_U => $this->parameterBag->get(self::FEATURE_CODES_U_ALL),
-            FeatureClass::FEATURE_CLASS_V => $this->parameterBag->get(self::FEATURE_CODES_V_ALL),
+            FeatureClass::A => $this->parameterBag->get(self::FEATURE_CODES_A_ALL),
+            FeatureClass::H => $this->parameterBag->get(self::FEATURE_CODES_H_ALL),
+            FeatureClass::L => $this->parameterBag->get(self::FEATURE_CODES_L_ALL),
+            FeatureClass::P => $this->parameterBag->get(self::FEATURE_CODES_P_ALL),
+            FeatureClass::R => $this->parameterBag->get(self::FEATURE_CODES_R_ALL),
+            FeatureClass::S => $this->parameterBag->get(self::FEATURE_CODES_S_ALL),
+            FeatureClass::T => $this->parameterBag->get(self::FEATURE_CODES_T_ALL),
+            FeatureClass::U => $this->parameterBag->get(self::FEATURE_CODES_U_ALL),
+            FeatureClass::V => $this->parameterBag->get(self::FEATURE_CODES_V_ALL),
             default => throw new CaseUnsupportedException(sprintf('Feature class "%s" is not supported.', $featureClass)),
         };
 

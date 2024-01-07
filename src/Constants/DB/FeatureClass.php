@@ -13,6 +13,9 @@ declare(strict_types=1);
 
 namespace App\Constants\DB;
 
+use App\Constants\DB\Base\BaseFeature;
+use App\Constants\Language\Domain;
+
 /**
  * Class FeatureClass
  *
@@ -22,29 +25,45 @@ namespace App\Constants\DB;
  *
  * @see http://www.geonames.org/export/codes.html
  */
-class FeatureClass
+class FeatureClass extends BaseFeature
 {
     /* Feature classes */
-    final public const FEATURE_CLASS_A = 'A'; /* country, state, region,... */
-    final public const FEATURE_CLASS_H = 'H'; /* stream, lake, ... */
-    final public const FEATURE_CLASS_L = 'L'; /* parks, area, ... */
-    final public const FEATURE_CLASS_P = 'P'; /* city, village, ... */
-    final public const FEATURE_CLASS_R = 'R'; /* road, railroad, ... */
-    final public const FEATURE_CLASS_S = 'S'; /* spot, building, farm, ... */
-    final public const FEATURE_CLASS_T = 'T'; /* mountain, hill, rock,... */
-    final public const FEATURE_CLASS_U = 'U'; /* undersea */
-    final public const FEATURE_CLASS_V = 'V'; /* forest, heath, ... */
+    final public const A = 'A'; /* A codes → country, state, region,... */
+    final public const H = 'H'; /* H codes → stream, lake, ... */
+    final public const L = 'L'; /* L codes → parks, area, ... */
+    final public const P = 'P'; /* P codes → city, village, ... */
+    final public const R = 'R'; /* R codes → road, railroad, ... */
+    final public const S = 'S'; /* S codes → spot, building, farm, ... */
+    final public const T = 'T'; /* T codes → mountain, hill, rock,... */
+    final public const U = 'U'; /* U codes → undersea */
+    final public const V = 'V'; /* V codes → forest, heath, ... */
 
     /* Feature classes */
-    final public const FEATURE_CLASSES_ALL = [
-        self::FEATURE_CLASS_A,
-        self::FEATURE_CLASS_H,
-        self::FEATURE_CLASS_L,
-        self::FEATURE_CLASS_P,
-        self::FEATURE_CLASS_R,
-        self::FEATURE_CLASS_S,
-        self::FEATURE_CLASS_T,
-        self::FEATURE_CLASS_U,
-        self::FEATURE_CLASS_V,
+    final public const ALL = [
+        self::A,
+        self::H,
+        self::L,
+        self::P,
+        self::R,
+        self::S,
+        self::T,
+        self::U,
+        self::V,
     ];
+
+    /**
+     * Returns the translated feature class.
+     *
+     * @inheritdoc
+     */
+    public function translate(string $feature, string $locale = null): string
+    {
+        $locale ??= $this->locale;
+
+        return $this->translator->trans(
+            $feature,
+            domain: Domain::FEATURE_CLASSES,
+            locale: $locale,
+        );
+    }
 }

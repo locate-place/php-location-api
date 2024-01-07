@@ -19,8 +19,8 @@ use App\DataTypes\Base\DataType;
  * Class Locations
  *
  * @author Björn Hempel <bjoern@hempel.li>
- * @version 0.1.0 (2024-01-03)
- * @since 0.1.0 (2024-01-03) First version.
+ * @version 0.1.0 (2024-01-07)
+ * @since 0.1.0 (2024-01-07) First version.
  */
 class Locations extends DataType
 {

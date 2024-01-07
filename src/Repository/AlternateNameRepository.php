@@ -79,6 +79,8 @@ class AlternateNameRepository extends ServiceEntityRepository
      * @param Location $location
      * @param string $isoLanguage
      * @return AlternateName|null
+     * @throws ClassInvalidException
+     * @throws TypeInvalidException
      */
     public function findOneByIsoLanguage(Location $location, string $isoLanguage): ?AlternateName
     {

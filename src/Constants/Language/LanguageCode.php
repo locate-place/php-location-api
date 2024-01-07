@@ -26,6 +26,10 @@ class LanguageCode
 
     final public const EN = 'en';
 
+    final public const ICAO = 'icao';
+
+    final public const IATA = 'iata';
+
     final public const LINK = 'link';
 
     final public const LANGUAGE_ISO_639_1 = [

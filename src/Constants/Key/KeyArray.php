@@ -22,6 +22,10 @@ namespace App\Constants\Key;
  */
 class KeyArray
 {
+    final public const AIRPORT_CODES = 'airport_codes';
+
+    final public const ALTERNATE_NAMES = 'alternate_names';
+
     final public const BOROUGH_LOCALITY = 'borough-locality';
 
     final public const CARDINAL_DIRECTION = 'cardinal-direction';
@@ -30,9 +34,15 @@ class KeyArray
 
     final public const CITY_MUNICIPALITY = 'city-municipality';
 
+    final public const CODE = 'code';
+
+    final public const CLASS_NAME = 'class-name';
+
     final public const CONFIG = 'config';
 
     final public const COORDINATE = 'coordinate';
+
+    final public const COORDINATE_STRING = 'coordinate-string';
 
     final public const COUNTRY = 'country';
 
@@ -60,13 +70,19 @@ class KeyArray
 
     final public const ELEVATION = 'elevation';
 
+    final public const ENDPOINTS = 'endpoints';
+
     final public const FEATURE = 'feature';
 
     final public const FEATURE_CLASS = 'class';
 
+    final public const FEATURE_CLASSES = 'feature-classes';
+
     final public const FEATURE_CLASS_NAME = 'class-name';
 
     final public const FEATURE_CODE = 'code';
+
+    final public const FEATURE_CODES = 'feature-codes';
 
     final public const FEATURE_CODE_NAME = 'code-name';
 
@@ -80,6 +96,12 @@ class KeyArray
 
     final public const GOOGLE = 'google';
 
+    final public const ICAO = 'icao';
+
+    final public const ISO_LANGUAGE = 'iso-language';
+
+    final public const IATA = 'iata';
+
     final public const KILOMETERS = 'kilometers';
 
     final public const LANGUAGE = 'language';
@@ -90,13 +112,25 @@ class KeyArray
 
     final public const LIMIT = 'limit';
 
+    final public const LINE = 'line';
+
     final public const LINK = 'link';
 
+    final public const LINK_COORDINATE = 'link-coordinate';
+
     final public const LINK_GOOGLE = 'link-google';
+
+    final public const LINK_LIST = 'link-list';
+
+    final public const LINK_NEXT_PLACES = 'link-next-places';
 
     final public const LINK_OPEN_STREET_MAP = 'link-open-street-map';
 
     final public const LINKS = 'links';
+
+    final public const LIST = 'list';
+
+    final public const LOCATION = 'location';
 
     final public const LOCATIONS = 'locations';
 
@@ -105,6 +139,10 @@ class KeyArray
     final public const LONGITUDE_DMS = 'longitude-dms';
 
     final public const MAPS = 'maps';
+
+    final public const MAP_LINKS = 'map-links';
+
+    final public const METHOD = 'method';
 
     final public const MEMORY_TAKEN = 'memory-taken';
 
@@ -124,11 +162,15 @@ class KeyArray
 
     final public const PLACES = 'places';
 
+    final public const PLACES_NUMBER = 'places-number';
+
     final public const POPULATION = 'population';
 
     final public const PROPERTIES = 'properties';
 
     final public const RAW = 'raw';
+
+    final public const SEARCH = 'search';
 
     final public const SHORT = 'short';
 
@@ -143,6 +185,10 @@ class KeyArray
     final public const TIME_TAKEN = 'time-taken';
 
     final public const TIMEZONE = 'timezone';
+
+    final public const TRANSLATED = 'translated';
+
+    final public const TYPE = 'type';
 
     final public const UNIT = 'unit';
 

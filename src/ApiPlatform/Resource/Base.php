@@ -24,11 +24,11 @@ use Ixnode\PhpApiVersionBundle\ApiPlatform\Resource\Base\BasePublicResource;
  */
 class Base extends BasePublicResource
 {
-    /** @var array<string, mixed> $all */
+    /** @var array<int|string, mixed> $all */
     protected array $all;
 
     /**
-     * @return array<string, mixed>
+     * @return array<int|string, mixed>
      */
     public function getAll(): array
     {
@@ -36,7 +36,7 @@ class Base extends BasePublicResource
     }
 
     /**
-     * @param array<string, mixed> $all
+     * @param array<int|string, mixed> $all
      * @return self
      */
     public function setAll(array $all): self

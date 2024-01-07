@@ -19,6 +19,7 @@ use App\Constants\Key\KeyArray;
 use App\Constants\Language\CountryCode;
 use App\Constants\Language\LanguageCode;
 use App\Constants\Path\Path;
+use App\Constants\Translation\Translation;
 use App\Constants\Unit\Length;
 use App\Constants\Unit\Numero;
 use App\DataTypes\Coordinate;
@@ -70,19 +71,35 @@ abstract class BaseLocationService extends BaseHelperLocationService
      * Returns a Location entity.
      *
      * @param LocationEntity $locationEntity
+     * @param bool $loadLocations
      * @return LocationResource
      * @throws CaseUnsupportedException
+     * @throws ClassInvalidException
+     * @throws FileNotFoundException
+     * @throws FileNotReadableException
+     * @throws FunctionJsonEncodeException
+     * @throws FunctionReplaceException
+     * @throws JsonException
+     * @throws NonUniqueResultException
      * @throws ParserException
-     * @throws Exception
+     * @throws TypeInvalidException
+     * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
      */
     protected function getLocationResourceSimple(
-        LocationEntity $locationEntity
+        LocationEntity $locationEntity,
+        bool $loadLocations = false
     ): LocationResource
     {
+        /* Adds location helper class. */
+        $this->setServiceLocationContainer($locationEntity, loadLocations: $loadLocations);
+
         $location = new LocationResource();
 
         /* Add base information (geoname-id, name, wikipedia links, etc.) */
-        $locationBaseInformation = $this->getLocationBaseInformation($locationEntity, true);
+        $locationBaseInformation = $this->getLocationBaseInformation(
+            $locationEntity,
+            featureDetailed: true
+        );
         foreach ($locationBaseInformation as $key => $value) {
             match (true) {
                 /* Single fields */
@@ -129,10 +146,10 @@ abstract class BaseLocationService extends BaseHelperLocationService
     protected function getLocationResourceFull(LocationEntity $locationEntity): LocationResource
     {
         /* Adds location helper class. */
-        $this->setServiceLocationContainer($locationEntity);
+        $this->setServiceLocationContainer($locationEntity, loadLocations: true);
 
         /* Adds simple location api plattform resource (geoname-id, name, features and codes, coordinate, timezone, etc.). */
-        $locationResource = $this->getLocationResourceSimple($locationEntity);
+        $locationResource = $this->getLocationResourceSimple($locationEntity, loadLocations: true);
 
         /* Adds additional locations (district, borough, city, state, country, etc.). */
         $locationResource->setLocations(
@@ -150,9 +167,9 @@ abstract class BaseLocationService extends BaseHelperLocationService
          * - U: undersea
          * - V: forest,heath,...
          */
-        $locationResource->setNextPlaces(
-            $this->getDataTypeNextPlaces($locationEntity)
-        );
+        if ($this->isNextPlaces()) {
+            $locationResource->setNextPlaces($this->getDataTypeNextPlaces($locationEntity));
+        }
 
         /* Sets the full name of the location resource. */
         $locationResource->setNameFullFromLocationResource();
@@ -301,19 +318,11 @@ abstract class BaseLocationService extends BaseHelperLocationService
         $featureClass = $locationEntity->getFeatureClass()?->getClass() ?: '';
 
         $feature->addValue(KeyArray::FEATURE_CODE, $featureCode);
-        $feature->addValue(KeyArray::FEATURE_CODE_NAME, $this->translator->trans(
-            sprintf('%s.%s', $featureClass, $featureCode),
-            domain: 'place',
-            locale: $this->getLocale(),
-        ));
+        $feature->addValue(KeyArray::FEATURE_CODE_NAME, $this->featureCodeService->translate($featureCode,));
 
         if ($detailed) {
             $feature->addValue(KeyArray::FEATURE_CLASS, $featureClass);
-            $feature->addValue(KeyArray::FEATURE_CLASS_NAME, $this->translator->trans(
-                $featureClass,
-                domain: 'feature-code',
-                locale: $this->getLocale(),
-            ));
+            $feature->addValue(KeyArray::FEATURE_CLASS_NAME, $this->featureClassService->translate($featureClass));
         }
 
         return $feature;
@@ -355,11 +364,13 @@ abstract class BaseLocationService extends BaseHelperLocationService
      *
      * @return Locations
      * @throws CaseUnsupportedException
+     * @throws ClassInvalidException
      * @throws FileNotFoundException
      * @throws FileNotReadableException
      * @throws FunctionJsonEncodeException
      * @throws FunctionReplaceException
      * @throws JsonException
+     * @throws NonUniqueResultException
      * @throws ParserException
      * @throws TypeInvalidException
      */
@@ -389,6 +400,8 @@ abstract class BaseLocationService extends BaseHelperLocationService
      *
      * @param LocationEntity $locationEntity
      * @return NextPlaces
+     * @throws ArrayKeyNotFoundException
+     * @throws CaseInvalidException
      * @throws CaseUnsupportedException
      * @throws ClassInvalidException
      * @throws FileNotFoundException
@@ -403,13 +416,21 @@ abstract class BaseLocationService extends BaseHelperLocationService
     {
         $nextPlaces = new NextPlaces();
 
-        foreach (FeatureClass::FEATURE_CLASSES_ALL as $featureClass) {
-            if ($featureClass === FeatureClass::FEATURE_CLASS_A) {
+        foreach (FeatureClass::ALL as $featureClass) {
+            if ($featureClass === FeatureClass::A) {
                 continue;
             }
 
-            $distanceMeter = $this->locationServiceConfig->getDistance($featureClass);
-            $limit = $this->locationServiceConfig->getLimit($featureClass);
+            $country = $locationEntity->getCountry()?->getCode() ?? CountryCode::DEFAULT;
+
+            $limit = $this->locationServiceConfig->getLimit(
+                featureClass: $featureClass,
+                country: $country
+            );
+            $distanceMeter = $this->locationServiceConfig->getDistance(
+                featureClass: $featureClass,
+                country: $country
+            );
 
             $this->addDataToNextPlaces(
                 $nextPlaces,
@@ -435,6 +456,7 @@ abstract class BaseLocationService extends BaseHelperLocationService
     {
         $properties = new Properties();
 
+        /* Add population. */
         $population = $locationEntity->getPopulationCompiled();
         if (is_int($population)) {
             $properties->addValue(KeyArray::POPULATION, [
@@ -444,6 +466,7 @@ abstract class BaseLocationService extends BaseHelperLocationService
             ]);
         }
 
+        /* Add elevation. */
         $elevation = $locationEntity->getElevationOverall();
         if (is_int($elevation)) {
             $properties->addValue(KeyArray::ELEVATION, [
@@ -453,7 +476,30 @@ abstract class BaseLocationService extends BaseHelperLocationService
             ]);
         }
 
+        /* Add additional properties. */
+        $this->addAdditionalDataTypeProperties($properties, $locationEntity);
+
         return $properties;
+    }
+
+    /**
+     * Adds additional data type properties.
+     *
+     * @param Properties $properties
+     * @param LocationEntity $locationEntity
+     * @return void
+     * @throws FunctionReplaceException
+     * @throws TypeInvalidException
+     */
+    private function addAdditionalDataTypeProperties(Properties $properties, LocationEntity $locationEntity): void
+    {
+        $this->locationEntityHelper->setLocation($locationEntity);
+
+        $airportCodes = $this->locationEntityHelper->getAirportCodes();
+
+        if (!is_null($airportCodes) && count($airportCodes) > 0) {
+            $properties->addValue(KeyArray::AIRPORT_CODES, $airportCodes);
+        }
     }
 
     /**
@@ -554,7 +600,7 @@ abstract class BaseLocationService extends BaseHelperLocationService
 
         $key = $this->getLocationKey($locationType);
 
-        $locationBaseInformation = $this->getLocationBaseInformation($locationEntity, true);
+        $locationBaseInformation = $this->getLocationBaseInformation($locationEntity, featureDetailed: true);
 
         $locations->addValue($key, $locationBaseInformation);
     }
@@ -581,33 +627,37 @@ abstract class BaseLocationService extends BaseHelperLocationService
     public function addDataToNextPlaces(
         NextPlaces $nextPlaces,
         LocationEntity $locationEntity,
-        string $featureClass = FeatureClass::FEATURE_CLASS_P,
+        string $featureClass = FeatureClass::P,
         int $distanceMeter = self::DEFAULT_DISTANCE_METER,
         int $limit = self::DEFAULT_LIMIT
     ): void
     {
-        $featureClassName = $this->translator->trans(
+        $featureClassName = $this->featureClassService->translate($featureClass);
+
+        $nextPlacesFeatureArray = $this->getPlacesFromFeatureClass(
+            $locationEntity,
             $featureClass,
-            domain: 'feature-code',
-            locale: $this->getLocale(),
+            $distanceMeter,
+            $limit
         );
 
+        /* Add config part */
         $nextPlaces->addValue([$featureClass, KeyArray::CONFIG], [
             KeyArray::DISTANCE_METER => $distanceMeter,
             KeyArray::LIMIT => $limit,
         ]);
+
+        /* Add feature part */
         $nextPlaces->addValue([$featureClass, KeyArray::FEATURE], [
             KeyArray::FEATURE_CLASS => $featureClass,
             KeyArray::FEATURE_CLASS_NAME => $featureClassName,
         ]);
 
+        /* Add number part */
+        $nextPlaces->addValue([$featureClass, KeyArray::PLACES_NUMBER], count($nextPlacesFeatureArray));
+
         /* Adds next places. */
-        $nextPlaces->addValue([$featureClass, KeyArray::PLACES], $this->getPlacesFromFeatureClass(
-            $locationEntity,
-            $featureClass,
-            $distanceMeter,
-            $limit
-        ));
+        $nextPlaces->addValue([$featureClass, KeyArray::PLACES], $nextPlacesFeatureArray);
     }
 
     /**
@@ -634,6 +684,11 @@ abstract class BaseLocationService extends BaseHelperLocationService
         $geonameId = $locationEntity->getGeonameId();
         $name = $this->locationContainer->getAlternateName($locationEntity, $this->getIsoLanguage());
         $updateAt = $locationEntity->getUpdatedAt();
+
+        $name = match (true) {
+            !is_null($name) && array_key_exists($name, Translation::TRANSLATION) => Translation::TRANSLATION[$name],
+            default => $name,
+        };
 
         return [
             /* Single fields. */
@@ -683,6 +738,7 @@ abstract class BaseLocationService extends BaseHelperLocationService
      * Returns the service LocationContainer (location helper class).
      *
      * @param LocationEntity $locationEntity
+     * @param bool $loadLocations
      * @return LocationContainer
      * @throws CaseUnsupportedException
      * @throws ClassInvalidException
@@ -691,9 +747,31 @@ abstract class BaseLocationService extends BaseHelperLocationService
      * @throws TypeInvalidException
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      * @SuppressWarnings(PHPMD.NPathComplexity)
+     * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
      */
-    public function getServiceLocationContainerFromLocationRepository(LocationEntity $locationEntity): LocationContainer
+    public function getServiceLocationContainerFromLocationRepository(
+        LocationEntity $locationEntity,
+        bool $loadLocations = false
+    ): LocationContainer
     {
+        $id = $locationEntity->getId();
+
+        if (is_null($id)) {
+            throw new LogicException('Given Location entity must have an ID.');
+        }
+
+        if (array_key_exists($id, $this->locationContainerHolder)) {
+            return $this->locationContainerHolder[$id];
+        }
+
+        $locationContainer = new LocationContainer($this->locationServiceAlternateName);
+
+        $this->locationContainerHolder[$id] = $locationContainer;
+
+        if (!$loadLocations) {
+            return $locationContainer;
+        }
+
         $isDistrictVisible = $this->locationServiceConfig->isDistrictVisible($locationEntity);
         $isBoroughVisible = $this->locationServiceConfig->isBoroughVisible($locationEntity);
         $isCityVisible = $this->locationServiceConfig->isCityVisible($locationEntity);
@@ -708,8 +786,6 @@ abstract class BaseLocationService extends BaseHelperLocationService
             $city = $district;
             $district = null;
         }
-
-        $locationContainer = new LocationContainer($this->locationServiceAlternateName);
 
         if ($isDistrictVisible && !is_null($district)) {
             $locationContainer->setDistrict($district);
@@ -738,16 +814,24 @@ abstract class BaseLocationService extends BaseHelperLocationService
      * Sets the service LocationContainer (location helper class).
      *
      * @param LocationEntity $locationEntity
+     * @param bool $loadLocations
      * @return void
      * @throws CaseUnsupportedException
      * @throws ClassInvalidException
      * @throws NonUniqueResultException
      * @throws ParserException
      * @throws TypeInvalidException
+     * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
      */
-    public function setServiceLocationContainer(LocationEntity $locationEntity): void
+    public function setServiceLocationContainer(
+        LocationEntity $locationEntity,
+        bool $loadLocations = false
+    ): void
     {
-        $this->locationContainer = $this->getServiceLocationContainerFromLocationRepository($locationEntity);
+        $this->locationContainer = $this->getServiceLocationContainerFromLocationRepository(
+            $locationEntity,
+            loadLocations: $loadLocations
+        );
     }
 
     /**
@@ -757,7 +841,7 @@ abstract class BaseLocationService extends BaseHelperLocationService
      */
     private function getLocale(): string
     {
-        return sprintf('%s-%s', $this->getIsoLanguage(), $this->getCountry());
+        return sprintf('%s_%s', $this->getIsoLanguage(), $this->getCountry());
     }
 
     /**

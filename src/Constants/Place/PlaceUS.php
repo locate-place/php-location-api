@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace App\Constants\Place;
 
+use App\Constants\Language\CountryCode;
+
 /**
  * Class PlaceUS
  *
@@ -23,6 +25,7 @@ namespace App\Constants\Place;
 class PlaceUS
 {
     final public const AUSTIN_EAST_CESAR_CHAVEZ = [
+        'name' => 'Austin - East Cesar Chavez',
         'coordinate' => [
             'latitude' => 30.26683157778637,
             'longitude' => -97.73855873989905,
@@ -33,9 +36,11 @@ class PlaceUS
             'state' => 'Texas',
             'country' => 'Vereinigte Staaten',
         ],
+        'country' => CountryCode::US,
     ];
 
     final public const BINGHAMTON = [
+        'name' => 'Binghamton',
         'coordinate' => [
             'latitude' => 42.101996,
             'longitude' => -75.920821,
@@ -45,9 +50,11 @@ class PlaceUS
             'state' => 'New York',
             'country' => 'Vereinigte Staaten',
         ],
+        'country' => CountryCode::US,
     ];
 
     final public const HOUSTON_EAST_DOWNTOWN = [
+        'name' => 'Houston - East DownTown',
         'coordinate' => [
             'latitude' => 29.747600,
             'longitude' => -95.351568,
@@ -58,9 +65,11 @@ class PlaceUS
             'state' => 'Texas',
             'country' => 'Vereinigte Staaten',
         ],
+        'country' => CountryCode::US,
     ];
 
     final public const NEW_YORK_BROOKLYN = [
+        'name' => 'New York - Brooklyn',
         'coordinate' => [
             'latitude' => 40.703231405519865,
             'longitude' => -73.98961663598128,
@@ -72,9 +81,11 @@ class PlaceUS
             'state' => 'New York',
             'country' => 'Vereinigte Staaten',
         ],
+        'country' => CountryCode::US,
     ];
 
     final public const NEW_YORK_ONE_WORLD = [
+        'name' => 'New York - One World',
         'coordinate' => [
             'latitude' => 40.71299578580626,
             'longitude' => -74.01313612224772,
@@ -86,9 +97,11 @@ class PlaceUS
             'state' => 'New York',
             'country' => 'Vereinigte Staaten',
         ],
+        'country' => CountryCode::US,
     ];
 
     final public const WASHINGTON_DC_WHITE_HOUSE = [
+        'name' => 'Washington DC - White House',
         'coordinate' => [
             'latitude' => 38.89788058641667,
             'longitude' => -77.03584566370898,
@@ -99,5 +112,6 @@ class PlaceUS
             'state' => 'Washington, D.C.',
             'country' => 'Vereinigte Staaten',
         ],
+        'country' => CountryCode::US,
     ];
 }

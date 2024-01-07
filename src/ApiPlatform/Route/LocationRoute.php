@@ -14,6 +14,10 @@ declare(strict_types=1);
 namespace App\ApiPlatform\Route;
 
 use App\ApiPlatform\OpenApiContext\Name;
+use App\Constants\DB\Distance;
+use App\Constants\DB\Limit;
+use App\Constants\Language\CountryCode;
+use App\Constants\Language\LanguageCode;
 use Ixnode\PhpApiVersionBundle\ApiPlatform\Route\Base\BaseRoute;
 
 /**
@@ -32,23 +36,41 @@ final class LocationRoute extends BaseRoute
             self::KEY_DEFAULT => 182559,
             self::KEY_TYPE => self::TYPE_INTEGER,
         ],
-        Name::COORDINATE => [
-            self::KEY_REQUEST => Name::COORDINATE,
-            self::KEY_RESPONSE => 'coordinate',
-            self::KEY_DEFAULT => '51.0504, 13.7373',
+        Name::QUERY => [
+            self::KEY_REQUEST => Name::QUERY,
+            self::KEY_RESPONSE => 'query',
+            self::KEY_DEFAULT => 'AIRP 51.05811,13.74133', /* Dresden, Germany, The golden rider */
             self::KEY_TYPE => self::TYPE_STRING,
         ],
-        Name::LANGUAGE => [
-            self::KEY_REQUEST => Name::LANGUAGE,
-            self::KEY_RESPONSE => 'language',
-            self::KEY_DEFAULT => 'de',
-            self::KEY_TYPE => self::TYPE_STRING,
+        Name::NEXT_PLACES => [
+            self::KEY_REQUEST => Name::NEXT_PLACES,
+            self::KEY_RESPONSE => 'next-places',
+            self::KEY_DEFAULT => false,
+            self::KEY_TYPE => self::TYPE_BOOLEAN,
         ],
         Name::DISTANCE => [
             self::KEY_REQUEST => Name::DISTANCE,
             self::KEY_RESPONSE => 'distance',
-            self::KEY_DEFAULT => 1000,
+            self::KEY_DEFAULT => Distance::DISTANCE_1000,
             self::KEY_TYPE => self::TYPE_INTEGER,
+        ],
+        Name::LIMIT => [
+            self::KEY_REQUEST => Name::LIMIT,
+            self::KEY_RESPONSE => 'limit',
+            self::KEY_DEFAULT => Limit::LIMIT_10,
+            self::KEY_TYPE => self::TYPE_INTEGER,
+        ],
+        Name::LANGUAGE => [
+            self::KEY_REQUEST => Name::LANGUAGE,
+            self::KEY_RESPONSE => 'language',
+            self::KEY_DEFAULT => LanguageCode::EN,
+            self::KEY_TYPE => self::TYPE_STRING,
+        ],
+        Name::COUNTRY => [
+            self::KEY_REQUEST => Name::COUNTRY,
+            self::KEY_RESPONSE => 'country',
+            self::KEY_DEFAULT => CountryCode::US,
+            self::KEY_TYPE => self::TYPE_STRING,
         ],
     ];
 

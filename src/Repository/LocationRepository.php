@@ -15,6 +15,7 @@ namespace App\Repository;
 
 use App\Constants\DB\FeatureClass;
 use App\Entity\Country;
+use App\Entity\FeatureCode;
 use App\Entity\Location;
 use App\Entity\Location as LocationEntity;
 use App\Service\LocationServiceConfig;
@@ -98,6 +99,29 @@ class LocationRepository extends ServiceEntityRepository
     }
 
     /**
+     * Translates the given feature codes to ids.
+     *
+     * @param string[]|string|null $featureCodes
+     * @return int[]
+     */
+    private function translateFeatureCodesToIds(array|string $featureCodes = null): array
+    {
+        $featureCodes = is_string($featureCodes) ? explode(',', $featureCodes) : $featureCodes;
+
+        $repository = $this->getEntityManager()->getRepository(FeatureCode::class);
+
+        $featureCodeEntities = $repository->findBy(['code' => $featureCodes]);
+
+        $featureCodeIds = [];
+
+        foreach ($featureCodeEntities as $featureCodeEntity) {
+            $featureCodeIds[] = (int) $featureCodeEntity->getId();
+        }
+
+        return $featureCodeIds;
+    }
+
+    /**
      * Finds the locations from given latitude and longitude ordered by distance.
      *
      * Query example:
@@ -171,12 +195,11 @@ class LocationRepository extends ServiceEntityRepository
         }
 
         /* Limit result by feature code. */
-        $featureCodes = is_string($featureCodes) ? [$featureCodes] : $featureCodes;
-        if (is_array($featureCodes)) {
+        if (!is_null($featureCodes)) {
+            $featureCodesIds = $this->translateFeatureCodesToIds($featureCodes);
             $queryBuilder
-                ->leftJoin('l.featureCode', 'fco')
-                ->andWhere('fco.code IN (:featureCodes)')
-                ->setParameter('featureCodes', $featureCodes)
+                ->andWhere('l.featureCode IN (:featureCodes)')
+                ->setParameter('featureCodes', $featureCodesIds)
             ;
         }
 
@@ -190,7 +213,7 @@ class LocationRepository extends ServiceEntityRepository
         /* Limit with admin codes. */
         $this->limitAdminCodes($queryBuilder, $adminCodes);
 
-        /* Limit with population. */
+        /* Limit with the given population. */
         if (!is_null($withPopulation)) {
             $queryBuilder->andWhere(sprintf('l.population %s 0', $withPopulation ? '>' : '<='));
         }
@@ -211,16 +234,21 @@ class LocationRepository extends ServiceEntityRepository
 
         /* Order by given feature codes. */
         if ($sortByFeatureCodes) {
+            $featureCodes = is_string($featureCodes) ? [$featureCodes] : $featureCodes;
+
             if (!is_array($featureCodes)) {
                 throw new CaseUnsupportedException('$sortByFeatureCodes is used, but no $featureCodes are given.');
             }
 
-            $fieldName = 'fco.code';
-            $sortName = 'sortByFeatureCode';
-            $queryBuilder
-                ->addSelect($this->getCaseString($featureCodes, $fieldName, $sortName))
-                ->addOrderBy($sortName, 'ASC')
-            ;
+            if (count($featureCodes) > 1) {
+                $fieldName = 'fco.code';
+                $sortName = 'sortByFeatureCode';
+                $queryBuilder
+                    ->leftJoin('l.featureCode', 'fco')
+                    ->addSelect($this->getCaseString($featureCodes, $fieldName, $sortName))
+                    ->addOrderBy($sortName, 'ASC')
+                ;
+            }
         }
 
         /* Order by given population. */
@@ -322,8 +350,8 @@ class LocationRepository extends ServiceEntityRepository
      */
     public function findNextAdminConfiguration(
         Coordinate $coordinate,
-        array|string|null $featureClasses = FeatureClass::FEATURE_CLASS_A,
-        array|string|null $featureCodes = FeatureClass::FEATURE_CLASS_A,
+        array|string|null $featureClasses = FeatureClass::A,
+        array|string|null $featureCodes = FeatureClass::A,
     ): array
     {
         $location = $this->findNextLocationByCoordinate(
@@ -513,7 +541,7 @@ class LocationRepository extends ServiceEntityRepository
         $queryBuilder
             ->leftJoin('l.featureClass', 'fcl')
             ->andWhere('fcl.class = :featureClass')
-            ->setParameter('featureClass', FeatureClass::FEATURE_CLASS_A);
+            ->setParameter('featureClass', FeatureClass::A);
 
         $queryBuilder
             ->leftJoin('l.featureCode', 'fco')

@@ -30,6 +30,8 @@ class Name
 
     final public const FEATURE_CLASS = 'feature_class';
 
+    final public const FEATURE_CODE = 'feature_code';
+
     final public const FORMAT = 'format';
 
     final public const GEONAME_ID = 'geoname_id';
@@ -39,4 +41,8 @@ class Name
     final public const LIMIT = 'limit';
 
     final public const NEXT_PLACES = 'next_places';
+
+    final public const QUERY = 'q';
+
+    final public const SCHEMA = 'schema';
 }

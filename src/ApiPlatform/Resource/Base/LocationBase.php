@@ -47,10 +47,6 @@ use Symfony\Component\Serializer\Annotation\SerializedName;
  */
 abstract class LocationBase extends BasePublicResource
 {
-    private const TRANSLATE_NAME = [
-        'Bundesrepublik Deutschland' => 'Deutschland'
-    ];
-
     #[SerializedName('geoname-id')]
     private int $geonameId;
 
@@ -410,14 +406,7 @@ abstract class LocationBase extends BasePublicResource
         foreach (Location::ALL as $key) {
             $path = [$key, KeyArray::NAME];
             if ($locations->hasKey($path)) {
-                $name = $locations->getKeyString($path);
-
-                $name = match (true) {
-                    array_key_exists($name, self::TRANSLATE_NAME) => self::TRANSLATE_NAME[$name],
-                    default => $name,
-                };
-
-                $nameFull[] = $name;
+                $nameFull[] = $locations->getKeyString($path);
             }
         }
 
@@ -442,12 +431,15 @@ abstract class LocationBase extends BasePublicResource
         /* Add wikipedia links from locations */
         $this->addMainWikipediaLinks($this->getLocations(), [KeyArray::LOCATIONS]);
 
-        foreach (FeatureClass::FEATURE_CLASSES_ALL as $featureClass) {
-            $this->addMainWikipediaLinks(
-                $this->getNextPlaces(),
-                [KeyArray::NEXT_PLACES, $featureClass],
-                [$featureClass, KeyArray::PLACES]
-            );
+        /* Add wikipedia links from next places */
+        if (isset($this->nextPlaces)) {
+            foreach (FeatureClass::ALL as $featureClass) {
+                $this->addMainWikipediaLinks(
+                    $this->nextPlaces,
+                    [KeyArray::NEXT_PLACES, $featureClass],
+                    [$featureClass, KeyArray::PLACES]
+                );
+            }
         }
     }
 

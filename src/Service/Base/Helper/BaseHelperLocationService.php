@@ -14,11 +14,14 @@ declare(strict_types=1);
 namespace App\Service\Base\Helper;
 
 use App\ApiPlatform\Resource\Location;
+use App\Constants\DB\FeatureClass;
+use App\Constants\DB\FeatureCode;
 use App\Constants\Language\CountryCode;
 use App\Constants\Language\LanguageCode;
 use App\Entity\Location as LocationEntity;
 use App\Repository\AlternateNameRepository;
 use App\Repository\LocationRepository;
+use App\Service\Entity\LocationEntityHelper;
 use App\Service\LocationContainer;
 use App\Service\LocationServiceConfig;
 use App\Service\LocationServiceAlternateName;
@@ -42,6 +45,20 @@ abstract class BaseHelperLocationService
 
     protected float $timeStart;
 
+    protected int|null $limit = null;
+
+    protected int|null $limitSave = null;
+
+    protected bool $filterAfterQuery = false;
+
+    protected int|null $distanceMeter = null;
+
+    /** @var array<int, string>|string|null $featureClass */
+    protected array|string|null $featureClass = null;
+
+    /** @var array<int, string>|string|null $featureCode */
+    protected array|string|null $featureCode = null;
+
 
 
     protected Coordinate $coordinate;
@@ -56,7 +73,16 @@ abstract class BaseHelperLocationService
 
     protected LocationContainer $locationContainer;
 
+    /** @var LocationContainer[] $locationContainerHolder */
+    protected array $locationContainerHolder = [];
+
     protected LocationServiceAlternateName $locationServiceAlternateName;
+
+    protected LocationEntityHelper $locationEntityHelper;
+
+    protected FeatureClass $featureClassService;
+
+    protected FeatureCode $featureCodeService;
 
     /**
      * @param Version $version
@@ -80,6 +106,10 @@ abstract class BaseHelperLocationService
         $this->setTimeStart(microtime(true));
 
         $this->locationServiceAlternateName = new LocationServiceAlternateName($alternateNameRepository);
+        $this->locationEntityHelper = new LocationEntityHelper(new LocationContainer($this->locationServiceAlternateName));
+
+        $this->featureClassService = new FeatureClass($translator);
+        $this->featureCodeService = new FeatureCode($translator);
     }
 
     /**
@@ -265,5 +295,83 @@ abstract class BaseHelperLocationService
     public function getCountryEntity(): ?LocationEntity
     {
         return $this->locationContainer->getCountry();
+    }
+
+    /**
+     * Do "Before query" tasks.
+     *
+     * @param int|null $limit
+     * @param int|null $distanceMeter
+     * @param array<int, string>|string|null $featureClass
+     * @param array<int, string>|string|null $featureCode
+     * @return void
+     */
+    protected function doBeforeQueryTasks(
+        int|null $limit,
+        int|null $distanceMeter,
+        array|string|null $featureClass,
+        array|string|null $featureCode,
+    ): void
+    {
+        $this->filterAfterQuery = match ($this->locationEntityHelper->toString($featureCode)) {
+            FeatureCode::AIRP => true,
+            default => false,
+        };
+
+        $this->limitSave = $this->filterAfterQuery ? $limit : null;
+        $this->limit = $this->filterAfterQuery ? null : $this->limitSave;
+
+        $this->distanceMeter = $distanceMeter;
+        $this->featureClass = $featureClass;
+        $this->featureCode = $featureCode;
+    }
+
+    /**
+     * Do "After query" tasks.
+     *
+     * @param array<int, LocationEntity> $locationEntities
+     * @return void
+     */
+    protected function doAfterQueryTasks(array &$locationEntities): void
+    {
+        if (!$this->filterAfterQuery) {
+            return;
+        }
+
+        $this->limit = $this->limitSave;
+        $this->limitSave = null;
+
+        $locationEntities = match ($this->locationEntityHelper->toString($this->featureCode)) {
+            FeatureCode::AIRP => array_filter($locationEntities, fn(LocationEntity $locationEntity) => $this->locationEntityHelper->setLocation($locationEntity)->hasAirportCodeIata()),
+            default => $locationEntities,
+        };
+
+        if (count($locationEntities) > $this->limit) {
+            $locationEntities = array_slice($locationEntities, 0, $this->limit);
+        }
+    }
+
+    /**
+     * Updates the given parameter.
+     *
+     * @param Coordinate $coordinate
+     * @param string $isoLanguage
+     * @param string $country
+     * @param bool $nextPlaces
+     * @return void
+     */
+    protected function update(
+        Coordinate $coordinate,
+        string $isoLanguage,
+        string $country,
+        bool $nextPlaces,
+    ): void
+    {
+        $this->setCoordinate($coordinate);
+        $this->setIsoLanguage($isoLanguage);
+        $this->setCountry($country);
+        $this->setNextPlaces($nextPlaces);
+        $this->featureClassService->setLocaleByLanguageAndCountry($isoLanguage, $country);
+        $this->featureCodeService->setLocaleByLanguageAndCountry($isoLanguage, $country);
     }
 }

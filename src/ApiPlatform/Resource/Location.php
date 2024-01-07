@@ -38,19 +38,22 @@ use Symfony\Component\Serializer\Annotation\Ignore;
  * @version 0.1.0 (2023-07-01)
  * @since 0.1.0 (2023-07-01) First version.
  */
+
+/* Get resources via geoname id: /api/v1/location */
 #[GetCollection(
     openapiContext: [
         'description' => LocationRoute::DESCRIPTION_COLLECTION_GET,
         'parameters' => [
-            Parameter::COORDINATE,
+            Parameter::QUERY,
             Parameter::DISTANCE,
             Parameter::LIMIT,
-            Parameter::FEATURE_CLASS,
+            Parameter::LANGUAGE,
+            Parameter::COUNTRY,
         ],
     ],
     provider: LocationProvider::class
 )]
-/* Get ressource via geoname id: /api/v1/location/{geoname_id} */
+/* Get resource via geoname id: /api/v1/location/{geoname_id} */
 #[Get(
     uriVariables: [
         Name::GEONAME_ID,
@@ -59,18 +62,23 @@ use Symfony\Component\Serializer\Annotation\Ignore;
         'description' => LocationRoute::DESCRIPTION,
         'parameters' => [
             Parameter::GEONAME_ID,
+            Parameter::NEXT_PLACES,
+            Parameter::LANGUAGE,
+            Parameter::COUNTRY,
         ]
     ],
     provider: LocationProvider::class
 )]
-/* Get ressource via location: /api/v1/location/coordinate/{coordinate} */
+/* Get resource via location: /api/v1/location/coordinate/{coordinate} */
 #[Get(
     uriTemplate: 'location/coordinate.{_format}',
     openapiContext: [
         'description' => LocationRoute::DESCRIPTION,
         'parameters' => [
-            Parameter::COORDINATE,
+            Parameter::QUERY,
+            Parameter::NEXT_PLACES,
             Parameter::LANGUAGE,
+            Parameter::COUNTRY,
         ]
     ],
     provider: LocationProvider::class

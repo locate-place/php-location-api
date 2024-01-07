@@ -14,19 +14,21 @@ declare(strict_types=1);
 namespace App\ApiPlatform\State;
 
 use App\ApiPlatform\OpenApiContext\Name;
+use App\ApiPlatform\Resource\Base;
 use App\ApiPlatform\Resource\Location as LocationResource;
 use App\ApiPlatform\Route\LocationRoute;
-use App\ApiPlatform\State\Base\BaseProvider;
+use App\ApiPlatform\State\Base\BaseProviderCustom;
 use App\Constants\DB\Distance;
 use App\Constants\DB\Limit;
-use App\Constants\Language\LocaleCode;
+use App\Constants\Key\KeyArray;
 use App\Repository\LocationRepository;
 use App\Service\LocationService;
+use App\Utils\Query\QueryParser;
 use Doctrine\ORM\NonUniqueResultException;
 use Ixnode\PhpApiVersionBundle\ApiPlatform\Resource\Base\BasePublicResource;
 use Ixnode\PhpApiVersionBundle\ApiPlatform\State\Base\Wrapper\BaseResourceWrapperProvider;
 use Ixnode\PhpApiVersionBundle\Utils\Version\Version;
-use Ixnode\PhpCoordinate\Coordinate;
+use Ixnode\PhpContainer\File;
 use Ixnode\PhpException\ArrayType\ArrayKeyNotFoundException;
 use Ixnode\PhpException\Case\CaseInvalidException;
 use Ixnode\PhpException\Case\CaseUnsupportedException;
@@ -50,8 +52,10 @@ use Symfony\Contracts\Translation\TranslatorInterface;
  * @version 0.1.0 (2023-07-01)
  * @since 0.1.0 (2023-07-01) First version.
  */
-final class LocationProvider extends BaseProvider
+final class LocationProvider extends BaseProviderCustom
 {
+    private const FILE_SCHEMA_COORDINATE = 'data/json/schema/command/coordinate/resource.schema.json';
+
     /**
      * @param Version $version
      * @param ParameterBagInterface $parameterBag
@@ -75,7 +79,7 @@ final class LocationProvider extends BaseProvider
     /**
      * Returns the route properties according to current class.
      *
-     * @return array<string, array<string, int|string|string[]>>
+     * @return array<string, array<string, bool|int|string>>
      */
     protected function getRouteProperties(): array
     {
@@ -89,21 +93,41 @@ final class LocationProvider extends BaseProvider
      * @throws ArrayKeyNotFoundException
      * @throws CaseUnsupportedException
      * @throws ClassInvalidException
+     * @throws FileNotFoundException
+     * @throws FileNotReadableException
+     * @throws FunctionJsonEncodeException
+     * @throws FunctionReplaceException
+     * @throws JsonException
+     * @throws NonUniqueResultException
      * @throws ParserException
      * @throws TypeInvalidException
      */
-    private function doProvideGetCollection(): array
+    private function doProvideGetCollectionByCoordinate(QueryParser $queryParser): array
     {
-        $coordinate = $this->getFilterString(Name::COORDINATE);
-        $limit = $this->hasFilter(Name::LIMIT) ? $this->getFilterInteger(Name::LIMIT) : Limit::LIMIT_10;
-        $distance = $this->hasFilter(Name::DISTANCE) ? $this->getFilterInteger(Name::DISTANCE) : Distance::DISTANCE_1000;
-        $featureClass = $this->hasFilter(Name::FEATURE_CLASS) ? $this->getFilterString(Name::FEATURE_CLASS) : null;
+        [
+            KeyArray::ISO_LANGUAGE => $isoLanguage,
+            KeyArray::COUNTRY => $country,
+        ] = $this->getIsoLanguageAndCountryByFilter();
+
+        if (is_null($isoLanguage) || is_null($country)) {
+            return [];
+        }
+
+        $coordinate = $queryParser->getCoordinate();
+
+        if (is_null($coordinate)) {
+            $this->setError('Unable to get coordinate from given data.');
+            return [];
+        }
 
         $locations = $this->locationService->getLocationsByCoordinate(
-            new Coordinate($coordinate),
-            $limit,
-            $distance,
-            $featureClass
+            $coordinate,
+            $this->hasFilter(Name::LIMIT) ? $this->getFilterInteger(Name::LIMIT) : Limit::LIMIT_10,
+            $this->hasFilter(Name::DISTANCE) ? $this->getFilterInteger(Name::DISTANCE) : Distance::DISTANCE_1000,
+            $queryParser->getFeatureClasses(),
+            $queryParser->getFeatureCodes(),
+            $isoLanguage,
+            $country
         );
 
         if ($this->locationService->hasError()) {
@@ -132,9 +156,21 @@ final class LocationProvider extends BaseProvider
      */
     private function doProvideGetWithGeonameId(): BasePublicResource
     {
-        $geonameId = $this->getUriInteger(Name::GEONAME_ID);
+        [
+            KeyArray::ISO_LANGUAGE => $isoLanguage,
+            KeyArray::COUNTRY => $country,
+        ] = $this->getIsoLanguageAndCountryByFilter();
 
-        $location = $this->locationService->getLocationByGeonameId($geonameId);
+        if (is_null($isoLanguage) || is_null($country)) {
+            return (new LocationResource())->setGeonameId(0);
+        }
+
+        $location = $this->locationService->getLocationByGeonameId(
+            $this->getUriInteger(Name::GEONAME_ID),
+            $isoLanguage,
+            $country,
+            $this->isNextPlacesByFilter()
+        );
 
         if ($this->locationService->hasError()) {
             $this->setError($this->locationService->getError());
@@ -146,6 +182,7 @@ final class LocationProvider extends BaseProvider
     /**
      * Returns a location resource that matches the given coordinate.
      *
+     * @param QueryParser $queryParser
      * @return BasePublicResource
      * @throws ArrayKeyNotFoundException
      * @throws CaseInvalidException
@@ -160,34 +197,29 @@ final class LocationProvider extends BaseProvider
      * @throws ParserException
      * @throws TypeInvalidException
      */
-    private function doProvideGetWithCoordinate(): BasePublicResource
+    private function doProvideGetWithCoordinate(QueryParser $queryParser): BasePublicResource
     {
-        /* Check given coordinate. */
-        $coordinate = $this->getCoordinateByFilter();
-        if (is_null($coordinate)) {
-            $this->setError('No coordinate given.');
-            return (new LocationResource())
-                ->setGeonameId(0)
-            ;
-        }
+        [
+            KeyArray::ISO_LANGUAGE => $isoLanguage,
+            KeyArray::COUNTRY => $country,
+        ] = $this->getIsoLanguageAndCountryByFilter();
 
-        /* Check locale */
-        $isoLanguage = $this->getIsoLanguageByFilter();
-        $country = $this->getCountryByFilter();
-        $locale = $this->getLocaleByFilter($isoLanguage, $country);
-        if (!in_array($locale, LocaleCode::ALL)) {
-            $this->setError(sprintf('Locale "%s" is not supported yet. Please choose on of them: %s', $locale, implode(', ', LocaleCode::ALL)));
+        if (is_null($isoLanguage) || is_null($country)) {
             return (new LocationResource())->setGeonameId(0);
         }
 
-        /* Collect some url parameters. */
-        $nextPlaces = $this->isNextPlacesByFilter();
+        $coordinate = $queryParser->getCoordinate();
+
+        if (is_null($coordinate)) {
+            $this->setError('Unable to get coordinate from given data.');
+            return (new LocationResource())->setGeonameId(0);
+        }
 
         $location = $this->locationService->getLocationByCoordinate(
             $coordinate,
             $isoLanguage,
             $country,
-            $nextPlaces
+            $this->isNextPlacesByFilter()
         );
 
         if ($this->locationService->hasError()) {
@@ -195,6 +227,42 @@ final class LocationProvider extends BaseProvider
         }
 
         return $location;
+    }
+
+    /**
+     * Returns a location resource that matches the given coordinate.
+     *
+     * @return BasePublicResource
+     * @throws ArrayKeyNotFoundException
+     * @throws FunctionJsonEncodeException
+     * @throws JsonException
+     * @throws TypeInvalidException
+     */
+    private function doProvideGetCollectionSchema(): BasePublicResource
+    {
+        /* TODO: Add collection schema. */
+
+        return $this->doProvideGetWithCoordinateSchema();
+    }
+
+    /**
+     * Returns a location resource that matches the given coordinate.
+     *
+     * @return BasePublicResource
+     * @throws ArrayKeyNotFoundException
+     * @throws FunctionJsonEncodeException
+     * @throws JsonException
+     * @throws TypeInvalidException
+     */
+    private function doProvideGetWithCoordinateSchema(): BasePublicResource
+    {
+        $schemaFile = new File(self::FILE_SCHEMA_COORDINATE, $this->getProjectDir());
+
+        $base = new Base();
+
+        $base->setAll($schemaFile->getContentAsJson()->getArray());
+
+        return $base;
     }
 
     /**
@@ -213,14 +281,88 @@ final class LocationProvider extends BaseProvider
      * @throws NonUniqueResultException
      * @throws ParserException
      * @throws TypeInvalidException
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      */
     protected function doProvide(): BasePublicResource|array
     {
-        return match(true) {
-            $this->getRequestMethod() === BaseResourceWrapperProvider::METHOD_GET_COLLECTION => $this->doProvideGetCollection(),
-            $this->getRequestMethod() === Request::METHOD_GET && $this->hasFilter(Name::COORDINATE) => $this->doProvideGetWithCoordinate(),
-            $this->getRequestMethod() === Request::METHOD_GET && $this->hasUri(Name::GEONAME_ID) => $this->doProvideGetWithGeonameId(),
-            default => throw new CaseUnsupportedException('Unsupported mode from api endpoint /api/v1/location.'),
+        $queryParser = match (true) {
+            $this->hasFilter(Name::QUERY) => new QueryParser($this->getFilterString(Name::QUERY)),
+            $this->hasUri(Name::GEONAME_ID) => new QueryParser($this->getUriInteger(Name::GEONAME_ID)),
+            default => null,
         };
+
+        if (!$queryParser instanceof QueryParser) {
+            $this->setError('No query given.');
+            return [];
+        }
+
+        switch (true) {
+
+            /*
+             * ------
+             * Schema
+             * ------
+             */
+
+            /*
+             * https://www.location-api.localhost/api/v1/location.json?schema
+             */
+            case $this->getRequestMethod() === BaseResourceWrapperProvider::METHOD_GET_COLLECTION && $this->hasFilter(Name::SCHEMA):
+                return $this->doProvideGetCollectionSchema();
+
+            /*
+             * https://www.location-api.localhost/api/v1/location/coordinate.json?schema
+             */
+            case $this->getRequestMethod() === Request::METHOD_GET && $this->hasFilter(Name::SCHEMA):
+                return $this->doProvideGetWithCoordinateSchema();
+
+
+
+            /*
+             * ----
+             * Data
+             * ----
+             */
+
+            /*
+             * https://www.location-api.localhost/api/v1/location.json?q=51.05811,13.74133&distance=1000&limit=10
+             * https://www.location-api.localhost/api/v1/location.json?q=51.05811,13.74133&distance=1000&limit=10&language=de&country=DE
+             */
+            case $this->getRequestMethod() === BaseResourceWrapperProvider::METHOD_GET_COLLECTION && $queryParser->isType(QueryParser::TYPE_SEARCH_COORDINATE):
+
+            /*
+             * https://www.location-api.localhost/api/v1/location.json?q=AIRP%2051.05811,13.74133&distance=150000&limit=10
+             * https://www.location-api.localhost/api/v1/location.json?q=AIRP%2051.05811,13.74133&distance=150000&limit=10&language=de&country=DE
+             */
+            case $this->getRequestMethod() === BaseResourceWrapperProvider::METHOD_GET_COLLECTION && $queryParser->isType(QueryParser::TYPE_SEARCH_LIST_WITH_FEATURES):
+                return $this->doProvideGetCollectionByCoordinate($queryParser);
+
+            /*
+             * https://www.location-api.localhost/api/v1/location/coordinate.json?q=51.119882,%2013.132567
+             * https://www.location-api.localhost/api/v1/location/coordinate.json?q=51.119882,%2013.132567&language=en&country=US
+             * https://www.location-api.localhost/api/v1/location/coordinate.json?q=51.119882,%2013.132567&language=en&country=US&next_places
+             */
+            case $this->getRequestMethod() === Request::METHOD_GET && $queryParser->isType(QueryParser::TYPE_SEARCH_COORDINATE):
+                return $this->doProvideGetWithCoordinate($queryParser);
+
+            /*
+             * https://www.location-api.localhost/api/v1/location/2830942.json
+             * https://www.location-api.localhost/api/v1/location/2830942.json?language=de&country=DE
+             * https://www.location-api.localhost/api/v1/location/2830942.json?language=de&country=DE&next_places
+             */
+            case $this->getRequestMethod() === Request::METHOD_GET && $this->hasUri(Name::GEONAME_ID):
+                return $this->doProvideGetWithGeonameId();
+
+
+
+            /*
+             * ----------------------
+             * Unsupported query type
+             * ----------------------
+             */
+            default:
+                $this->setError('Unsupported query type.');
+                return [];
+        }
     }
 }

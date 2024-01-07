@@ -13,23 +13,38 @@ declare(strict_types=1);
 
 namespace App\ApiPlatform\State\Base;
 
-use Ixnode\PhpApiVersionBundle\ApiPlatform\State\Base\Wrapper\ResourceWrapper as IxnodeResourceWrapper;
+use Ixnode\PhpApiVersionBundle\ApiPlatform\State\Base\Wrapper\ResourceWrapper;
 
 /**
- * Class ResourceWrapper
+ * Class ResourceWrapperCustom
+ *
+ *  The ResourceWrapper for BaseResourceWrapperProvider to wrap it with additional API specific wrapper information:
+ *
+ *  - data resource
+ *  - given resource
+ *  - valid state of request
+ *  - date of request
+ *  - time-taken for request
+ *  - version of API
  *
  * @author Björn Hempel <bjoern@hempel.li>
  * @version 0.1.0 (2023-08-30)
  * @since 0.1.0 (2023-08-30) First version.
  */
-class ResourceWrapper extends IxnodeResourceWrapper
+class ResourceWrapperCustom extends ResourceWrapper
 {
     /** @var array{full: string, short: string, url: string} $dataLicence */
     protected array $dataLicence;
 
+    /** @var array<int|string, mixed> $schema */
+    protected array $schema;
+
     private string $timeTaken;
 
     private string $memoryTaken;
+
+    /** @var array<int|string, mixed> $performance */
+    private array $performance;
 
     /**
      * @return array{full: string, short: string, url: string}
@@ -46,6 +61,25 @@ class ResourceWrapper extends IxnodeResourceWrapper
     public function setDataLicence(array $dataLicence): self
     {
         $this->dataLicence = $dataLicence;
+
+        return $this;
+    }
+
+    /**
+     * @return array<int|string, mixed>
+     */
+    public function getSchema(): array
+    {
+        return $this->schema;
+    }
+
+    /**
+     * @param array<int|string, mixed> $schema
+     * @return self
+     */
+    public function setSchema(array $schema): self
+    {
+        $this->schema = $schema;
 
         return $this;
     }
@@ -84,6 +118,25 @@ class ResourceWrapper extends IxnodeResourceWrapper
     public function setMemoryTaken(string $memoryTaken): self
     {
         $this->memoryTaken = $memoryTaken;
+
+        return $this;
+    }
+
+    /**
+     * @return array<int|string, mixed>
+     */
+    public function getPerformance(): array
+    {
+        return $this->performance;
+    }
+
+    /**
+     * @param array<int|string, mixed> $performance
+     * @return self
+     */
+    public function setPerformance(array $performance): self
+    {
+        $this->performance = $performance;
 
         return $this;
     }

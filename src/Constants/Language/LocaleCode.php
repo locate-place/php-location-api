@@ -17,8 +17,8 @@ namespace App\Constants\Language;
  * Class LocaleCode
  *
  * @author Björn Hempel <bjoern@hempel.li>
- * @version 0.1.0 (2024-01-04)
- * @since 0.1.0 (2024-01-04) First version.
+ * @version 0.1.0 (2024-01-07)
+ * @since 0.1.0 (2024-01-07) First version.
  */
 class LocaleCode
 {

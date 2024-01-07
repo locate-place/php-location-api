@@ -1,167 +1,169 @@
 # @see http://www.geonames.org/export/codes.html
 A:
-  ADM1: "Verwaltungsgliederung erster Ordnung / Bundesland" # a primary administrative division of a country, such as a state in the United States
+  ADM1:  "Verwaltungsgliederung erster Ordnung / Bundesland" # a primary administrative division of a country, such as a state in the United States
   ADM1H: "Historische Verwaltungsgliederung erster Ordnung" # a former first-order administrative division
-  ADM2: "Verwaltungsgliederung zweiter Ordnung" # a subdivision of a first-order administrative division
+  ADM2:  "Verwaltungsgliederung zweiter Ordnung" # a subdivision of a first-order administrative division
   ADM2H: "Historische Verwaltungsgliederung zweiter Ordnung" # a former second-order administrative division
-  ADM3: "Verwaltungsgliederung dritter Ordnung" # a subdivision of a second-order administrative division
+  ADM3:  "Verwaltungsgliederung dritter Ordnung" # a subdivision of a second-order administrative division
   ADM3H: "Historische Verwaltungsgliederung dritter Ordnung" # a former third-order administrative division
-  ADM4: "Verwaltungsgliederung vierter Ordnung" # a subdivision of a third-order administrative division
+  ADM4:  "Verwaltungsgliederung vierter Ordnung" # a subdivision of a third-order administrative division
   ADM4H: "Historische Verwaltungsgliederung vierter Ordnung" # a former fourth-order administrative division
-  ADM5: "Verwaltungsgliederung fünfter Ordnung" # a subdivision of a fourth-order administrative division
+  ADM5:  "Verwaltungsgliederung fünfter Ordnung" # a subdivision of a fourth-order administrative division
   ADM5H: "Historische Verwaltungsgliederung fünfter Ordnung" # a former fifth-order administrative division
-  ADMD: "Verwaltungseinheit" # an administrative division of a country, undifferentiated as to administrative level
-  ADMDH: "historische Verwaltungsabteilung" # a former administrative division of a political entity, undifferentiated as to administrative level
-  LTER: "Pachtfläche" # a tract of land leased to another country, usually for military installations
-  PCL: "Politische Instanz" #
-  PCLD: "Abhängige politische Einheit" #
-  PCLF: "Frei assoziierter Staat" #
-  PCLH: "Historische politische Einheit" # a former political entity
-  PCLI: "Unabhängige politische Instanz" #
+  ADMD:  "Verwaltungseinheit" # an administrative division of a country, undifferentiated as to administrative level
+  ADMDH: "Historische Verwaltungsabteilung" # a former administrative division of a political entity, undifferentiated as to administrative level
+  LTER:  "Pachtfläche" # a tract of land leased to another country, usually for military installations
+  PCL:   "Politische Instanz" #
+  PCLD:  "Abhängige politische Einheit" #
+  PCLF:  "Frei assoziierter Staat" #
+  PCLH:  "Historische politische Einheit" # a former political entity
+  PCLI:  "Unabhängige politische Instanz" #
   PCLIX: "Abschnitt einer unabhängigen politischen Einheit" #
-  PCLS: "Halb-unabhängige politische Einheit" #
-  PRSH: "Kirchgemeinde" # an ecclesiastical district
-  TERR: "Hoheitsgebiet" #
-  ZN: "Zone" #
-  ZNB: "Pufferzone" # a zone recognized as a buffer between two nations in which military presence is minimal or absent
+  PCLS:  "Halb-unabhängige politische Einheit" #
+  PRSH:  "Kirchgemeinde" # an ecclesiastical district
+  TERR:  "Hoheitsgebiet" #
+  ZN:    "Zone" #
+  ZNB:   "Pufferzone" # a zone recognized as a buffer between two nations in which military presence is minimal or absent
+
 H:
-  AIRS: "Landeplatz für Wasserflugzeuge" # a place on a waterbody where floatplanes land and take off
-  ANCH: "Anlegestelle" # an area where vessels may anchor
-  BAY: "Bucht" # a coastal indentation between two capes or headlands, larger than a cove but smaller than a gulf
-  BAYS: "Buchten" # coastal indentations between two capes or headlands, larger than a cove but smaller than a gulf
-  BGHT: "Bucht(en)" # an open body of water forming a slight recession in a coastline
-  BNK: "Böschung" # an elevation, typically located on a shelf, over which the depth of water is relatively shallow but sufficient for most surface navigation
-  BNKR: "Bachufer" # a sloping margin of a stream channel which normally confines the stream to its channel on land
-  BNKX: "Abschnitt der Uferzone" #
-  BOG: "Moor(e)" # a wetland characterized by peat forming sphagnum moss, sedge, and other acid-water plants
-  CAPS: "Eiskappe" # a dome-shaped mass of glacial ice covering an area of mountain summits or other high lands; smaller than an ice sheet
-  CHN: "Kanal" # the deepest part of a stream, bay, lagoon, or strait, through which the main current flows
-  CHNL: "Seekanal(e)" # that part of a lake having water deep enough for navigation between islands, shoals, etc.
-  CHNM: "Seekanal" # that part of a body of water deep enough for navigation through an area otherwise not suitable
-  CHNN: "Fahrrinne" # a buoyed channel of sufficient depth for the safe navigation of vessels
-  CNFL: "Zusammenfluss" # a place where two or more streams or intermittent streams flow together
-  CNL: "Kanal" # an artificial watercourse
-  CNLA: "Wasserleitung" # a conduit used to carry water
-  CNLB: "Kanalkurve" # a conspicuously curved or bent section of a canal
-  CNLD: "Entwässerungskanal" # an artificial waterway carrying water away from a wetland or from drainage ditches
-  CNLI: "Bewässerungskanal" # a canal which serves as a main conduit for irrigation water
-  CNLN: "Schifffahrtskanal(e)" # a watercourse constructed for navigation of vessels
-  CNLQ: "Stillgelegter Kanal" #
+  AIRS:  "Landeplatz für Wasserflugzeuge" # a place on a waterbody where floatplanes land and take off
+  ANCH:  "Anlegestelle" # an area where vessels may anchor
+  BAY:   "Bucht" # a coastal indentation between two capes or headlands, larger than a cove but smaller than a gulf
+  BAYS:  "Buchten" # coastal indentations between two capes or headlands, larger than a cove but smaller than a gulf
+  BGHT:  "Bucht(en)" # an open body of water forming a slight recession in a coastline
+  BNK:   "Böschung" # an elevation, typically located on a shelf, over which the depth of water is relatively shallow but sufficient for most surface navigation
+  BNKR:  "Bachufer" # a sloping margin of a stream channel which normally confines the stream to its channel on land
+  BNKX:  "Abschnitt der Uferzone" #
+  BOG:   "Moor(e)" # a wetland characterized by peat forming sphagnum moss, sedge, and other acid-water plants
+  CAPS:  "Eiskappe" # a dome-shaped mass of glacial ice covering an area of mountain summits or other high lands; smaller than an ice sheet
+  CHN:   "Kanal" # the deepest part of a stream, bay, lagoon, or strait, through which the main current flows
+  CHNL:  "Seekanal(e)" # that part of a lake having water deep enough for navigation between islands, shoals, etc.
+  CHNM:  "Seekanal" # that part of a body of water deep enough for navigation through an area otherwise not suitable
+  CHNN:  "Fahrrinne" # a buoyed channel of sufficient depth for the safe navigation of vessels
+  CNFL:  "Zusammenfluss" # a place where two or more streams or intermittent streams flow together
+  CNL:   "Kanal" # an artificial watercourse
+  CNLA:  "Wasserleitung" # a conduit used to carry water
+  CNLB:  "Kanalkurve" # a conspicuously curved or bent section of a canal
+  CNLD:  "Entwässerungskanal" # an artificial waterway carrying water away from a wetland or from drainage ditches
+  CNLI:  "Bewässerungskanal" # a canal which serves as a main conduit for irrigation water
+  CNLN:  "Schifffahrtskanal(e)" # a watercourse constructed for navigation of vessels
+  CNLQ:  "Stillgelegter Kanal" #
   CNLSB: "Unterirdische(r) Bewässerungskanal/-kanäle" # a gently inclined underground tunnel bringing water for irrigation from aquifers
-  CNLX: "Kanalabschnitt" #
-  COVE: "Bucht(en)" # a small coastal indentation, smaller than a bay
-  CRKT: "Gezeitenbach(e)" # a meandering channel in a coastal wetland subject to bi-directional tidal currents
-  CRNT: "Strom" # a horizontal flow of water in a given direction with uniform velocity
-  CUTF: "Altlauf" # a channel formed as a result of a stream cutting through a meander neck
-  DCK: "Anlegeplatz(e)" # a waterway between two piers, or cut into the land for the berthing of ships
-  DCKB: "Andockbecken" # a part of a harbor where ships dock
-  DOMG: "Eisgipfelkuppel" # a comparatively elevated area on an icecap
-  DPRG: "Polkappen-Depression" # a comparatively depressed area on an icecap
-  DTCH: "Graben" # a small artificial watercourse dug for draining or irrigating the land
+  CNLX:  "Kanalabschnitt" #
+  COVE:  "Bucht(en)" # a small coastal indentation, smaller than a bay
+  CRKT:  "Gezeitenbach(e)" # a meandering channel in a coastal wetland subject to bi-directional tidal currents
+  CRNT:  "Strom" # a horizontal flow of water in a given direction with uniform velocity
+  CUTF:  "Altlauf" # a channel formed as a result of a stream cutting through a meander neck
+  DCK:   "Anlegeplatz(e)" # a waterway between two piers, or cut into the land for the berthing of ships
+  DCKB:  "Andockbecken" # a part of a harbor where ships dock
+  DOMG:  "Eisgipfelkuppel" # a comparatively elevated area on an icecap
+  DPRG:  "Polkappen-Depression" # a comparatively depressed area on an icecap
+  DTCH:  "Graben" # a small artificial watercourse dug for draining or irrigating the land
   DTCHD: "Entwässerungsgraben" # a ditch which serves to drain the land
   DTCHI: "Bewässerungsgraben" # a ditch which serves to distribute irrigation water
   DTCHM: "Grabenmündung(en)" # an area where a drainage ditch enters a lagoon, lake or bay
-  ESTY: "Mündung" # a funnel-shaped stream mouth or embayment where fresh water mixes with sea water under tidal influences
-  FISH: "Fischereigebiet" # a fishing ground, bank or area where fishermen go to catch fish
-  FJD: "Fjord" # a long, narrow, steep-walled, deep-water arm of the sea at high latitudes, usually along mountainous coasts
-  FJDS: "Fjorde" # long, narrow, steep-walled, deep-water arms of the sea at high latitudes, usually along mountainous coasts
-  FLLS: "Wasserfall(e)" # a perpendicular or very steep descent of the water of a stream
+  ESTY:  "Mündung" # a funnel-shaped stream mouth or embayment where fresh water mixes with sea water under tidal influences
+  FISH:  "Fischereigebiet" # a fishing ground, bank or area where fishermen go to catch fish
+  FJD:   "Fjord" # a long, narrow, steep-walled, deep-water arm of the sea at high latitudes, usually along mountainous coasts
+  FJDS:  "Fjorde" # long, narrow, steep-walled, deep-water arms of the sea at high latitudes, usually along mountainous coasts
+  FLLS:  "Wasserfall(e)" # a perpendicular or very steep descent of the water of a stream
   FLLSX: "Abschnitt des Wasserfalls (der Wasserfälle)" #
-  FLTM: "Wattenmeer(e)" # a relatively level area of mud either between high and low tide lines, or subject to flooding
-  FLTT: "Wattenmeer(e)" # a large flat area of mud or sand attached to the shore and alternately covered and uncovered by the tide
-  GLCR: "Gletscher(e)" # a mass of ice, usually at high latitudes or high elevations, with sufficient thickness to flow away from the source area in lobes, tongues, or masses
-  GULF: "Golf" # a large recess in the coastline, larger than a bay
-  GYSR: "Geysir" # a type of hot spring with intermittent eruptions of jets of hot water and steam
-  HBR: "Hafen(s)" # a haven or space of deep water so sheltered by the adjacent land as to afford a safe anchorage for ships
-  HBRX: "Abschnitt eines Hafens" #
-  INLT: "Einlass" # a narrow waterway extending into the land, or connecting a bay or lagoon with a larger body of water
+  FLTM:  "Wattenmeer(e)" # a relatively level area of mud either between high and low tide lines, or subject to flooding
+  FLTT:  "Wattenmeer(e)" # a large flat area of mud or sand attached to the shore and alternately covered and uncovered by the tide
+  GLCR:  "Gletscher(e)" # a mass of ice, usually at high latitudes or high elevations, with sufficient thickness to flow away from the source area in lobes, tongues, or masses
+  GULF:  "Golf" # a large recess in the coastline, larger than a bay
+  GYSR:  "Geysir" # a type of hot spring with intermittent eruptions of jets of hot water and steam
+  HBR:   "Hafen(s)" # a haven or space of deep water so sheltered by the adjacent land as to afford a safe anchorage for ships
+  HBRX:  "Abschnitt eines Hafens" #
+  INLT:  "Einlass" # a narrow waterway extending into the land, or connecting a bay or lagoon with a larger body of water
   INLTQ: "Ehemaliger Eingang" # an inlet which has been filled in, or blocked by deposits
-  LBED: "Seebett(e)" # a dried up or drained area of a former lake
-  LGN: "Lagune" # a shallow coastal waterbody, completely or partly separated from a larger body of water by a barrier island, coral reef or other depositional feature
-  LGNS: "Lagunen" # shallow coastal waterbodies, completely or partly separated from a larger body of water by a barrier island, coral reef or other depositional feature
-  LGNX: "Lagunenabschnitt" #
-  LK: "See" # a large inland body of standing water
-  LKC: "Kratersee" # a lake in a crater or caldera
-  LKI: "Stausee" #
-  LKN: "Salzsee" # an inland body of salt water with no outlet
-  LKNI: "Intermittierender Salzsee" #
-  LKO: "Altwassersee" # a crescent-shaped lake commonly found adjacent to meandering streams
-  LKOI: "Periodischer Altwassersee" #
-  LKS: "Seen" # large inland bodies of standing water
-  LKSB: "Unterirdischer See" # a standing body of water in a cave
-  LKSC: "Kraterseen" # lakes in a crater or caldera
-  LKSI: "Periodische Seen" #
-  LKSN: "Salzseen" # inland bodies of salt water with no outlet
+  LBED:  "Seebett(e)" # a dried up or drained area of a former lake
+  LGN:   "Lagune" # a shallow coastal waterbody, completely or partly separated from a larger body of water by a barrier island, coral reef or other depositional feature
+  LGNS:  "Lagunen" # shallow coastal waterbodies, completely or partly separated from a larger body of water by a barrier island, coral reef or other depositional feature
+  LGNX:  "Lagunenabschnitt" #
+  LK:    "See" # a large inland body of standing water
+  LKC:   "Kratersee" # a lake in a crater or caldera
+  LKI:   "Stausee" #
+  LKN:   "Salzsee" # an inland body of salt water with no outlet
+  LKNI:  "Intermittierender Salzsee" #
+  LKO:   "Altwassersee" # a crescent-shaped lake commonly found adjacent to meandering streams
+  LKOI:  "Periodischer Altwassersee" #
+  LKS:   "Seen" # large inland bodies of standing water
+  LKSB:  "Unterirdischer See" # a standing body of water in a cave
+  LKSC:  "Kraterseen" # lakes in a crater or caldera
+  LKSI:  "Periodische Seen" #
+  LKSN:  "Salzseen" # inland bodies of salt water with no outlet
   LKSNI: "Periodisch auftretende Salzseen" #
-  LKX: "Abschnitt eines Sees" #
-  MFGN: "Salzverdunstungsteiche" # diked salt ponds used in the production of solar evaporated salt
-  MGV: "Mangrovensumpf" # a tropical tidal mud flat characterized by mangrove vegetation
-  MOOR: "Moor(e)" # an area of open ground overlaid with wet peaty soils
-  MRSH: "Sumpf(e)" # a wetland dominated by grass-like vegetation
+  LKX:   "Abschnitt eines Sees" #
+  MFGN:  "Salzverdunstungsteiche" # diked salt ponds used in the production of solar evaporated salt
+  MGV:   "Mangrovensumpf" # a tropical tidal mud flat characterized by mangrove vegetation
+  MOOR:  "Moor(e)" # an area of open ground overlaid with wet peaty soils
+  MRSH:  "Sumpf(e)" # a wetland dominated by grass-like vegetation
   MRSHN: "Salzsumpf" # a flat area, subject to periodic salt water inundation, dominated by grassy salt-tolerant plants
-  NRWS: "Meerenge" # a navigable narrow part of a bay, strait, river, etc.
-  OCN: "Ozean" # one of the major divisions of the vast expanse of salt water covering part of the earth
-  OVF: "Hochwasserüberläufe" # an area of breaking waves caused by the meeting of currents or by waves moving against the current
-  PND: "Teich" # a small standing waterbody
-  PNDI: "Periodischer Teich" #
-  PNDN: "Salzteich" # a small standing body of salt water often in a marsh or swamp, usually along a seacoast
+  NRWS:  "Meerenge" # a navigable narrow part of a bay, strait, river, etc.
+  OCN:   "Ozean" # one of the major divisions of the vast expanse of salt water covering part of the earth
+  OVF:   "Hochwasserüberläufe" # an area of breaking waves caused by the meeting of currents or by waves moving against the current
+  PND:   "Teich" # a small standing waterbody
+  PNDI:  "Periodischer Teich" #
+  PNDN:  "Salzteich" # a small standing body of salt water often in a marsh or swamp, usually along a seacoast
   PNDNI: "Periodisch(e) auftretende(r) Salzteich(e)" #
-  PNDS: "Teiche" # small standing waterbodies
+  PNDS:  "Teiche" # small standing waterbodies
   PNDSF: "Fischteiche" # ponds or enclosures in which fish are kept or raised
   PNDSI: "Periodisch auftretende Teiche" #
   PNDSN: "Salzteiche" # small standing bodies of salt water often in a marsh or swamp, usually along a seacoast
-  POOL: "Becken" # a small and comparatively still, deep part of a larger body of water such as a stream or harbor; or a small body of standing water
+  POOL:  "Becken" # a small and comparatively still, deep part of a larger body of water such as a stream or harbor; or a small body of standing water
   POOLI: "Periodisch auftretendes Becken" #
-  RCH: "Abschnitt" # a straight section of a navigable stream or channel between two bends
-  RDGG: "Eiskappen-Kamm" # a linear elevation on an icecap
-  RDST: "Reede" # an open anchorage affording less protection than a harbor
-  RF: "Riff(e)" # a surface-navigation hazard composed of consolidated material
-  RFC: "Korallenriff(e)" # a surface-navigation hazard composed of coral
-  RFX: "Riffabschnitt" #
-  RPDS: "Stromschnellen" # a turbulent section of a stream associated with a steep, irregular stream bed
-  RSV: "Stausee(n)" # an artificial pond or lake
-  RSVI: "Periodisch auftretender Stausee" #
-  RSVT: "Wassertank" # a contained pool or tank of water at, below, or above ground level
-  RVN: "Schlucht(en)" # a small, narrow, deep, steep-sided stream channel, smaller than a gorge
-  SBKH: "Sabcha(s)" # a salt flat or salt encrusted plain subject to periodic inundation from flooding or high tides
-  SD: "Meerenge" # a long arm of the sea forming a channel between the mainland and an island or islands; or connecting two larger bodies of water
-  SEA: "Meer" # a large body of salt water more or less confined by continuous land or chains of islands forming a subdivision of an ocean
-  SHOL: "Sandbank(e)" # a surface-navigation hazard composed of unconsolidated material
-  SILL: "Schwelle" # the low part of an underwater gap or saddle separating basins, including a similar feature at the mouth of a fjord
-  SPNG: "Quelle(n)" # a place where ground water flows naturally out of the ground
-  SPNS: "Schwefelquelle(n)" # a place where sulphur ground water flows naturally out of the ground
-  SPNT: "Heiße Quelle(n)" # a place where hot ground water flows naturally out of the ground
-  STM: "Fluss" # a body of running water moving to a lower level in a channel on land
-  STMA: "Nebenarm" # a diverging branch flowing out of a main stream and rejoining it downstream
-  STMB: "Flussbiegung" # a conspicuously curved or bent segment of a stream
-  STMC: "Kanalisierter Fluss" # a stream that has been substantially ditched, diked, or straightened
-  STMD: "Nebenarm(e)" # a branch which flows away from the main stream, as in a delta or irrigation canal
-  STMH: "Quellflüsse" # the source and upper part of a stream, including the upper drainage basin
-  STMI: "Periodischer Fluss" #
+  RCH:   "Abschnitt" # a straight section of a navigable stream or channel between two bends
+  RDGG:  "Eiskappen-Kamm" # a linear elevation on an icecap
+  RDST:  "Reede" # an open anchorage affording less protection than a harbor
+  RF:    "Riff(e)" # a surface-navigation hazard composed of consolidated material
+  RFC:   "Korallenriff(e)" # a surface-navigation hazard composed of coral
+  RFX:   "Riffabschnitt" #
+  RPDS:  "Stromschnellen" # a turbulent section of a stream associated with a steep, irregular stream bed
+  RSV:   "Stausee(n)" # an artificial pond or lake
+  RSVI:  "Periodisch auftretender Stausee" #
+  RSVT:  "Wassertank" # a contained pool or tank of water at, below, or above ground level
+  RVN:   "Schlucht(en)" # a small, narrow, deep, steep-sided stream channel, smaller than a gorge
+  SBKH:  "Sabcha(s)" # a salt flat or salt encrusted plain subject to periodic inundation from flooding or high tides
+  SD:    "Meerenge" # a long arm of the sea forming a channel between the mainland and an island or islands; or connecting two larger bodies of water
+  SEA:   "Meer" # a large body of salt water more or less confined by continuous land or chains of islands forming a subdivision of an ocean
+  SHOL:  "Sandbank(e)" # a surface-navigation hazard composed of unconsolidated material
+  SILL:  "Schwelle" # the low part of an underwater gap or saddle separating basins, including a similar feature at the mouth of a fjord
+  SPNG:  "Quelle(n)" # a place where ground water flows naturally out of the ground
+  SPNS:  "Schwefelquelle(n)" # a place where sulphur ground water flows naturally out of the ground
+  SPNT:  "Heiße Quelle(n)" # a place where hot ground water flows naturally out of the ground
+  STM:   "Fluss" # a body of running water moving to a lower level in a channel on land
+  STMA:  "Nebenarm" # a diverging branch flowing out of a main stream and rejoining it downstream
+  STMB:  "Flussbiegung" # a conspicuously curved or bent segment of a stream
+  STMC:  "Kanalisierter Fluss" # a stream that has been substantially ditched, diked, or straightened
+  STMD:  "Nebenarm(e)" # a branch which flows away from the main stream, as in a delta or irrigation canal
+  STMH:  "Quellflüsse" # the source and upper part of a stream, including the upper drainage basin
+  STMI:  "Periodischer Fluss" #
   STMIX: "Abschnitt eines periodischen Flusses" #
-  STMM: "Flussmündung(en)" # a place where a stream discharges into a lagoon, lake, or the sea
-  STMQ: "Stillgelegter Wasserlauf" # a former stream or distributary no longer carrying flowing water, but still evident due to lakes, wetland, topographic or vegetation patterns
-  STMS: "Ströme" # bodies of running water moving to a lower level in a channel on land
+  STMM:  "Flussmündung(en)" # a place where a stream discharges into a lagoon, lake, or the sea
+  STMQ:  "Stillgelegter Wasserlauf" # a former stream or distributary no longer carrying flowing water, but still evident due to lakes, wetland, topographic or vegetation patterns
+  STMS:  "Ströme" # bodies of running water moving to a lower level in a channel on land
   STMSB: "Verschollener Fluss" # a surface stream that disappears into an underground channel, or dries up in an arid area
-  STMX: "Flussabschnitt" #
-  STRT: "Meeresenge" # a relatively narrow waterway, usually narrower and less extensive than a sound, connecting two larger bodies of water
-  SWMP: "Sumpfland" # a wetland dominated by tree vegetation
-  SYSI: "Bewässerungsanlage" # a network of ditches and one or more of the following elements: water supply, reservoir, canal, pump, well, drain, etc.
-  TNLC: "Kanaltunnel" # a tunnel through which a canal passes
-  WAD: "Trockental" # a valley or ravine, bounded by relatively steep banks, which in the rainy season becomes a watercourse; found primarily in North Africa and the Middle East
-  WADB: "Trockental Biegung" # a conspicuously curved or bent segment of a wadi
-  WADJ: "Trockental Verzweigung" # a place where two or more wadies join
-  WADM: "Trockental Mündung" # the lower terminus of a wadi where it widens into an adjoining floodplain, depression, or waterbody
-  WADS: "Trockentäler" # valleys or ravines, bounded by relatively steep banks, which in the rainy season become watercourses; found primarily in North Africa and the Middle East
-  WADX: "Abschnitt eines Trockentals" #
-  WHRL: "Whirlpool" # a turbulent, rotating movement of water in a stream
-  WLL: "Brunnen" # a cylindrical hole, pit, or tunnel drilled or dug down to a depth from which water, oil, or gas can be pumped or brought to the surface
-  WLLQ: "Aufgegebener Brunnen" #
-  WLLS: "Brunnen" # cylindrical holes, pits, or tunnels drilled or dug down to a depth from which water, oil, or gas can be pumped or brought to the surface
-  WTLD: "Moorland" # an area subject to inundation, usually characterized by bog, marsh, or swamp vegetation
+  STMX:  "Flussabschnitt" #
+  STRT:  "Meeresenge" # a relatively narrow waterway, usually narrower and less extensive than a sound, connecting two larger bodies of water
+  SWMP:  "Sumpfland" # a wetland dominated by tree vegetation
+  SYSI:  "Bewässerungsanlage" # a network of ditches and one or more of the following elements: water supply, reservoir, canal, pump, well, drain, etc.
+  TNLC:  "Kanaltunnel" # a tunnel through which a canal passes
+  WAD:   "Trockental" # a valley or ravine, bounded by relatively steep banks, which in the rainy season becomes a watercourse; found primarily in North Africa and the Middle East
+  WADB:  "Trockental Biegung" # a conspicuously curved or bent segment of a wadi
+  WADJ:  "Trockental Verzweigung" # a place where two or more wadies join
+  WADM:  "Trockental Mündung" # the lower terminus of a wadi where it widens into an adjoining floodplain, depression, or waterbody
+  WADS:  "Trockentäler" # valleys or ravines, bounded by relatively steep banks, which in the rainy season become watercourses; found primarily in North Africa and the Middle East
+  WADX:  "Abschnitt eines Trockentals" #
+  WHRL:  "Whirlpool" # a turbulent, rotating movement of water in a stream
+  WLL:   "Brunnen" # a cylindrical hole, pit, or tunnel drilled or dug down to a depth from which water, oil, or gas can be pumped or brought to the surface
+  WLLQ:  "Aufgegebener Brunnen" #
+  WLLS:  "Brunnen" # cylindrical holes, pits, or tunnels drilled or dug down to a depth from which water, oil, or gas can be pumped or brought to the surface
+  WTLD:  "Moorland" # an area subject to inundation, usually characterized by bog, marsh, or swamp vegetation
   WTLDI: "Periodisches Feuchtgebiet" #
-  WTRC: "Wasserlauf" # a natural, well-defined channel produced by flowing water, or an artificial channel designed to carry flowing water
-  WTRH: "Wasserloch(e)" # a natural hole, hollow, or small depression that contains water, used by man and animals, especially in arid areas
+  WTRC:  "Wasserlauf" # a natural, well-defined channel produced by flowing water, or an artificial channel designed to carry flowing water
+  WTRH:  "Wasserloch(e)" # a natural hole, hollow, or small depression that contains water, used by man and animals, especially in arid areas
+
 L:
   AGRC: "Landwirtschaftliche Kolonie" # a tract of land set aside for agricultural settlement
   AMUS: "Vergnügungspark" # Amusement Park are theme parks, adventure parks offering entertainment, similar to funfairs but with a fix location

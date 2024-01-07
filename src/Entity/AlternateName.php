@@ -26,6 +26,7 @@ use Doctrine\ORM\Mapping as ORM;
  */
 #[ORM\Entity(repositoryClass: AlternateNameRepository::class)]
 #[ORM\Index(columns: ['alternate_name_id'])]
+#[ORM\Index(columns: ['iso_language'])]
 #[ORM\HasLifecycleCallbacks]
 class AlternateName
 {

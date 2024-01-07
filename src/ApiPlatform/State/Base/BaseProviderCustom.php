@@ -14,9 +14,12 @@ declare(strict_types=1);
 namespace App\ApiPlatform\State\Base;
 
 use App\ApiPlatform\OpenApiContext\Name;
+use App\ApiPlatform\Resource\Base;
 use App\Constants\Key\KeyArray;
 use App\Constants\Language\CountryCode;
 use App\Constants\Language\LanguageCode;
+use App\Constants\Language\LocaleCode;
+use App\Utils\Performance\PerformanceLogger;
 use Ixnode\PhpApiVersionBundle\ApiPlatform\Resource\Base\BasePublicResource;
 use Ixnode\PhpApiVersionBundle\ApiPlatform\State\Base\Wrapper\BaseResourceWrapperProvider;
 use Ixnode\PhpApiVersionBundle\Utils\TypeCasting\TypeCastingHelper;
@@ -27,45 +30,67 @@ use Ixnode\PhpException\Case\CaseUnsupportedException;
 use Ixnode\PhpException\Parser\ParserException;
 use Ixnode\PhpException\Type\TypeInvalidException;
 use Ixnode\PhpTimezone\Constants\Language;
+use LogicException;
 
 /**
- * Class BaseProvider
+ * Class BaseProviderCustom
  *
  * @author Björn Hempel <bjoern@hempel.li>
  * @version 0.1.0 (2023-07-04)
  * @since 0.1.0 (2023-07-04) First version.
  */
-class BaseProvider extends BaseResourceWrapperProvider
+class BaseProviderCustom extends BaseResourceWrapperProvider
 {
     /**
      * Add some additional data to ResourceWrapper (memory-taken, data-licence, etc.).
      *
      * @param BasePublicResource|BasePublicResource[] $baseResource
      * @param string $timeTaken
-     * @return ResourceWrapper
+     * @return ResourceWrapperCustom
      * @throws ArrayKeyNotFoundException
      * @throws CaseInvalidException
      * @throws CaseUnsupportedException
      * @throws TypeInvalidException
      */
-    protected function getResourceWrapper(BasePublicResource|array $baseResource, string $timeTaken): ResourceWrapper
+    protected function getResourceWrapper(BasePublicResource|array $baseResource, string $timeTaken): ResourceWrapperCustom
     {
         $resourceWrapper = parent::getResourceWrapper($baseResource, $timeTaken);
 
-        /** @phpstan-ignore-next-line */
-        $resourceWrapperNew = (new ResourceWrapper())
+        $resourceWrapperNew = new ResourceWrapperCustom();
+
+        /* Show schema */
+        if ($this->isSchemaByFilter()) {
+            $data = $resourceWrapper->getData();
+
+            if (!$data instanceof Base) {
+                throw new LogicException(sprintf('The data part must be an instance of "%s".', Base::class));
+            }
+
+            $resourceWrapperNew
+                ->setSchema($data->getAll())
+                ->setDate($resourceWrapper->getDate())
+                ->setVersion($resourceWrapper->getVersion())
+            ;
+        }
+
+        $memoryTaken = sprintf('%.2f MB', memory_get_usage() / 1024 / 1024);
+
+        $resourceWrapperNew
+            ->setMemoryTaken($memoryTaken)
+            ->setTimeTaken($resourceWrapper->getTimeTaken())
+            ->setPerformance(PerformanceLogger::getInstance()->getPerformanceData()->getArray())
             ->setGiven($resourceWrapper->getGiven())
             ->setDate($resourceWrapper->getDate())
-            ->setTimeTaken($resourceWrapper->getTimeTaken())
             ->setVersion($resourceWrapper->getVersion())
             ->setData($resourceWrapper->getData())
-            ->setDataLicence([
-                'full' => (new TypeCastingHelper($this->parameterBag->get('data_license_full')))->strval(),
-                'short' => (new TypeCastingHelper($this->parameterBag->get('data_license_short')))->strval(),
-                'url' => (new TypeCastingHelper($this->parameterBag->get('data_license_url')))->strval(),
-            ])
-            ->setMemoryTaken(sprintf('%.2f MB', memory_get_usage() / 1024 / 1024))
         ;
+
+        /* Add data licence. */
+        $resourceWrapperNew->setDataLicence([
+            'full' => (new TypeCastingHelper($this->parameterBag->get('data_license_full')))->strval(),
+            'short' => (new TypeCastingHelper($this->parameterBag->get('data_license_short')))->strval(),
+            'url' => (new TypeCastingHelper($this->parameterBag->get('data_license_url')))->strval(),
+        ]);
 
         $error = $resourceWrapper->getError();
 
@@ -124,6 +149,25 @@ class BaseProvider extends BaseResourceWrapperProvider
                     'name' => !is_null($languageValues) ? $languageValues['en'] : 'n/a',
                 ]
             ];
+        }
+
+        if (array_key_exists('country', $uriVariablesOutput)) {
+            $country = (new TypeCastingHelper($uriVariablesOutput['country']))->strval();
+
+            $uriVariablesOutput['country'] = [
+                'raw' => $country,
+                'parsed' => [
+                    'name' => $country,
+                ]
+            ];
+        }
+
+        if (!array_key_exists(KeyArray::NEXT_PLACES, $uriVariablesOutput)) {
+            $uriVariablesOutput[KeyArray::NEXT_PLACES] = false;
+        }
+
+        if (array_key_exists(KeyArray::GEONAME_ID, $uriVariablesOutput) && $uriVariablesOutput[KeyArray::GEONAME_ID] === 0) {
+            unset($uriVariablesOutput[KeyArray::GEONAME_ID]);
         }
 
         return $uriVariablesOutput;
@@ -201,6 +245,21 @@ class BaseProvider extends BaseResourceWrapperProvider
     }
 
     /**
+     * Returns whether schema should be displayed.
+     *
+     * @return bool
+     * @throws TypeInvalidException
+     */
+    protected function isSchemaByFilter(): bool
+    {
+        if (!$this->hasFilter(Name::SCHEMA)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
      * Returns the locale from url parameters.
      *
      * @param string|null $isoLanguage
@@ -220,5 +279,32 @@ class BaseProvider extends BaseResourceWrapperProvider
         }
 
         return sprintf('%s_%s', $isoLanguage, $country);
+    }
+
+    /**
+     * Returns the iso language and country given by filter.
+     *
+     * @return array{iso-language: string|null, country: string|null}
+     * @throws ArrayKeyNotFoundException
+     * @throws TypeInvalidException
+     */
+    protected function getIsoLanguageAndCountryByFilter(): array
+    {
+        $isoLanguage = $this->getIsoLanguageByFilter();
+        $country = $this->getCountryByFilter();
+        $locale = $this->getLocaleByFilter($isoLanguage, $country);
+
+        if (!in_array($locale, LocaleCode::ALL)) {
+            $this->setError(sprintf('Locale "%s" is not supported yet. Please choose on of them: %s', $locale, implode(', ', LocaleCode::ALL)));
+            return [
+                KeyArray::ISO_LANGUAGE => null,
+                KeyArray::COUNTRY => null,
+            ];
+        }
+
+        return [
+            KeyArray::ISO_LANGUAGE => $isoLanguage,
+            KeyArray::COUNTRY => $country,
+        ];
     }
 }

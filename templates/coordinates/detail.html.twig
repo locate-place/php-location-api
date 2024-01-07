@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Show coordinate examples</title>
+        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text></svg>">
+
+        <style>
+
+            table tr td:first-child {
+
+            }
+
+            table tr td {
+                padding: 0 10px;
+            }
+
+            table tr td.separator {
+                height: 10px;
+            }
+
+        </style>
+    </head>
+    <body>{% apply spaceless %}
+        <h1>Overview coordinate</h1>
+
+        <table>
+            <tr>
+                <td><strong>Latitude</strong></td>
+                <td>{{ latitude }}</td>
+            </tr>
+            <tr>
+                <td><strong>Longitude</strong></td>
+                <td>{{ longitude }}</td>
+            </tr>
+            <tr>
+                <td><strong>Name</strong></td>
+                <td>{{ name }}</td>
+            </tr>
+        </table>
+
+        {% for featureClass in features %}
+            <h2>{{ loop.index }}) {{ featureClass.code }} - {{ featureClass.translated }} <small>({{ language }})</small></h2>
+
+            <table>
+                {% for featureCode in featureClass.data %}
+                    <tr>
+                        <td>{{ featureCode.translated }}</td>
+                        <td>{{ featureCode.code }}</td>
+                        <td><a href="{{ '/api/v1/location.json?q=' ~ featureCode.code ~ '%20' ~ latitude ~ ',%20' ~ longitude ~ '&distance=' ~ featureCode.distance ~ '&limit=' ~ featureCode.limit ~ '&language=en&country=GB' }}" target="_blank">English (GB)</a></td>
+                        <td><a href="{{ '/api/v1/location.json?q=' ~ featureCode.code ~ '%20' ~ latitude ~ ',%20' ~ longitude ~ '&distance=' ~ featureCode.distance ~ '&limit=' ~ featureCode.limit ~ '&language=en&country=US' }}" target="_blank">English (US)</a></td>
+                        <td><a href="{{ '/api/v1/location.json?q=' ~ featureCode.code ~ '%20' ~ latitude ~ ',%20' ~ longitude ~ '&distance=' ~ featureCode.distance ~ '&limit=' ~ featureCode.limit ~ '&language=de&country=DE' }}" target="_blank">German (DE)</a></td>
+                    </tr>
+                {% endfor %}
+            </table>
+        {% endfor %}
+
+
+    {% endapply %}</body>
+</html>

@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace App\Constants\Place;
 
+use App\Constants\Language\CountryCode;
+
 /**
  * Class PlaceCH
  *
@@ -23,6 +25,7 @@ namespace App\Constants\Place;
 class PlaceCH
 {
     final public const ZUERICH_FRIESENBERG = [
+        'name' => 'Zürich Friesenberg',
         'coordinate' => [
             'latitude' => 47.36667,
             'longitude' => 8.5,
@@ -31,7 +34,8 @@ class PlaceCH
             'district-locality' => 'Zürich (Kreis 3) / Friesenberg',
             'city-municipality' => 'Zürich',
             'state' => 'Zürich',
-            'country' => 'Schweizerische Eidgenossenschaft',
+            'country' => 'Schweiz',
         ],
+        'country' => CountryCode::CH,
     ];
 }

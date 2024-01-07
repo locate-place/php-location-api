@@ -4,32 +4,114 @@
         <meta charset="UTF-8">
         <title>Show coordinate examples</title>
         <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text></svg>">
+
+        <style>
+
+            table tr td:first-child {
+
+            }
+
+            table tr td {
+                padding: 0 10px;
+            }
+
+            table tr td.separator {
+                height: 10px;
+            }
+
+        </style>
     </head>
+
+    {% set locales = [
+        {
+            'language': 'en',
+            'country': 'US',
+            'name': 'English (US)'
+        },
+        {
+            'language': 'en',
+            'country': 'GB',
+            'name': 'English (GB)'
+        },
+        {
+            'language': 'de',
+            'country': 'DE',
+            'name': 'German (DE)'
+        }
+    ] %}
+
     <body>{% apply spaceless %}
         <h1>Overview coordinates</h1>
 
         {% for name, coordinate in coordinates %}
+
             <h2>{{ loop.index }}) {{ coordinate.name }} <small>(German)</small></h2>
-            <p>
-                Coordinate: {{ coordinate.coordinate.latitude }}, {{ coordinate.coordinate.longitude }}
-            </p>
-            <ul>
-                <li>
-                    <a href="{{ coordinate.link ~ '&language=en&country=GB' }}" target="_blank">English (GB)</a> (<code>JSON</code>)
-                </li>
-                <li>
-                    <a href="{{ coordinate.link ~ '&language=en&country=US' }}" target="_blank">English (US)</a> (<code>JSON</code>)
-                </li>
-                <li>
-                    <a href="{{ coordinate.link ~ '&language=de&country=DE' }}" target="_blank">German (DE)</a> (<code>JSON</code>)
-                </li>
-                <li>
-                    <a href="{{ coordinate['link-google'] }}" target="_blank">Google</a>
-                </li>
-                <li>
-                    <a href="{{ coordinate['link-open-street-map'] }}" target="_blank">OpenStreetMap</a>
-                </li>
-            </ul>
+
+            <table>
+                <tr>
+                    <td>Coordinate</td>
+                    <td colspan="3">
+                        {{ coordinate['latitude-dms'] }} / {{ coordinate['longitude-dms'] }}
+                        (
+                            <a href="{{ coordinate['link-google'] }}" target="_blank">Google</a>,
+                            <a href="{{ coordinate['link-open-street-map'] }}" target="_blank">OpenStreetMap</a>
+                        )
+                    </td>
+                </tr>
+
+                <tr><td class="separator"></td></tr>
+
+                <tr>
+                    <td>Place simple</td>
+                    {% for locale in locales %}
+                        <td>
+                            <a
+                                href="{{ coordinate['link-coordinate'] ~ '?q=' ~ coordinate['coordinate-string'] ~ '&language=' ~ locale.language ~ '&country=' ~ locale.country }}"
+                                target="_blank"
+                            >{{ locale.name }}</a>
+                            (<code>JSON</code>)
+                        </td>
+                    {% endfor %}
+                </tr>
+                <tr>
+                    <td>Place with next places</td>
+                    {% for locale in locales %}
+                        <td>
+                            <a
+                                href="{{ coordinate['link-coordinate'] ~ '?q=' ~ coordinate['coordinate-string'] ~ '&language=' ~ locale.language ~ '&country=' ~ locale.country ~ '&next_places' }}"
+                                target="_blank"
+                            >{{ locale.name }}</a>
+                            (<code>JSON</code>)
+                        </td>
+                    {% endfor %}
+                </tr>
+
+                <tr><td class="separator"></td></tr>
+
+                {% for nextPlace in coordinate['next-places'] %}
+                    <tr>
+                        <td>{{ nextPlace.name }}</td>
+                        {% for locale in locales %}
+                            <td>
+                                <a
+                                    href="{{ coordinate['link-list'] ~ '?q=' ~ nextPlace['feature_codes']|join('|') ~ '%20' ~ coordinate['coordinate-string'] ~ '&distance=' ~ nextPlace.distance ~ '&limit=' ~ nextPlace.limit ~ '&language=' ~ locale.language ~ '&country=' ~ locale.country }}"
+                                    target="_blank"
+                                >{{ locale.name }}</a>
+                                (<code>JSON</code>)
+                            </td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+
+                <tr><td class="separator"></td></tr>
+
+                <tr>
+                    <td>Next places</td>
+                    <td><a href="{{ '/coordinate/detail/feature-codes/' ~ coordinate.coordinate.latitude ~ '/' ~ coordinate.coordinate.longitude ~ '/' ~ (coordinate.name|replace({'/': '|'})|url_encode) ~ '/en/US' }}">Feature Codes (English)</a></td>
+                    <td><a href="{{ '/coordinate/detail/feature-codes/' ~ coordinate.coordinate.latitude ~ '/' ~ coordinate.coordinate.longitude ~ '/' ~ (coordinate.name|replace({'/': '|'})|url_encode) ~ '/de/DE' }}">Feature Codes (German)</a></td>
+                    <td></td>
+                </tr>
+            </table>
         {% endfor %}
 
     {% endapply %}</body>

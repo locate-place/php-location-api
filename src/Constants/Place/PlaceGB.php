@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace App\Constants\Place;
 
+use App\Constants\Language\CountryCode;
+
 /**
  * Class PlaceGB
  *
@@ -23,6 +25,7 @@ namespace App\Constants\Place;
 class PlaceGB
 {
     final public const AMESBURY_STONEHENGE = [
+        'name' => 'Amesbury - Stonehenge',
         'coordinate' => [
             'latitude' => 51.1739726374,
             'longitude' => -1.82237671048,
@@ -33,9 +36,11 @@ class PlaceGB
             'state' => 'England',
             'country' => 'UK',
         ],
+        'country' => CountryCode::GB,
     ];
 
     final public const EDINBURGH_LEITH = [
+        'name' => 'Edinburgh - Leith',
         'coordinate' => [
             'latitude' => 55.975070,
             'longitude' => -3.158110,
@@ -46,9 +51,11 @@ class PlaceGB
             'state' => 'Schottland',
             'country' => 'UK',
         ],
+        'country' => CountryCode::GB,
     ];
 
     final public const LONDON_TOWER_BRIDGE = [
+        'name' => 'London - Tower Bridge',
         'coordinate' => [
             'latitude' => 51.505554,
             'longitude' => -0.075278,
@@ -59,9 +66,11 @@ class PlaceGB
             'state' => 'England',
             'country' => 'UK',
         ],
+        'country' => CountryCode::GB,
     ];
 
     final public const OXFORD_SUMMERTOWN = [
+        'name' => 'Oxford - Summertown',
         'coordinate' => [
             'latitude' => 51.778,
             'longitude' => -1.265,
@@ -72,9 +81,11 @@ class PlaceGB
             'state' => 'England',
             'country' => 'UK',
         ],
+        'country' => CountryCode::GB,
     ];
 
     final public const WARWICK_UNIVERSITY = [
+        'name' => 'Warwick - University',
         'coordinate' => [
             'latitude' => 52.2901301100511,
             'longitude' => -1.5553016206954282,
@@ -85,5 +96,6 @@ class PlaceGB
             'state' => 'England',
             'country' => 'UK',
         ],
+        'country' => CountryCode::GB,
     ];
 }

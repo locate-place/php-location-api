@@ -15,8 +15,24 @@ parameters:
                 V: 10
             feature_code:
                 S.AIRP: 3 # Airports
+            overwrites:
+                DE:
+                    default: 2
+                    feature_class:
+                        A: 11
+                        H: 11
+                        L: 11
+                        P: 11
+                        R: 11
+                        S: 11
+                        T: 11
+                        U: 11
+                        V: 11
+                    feature_code:
+                        S.AIRP: 4 # Airports
+
         distance:
-            default: null
+            default: 1000
             feature_class:
                 A: 10000
                 H: 10000
@@ -28,7 +44,23 @@ parameters:
                 U: 10000
                 V: 15000
             feature_code:
-                S.AIRP: 200000 # Airports
+                S.AIRP: 150000 # Airports
+            overwrites:
+                DE:
+                    default: 1001
+                    feature_class:
+                        A: 10001
+                        H: 10001
+                        L: 10001
+                        P: 10001
+                        R: 10001
+                        S: 10001
+                        T: 10001
+                        U: 10001
+                        V: 15001
+                    feature_code:
+                        S.AIRP: 15001 # Airports
+
         use_admin_codes_general:
             default: false
             feature_class:
@@ -39,3 +71,52 @@ parameters:
             feature_class:
                 A: true
                 P: true
+
+    next_places_groups:
+        default:
+            distance: 100000 # Within a radius of 100 kilometers (100.000 meters)
+            limit:    10     # Max. 10 results per request
+        next:
+            cities:
+                name: Next cities
+                feature_codes:
+                    - PPLA
+                    - PPLA1
+                    - PPLA2
+                    - PPLA3
+            parks:
+                name: Next parks
+                feature_codes:
+                    - PRK
+            airports:
+                name: Next airports
+                feature_codes:
+                    - AIRP
+                distance: 200000
+            cinemas:
+                name: Next cinemas
+                feature_codes:
+                    - THTR
+            churches:
+                name: Next churches
+                feature_codes:
+                    - CH
+            waters:
+                name: Next lakes, rivers
+                feature_codes:
+                    - LK
+                    - LKS
+                    - STM
+        overwrites:
+            US:
+                default:
+                    distance: 100001 # Within a radius of 100 kilometers (100.000 meters)
+                    limit: 10        # Max. 10 results per request
+                next:
+                    cities:
+                        feature_codes:
+                            - PPLA
+                            - PPLA1
+                            - PPLA2
+                            - PPLA3
+                            - PPLA4

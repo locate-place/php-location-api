@@ -35,6 +35,7 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 )]
 #[ORM\UniqueConstraint(columns: ['class_id', 'code'])]
 #[ORM\Index(columns: ['class_id', 'code'])]
+#[ORM\Index(columns: ['code'])]
 #[ORM\HasLifecycleCallbacks]
 class FeatureCode
 {
