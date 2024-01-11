@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Releases
 
+### [0.1.27] - 2024-01-11
+
+* Add example endpoint v2
+* Preparation for new search endpoint
+* Refactoring
+
 ### [0.1.26] - 2024-01-07
 
 * Add schema endpoint
