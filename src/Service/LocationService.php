@@ -55,6 +55,8 @@ final class LocationService extends BaseLocationService
 
     final public const SORT_BY_NAME = KeyArray::NAME;
 
+    final public const SORT_BY_DISTANCE = KeyArray::DISTANCE;
+
     /**
      * Returns locations by given geoname ids.
      *
@@ -155,6 +157,7 @@ final class LocationService extends BaseLocationService
             match ($sortBy) {
                 self::SORT_BY_GEONAME_ID => usort($locations, fn(Location $a, Location $b) => $a->getGeonameId() <=> $b->getGeonameId()),
                 self::SORT_BY_NAME => usort($locations, fn(Location $a, Location $b) => strcmp($a->getName(), $b->getName())),
+                self::SORT_BY_DISTANCE => usort($locations, fn(Location $a, Location $b) => $a->getCoordinate()->getDistance() <=> $b->getCoordinate()->getDistance()),
                 default => null,
             };
             /* Finish task */

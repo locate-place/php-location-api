@@ -181,7 +181,7 @@ class Parameter
     ];
 
     final public const QUERY = [
-        'name' => Name::QUERY,
+        'name' => Name::QUERY_SHORT,
         'in' => 'query', // cookie, header, path, query
         'description' => '<strong>Query</strong>',
         'required' => true,

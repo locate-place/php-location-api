@@ -30,6 +30,7 @@ use Ixnode\PhpApiVersionBundle\ApiPlatform\Resource\Base\BasePublicResource;
 use Ixnode\PhpApiVersionBundle\ApiPlatform\State\Base\Wrapper\BaseResourceWrapperProvider;
 use Ixnode\PhpApiVersionBundle\Utils\Version\Version;
 use Ixnode\PhpContainer\File;
+use Ixnode\PhpCoordinate\Coordinate;
 use Ixnode\PhpException\ArrayType\ArrayKeyNotFoundException;
 use Ixnode\PhpException\Case\CaseInvalidException;
 use Ixnode\PhpException\Case\CaseUnsupportedException;
@@ -91,8 +92,9 @@ final class LocationProvider extends BaseProviderCustom
      * Returns a collection of location resources from examples:
      *
      * - https://www.location-api.localhost/api/v1/location/examples.json?language=de&country=DE
+     * - https://www.location-api.localhost/api/v1/location/examples.json?language=de&country=DE&c=51.061002,13.740674
      *
-     * @param QueryParser $queryParser
+     * @param Coordinate|null $coordinate
      * @return BasePublicResource[]
      * @throws ArrayKeyNotFoundException
      * @throws CaseInvalidException
@@ -107,7 +109,7 @@ final class LocationProvider extends BaseProviderCustom
      * @throws ParserException
      * @throws TypeInvalidException
      */
-    private function doProvideGetCollectionByExamples(QueryParser $queryParser): array
+    private function doProvideGetCollectionByExamples(Coordinate|null $coordinate = null): array
     {
         [
             KeyArray::ISO_LANGUAGE => $isoLanguage,
@@ -117,11 +119,6 @@ final class LocationProvider extends BaseProviderCustom
         if (is_null($isoLanguage) || is_null($country)) {
             return [];
         }
-
-        $coordinate = match ($queryParser->getType()) {
-            QueryParser::TYPE_SEARCH_COORDINATE => $queryParser->getCoordinate(),
-            default => null,
-        };
 
         $locations = $this->locationService->getLocationsByByGeonameIds(
             /* Search */
@@ -136,7 +133,7 @@ final class LocationProvider extends BaseProviderCustom
             country: $country,
 
             /* Sort configuration */
-            sortBy: LocationService::SORT_BY_NAME,
+            sortBy: !is_null($coordinate) ? LocationService::SORT_BY_DISTANCE : LocationService::SORT_BY_NAME,
 
             /* Other configuration */
             namesFull: $this->getNamesFull()
@@ -421,8 +418,12 @@ final class LocationProvider extends BaseProviderCustom
     {
         $isExampleRequest = $this->endpointContains('examples(:?\.(:?json|html))?');
 
+        $coordinate = $this->hasFilter(Name::COORDINATE_SHORT) ?
+            new Coordinate($this->getFilterString(Name::COORDINATE_SHORT)) :
+            null;
+
         $queryParser = match (true) {
-            $this->hasFilter(Name::QUERY) => new QueryParser($this->getFilterString(Name::QUERY)),
+            $this->hasFilter(Name::QUERY_SHORT) => new QueryParser($this->getFilterString(Name::QUERY_SHORT)),
             $this->hasUri(Name::GEONAME_ID) => new QueryParser($this->getUriInteger(Name::GEONAME_ID)),
             $isExampleRequest => new QueryParser(KeyArray::EXAMPLES),
             default => null,
@@ -466,10 +467,10 @@ final class LocationProvider extends BaseProviderCustom
              *
              * - https://www.location-api.localhost/api/v1/location/examples.json
              * - https://www.location-api.localhost/api/v1/location/examples.json?language=de&country=DE
-             * - https://www.location-api.localhost/api/v1/location/examples.json?language=de&country=DE&q=51.05811,13.74133
+             * - https://www.location-api.localhost/api/v1/location/examples.json?language=de&country=DE&c=51.061002,13.740674
              */
             case $this->getRequestMethod() === BaseResourceWrapperProvider::METHOD_GET_COLLECTION && $isExampleRequest:
-                return $this->doProvideGetCollectionByExamples($queryParser);
+                return $this->doProvideGetCollectionByExamples($coordinate);
 
             /*
              * - https://www.location-api.localhost/api/v1/location.json?q=Berlin-Mitte&limit=10

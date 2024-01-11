@@ -36,8 +36,8 @@ final class LocationRoute extends BaseRoute
             self::KEY_DEFAULT => 182559,
             self::KEY_TYPE => self::TYPE_INTEGER,
         ],
-        Name::QUERY => [
-            self::KEY_REQUEST => Name::QUERY,
+        Name::QUERY_SHORT => [
+            self::KEY_REQUEST => Name::QUERY_SHORT,
             self::KEY_RESPONSE => 'query',
             self::KEY_DEFAULT => 'AIRP 51.05811,13.74133', /* Dresden, Germany, The golden rider */
             self::KEY_TYPE => self::TYPE_STRING,
