@@ -23,13 +23,13 @@ use App\Constants\DB\Limit;
 use App\Constants\Key\KeyArray;
 use App\Repository\LocationRepository;
 use App\Service\LocationService;
+use App\Utils\Query\Query;
 use App\Utils\Query\QueryParser;
 use Doctrine\ORM\NonUniqueResultException;
 use Ixnode\PhpApiVersionBundle\ApiPlatform\Resource\Base\BasePublicResource;
 use Ixnode\PhpApiVersionBundle\ApiPlatform\State\Base\Wrapper\BaseResourceWrapperProvider;
 use Ixnode\PhpApiVersionBundle\Utils\Version\Version;
 use Ixnode\PhpContainer\File;
-use Ixnode\PhpCoordinate\Coordinate;
 use Ixnode\PhpException\ArrayType\ArrayKeyNotFoundException;
 use Ixnode\PhpException\Case\CaseInvalidException;
 use Ixnode\PhpException\Case\CaseUnsupportedException;
@@ -41,6 +41,7 @@ use Ixnode\PhpException\Parser\ParserException;
 use Ixnode\PhpException\Type\TypeInvalidException;
 use Ixnode\PhpNamingConventions\Exception\FunctionReplaceException;
 use JsonException;
+use LogicException;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -58,6 +59,8 @@ final class LocationProvider extends BaseProviderCustom
 {
     private const FILE_SCHEMA_COORDINATE = 'data/json/schema/command/coordinate/resource.schema.json';
 
+    private readonly Query $query;
+
     /**
      * @param Version $version
      * @param ParameterBagInterface $parameterBag
@@ -72,10 +75,18 @@ final class LocationProvider extends BaseProviderCustom
         protected RequestStack $request,
         protected LocationRepository $locationRepository,
         protected TranslatorInterface $translator,
-        protected LocationService $locationService
+        protected LocationService $locationService,
     )
     {
         parent::__construct($version, $parameterBag, $request);
+
+        $requestCurrent = $this->request->getCurrentRequest();
+
+        if (is_null($requestCurrent)) {
+            throw new LogicException('Unable to get current request.');
+        }
+
+        $this->query = new Query($requestCurrent);
     }
 
     /**
@@ -94,7 +105,6 @@ final class LocationProvider extends BaseProviderCustom
      * - https://www.location-api.localhost/api/v1/location/examples.json?language=de&country=DE
      * - https://www.location-api.localhost/api/v1/location/examples.json?language=de&country=DE&c=51.061002,13.740674
      *
-     * @param Coordinate|null $coordinate
      * @return BasePublicResource[]
      * @throws ArrayKeyNotFoundException
      * @throws CaseInvalidException
@@ -109,7 +119,7 @@ final class LocationProvider extends BaseProviderCustom
      * @throws ParserException
      * @throws TypeInvalidException
      */
-    private function doProvideGetCollectionByExamples(Coordinate|null $coordinate = null): array
+    private function doProvideGetCollectionByExamples(): array
     {
         [
             KeyArray::ISO_LANGUAGE => $isoLanguage,
@@ -119,6 +129,8 @@ final class LocationProvider extends BaseProviderCustom
         if (is_null($isoLanguage) || is_null($country)) {
             return [];
         }
+
+        $coordinate = $this->query->getCoordinate();
 
         $locations = $this->locationService->getLocationsByByGeonameIds(
             /* Search */
@@ -416,18 +428,9 @@ final class LocationProvider extends BaseProviderCustom
      */
     protected function doProvide(): BasePublicResource|array
     {
-        $isExampleRequest = $this->endpointContains('examples(:?\.(:?json|html))?');
+        $this->query->setUriVariables($this->getUriVariables());
 
-        $coordinate = $this->hasFilter(Name::COORDINATE_SHORT) ?
-            new Coordinate($this->getFilterString(Name::COORDINATE_SHORT)) :
-            null;
-
-        $queryParser = match (true) {
-            $this->hasFilter(Name::QUERY_SHORT) => new QueryParser($this->getFilterString(Name::QUERY_SHORT)),
-            $this->hasUri(Name::GEONAME_ID) => new QueryParser($this->getUriInteger(Name::GEONAME_ID)),
-            $isExampleRequest => new QueryParser(KeyArray::EXAMPLES),
-            default => null,
-        };
+        $queryParser = $this->query->getQueryParser();
 
         if (!$queryParser instanceof QueryParser) {
             $this->setError('No query given.');
@@ -469,8 +472,8 @@ final class LocationProvider extends BaseProviderCustom
              * - https://www.location-api.localhost/api/v1/location/examples.json?language=de&country=DE
              * - https://www.location-api.localhost/api/v1/location/examples.json?language=de&country=DE&c=51.061002,13.740674
              */
-            case $this->getRequestMethod() === BaseResourceWrapperProvider::METHOD_GET_COLLECTION && $isExampleRequest:
-                return $this->doProvideGetCollectionByExamples($coordinate);
+            case $this->getRequestMethod() === BaseResourceWrapperProvider::METHOD_GET_COLLECTION && $this->query->isExampleRequest():
+                return $this->doProvideGetCollectionByExamples();
 
             /* A-2) Simple search (list search):
              * ---------------------------------

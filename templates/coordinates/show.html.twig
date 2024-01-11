@@ -65,6 +65,15 @@
                     </td>
                 {% endfor %}
             </tr>
+
+            <tr>
+                <td>Example list with current coordinate</td>
+                {% for locale in locales %}
+                    <td>
+                        <a href="{{ '/api/v1/location/examples.json?language=' ~ locale.language ~ '&country=' ~ locale.country ~ '&c=51.05811,13.74133' }}" target="_blank">{{ locale.name }}</a> (<code>JSON</code>)
+                    </td>
+                {% endfor %}
+            </tr>
         </table>
 
         <h2>Overview coordinates</h2>
