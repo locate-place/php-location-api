@@ -21,7 +21,6 @@ use App\ApiPlatform\State\Base\BaseProviderCustom;
 use App\Constants\DB\Distance;
 use App\Constants\DB\Limit;
 use App\Constants\Key\KeyArray;
-use App\Constants\Place\Search;
 use App\Repository\LocationRepository;
 use App\Service\LocationService;
 use App\Utils\Query\QueryParser;
@@ -53,6 +52,7 @@ use Symfony\Contracts\Translation\TranslatorInterface;
  * @author Björn Hempel <bjoern@hempel.li>
  * @version 0.1.0 (2023-07-01)
  * @since 0.1.0 (2023-07-01) First version.
+ * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
  */
 final class LocationProvider extends BaseProviderCustom
 {
@@ -462,8 +462,8 @@ final class LocationProvider extends BaseProviderCustom
              * ----
              */
 
-            /* Show example locations:
-             * -----------------------
+            /* A-1) Show example locations (list search):
+             * ------------------------------------------
              *
              * - https://www.location-api.localhost/api/v1/location/examples.json
              * - https://www.location-api.localhost/api/v1/location/examples.json?language=de&country=DE
@@ -472,27 +472,38 @@ final class LocationProvider extends BaseProviderCustom
             case $this->getRequestMethod() === BaseResourceWrapperProvider::METHOD_GET_COLLECTION && $isExampleRequest:
                 return $this->doProvideGetCollectionByExamples($coordinate);
 
-            /*
+            /* A-2) Simple search (list search):
+             * ---------------------------------
+             *
              * - https://www.location-api.localhost/api/v1/location.json?q=Berlin-Mitte&limit=10
              * - https://www.location-api.localhost/api/v1/location.json?q=Eiffel%20Tower&limit=10&language=de&country=DE
              */
             case $this->getRequestMethod() === BaseResourceWrapperProvider::METHOD_GET_COLLECTION && $queryParser->isType(QueryParser::TYPE_SEARCH_LIST_GENERAL):
                 return $this->doProvideGetCollectionBySearch($queryParser);
 
-            /*
+            /* A-3) Next places search (list search, all, DEPRECATED!!!):
+             * ----------------------------------------------------------
+             *
              * - https://www.location-api.localhost/api/v1/location.json?q=51.05811,13.74133&distance=1000&limit=10
              * - https://www.location-api.localhost/api/v1/location.json?q=51.05811,13.74133&distance=1000&limit=10&language=de&country=DE
              */
             case $this->getRequestMethod() === BaseResourceWrapperProvider::METHOD_GET_COLLECTION && $queryParser->isType(QueryParser::TYPE_SEARCH_COORDINATE):
 
-            /*
+            /* A-4) Next places search (list search, feature code search: Airports, etc.):
+             * ---------------------------------------------------------------------------
+             *
              * - https://www.location-api.localhost/api/v1/location.json?q=AIRP%2051.05811,13.74133&distance=150000&limit=10
              * - https://www.location-api.localhost/api/v1/location.json?q=AIRP%2051.05811,13.74133&distance=150000&limit=10&language=de&country=DE
              */
             case $this->getRequestMethod() === BaseResourceWrapperProvider::METHOD_GET_COLLECTION && $queryParser->isType(QueryParser::TYPE_SEARCH_LIST_WITH_FEATURES):
                 return $this->doProvideGetCollectionByCoordinate($queryParser);
 
-            /*
+
+
+
+            /* B-1) Coordinate search (single location search):
+             * ------------------------------------------------
+             *
              * - https://www.location-api.localhost/api/v1/location/coordinate.json?q=51.119882,%2013.132567
              * - https://www.location-api.localhost/api/v1/location/coordinate.json?q=51.119882,%2013.132567&language=en&country=US
              * - https://www.location-api.localhost/api/v1/location/coordinate.json?q=51.119882,%2013.132567&language=en&country=US&next_places
@@ -500,7 +511,9 @@ final class LocationProvider extends BaseProviderCustom
             case $this->getRequestMethod() === Request::METHOD_GET && $queryParser->isType(QueryParser::TYPE_SEARCH_COORDINATE):
                 return $this->doProvideGetWithCoordinate($queryParser);
 
-            /*
+            /* B-2) Show geoname detail (single location search):
+             * --------------------------------------------------
+             *
              * - https://www.location-api.localhost/api/v1/location/2830942.json
              * - https://www.location-api.localhost/api/v1/location/2830942.json?language=de&country=DE
              * - https://www.location-api.localhost/api/v1/location/2830942.json?language=de&country=DE&next_places
