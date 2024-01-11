@@ -354,23 +354,25 @@ abstract class BaseHelperLocationService
     /**
      * Updates the given parameter.
      *
-     * @param Coordinate $coordinate
      * @param string $isoLanguage
      * @param string $country
      * @param bool $nextPlaces
+     * @param Coordinate|null $coordinate
      * @return void
      */
     protected function update(
-        Coordinate $coordinate,
         string $isoLanguage,
         string $country,
         bool $nextPlaces,
+        Coordinate|null $coordinate = null,
     ): void
     {
-        $this->setCoordinate($coordinate);
         $this->setIsoLanguage($isoLanguage);
         $this->setCountry($country);
         $this->setNextPlaces($nextPlaces);
+
+        !is_null($coordinate) && $this->setCoordinate($coordinate);
+
         $this->featureClassService->setLocaleByLanguageAndCountry($isoLanguage, $country);
         $this->featureCodeService->setLocaleByLanguageAndCountry($isoLanguage, $country);
     }

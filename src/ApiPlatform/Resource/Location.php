@@ -53,6 +53,14 @@ use Symfony\Component\Serializer\Annotation\Ignore;
     ],
     provider: LocationProvider::class
 )]
+/* Get resources via geoname id: /api/v1/location/examples */
+#[GetCollection(
+    uriTemplate: 'location/examples.{_format}',
+    openapiContext: [
+        'description' => LocationRoute::DESCRIPTION_COLLECTION_GET,
+    ],
+    provider: LocationProvider::class
+)]
 /* Get resource via geoname id: /api/v1/location/{geoname_id} */
 #[Get(
     uriVariables: [

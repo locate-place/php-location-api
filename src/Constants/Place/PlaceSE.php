@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace App\Constants\Place;
 
+use App\Constants\Key\KeyArray;
 use App\Constants\Language\CountryCode;
 
 /**
@@ -25,7 +26,8 @@ use App\Constants\Language\CountryCode;
 class PlaceSE
 {
     final public const EKEROE_DROTTNINGHOLM_CASTLE = [
-        'name' => 'Ekerö - Drottningholm Palace',
+        KeyArray::GEONAME_ID => 2_717_199,
+        KeyArray::NAME => 'Ekerö - Drottningholm Palace',
         'coordinate' => [
             'latitude' => 59.32364131453378,
             'longitude' => 17.88675328360623,
@@ -38,8 +40,10 @@ class PlaceSE
         ],
         'country' => CountryCode::SE,
     ];
+    
     final public const LIDINGOE_BOOBOOLIVING = [
-        'name' => 'Lidingö - Boobooliving',
+        KeyArray::GEONAME_ID => 2_678_030,
+        KeyArray::NAME => 'Lidingö - Boobooliving',
         'coordinate' => [
             'latitude' => 59.346496481570604,
             'longitude' => 18.15446911303962,
@@ -54,7 +58,8 @@ class PlaceSE
     ];
 
     final public const STOCKHOLM_PALACE = [
-        'name' => 'Stockholm - Palace',
+        KeyArray::GEONAME_ID => 6_942_295,
+        KeyArray::NAME => 'Stockholm - Palace',
         'coordinate' => [
             'latitude' => 59.32701953293882,
             'longitude' => 18.071708793902186,

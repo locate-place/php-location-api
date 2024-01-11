@@ -113,7 +113,10 @@ EOT
 
         $verbose = (bool) $input->getOption(self::OPTION_NAME_VERBOSE);
 
-        $location = $this->locationService->getLocationByGeonameId($geonameId);
+        $location = $this->locationService->getLocationByGeonameId(
+            /* Search */
+            geonameId: $geonameId
+        );
 
         $jsonContent = $this->serializer->serialize($location, 'json', [AbstractNormalizer::IGNORED_ATTRIBUTES => ['meters']]);
         $json = new Json($jsonContent);

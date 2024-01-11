@@ -27,6 +27,7 @@ use App\DataTypes\Feature;
 use App\DataTypes\Links;
 use App\DataTypes\Locations;
 use App\DataTypes\NextPlaces;
+use App\DataTypes\NextPlacesConfig;
 use App\DataTypes\Properties;
 use App\DataTypes\Timezone;
 use App\DBAL\GeoLocation\ValueObject\Point;
@@ -71,8 +72,11 @@ abstract class BaseLocationService extends BaseHelperLocationService
      * Returns a Location entity.
      *
      * @param LocationEntity $locationEntity
+     * @param string|null $nameFull
      * @param bool $loadLocations
      * @return LocationResource
+     * @throws ArrayKeyNotFoundException
+     * @throws CaseInvalidException
      * @throws CaseUnsupportedException
      * @throws ClassInvalidException
      * @throws FileNotFoundException
@@ -87,6 +91,7 @@ abstract class BaseLocationService extends BaseHelperLocationService
      */
     protected function getLocationResourceSimple(
         LocationEntity $locationEntity,
+        string $nameFull = null,
         bool $loadLocations = false
     ): LocationResource
     {
@@ -97,7 +102,8 @@ abstract class BaseLocationService extends BaseHelperLocationService
 
         /* Add base information (geoname-id, name, wikipedia links, etc.) */
         $locationBaseInformation = $this->getLocationBaseInformation(
-            $locationEntity,
+            locationEntity: $locationEntity,
+            nameFull: $nameFull,
             featureDetailed: true
         );
         foreach ($locationBaseInformation as $key => $value) {
@@ -105,6 +111,7 @@ abstract class BaseLocationService extends BaseHelperLocationService
                 /* Single fields */
                 $key === KeyArray::GEONAME_ID => $location->setGeonameId(is_int($value) ? $value : 0),
                 $key === KeyArray::NAME => $location->setName(is_string($value) ? $value : ''),
+                $key === KeyArray::NAME_FULL => $location->setNameFull(is_string($value) ? $value : ''),
                 $key === KeyArray::UPDATED_AT => $value instanceof DateTimeImmutable ? $location->setUpdatedAt($value) : null,
 
                 /* Complex structure */
@@ -113,6 +120,7 @@ abstract class BaseLocationService extends BaseHelperLocationService
                 $value instanceof Links => $location->setLinks($value),
                 $value instanceof Properties => $location->setProperties($value),
                 $value instanceof Timezone => $location->setTimezone($value),
+                $value instanceof NextPlacesConfig => $location->setNextPlacesConfig($value),
 
                 /* Unknown type */
                 default => throw new LogicException(sprintf('Unknown key "%s".', $key)),
@@ -149,7 +157,10 @@ abstract class BaseLocationService extends BaseHelperLocationService
         $this->setServiceLocationContainer($locationEntity, loadLocations: true);
 
         /* Adds simple location api plattform resource (geoname-id, name, features and codes, coordinate, timezone, etc.). */
-        $locationResource = $this->getLocationResourceSimple($locationEntity, loadLocations: true);
+        $locationResource = $this->getLocationResourceSimple(
+            locationEntity: $locationEntity,
+            loadLocations: true
+        );
 
         /* Adds additional locations (district, borough, city, state, country, etc.). */
         $locationResource->setLocations(
@@ -188,6 +199,8 @@ abstract class BaseLocationService extends BaseHelperLocationService
      * @param int $distanceMeter
      * @param int $limit
      * @return array<int, array<string, mixed>>
+     * @throws ArrayKeyNotFoundException
+     * @throws CaseInvalidException
      * @throws CaseUnsupportedException
      * @throws ClassInvalidException
      * @throws FileNotFoundException
@@ -218,7 +231,7 @@ abstract class BaseLocationService extends BaseHelperLocationService
         $locationArray = [];
 
         foreach ($locations as $location) {
-            $locationArray[] = $this->getLocationBaseInformation($location);
+            $locationArray[] = $this->getLocationBaseInformation(locationEntity: $location);
         }
 
         return $locationArray;
@@ -363,14 +376,14 @@ abstract class BaseLocationService extends BaseHelperLocationService
      * Returns the "Locations" data type (with district, borough, city, state, country, etc.).
      *
      * @return Locations
+     * @throws ArrayKeyNotFoundException
+     * @throws CaseInvalidException
      * @throws CaseUnsupportedException
-     * @throws ClassInvalidException
      * @throws FileNotFoundException
      * @throws FileNotReadableException
      * @throws FunctionJsonEncodeException
      * @throws FunctionReplaceException
      * @throws JsonException
-     * @throws NonUniqueResultException
      * @throws ParserException
      * @throws TypeInvalidException
      */
@@ -445,6 +458,23 @@ abstract class BaseLocationService extends BaseHelperLocationService
     }
 
     /**
+     * Returns the "NextPlacesConfig" data type.
+     *
+     * @param array<string, mixed> $nextPlaces
+     * @return NextPlacesConfig
+     * @throws FunctionReplaceException
+     * @throws TypeInvalidException
+     */
+    private function getDataTypeNextPlacesConfig(array $nextPlaces): NextPlacesConfig
+    {
+        $nextPlacesConfig = new NextPlacesConfig();
+
+        $nextPlacesConfig->addValue(null, $nextPlaces);
+
+        return $nextPlacesConfig;
+    }
+
+    /**
      * Returns the "properties" data type.
      *
      * @param LocationEntity $locationEntity
@@ -474,6 +504,12 @@ abstract class BaseLocationService extends BaseHelperLocationService
                 KeyArray::UNIT => Length::METERS_SHORT,
                 KeyArray::VALUE_FORMATTED => $this->getFloatWithUnitFormatted($elevation, Length::METERS_SHORT),
             ]);
+        }
+
+        /* Add country. */
+        $country = $locationEntity->getCountry()?->getCode();
+        if (!is_null($country)) {
+            $properties->addValue(KeyArray::COUNTRY, $country);
         }
 
         /* Add additional properties. */
@@ -544,7 +580,7 @@ abstract class BaseLocationService extends BaseHelperLocationService
         $timezone->addValue(KeyArray::OFFSET, $offset);
         $timezone->addValue(KeyArray::COORDINATE, $this->getDataTypeCoordinate(
             $coordinateEntity,
-            $this->coordinate
+            $this->coordinate ?? null
         )->getArray());
 
         return $timezone;
@@ -556,6 +592,8 @@ abstract class BaseLocationService extends BaseHelperLocationService
      * @param Locations $locations
      * @param string $locationType
      * @return void
+     * @throws ArrayKeyNotFoundException
+     * @throws CaseInvalidException
      * @throws CaseUnsupportedException
      * @throws FileNotFoundException
      * @throws FileNotReadableException
@@ -600,7 +638,10 @@ abstract class BaseLocationService extends BaseHelperLocationService
 
         $key = $this->getLocationKey($locationType);
 
-        $locationBaseInformation = $this->getLocationBaseInformation($locationEntity, featureDetailed: true);
+        $locationBaseInformation = $this->getLocationBaseInformation(
+            locationEntity: $locationEntity,
+            featureDetailed: true
+        );
 
         $locations->addValue($key, $locationBaseInformation);
     }
@@ -614,6 +655,8 @@ abstract class BaseLocationService extends BaseHelperLocationService
      * @param int $distanceMeter
      * @param int $limit
      * @return void
+     * @throws ArrayKeyNotFoundException
+     * @throws CaseInvalidException
      * @throws CaseUnsupportedException
      * @throws ClassInvalidException
      * @throws FileNotFoundException
@@ -664,8 +707,11 @@ abstract class BaseLocationService extends BaseHelperLocationService
      * Returns the base information of a location entity.
      *
      * @param LocationEntity $locationEntity
+     * @param string|null $nameFull
      * @param bool $featureDetailed
      * @return array<string, mixed>
+     * @throws ArrayKeyNotFoundException
+     * @throws CaseInvalidException
      * @throws CaseUnsupportedException
      * @throws FileNotFoundException
      * @throws FileNotReadableException
@@ -678,6 +724,7 @@ abstract class BaseLocationService extends BaseHelperLocationService
      */
     private function getLocationBaseInformation(
         LocationEntity $locationEntity,
+        string $nameFull = null,
         bool $featureDetailed = false
     ): array
     {
@@ -694,17 +741,27 @@ abstract class BaseLocationService extends BaseHelperLocationService
             /* Single fields. */
             ...(is_int($geonameId) ? [KeyArray::GEONAME_ID => $geonameId] : []),
             ...(is_string($name) ? [KeyArray::NAME => $name] : []),
+            ...(is_string($nameFull) ? [KeyArray::NAME_FULL => $nameFull] : []),
             ...(!is_null($updateAt) ? [KeyArray::UPDATED_AT => $updateAt] : []),
 
             /* Complex structures. */
             KeyArray::COORDINATE => $this->getDataTypeCoordinate(
                 $locationEntity->getCoordinateIxnode(),
-                $this->coordinate,
+                $this->coordinate ?? null,
                 $locationEntity->getCoordinate()?->getSrid()
             ),
             KeyArray::FEATURE => $this->getDataTypeFeature($locationEntity, $featureDetailed),
             KeyArray::LINKS => $this->getDataTypeLinks($locationEntity),
             KeyArray::PROPERTIES => $this->getDataTypeProperties($locationEntity),
+
+            /* Add next places */
+            KeyArray::NEXT_PLACES_CONFIG => $this->getDataTypeNextPlacesConfig([
+                KeyArray::CONFIG => $this->locationServiceConfig->getConfigNextPlacesGroups($locationEntity->getCountry()?->getCode() ?? CountryCode::DEFAULT),
+                KeyArray::ENDPOINTS => [
+                    KeyArray::COORDINATE => '/api/v1/location/coordinate.json',
+                    KeyArray::LIST => '/api/v1/location.json',
+                ],
+            ])
         ];
     }
 

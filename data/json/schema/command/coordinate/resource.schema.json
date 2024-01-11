@@ -42,17 +42,8 @@
                 "links": {
                     "$ref": "#/$defs/links"
                 },
-                "population": {
-                    "type": "integer",
-                    "minimum": 1
-                },
-                "elevation": {
-                    "type": "integer",
-                    "minimum": 0
-                },
-                "dem": {
-                    "type": "integer",
-                    "minimum": 0
+                "next-places-config": {
+                    "$ref": "#/$defs/nextPlacesConfig"
                 }
             },
             "required": [
@@ -63,7 +54,8 @@
                 "coordinate",
                 "timezone",
                 "locations",
-                "links"
+                "links",
+                "next-places-config"
             ],
             "additionalProperties": false
         },
@@ -272,6 +264,66 @@
                     "additionalProperties": false
                 }
             },
+            "additionalProperties": false
+        },
+        "nextPlacesConfig": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "properties": {
+                "config": {
+                    "patternProperties": {
+                        "^.*$": {
+                            "type": "object",
+                            "properties": {
+                                "distance": {
+                                    "type": "integer",
+                                    "minimum": 0
+                                },
+                                "limit": {
+                                    "type": "integer",
+                                    "minimum": 0
+                                },
+                                "name": {
+                                    "type": "string"
+                                },
+                                "feature_codes": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                }
+                            },
+                            "required": [
+                                "distance",
+                                "limit",
+                                "name",
+                                "feature_codes"
+                            ],
+                            "additionalProperties": false
+                        }
+                    }
+                },
+                "endpoints": {
+                    "type": "object",
+                    "properties": {
+                        "coordinate": {
+                            "type": "string"
+                        },
+                        "list": {
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "coordinate",
+                        "list"
+                    ],
+                    "additionalProperties": false
+                }
+            },
+            "required": [
+                "config",
+                "endpoints"
+            ],
             "additionalProperties": false
         },
         "valueUnitFormatted": {
@@ -539,6 +591,9 @@
                 "links": {
                     "$ref": "#/$defs/links"
                 },
+                "next-places-config": {
+                    "$ref": "#/$defs/nextPlacesConfig"
+                },
                 "properties": {
                     "$ref": "#/$defs/properties"
                 }
@@ -550,6 +605,7 @@
                 "coordinate",
                 "feature",
                 "links",
+                "next-places-config",
                 "properties"
             ],
             "additionalProperties": false
@@ -563,6 +619,9 @@
                 },
                 "elevation": {
                     "$ref": "#/$defs/valueUnitFormatted"
+                },
+                "country": {
+                    "type": "string"
                 }
             },
             "required": [],

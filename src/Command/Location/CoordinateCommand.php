@@ -291,7 +291,18 @@ EOT
             return Command::SUCCESS;
         }
 
-        $location = $this->locationService->getLocationByCoordinate($coordinate, $isoLanguage, $country, $nextPlaces);
+        $location = $this->locationService->getLocationByCoordinate(
+            /* Search */
+            coordinate: $coordinate,
+
+            /* Search filter */
+            /* --- no filter --- */
+
+            /* Configuration */
+            isoLanguage: $isoLanguage,
+            country: $country,
+            nextPlaces: $nextPlaces
+        );
 
         $json = $this->getJson($location, $coordinateString, $isoLanguage);
 

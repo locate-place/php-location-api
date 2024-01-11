@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace App\Constants\Place;
 
+use App\Constants\Key\KeyArray;
 use App\Constants\Language\CountryCode;
 
 /**
@@ -25,7 +26,8 @@ use App\Constants\Language\CountryCode;
 class PlaceDE
 {
     final public const BERLIN_FERNSEHTURM = [
-        'name' => 'Berlin - Fernsehturm',
+        KeyArray::GEONAME_ID => 6_325_497,
+        KeyArray::NAME => 'Berlin - Fernsehturm',
         'coordinate' => [
             'latitude' => 52.520645,
             'longitude' => 13.409779,
@@ -40,7 +42,8 @@ class PlaceDE
     ];
 
     final public const DOEBELN_BLUMENSTRASSE = [
-        'name' => 'Döbeln - Blumenstrasse',
+        KeyArray::GEONAME_ID => 2_830_942,
+        KeyArray::NAME => 'Döbeln - Blumenstrasse',
         'coordinate' => [
             'latitude' => 51.119882,
             'longitude' => 13.132567,
@@ -55,7 +58,8 @@ class PlaceDE
     ];
 
     final public const DRESDEN_FRAUENKIRCHE = [
-        'name' => 'Dresden - Frauenkirche',
+        KeyArray::GEONAME_ID => 6_543_921,
+        KeyArray::NAME => 'Dresden - Frauenkirche',
         'coordinate' => [
             'latitude' => 51.051166462,
             'longitude' => 13.73833038,
@@ -70,7 +74,8 @@ class PlaceDE
     ];
 
     final public const POTSDAM_CECILIENHOF_PALACE = [
-        'name' => 'Potsdam - Cecilienhof',
+        KeyArray::GEONAME_ID => 6_488_416,
+        KeyArray::NAME => 'Potsdam - Cecilienhof',
         'coordinate' => [
             'latitude' => 52.419167,
             'longitude' => 13.070833,
@@ -85,7 +90,8 @@ class PlaceDE
     ];
 
     final public const COLOGNE_COLOGNE_CATHEDRAL = [
-        'name' => 'Köln - Kölner Dom',
+        KeyArray::GEONAME_ID => 6_324_464,
+        KeyArray::NAME => 'Köln - Kölner Dom',
         'coordinate' => [
             'latitude' => 50.941074,
             'longitude' => 6.957685,

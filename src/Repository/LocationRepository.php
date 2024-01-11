@@ -17,7 +17,6 @@ use App\Constants\DB\FeatureClass;
 use App\Entity\Country;
 use App\Entity\FeatureCode;
 use App\Entity\Location;
-use App\Entity\Location as LocationEntity;
 use App\Service\LocationServiceConfig;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\NonUniqueResultException;
@@ -119,6 +118,17 @@ class LocationRepository extends ServiceEntityRepository
         }
 
         return $featureCodeIds;
+    }
+
+    /**
+     * Finds the locations from given geoname ids.
+     *
+     * @param int[] $geonameIds
+     * @return array<int, Location>
+     */
+    public function findLocationsByGeonameIds(array $geonameIds): array
+    {
+        return $this->findBy(['geonameId' => $geonameIds]);
     }
 
     /**
@@ -392,9 +402,9 @@ class LocationRepository extends ServiceEntityRepository
     /**
      * Finds the city given by location.
      *
-     * @param LocationEntity $location
+     * @param Location $location
      * @param Coordinate|null $coordinate
-     * @return LocationEntity|null
+     * @return Location|null
      * @throws CaseUnsupportedException
      * @throws ClassInvalidException
      * @throws ParserException
@@ -424,9 +434,9 @@ class LocationRepository extends ServiceEntityRepository
     /**
      * Finds the borough given by location.
      *
-     * @param LocationEntity $location
+     * @param Location $location
      * @param Coordinate|null $coordinate
-     * @return LocationEntity|null
+     * @return Location|null
      * @throws CaseUnsupportedException
      * @throws ClassInvalidException
      * @throws ParserException
@@ -456,9 +466,9 @@ class LocationRepository extends ServiceEntityRepository
     /**
      * Finds the city given by location.
      *
-     * @param LocationEntity $location
+     * @param Location $location
      * @param Coordinate|null $coordinate
-     * @return LocationEntity|null
+     * @return Location|null
      * @throws CaseUnsupportedException
      * @throws ClassInvalidException
      * @throws ParserException
@@ -514,7 +524,7 @@ class LocationRepository extends ServiceEntityRepository
     /**
      * Finds the country given by location.
      *
-     * @param LocationEntity|null $location
+     * @param Location|null $location
      * @return Location|null
      * @throws ClassInvalidException
      * @throws NonUniqueResultException

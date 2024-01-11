@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace App\Constants\Place;
 
+use App\Constants\Key\KeyArray;
 use App\Constants\Language\CountryCode;
 
 /**
@@ -25,7 +26,8 @@ use App\Constants\Language\CountryCode;
 class PlaceGB
 {
     final public const AMESBURY_STONEHENGE = [
-        'name' => 'Amesbury - Stonehenge',
+        KeyArray::GEONAME_ID => 2_636_812,
+        KeyArray::NAME => 'Amesbury - Stonehenge',
         'coordinate' => [
             'latitude' => 51.1739726374,
             'longitude' => -1.82237671048,
@@ -40,7 +42,8 @@ class PlaceGB
     ];
 
     final public const EDINBURGH_LEITH = [
-        'name' => 'Edinburgh - Leith',
+        KeyArray::GEONAME_ID => 2_644_641,
+        KeyArray::NAME => 'Edinburgh - Leith',
         'coordinate' => [
             'latitude' => 55.975070,
             'longitude' => -3.158110,
@@ -55,7 +58,8 @@ class PlaceGB
     ];
 
     final public const LONDON_TOWER_BRIDGE = [
-        'name' => 'London - Tower Bridge',
+        KeyArray::GEONAME_ID => 2_635_595,
+        KeyArray::NAME => 'London - Tower Bridge',
         'coordinate' => [
             'latitude' => 51.505554,
             'longitude' => -0.075278,
@@ -70,7 +74,8 @@ class PlaceGB
     ];
 
     final public const OXFORD_SUMMERTOWN = [
-        'name' => 'Oxford - Summertown',
+        KeyArray::GEONAME_ID => 2_636_537,
+        KeyArray::NAME => 'Oxford - Summertown',
         'coordinate' => [
             'latitude' => 51.778,
             'longitude' => -1.265,
@@ -85,7 +90,8 @@ class PlaceGB
     ];
 
     final public const WARWICK_UNIVERSITY = [
-        'name' => 'Warwick - University',
+        KeyArray::GEONAME_ID => 6_619_470,
+        KeyArray::NAME => 'Warwick - University',
         'coordinate' => [
             'latitude' => 52.2901301100511,
             'longitude' => -1.5553016206954282,

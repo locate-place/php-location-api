@@ -23,6 +23,7 @@ use App\DataTypes\Feature;
 use App\DataTypes\Links;
 use App\DataTypes\Locations;
 use App\DataTypes\NextPlaces;
+use App\DataTypes\NextPlacesConfig;
 use App\DataTypes\Properties;
 use App\DataTypes\Timezone;
 use DateTimeImmutable;
@@ -78,6 +79,9 @@ abstract class LocationBase extends BasePublicResource
 
     #[SerializedName('links')]
     private Links $links;
+
+    #[SerializedName('next-places-config')]
+    private NextPlacesConfig $nextPlacesConfig;
 
 
     #[SerializedName('locations')]
@@ -281,6 +285,28 @@ abstract class LocationBase extends BasePublicResource
     {
         $this->links = $links;
 
+        return $this;
+    }
+
+    /**
+     * Gets the next places config.
+     *
+     * @return NextPlacesConfig
+     */
+    public function getNextPlacesConfig(): NextPlacesConfig
+    {
+        return $this->nextPlacesConfig;
+    }
+
+    /**
+     * Sets the next places config.
+     *
+     * @param NextPlacesConfig $nextPlacesConfig
+     * @return LocationBase
+     */
+    public function setNextPlacesConfig(NextPlacesConfig $nextPlacesConfig): LocationBase
+    {
+        $this->nextPlacesConfig = $nextPlacesConfig;
         return $this;
     }
 

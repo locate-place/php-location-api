@@ -41,11 +41,37 @@
     ] %}
 
     <body>{% apply spaceless %}
-        <h1>Overview coordinates</h1>
+        <h1>Overview page</h1>
+
+        <h2>Search and examples</h2>
+
+        <table>
+            <tr>
+                <td>Search example "Eiffel Tower"</td>
+                {% for locale in locales %}
+                    <td>
+                        <a href="{{ '/api/v1/location.json?q=Eiffel%20Tower&limit=10&language=' ~ locale.language ~ '&country=' ~ locale.country }}" target="_blank">{{ locale.name }}</a> (<code>JSON</code>)
+                    </td>
+                {% endfor %}
+            </tr>
+
+            <tr><td class="separator"></td></tr>
+
+            <tr>
+                <td>Example list</td>
+                {% for locale in locales %}
+                    <td>
+                        <a href="{{ '/api/v1/location/examples.json?language=' ~ locale.language ~ '&country=' ~ locale.country }}" target="_blank">{{ locale.name }}</a> (<code>JSON</code>)
+                    </td>
+                {% endfor %}
+            </tr>
+        </table>
+
+        <h2>Overview coordinates</h2>
 
         {% for name, coordinate in coordinates %}
 
-            <h2>{{ loop.index }}) {{ coordinate.name }} <small>(German)</small></h2>
+            <h3>{{ loop.index }}) {{ coordinate.name }} <small>(German)</small></h3>
 
             <table>
                 <tr>

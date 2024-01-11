@@ -13,6 +13,9 @@ declare(strict_types=1);
 
 namespace App\Constants\Place;
 
+use App\Constants\Key\KeyArray;
+use LogicException;
+
 /**
  * Class Search
  *
@@ -47,4 +50,90 @@ class Search
         'us-new-york-one-world' => PlaceUS::NEW_YORK_ONE_WORLD,
         'us-washington-dc-white-house' => PlaceUS::WASHINGTON_DC_WHITE_HOUSE,
     ];
+
+    final public const SEPARATOR_NAME_FULL = ', ';
+
+    /**
+     * @param string $key
+     */
+    public function __construct(private readonly string $key)
+    {
+    }
+
+    /**
+     * Returns any key value.
+     *
+     * @param string $key
+     * @return mixed
+     */
+    private function getValue(string $key): mixed
+    {
+        if (!array_key_exists($this->key, self::VALUES)) {
+            throw new LogicException(sprintf('Unable to find key "%s" in %s.', $this->key, self::class));
+        }
+
+        $search = self::VALUES[$this->key];
+
+        if (!array_key_exists($key, $search)) {
+            throw new LogicException(sprintf('Unable to find key "%s".', $key));
+        }
+
+        return $search[$key];
+    }
+
+    /**
+     * Returns the geoname-id.
+     *
+     * @return int
+     */
+    public function getGeonameId(): int
+    {
+        $key = KeyArray::GEONAME_ID;
+
+        $geonameId = $this->getValue($key);
+
+        if (!is_int($geonameId)) {
+            throw new LogicException(sprintf('Key "%s" must be an integer.', $key));
+        }
+
+        return $geonameId;
+    }
+
+    /**
+     * Returns the name.
+     *
+     * @return string
+     */
+    public function getName(): string
+    {
+        $key = KeyArray::NAME;
+
+        $name = $this->getValue($key);
+
+        if (!is_string($name)) {
+            throw new LogicException(sprintf('Key "%s" must be a string.', $key));
+        }
+
+        return $name;
+    }
+
+    /**
+     * Returns the full name.
+     *
+     * @return string
+     */
+    public function getNameFull(): string
+    {
+        $key = KeyArray::LOCATION;
+
+        $location = $this->getValue($key);
+
+        if (!is_array($location)) {
+            throw new LogicException(sprintf('Key "%s" must be an array.', $key));
+        }
+
+        $values = array_values($location);
+
+        return implode(self::SEPARATOR_NAME_FULL, $values);
+    }
 }

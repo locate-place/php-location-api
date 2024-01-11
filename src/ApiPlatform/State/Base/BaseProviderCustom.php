@@ -19,6 +19,7 @@ use App\Constants\Key\KeyArray;
 use App\Constants\Language\CountryCode;
 use App\Constants\Language\LanguageCode;
 use App\Constants\Language\LocaleCode;
+use App\Constants\Place\Search;
 use App\Utils\Performance\PerformanceLogger;
 use Ixnode\PhpApiVersionBundle\ApiPlatform\Resource\Base\BasePublicResource;
 use Ixnode\PhpApiVersionBundle\ApiPlatform\State\Base\Wrapper\BaseResourceWrapperProvider;
@@ -306,5 +307,57 @@ class BaseProviderCustom extends BaseResourceWrapperProvider
             KeyArray::ISO_LANGUAGE => $isoLanguage,
             KeyArray::COUNTRY => $country,
         ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function endpointContains(string $word): bool
+    {
+        $pathInfo = explode('/', $this->getCurrentRequest()->getPathInfo());
+
+        foreach ($pathInfo as $pathInfoPart) {
+            if (preg_match(sprintf('~^%s$~', $word), $pathInfoPart)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Returns some geoname id examples.
+     *
+     * @return int[]
+     */
+    protected function getGeonameIds(): array
+    {
+        $geonameIds = [];
+
+        foreach (array_keys(Search::VALUES) as $key) {
+            $search = new Search($key);
+
+            $geonameIds[] = $search->getGeonameId();
+        }
+
+        return $geonameIds;
+    }
+
+    /**
+     * Returns the full name array.
+     *
+     * @return array<int, string>
+     */
+    protected function getNamesFull(): array
+    {
+        $namesFull = [];
+
+        foreach (array_keys(Search::VALUES) as $key) {
+            $search = new Search($key);
+
+            $namesFull[$search->getGeonameId()] = $search->getNameFull();
+        }
+
+        return $namesFull;
     }
 }

@@ -72,6 +72,8 @@ class KeyArray
 
     final public const ENDPOINTS = 'endpoints';
 
+    final public const EXAMPLES = 'examples';
+
     final public const FEATURE = 'feature';
 
     final public const FEATURE_CLASS = 'class';
@@ -87,8 +89,6 @@ class KeyArray
     final public const FEATURE_CODE_NAME = 'code-name';
 
     final public const FULL = 'full';
-
-    final public const FULL_NAME = 'full-name';
 
     final public const GEONAME_ID = 'geoname-id';
 
@@ -150,7 +150,11 @@ class KeyArray
 
     final public const NAME = 'name';
 
+    final public const NAME_FULL = 'name-full';
+
     final public const NEXT_PLACES = 'next-places';
+
+    final public const NEXT_PLACES_CONFIG = 'next-places-config';
 
     final public const NUMBER = 'number';
 

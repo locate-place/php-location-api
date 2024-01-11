@@ -78,31 +78,31 @@ parameters:
             limit:    10     # Max. 10 results per request
         next:
             cities:
-                name: Next cities
+                name: cities
                 feature_codes:
                     - PPLA
                     - PPLA1
                     - PPLA2
                     - PPLA3
             parks:
-                name: Next parks
+                name: parks
                 feature_codes:
                     - PRK
             airports:
-                name: Next airports
+                name: airports
                 feature_codes:
                     - AIRP
                 distance: 200000
             cinemas:
-                name: Next cinemas
+                name: cinemas
                 feature_codes:
                     - THTR
             churches:
-                name: Next churches
+                name: churches
                 feature_codes:
                     - CH
             waters:
-                name: Next lakes, rivers
+                name: lakes, rivers
                 feature_codes:
                     - LK
                     - LKS
