@@ -96,8 +96,6 @@ class BaseProviderCustom extends BaseResourceWrapperProvider
      */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
-        parent::provide($operation, $uriVariables, $context);
-
         $stopwatch = new Stopwatch();
 
         $stopwatch->start('provide-custom');

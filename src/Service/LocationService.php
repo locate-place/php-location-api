@@ -47,9 +47,13 @@ final class LocationService extends BaseLocationService
 {
     private const PERFORMANCE_NAME_FIND_LOCATIONS_BY_COORDINATE = 'findLocationsByCoordinate';
 
+    private const PERFORMANCE_NAME_FIND_LOCATIONS_BY_NAME = 'findLocationsByName';
+
     private const PERFORMANCE_ADD_LOCATIONS = 'addLocationResourceSimple';
 
     private const PERFORMANCE_SORT_LOCATIONS = 'usort';
+
+    private const PERFORMANCE_ARRAY_FILTER_LOCATIONS = 'array_filter';
 
     private const PERFORMANCE_NAME_GET_LOCATION_RESOURCE_FULL = 'getLocationResourceFull';
 
@@ -193,6 +197,18 @@ final class LocationService extends BaseLocationService
      * @param bool $addNextPlaces
      * @param bool $addNextPlacesConfig
      * @return array<int, Location>
+     * @throws ArrayKeyNotFoundException
+     * @throws CaseInvalidException
+     * @throws CaseUnsupportedException
+     * @throws ClassInvalidException
+     * @throws FileNotFoundException
+     * @throws FileNotReadableException
+     * @throws FunctionJsonEncodeException
+     * @throws FunctionReplaceException
+     * @throws JsonException
+     * @throws NonUniqueResultException
+     * @throws ParserException
+     * @throws TypeInvalidException
      * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
@@ -222,7 +238,53 @@ final class LocationService extends BaseLocationService
             addNextPlacesConfig: $addNextPlacesConfig
         );
 
-        return [];
+        $performanceLogger = PerformanceLogger::getInstance();
+        $performanceGroupName = $performanceLogger->getGroupNameFromFileName(__FILE__);
+
+        /* Save filter parameter and query locations */
+        $locationEntities = [];
+        $performanceLogger->logPerformance(function () use (&$locationEntities, $search) {
+
+            /* Start task */
+            $locationEntities = $this->locationRepository->findBy(['name' => $search]);
+            /* Finish task */
+
+        }, self::PERFORMANCE_NAME_FIND_LOCATIONS_BY_NAME, $performanceGroupName, $performanceLogger->getAdditionalData(self::class, __FUNCTION__, __LINE__));
+
+
+
+        /* Filter by empty feature codes */
+        $performanceLogger->logPerformance(function () use (&$locationEntities) {
+
+            /* Start task */
+            $locationEntities = array_filter(
+                $locationEntities,
+                fn(LocationEntity $locationEntity) => in_array($locationEntity->getFeatureCode()?->getCode(), ['', null])
+            );
+            /* Finish task */
+
+        }, self::PERFORMANCE_ARRAY_FILTER_LOCATIONS, $performanceGroupName, $performanceLogger->getAdditionalData(self::class, __FUNCTION__, __LINE__));
+
+
+
+        /* Collect locations and add additional information */
+        $locations = [];
+        $performanceLogger->logPerformance(function () use ($locationEntities, &$locations) {
+
+            /* Start task */
+            foreach ($locationEntities as $locationEntity) {
+                if (!$locationEntity instanceof LocationEntity) {
+                    continue;
+                }
+                $locations[] = $this->getLocationResourceSimple(locationEntity: $locationEntity);
+            }
+            /* Finish task */
+
+        }, self::PERFORMANCE_ADD_LOCATIONS, $performanceGroupName, $performanceLogger->getAdditionalData(self::class, __FUNCTION__, __LINE__));
+
+
+
+        return $locations;
     }
 
     /**

@@ -39,6 +39,7 @@ use Symfony\Component\Serializer\Annotation\Ignore;
 #[ORM\Entity(repositoryClass: LocationRepository::class)]
 #[ORM\Index(columns: ['coordinate'], flags: ['gist'])]
 #[ORM\Index(columns: ['geoname_id'])]
+#[ORM\Index(columns: ['name'])]
 #[ORM\HasLifecycleCallbacks]
 class Location
 {

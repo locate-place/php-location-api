@@ -154,7 +154,15 @@ final class LocationProvider extends BaseProviderCustom
      * @param QueryParser $queryParser
      * @return BasePublicResource[]
      * @throws ArrayKeyNotFoundException
+     * @throws CaseInvalidException
      * @throws CaseUnsupportedException
+     * @throws ClassInvalidException
+     * @throws FileNotFoundException
+     * @throws FileNotReadableException
+     * @throws FunctionJsonEncodeException
+     * @throws FunctionReplaceException
+     * @throws JsonException
+     * @throws NonUniqueResultException
      * @throws ParserException
      * @throws TypeInvalidException
      */
@@ -480,7 +488,7 @@ final class LocationProvider extends BaseProviderCustom
             /* A-2) Simple search (list search):
              * ---------------------------------
              *
-             * - https://www.location-api.localhost/api/v1/location.json?q=Berlin-Mitte&limit=10
+             * - https://www.location-api.localhost/api/v1/location.json?q=Berlin&limit=10
              * - https://www.location-api.localhost/api/v1/location.json?q=Eiffel%20Tower&limit=10&language=de&country=DE
              */
             case $this->getRequestMethod() === BaseResourceWrapperProvider::METHOD_GET_COLLECTION && $queryParser->isType(QueryParser::TYPE_SEARCH_LIST_GENERAL):

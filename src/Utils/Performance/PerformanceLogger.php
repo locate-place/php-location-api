@@ -15,6 +15,8 @@ namespace App\Utils\Performance;
 
 use App\Constants\Key\KeyArray;
 use Ixnode\PhpContainer\Json;
+use Ixnode\PhpException\ArrayType\ArrayKeyNotFoundException;
+use Ixnode\PhpException\Case\CaseInvalidException;
 use Ixnode\PhpException\File\FileNotFoundException;
 use Ixnode\PhpException\File\FileNotReadableException;
 use Ixnode\PhpException\Function\FunctionJsonEncodeException;
@@ -204,8 +206,14 @@ class PerformanceLogger
      * @param string $group
      * @param array<string, string|int>|null $additionalLog
      * @return void
+     * @throws FileNotFoundException
+     * @throws FileNotReadableException
+     * @throws FunctionJsonEncodeException
      * @throws FunctionReplaceException
+     * @throws JsonException
      * @throws TypeInvalidException
+     * @throws ArrayKeyNotFoundException
+     * @throws CaseInvalidException
      */
     private function endLogPerformance(string $name, string $group = self::GROUP_DEFAULT, array $additionalLog = null): void
     {
@@ -213,21 +221,34 @@ class PerformanceLogger
             throw new LogicException('Use PerformanceLogger::startLogPerformance() before calling this method');
         }
 
+        $path = [$group, $name];
+
+        $allData = match (true) {
+            $this->logData->hasKey($path) => $this->logData->getKeyArray($path),
+            default => [],
+        };
+
         $time = (microtime(true) - $this->startTime[$group][$name]) * self::MILLISECONDS_PER_SECOND;
         $memoryUsed = $this->getMemoryUsed();
 
-        $this->logData->addValue([$group, $name, 'time'], [
-            KeyArray::VALUE => round($time, 2),
-            KeyArray::VALUE_FORMATTED => $this->getTimeFormatted($time),
-        ]);
-        $this->logData->addValue([$group, $name, 'memory'], [
-            KeyArray::VALUE => round($memoryUsed, 2),
-            KeyArray::VALUE_FORMATTED => $this->getMemoryUsedFormatted($memoryUsed),
-        ]);
+        $data = [
+            'time' => [
+                KeyArray::VALUE => round($time, 2),
+                KeyArray::VALUE_FORMATTED => $this->getTimeFormatted($time),
+            ],
+            'memory' => [
+                KeyArray::VALUE => round($memoryUsed, 2),
+                KeyArray::VALUE_FORMATTED => $this->getMemoryUsedFormatted($memoryUsed),
+            ],
+        ];
 
         if (!is_null($additionalLog)) {
-            $this->logData->addValue([$group, $name, 'additional'], $additionalLog);
+            $data['additional'] = $additionalLog;
         }
+
+        $allData[] = $data;
+
+        $this->logData->addValue($path, $allData);
 
         unset($this->startTime[$group][$name]);
     }
