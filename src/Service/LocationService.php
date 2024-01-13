@@ -259,7 +259,7 @@ final class LocationService extends BaseLocationService
             /* Start task */
             $locationEntities = array_filter(
                 $locationEntities,
-                fn(LocationEntity $locationEntity) => in_array($locationEntity->getFeatureCode()?->getCode(), ['', null])
+                fn(LocationEntity $locationEntity) => !in_array($locationEntity->getFeatureCode()?->getCode(), ['', null])
             );
             /* Finish task */
 
