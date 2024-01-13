@@ -45,6 +45,22 @@ class Parameter
         'allowReserved' => false,
     ];
 
+    final public const COORDINATE_SHORT = [
+        'name' => Name::COORDINATE_SHORT,
+        'in' => 'query', // cookie, header, path, query
+        'description' => '<strong>Coordinate Short</strong>',
+        'required' => true,
+        'deprecated' => false,
+        'allowEmptyValue' => false,
+        'schema' => [
+            'type' => 'string',
+            'default' => '51.0504, 13.7373' /* Dresden, Germany */
+        ],
+        'style' => 'simple', // simple, form
+        'explode' => false,
+        'allowReserved' => false,
+    ];
+
     final public const COUNTRY = [
         'name' => Name::COUNTRY,
         'in' => 'query', // cookie, header, path, query

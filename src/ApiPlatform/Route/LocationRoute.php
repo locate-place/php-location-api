@@ -72,6 +72,12 @@ final class LocationRoute extends BaseRoute
             self::KEY_DEFAULT => CountryCode::US,
             self::KEY_TYPE => self::TYPE_STRING,
         ],
+        Name::COORDINATE_SHORT => [
+            self::KEY_REQUEST => Name::COORDINATE_SHORT,
+            self::KEY_RESPONSE => 'coordinate',
+            self::KEY_DEFAULT => '51.05811,13.74133', /* Dresden, Germany, The golden rider */
+            self::KEY_TYPE => self::TYPE_STRING,
+        ],
     ];
 
     public const DESCRIPTION = "# Location resources\nRetrieves the collection of Location resources.";

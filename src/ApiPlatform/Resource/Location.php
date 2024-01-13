@@ -49,6 +49,7 @@ use Symfony\Component\Serializer\Annotation\Ignore;
             Parameter::LIMIT,
             Parameter::LANGUAGE,
             Parameter::COUNTRY,
+            Parameter::COORDINATE_SHORT,
         ],
     ],
     provider: LocationProvider::class
@@ -58,6 +59,11 @@ use Symfony\Component\Serializer\Annotation\Ignore;
     uriTemplate: 'location/examples.{_format}',
     openapiContext: [
         'description' => LocationRoute::DESCRIPTION_COLLECTION_GET,
+        'parameters' => [
+            Parameter::LANGUAGE,
+            Parameter::COUNTRY,
+            Parameter::COORDINATE_SHORT,
+        ],
     ],
     provider: LocationProvider::class
 )]

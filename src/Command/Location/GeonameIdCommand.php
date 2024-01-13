@@ -115,7 +115,11 @@ EOT
 
         $location = $this->locationService->getLocationByGeonameId(
             /* Search */
-            geonameId: $geonameId
+            geonameId: $geonameId,
+
+            /* Configuration */
+            addLocations: true,
+            addNextPlacesConfig: true,
         );
 
         $jsonContent = $this->serializer->serialize($location, 'json', [AbstractNormalizer::IGNORED_ATTRIBUTES => ['meters']]);

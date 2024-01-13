@@ -18,7 +18,6 @@ use App\Constants\DB\Limit;
 use App\Constants\Key\KeyArray;
 use App\Constants\Language\CountryCode;
 use App\Constants\Language\LanguageCode;
-use App\DBAL\GeoLocation\ValueObject\Point;
 use App\Entity\Location as LocationEntity;
 use App\Service\Base\BaseLocationService;
 use App\Utils\Performance\PerformanceLogger;
@@ -35,6 +34,7 @@ use Ixnode\PhpException\Parser\ParserException;
 use Ixnode\PhpException\Type\TypeInvalidException;
 use Ixnode\PhpNamingConventions\Exception\FunctionReplaceException;
 use JsonException;
+use LogicException;
 
 /**
  * Class LocationService
@@ -45,11 +45,17 @@ use JsonException;
  */
 final class LocationService extends BaseLocationService
 {
-    private const PERFORMANCE_NAME_FIND_LOCATIONS = 'findLocationsByCoordinate';
+    private const PERFORMANCE_NAME_FIND_LOCATIONS_BY_COORDINATE = 'findLocationsByCoordinate';
 
     private const PERFORMANCE_ADD_LOCATIONS = 'addLocationResourceSimple';
 
     private const PERFORMANCE_SORT_LOCATIONS = 'usort';
+
+    private const PERFORMANCE_NAME_GET_LOCATION_RESOURCE_FULL = 'getLocationResourceFull';
+
+    private const PERFORMANCE_NAME_LOCATION_ENTITY_BY_COORDINATE = 'getLocationEntityByCoordinate';
+
+    private const PERFORMANCE_NAME_FIND_ONE_BY = 'findOneBy';
 
     final public const SORT_BY_GEONAME_ID = KeyArray::GEONAME_ID;
 
@@ -64,7 +70,9 @@ final class LocationService extends BaseLocationService
      * @param Coordinate|null $coordinate
      * @param string $isoLanguage
      * @param string $country
+     * @param bool $addLocations
      * @param bool $nextPlaces
+     * @param bool $addNextPlacesConfig
      * @param string $sortBy
      * @param array<int, string> $namesFull
      * @return array<int, Location>
@@ -93,7 +101,9 @@ final class LocationService extends BaseLocationService
         /* Configuration */
         string $isoLanguage = LanguageCode::EN,
         string $country = CountryCode::US,
+        bool $addLocations = false,
         bool $nextPlaces = false,
+        bool $addNextPlacesConfig = false,
 
         /* Sort configuration */
         string $sortBy = self::SORT_BY_GEONAME_ID,
@@ -106,7 +116,9 @@ final class LocationService extends BaseLocationService
         $this->update(
             isoLanguage: $isoLanguage,
             country: $country,
-            nextPlaces: $nextPlaces,
+            addLocations: $addLocations,
+            addNextPlaces: $nextPlaces,
+            addNextPlacesConfig: $addNextPlacesConfig,
             coordinate: $coordinate,
         );
 
@@ -124,7 +136,7 @@ final class LocationService extends BaseLocationService
             $locationEntities = $this->locationRepository->findLocationsByGeonameIds($geonameIds);
             /* Finish task */
 
-        }, self::PERFORMANCE_NAME_FIND_LOCATIONS, $performanceGroupName, $performanceLogger->getAdditionalData(self::class, __FUNCTION__, __LINE__));
+        }, self::PERFORMANCE_NAME_FIND_LOCATIONS_BY_COORDINATE, $performanceGroupName, $performanceLogger->getAdditionalData(self::class, __FUNCTION__, __LINE__));
 
 
         /* Collect locations and add additional information */
@@ -172,12 +184,14 @@ final class LocationService extends BaseLocationService
      * Returns locations by given search string (filter limit, feature classes).
      *
      * @param string $search
-     * @param int|null $limit
      * @param array<int, string>|string|null $featureClass
      * @param array<int, string>|string|null $featureCode
+     * @param int|null $limit
      * @param string $isoLanguage
      * @param string $country
-     * @param bool $nextPlaces
+     * @param bool $addLocations
+     * @param bool $addNextPlaces
+     * @param bool $addNextPlacesConfig
      * @return array<int, Location>
      * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
@@ -194,14 +208,18 @@ final class LocationService extends BaseLocationService
         /* Configuration */
         string $isoLanguage = LanguageCode::EN,
         string $country = CountryCode::US,
-        bool $nextPlaces = false
+        bool $addLocations = false,
+        bool $addNextPlaces = false,
+        bool $addNextPlacesConfig = false
     ): array
     {
         /* Save search and env parameter */
         $this->update(
             isoLanguage: $isoLanguage,
             country: $country,
-            nextPlaces: $nextPlaces
+            addLocations: $addLocations,
+            addNextPlaces: $addNextPlaces,
+            addNextPlacesConfig: $addNextPlacesConfig
         );
 
         return [];
@@ -217,7 +235,9 @@ final class LocationService extends BaseLocationService
      * @param int|null $limit
      * @param string $isoLanguage
      * @param string $country
-     * @param bool $nextPlaces
+     * @param bool $addLocations
+     * @param bool $addNextPlaces
+     * @param bool $addNextPlacesConfig
      * @return array<int, Location>
      * @throws ArrayKeyNotFoundException
      * @throws CaseInvalidException
@@ -232,6 +252,7 @@ final class LocationService extends BaseLocationService
      * @throws ParserException
      * @throws TypeInvalidException
      * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
+     * @SuppressWarnings(PHPMD.ExcessiveParameterList)
      */
     public function getLocationsByCoordinate(
         /* Search */
@@ -246,14 +267,18 @@ final class LocationService extends BaseLocationService
         /* Configuration */
         string $isoLanguage = LanguageCode::EN,
         string $country = CountryCode::US,
-        bool $nextPlaces = false
+        bool $addLocations = false,
+        bool $addNextPlaces = false,
+        bool $addNextPlacesConfig = false
     ): array
     {
         /* Save search and env parameter */
         $this->update(
             isoLanguage: $isoLanguage,
             country: $country,
-            nextPlaces: $nextPlaces,
+            addLocations: $addLocations,
+            addNextPlaces: $addNextPlaces,
+            addNextPlacesConfig: $addNextPlacesConfig,
             coordinate: $coordinate
         );
 
@@ -278,7 +303,7 @@ final class LocationService extends BaseLocationService
             $this->doAfterQueryTasks($locationEntities);
             /* Finish task */
 
-        }, self::PERFORMANCE_NAME_FIND_LOCATIONS, $performanceGroupName, $performanceLogger->getAdditionalData(self::class, __FUNCTION__, __LINE__));
+        }, self::PERFORMANCE_NAME_FIND_LOCATIONS_BY_COORDINATE, $performanceGroupName, $performanceLogger->getAdditionalData(self::class, __FUNCTION__, __LINE__));
 
         /* Collect locations and add additional information */
         $performanceLogger->logPerformance(function () use ($locationEntities, &$locations) {
@@ -301,9 +326,12 @@ final class LocationService extends BaseLocationService
      * Returns Location ressource by given geoname id.
      *
      * @param int $geonameId
+     * @param Coordinate|null $coordinate
      * @param string $isoLanguage
      * @param string $country
-     * @param bool $nextPlaces
+     * @param bool $addLocations
+     * @param bool $addNextPlaces
+     * @param bool $addNextPlacesConfig
      * @return Location
      * @throws ArrayKeyNotFoundException
      * @throws CaseInvalidException
@@ -322,6 +350,7 @@ final class LocationService extends BaseLocationService
     public function getLocationByGeonameId(
         /* Search */
         int $geonameId,
+        Coordinate $coordinate = null,
 
         /* Search filter */
         /* --- no filter --- */
@@ -329,34 +358,65 @@ final class LocationService extends BaseLocationService
         /* Configuration */
         string $isoLanguage = LanguageCode::EN,
         string $country = CountryCode::US,
-        bool $nextPlaces = false
+        bool $addLocations = false,
+        bool $addNextPlaces = false,
+        bool $addNextPlacesConfig = false
     ): Location
     {
-        $location = $this->locationRepository->findOneBy(['geonameId' => $geonameId]);
+        $performanceLogger = PerformanceLogger::getInstance();
+        $performanceGroupName = $performanceLogger->getGroupNameFromFileName(__FILE__);
+
+        /* Save search and env parameter */
+        $this->update(
+            isoLanguage: $isoLanguage,
+            country: $country,
+            addLocations: $addLocations,
+            addNextPlaces: $addNextPlaces,
+            addNextPlacesConfig: $addNextPlacesConfig,
+
+            /** @link BaseLocationService::getServiceLocationContainerFromLocationRepository */
+            // coordinate: Use the one from the geoname id (see BaseLocationService::getServiceLocationContainerFromLocationRepository).
+            coordinateDistance: $coordinate
+        );
+
+
+
+        /* Execute $this->locationRepository->findOneBy() and log performance. */
+        $location = null;
+        $performanceLogger->logPerformance(function () use (&$location, $geonameId) {
+
+            /* Start task */
+            $location = $this->locationRepository->findOneBy(['geonameId' => $geonameId]);
+            /* Finish task */
+
+        }, self::PERFORMANCE_NAME_FIND_ONE_BY, $performanceGroupName, $performanceLogger->getAdditionalData(self::class, __FUNCTION__, __LINE__));
+
+
 
         if (!$location instanceof LocationEntity) {
             $this->setError(sprintf('Unable to find location with geoname id %d', $geonameId));
             return $this->getEmptyLocation($geonameId);
         }
 
-        $point = $location->getCoordinate();
 
-        if (!$point instanceof Point) {
-            $this->setError(sprintf('Unable to get coordinate from %d', $geonameId));
-            return $this->getEmptyLocation($geonameId);
+
+        /* Execute $this->getLocationResourceFull() and log performance. */
+        $locationEntity = null;
+        $performanceLogger->logPerformance(function () use (&$locationEntity, $location) {
+
+            /* Start task */
+            $locationEntity = $this->getLocationResourceFull($location);
+            /* Finish task */
+
+        }, self::PERFORMANCE_NAME_GET_LOCATION_RESOURCE_FULL, $performanceGroupName, $performanceLogger->getAdditionalData(self::class, __FUNCTION__, __LINE__));
+
+
+
+        if (is_null($locationEntity)) {
+            throw new LogicException(sprintf('Unable to find location entity with geoname id %d', $geonameId));
         }
 
-        $coordinate = new Coordinate($point->getLatitude(), $point->getLongitude());
-
-        /* Save search and env parameter */
-        $this->update(
-            isoLanguage: $isoLanguage,
-            country: $country,
-            nextPlaces: $nextPlaces,
-            coordinate: $coordinate
-        );
-
-        return $this->getLocationResourceFull($location);
+        return $locationEntity;
     }
 
     /**
@@ -365,7 +425,9 @@ final class LocationService extends BaseLocationService
      * @param Coordinate $coordinate
      * @param string $isoLanguage
      * @param string $country
-     * @param bool $nextPlaces
+     * @param bool $addLocations
+     * @param bool $addNextPlaces
+     * @param bool $addNextPlacesConfig
      * @return Location
      * @throws ArrayKeyNotFoundException
      * @throws CaseInvalidException
@@ -391,14 +453,18 @@ final class LocationService extends BaseLocationService
         /* Configuration */
         string $isoLanguage = LanguageCode::EN,
         string $country = CountryCode::US,
-        bool $nextPlaces = false
+        bool $addLocations = false,
+        bool $addNextPlaces = false,
+        bool $addNextPlacesConfig = false,
     ): Location
     {
         /* Save search and env parameter */
         $this->update(
             isoLanguage: $isoLanguage,
             country: $country,
-            nextPlaces: $nextPlaces,
+            addLocations: $addLocations,
+            addNextPlaces: $addNextPlaces,
+            addNextPlacesConfig: $addNextPlacesConfig,
             coordinate: $coordinate
         );
 
@@ -408,12 +474,46 @@ final class LocationService extends BaseLocationService
 //            featureCodes: FeatureClass::FEATURE_CODES_P_ALL,
 //        );
 
-        $location = $this->getLocationEntityByCoordinate($coordinate);
+        $performanceLogger = PerformanceLogger::getInstance();
+        $performanceGroupName = $performanceLogger->getGroupNameFromFileName(__FILE__);
 
+
+
+        /* Execute $this->getLocationResourceFull() and log performance. */
+        $location = null;
+        $performanceLogger->logPerformance(function () use (&$location, $coordinate) {
+
+            /* Start task */
+            $location = $this->getLocationEntityByCoordinate($coordinate);
+            /* Finish task */
+
+        }, self::PERFORMANCE_NAME_LOCATION_ENTITY_BY_COORDINATE, $performanceGroupName, $performanceLogger->getAdditionalData(self::class, __FUNCTION__, __LINE__));
+
+
+
+        /* No location found. */
         if (is_null($location)) {
             return $this->getEmptyLocation();
         }
 
-        return $this->getLocationResourceFull($location);
+
+
+        /* Execute $this->getLocationResourceFull() and log performance. */
+        $locationEntity = null;
+        $performanceLogger->logPerformance(function () use (&$locationEntity, $location) {
+
+            /* Start task */
+            $locationEntity = $this->getLocationResourceFull($location);
+            /* Finish task */
+
+        }, self::PERFORMANCE_NAME_GET_LOCATION_RESOURCE_FULL, $performanceGroupName, $performanceLogger->getAdditionalData(self::class, __FUNCTION__, __LINE__));
+
+
+
+        if (is_null($locationEntity)) {
+            throw new LogicException(sprintf('Unable to find location entity with coordinate "%s".', $coordinate->getStringDMS()));
+        }
+
+        return $locationEntity;
     }
 }

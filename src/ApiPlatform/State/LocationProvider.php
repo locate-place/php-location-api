@@ -23,7 +23,6 @@ use App\Constants\DB\Limit;
 use App\Constants\Key\KeyArray;
 use App\Repository\LocationRepository;
 use App\Service\LocationService;
-use App\Utils\Query\Query;
 use App\Utils\Query\QueryParser;
 use Doctrine\ORM\NonUniqueResultException;
 use Ixnode\PhpApiVersionBundle\ApiPlatform\Resource\Base\BasePublicResource;
@@ -41,7 +40,6 @@ use Ixnode\PhpException\Parser\ParserException;
 use Ixnode\PhpException\Type\TypeInvalidException;
 use Ixnode\PhpNamingConventions\Exception\FunctionReplaceException;
 use JsonException;
-use LogicException;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -58,8 +56,6 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 final class LocationProvider extends BaseProviderCustom
 {
     private const FILE_SCHEMA_COORDINATE = 'data/json/schema/command/coordinate/resource.schema.json';
-
-    private readonly Query $query;
 
     /**
      * @param Version $version
@@ -78,15 +74,7 @@ final class LocationProvider extends BaseProviderCustom
         protected LocationService $locationService,
     )
     {
-        parent::__construct($version, $parameterBag, $request);
-
-        $requestCurrent = $this->request->getCurrentRequest();
-
-        if (is_null($requestCurrent)) {
-            throw new LogicException('Unable to get current request.');
-        }
-
-        $this->query = new Query($requestCurrent);
+        parent::__construct($version, $parameterBag, $request, $locationService);
     }
 
     /**
@@ -143,6 +131,8 @@ final class LocationProvider extends BaseProviderCustom
             /* Configuration */
             isoLanguage: $isoLanguage,
             country: $country,
+            addLocations: true,
+            addNextPlacesConfig: true,
 
             /* Sort configuration */
             sortBy: !is_null($coordinate) ? LocationService::SORT_BY_DISTANCE : LocationService::SORT_BY_NAME,
@@ -198,7 +188,9 @@ final class LocationProvider extends BaseProviderCustom
             /* Configuration */
             isoLanguage: $isoLanguage,
             country: $country,
-            nextPlaces: $this->isNextPlacesByFilter(),
+            addLocations: true,
+            addNextPlaces: $this->isNextPlacesByFilter(),
+            addNextPlacesConfig: true
         );
 
         if ($this->locationService->hasError()) {
@@ -257,7 +249,9 @@ final class LocationProvider extends BaseProviderCustom
             /* Configuration */
             isoLanguage: $isoLanguage,
             country: $country,
-            nextPlaces: $this->isNextPlacesByFilter(),
+            addLocations: true,
+            addNextPlaces: $this->isNextPlacesByFilter(),
+            addNextPlacesConfig: true
         );
 
         if ($this->locationService->hasError()) {
@@ -295,9 +289,12 @@ final class LocationProvider extends BaseProviderCustom
             return (new LocationResource())->setGeonameId(0);
         }
 
+        $coordinate = $this->query->getCoordinate();
+
         $location = $this->locationService->getLocationByGeonameId(
             /* Search */
             geonameId: $this->getUriInteger(Name::GEONAME_ID),
+            coordinate: $coordinate,
 
             /* Search filter */
             /* --- no filter --- */
@@ -305,7 +302,9 @@ final class LocationProvider extends BaseProviderCustom
             /* Configuration */
             isoLanguage: $isoLanguage,
             country: $country,
-            nextPlaces: $this->isNextPlacesByFilter()
+            addLocations: true,
+            addNextPlaces: $this->isNextPlacesByFilter(),
+            addNextPlacesConfig: true
         );
 
         if ($this->locationService->hasError()) {
@@ -361,7 +360,9 @@ final class LocationProvider extends BaseProviderCustom
             /* Configuration */
             isoLanguage: $isoLanguage,
             country: $country,
-            nextPlaces: $this->isNextPlacesByFilter()
+            addLocations: true,
+            addNextPlaces: $this->isNextPlacesByFilter(),
+            addNextPlacesConfig: true
         );
 
         if ($this->locationService->hasError()) {
@@ -428,6 +429,7 @@ final class LocationProvider extends BaseProviderCustom
      */
     protected function doProvide(): BasePublicResource|array
     {
+        /* Sets the uri variables from the routing system. */
         $this->query->setUriVariables($this->getUriVariables());
 
         $queryParser = $this->query->getQueryParser();
@@ -520,6 +522,7 @@ final class LocationProvider extends BaseProviderCustom
              * - https://www.location-api.localhost/api/v1/location/2830942.json
              * - https://www.location-api.localhost/api/v1/location/2830942.json?language=de&country=DE
              * - https://www.location-api.localhost/api/v1/location/2830942.json?language=de&country=DE&next_places
+             * - https://www.location-api.localhost/api/v1/location/2830942.json?c=51.05811,13.74133 // current position
              */
             case $this->getRequestMethod() === Request::METHOD_GET && $this->hasUri(Name::GEONAME_ID):
                 return $this->doProvideGetWithGeonameId();

@@ -63,11 +63,17 @@ abstract class BaseHelperLocationService
 
     protected Coordinate $coordinate;
 
+    protected Coordinate $coordinateDistance;
+
     private string $isoLanguage = LanguageCode::EN;
 
     private string $country = CountryCode::US;
 
-    private bool $nextPlaces = false;
+    private bool $addLocations = false;
+
+    private bool $addNextPlaces = false;
+
+    private bool $addNextPlacesConfig = false;
 
 
 
@@ -132,6 +138,25 @@ abstract class BaseHelperLocationService
     }
 
     /**
+     * @return Coordinate
+     */
+    public function getCoordinateDistance(): Coordinate
+    {
+        return $this->coordinateDistance;
+    }
+
+    /**
+     * @param Coordinate $coordinateDistance
+     * @return self
+     */
+    public function setCoordinateDistance(Coordinate $coordinateDistance): self
+    {
+        $this->coordinateDistance = $coordinateDistance;
+
+        return $this;
+    }
+
+    /**
      * @return string
      */
     protected function getIsoLanguage(): string
@@ -172,18 +197,57 @@ abstract class BaseHelperLocationService
     /**
      * @return bool
      */
-    protected function isNextPlaces(): bool
+    public function isAddLocations(): bool
     {
-        return $this->nextPlaces;
+        return $this->addLocations;
     }
 
     /**
-     * @param bool $nextPlaces
+     * @param bool $addLocations
      * @return self
      */
-    protected function setNextPlaces(bool $nextPlaces): self
+    public function setAddLocations(bool $addLocations): self
     {
-        $this->nextPlaces = $nextPlaces;
+        $this->addLocations = $addLocations;
+
+        return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    protected function isAddNextPlaces(): bool
+    {
+        return $this->addNextPlaces;
+    }
+
+    /**
+     * @param bool $addNextPlaces
+     * @return self
+     */
+    protected function setAddNextPlaces(bool $addNextPlaces): self
+    {
+        $this->addNextPlaces = $addNextPlaces;
+
+        return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isAddNextPlacesConfig(): bool
+    {
+        return $this->addNextPlacesConfig;
+    }
+
+    /**
+     * @param bool $addNextPlacesConfig
+     *
+     * @return self
+     */
+    public function setAddNextPlacesConfig(bool $addNextPlacesConfig): self
+    {
+        $this->addNextPlacesConfig = $addNextPlacesConfig;
 
         return $this;
     }
@@ -356,22 +420,35 @@ abstract class BaseHelperLocationService
      *
      * @param string $isoLanguage
      * @param string $country
-     * @param bool $nextPlaces
+     * @param bool $addLocations
+     * @param bool $addNextPlaces
+     * @param bool $addNextPlacesConfig
      * @param Coordinate|null $coordinate
+     * @param Coordinate|null $coordinateDistance
      * @return void
      */
     protected function update(
         string $isoLanguage,
         string $country,
-        bool $nextPlaces,
+        bool $addLocations,
+        bool $addNextPlaces,
+        bool $addNextPlacesConfig,
         Coordinate|null $coordinate = null,
+        Coordinate|null $coordinateDistance = null,
     ): void
     {
         $this->setIsoLanguage($isoLanguage);
         $this->setCountry($country);
-        $this->setNextPlaces($nextPlaces);
+        $this->setAddLocations($addLocations);
+        $this->setAddNextPlaces($addNextPlaces);
+        $this->setAddNextPlacesConfig($addNextPlacesConfig);
+
+        if (!is_null($coordinate) && is_null($coordinateDistance)) {
+            $coordinateDistance = $coordinate;
+        }
 
         !is_null($coordinate) && $this->setCoordinate($coordinate);
+        !is_null($coordinateDistance) && $this->setCoordinateDistance($coordinateDistance);
 
         $this->featureClassService->setLocaleByLanguageAndCountry($isoLanguage, $country);
         $this->featureCodeService->setLocaleByLanguageAndCountry($isoLanguage, $country);

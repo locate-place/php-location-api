@@ -13,25 +13,41 @@ declare(strict_types=1);
 
 namespace App\ApiPlatform\State\Base;
 
+use ApiPlatform\Metadata\Operation;
 use App\ApiPlatform\OpenApiContext\Name;
 use App\ApiPlatform\Resource\Base;
+use App\ApiPlatform\Resource\Location;
 use App\Constants\Key\KeyArray;
 use App\Constants\Language\CountryCode;
 use App\Constants\Language\LanguageCode;
 use App\Constants\Language\LocaleCode;
 use App\Constants\Place\Search;
+use App\Service\LocationService;
 use App\Utils\Performance\PerformanceLogger;
+use App\Utils\Query\Query;
+use Doctrine\ORM\NonUniqueResultException;
+use Exception;
 use Ixnode\PhpApiVersionBundle\ApiPlatform\Resource\Base\BasePublicResource;
 use Ixnode\PhpApiVersionBundle\ApiPlatform\State\Base\Wrapper\BaseResourceWrapperProvider;
 use Ixnode\PhpApiVersionBundle\Utils\TypeCasting\TypeCastingHelper;
+use Ixnode\PhpApiVersionBundle\Utils\Version\Version;
 use Ixnode\PhpCoordinate\Coordinate;
 use Ixnode\PhpException\ArrayType\ArrayKeyNotFoundException;
 use Ixnode\PhpException\Case\CaseInvalidException;
 use Ixnode\PhpException\Case\CaseUnsupportedException;
+use Ixnode\PhpException\Class\ClassInvalidException;
+use Ixnode\PhpException\File\FileNotFoundException;
+use Ixnode\PhpException\File\FileNotReadableException;
+use Ixnode\PhpException\Function\FunctionJsonEncodeException;
 use Ixnode\PhpException\Parser\ParserException;
 use Ixnode\PhpException\Type\TypeInvalidException;
+use Ixnode\PhpNamingConventions\Exception\FunctionReplaceException;
 use Ixnode\PhpTimezone\Constants\Language;
+use JsonException;
 use LogicException;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\Stopwatch\Stopwatch;
 
 /**
  * Class BaseProviderCustom
@@ -42,8 +58,68 @@ use LogicException;
  */
 class BaseProviderCustom extends BaseResourceWrapperProvider
 {
+    protected readonly Query $query;
+
     /**
-     * Add some additional data to ResourceWrapper (memory-taken, data-licence, etc.).
+     * @param Version $version
+     * @param ParameterBagInterface $parameterBag
+     * @param RequestStack $request
+     * @param LocationService $locationService
+     */
+    public function __construct(
+        Version $version,
+        ParameterBagInterface $parameterBag,
+        RequestStack $request,
+        protected LocationService $locationService
+    )
+    {
+        parent::__construct($version, $parameterBag, $request);
+
+        $requestCurrent = $this->request->getCurrentRequest();
+
+        if (is_null($requestCurrent)) {
+            throw new LogicException('Unable to get current request.');
+        }
+
+        $this->query = new Query($requestCurrent);
+    }
+
+    /**
+     * Replaces the provide function and add the execution time from getResourceWrapper also to
+     * overall time.
+     *
+     * @param Operation $operation
+     * @param array<string, mixed> $uriVariables
+     * @param array<int|string, mixed> $context
+     * @return object|array|object[]|null
+     * @throws Exception
+     */
+    public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
+    {
+        parent::provide($operation, $uriVariables, $context);
+
+        $stopwatch = new Stopwatch();
+
+        $stopwatch->start('provide-custom');
+        /** @var ResourceWrapperCustom $resourceWrapper */
+        $resourceWrapper = parent::provide($operation, $uriVariables, $context);
+        $event = $stopwatch->stop('provide-custom');
+
+        $memoryTaken = sprintf('%.2f MB', memory_get_usage() / 1024 / 1024);
+        $timeTaken = sprintf('%.0fms', $event->getDuration());
+
+        $resourceWrapper
+            ->setMemoryTaken($memoryTaken)
+            ->setTimeTaken($timeTaken)
+        ;
+
+        return $resourceWrapper;
+    }
+
+    /**
+     * Returns the custom resource wrapper:
+     *
+     * - Add some additional data to ResourceWrapper (memory-taken, data-licence, etc.).
      *
      * @param BasePublicResource|BasePublicResource[] $baseResource
      * @param string $timeTaken
@@ -74,11 +150,7 @@ class BaseProviderCustom extends BaseResourceWrapperProvider
             ;
         }
 
-        $memoryTaken = sprintf('%.2f MB', memory_get_usage() / 1024 / 1024);
-
         $resourceWrapperNew
-            ->setMemoryTaken($memoryTaken)
-            ->setTimeTaken($resourceWrapper->getTimeTaken())
             ->setPerformance(PerformanceLogger::getInstance()->getPerformanceData()->getArray())
             ->setGiven($resourceWrapper->getGiven())
             ->setDate($resourceWrapper->getDate())
@@ -105,47 +177,41 @@ class BaseProviderCustom extends BaseResourceWrapperProvider
     /**
      * Extends the getUriVariablesOutput method.
      *
-     * @return array<int|string, array<string, array<string, array<string, float|string>|string>|string>|bool|int|string>
+     * @return array<int|string, array<string, mixed>|bool|int|string>
      * @throws ArrayKeyNotFoundException
      * @throws CaseInvalidException
      * @throws CaseUnsupportedException
-     * @throws TypeInvalidException
+     * @throws ClassInvalidException
+     * @throws FileNotFoundException
+     * @throws FileNotReadableException
+     * @throws FunctionJsonEncodeException
+     * @throws FunctionReplaceException
+     * @throws JsonException
+     * @throws NonUniqueResultException
      * @throws ParserException
+     * @throws TypeInvalidException
      */
     protected function getUriVariablesOutput(): array
     {
         $uriVariablesOutput = parent::getUriVariablesOutput();
 
+        /* Add coordinate information. */
         if (array_key_exists(KeyArray::COORDINATE, $uriVariablesOutput)) {
-            $language = (string) $uriVariablesOutput[KeyArray::COORDINATE];
-
-            $coordinateInstance = new Coordinate($language);
-
-            $uriVariablesOutput[KeyArray::COORDINATE] = [
-                KeyArray::RAW => $language,
-                KeyArray::PARSED => [
-                    KeyArray::LATITUDE => [
-                        KeyArray::DECIMAL => $coordinateInstance->getLatitudeDecimal(),
-                        KeyArray::DMS => $coordinateInstance->getLatitudeDMS(),
-                    ],
-                    KeyArray::LONGITUDE => [
-                        KeyArray::DECIMAL => $coordinateInstance->getLongitudeDecimal(),
-                        KeyArray::DMS => $coordinateInstance->getLongitudeDMS(),
-                    ],
-                ]
-            ];
+            $uriVariablesOutput[KeyArray::COORDINATE] = $this->getGivenCoordinateArray(
+                $uriVariablesOutput
+            );
         }
 
         if (array_key_exists('language', $uriVariablesOutput)) {
-            $language = (new TypeCastingHelper($uriVariablesOutput['language']))->strval();
+            $coordinateString = (new TypeCastingHelper($uriVariablesOutput['language']))->strval();
 
-            $languageValues = array_key_exists($language, Language::LANGUAGE_ISO_639_1) ?
-                Language::LANGUAGE_ISO_639_1[$language] :
+            $languageValues = array_key_exists($coordinateString, Language::LANGUAGE_ISO_639_1) ?
+                Language::LANGUAGE_ISO_639_1[$coordinateString] :
                 null
             ;
 
             $uriVariablesOutput['language'] = [
-                'raw' => $language,
+                'raw' => $coordinateString,
                 'parsed' => [
                     'name' => !is_null($languageValues) ? $languageValues['en'] : 'n/a',
                 ]
@@ -172,6 +238,91 @@ class BaseProviderCustom extends BaseResourceWrapperProvider
         }
 
         return $uriVariablesOutput;
+    }
+
+    /**
+     * Returns the coordinate given array.
+     *
+     * @param array<int|string, bool|int|string> $uriVariablesOutput
+     * @return array<string, mixed>
+     * @throws ArrayKeyNotFoundException
+     * @throws CaseInvalidException
+     * @throws CaseUnsupportedException
+     * @throws ClassInvalidException
+     * @throws FileNotFoundException
+     * @throws FileNotReadableException
+     * @throws FunctionJsonEncodeException
+     * @throws FunctionReplaceException
+     * @throws JsonException
+     * @throws NonUniqueResultException
+     * @throws ParserException
+     * @throws TypeInvalidException
+     */
+    private function getGivenCoordinateArray(array $uriVariablesOutput): array
+    {
+        $coordinateString = (string) $uriVariablesOutput[KeyArray::COORDINATE];
+
+        $coordinate = new Coordinate($coordinateString);
+
+        return [
+            KeyArray::RAW => $coordinateString,
+            KeyArray::PARSED => [
+                KeyArray::LATITUDE => [
+                    KeyArray::DECIMAL => $coordinate->getLatitudeDecimal(),
+                    KeyArray::DMS => $coordinate->getLatitudeDMS(),
+                ],
+                KeyArray::LONGITUDE => [
+                    KeyArray::DECIMAL => $coordinate->getLongitudeDecimal(),
+                    KeyArray::DMS => $coordinate->getLongitudeDMS(),
+                ],
+            ],
+            KeyArray::LOCATION => $this->getLocation($coordinate),
+        ];
+    }
+
+    /**
+     * Returns the location from given coordinate.
+     *
+     * @param Coordinate $coordinate
+     * @return Location|null
+     * @throws ArrayKeyNotFoundException
+     * @throws CaseInvalidException
+     * @throws CaseUnsupportedException
+     * @throws ClassInvalidException
+     * @throws FileNotFoundException
+     * @throws FileNotReadableException
+     * @throws FunctionJsonEncodeException
+     * @throws FunctionReplaceException
+     * @throws JsonException
+     * @throws NonUniqueResultException
+     * @throws ParserException
+     * @throws TypeInvalidException
+     */
+    private function getLocation(Coordinate $coordinate): Location|null
+    {
+        $country = $this->query->getFilterAsString(Query::FILTER_COUNTRY, CountryCode::US);
+        $isoLanguage = $this->query->getFilterAsString(Query::FILTER_LANGUAGE, LanguageCode::EN);
+
+        $location = $this->locationService->getLocationByCoordinate(
+            /* Search */
+            coordinate: $coordinate,
+
+            /* Search filter */
+            /* --- no filter --- */
+
+            /* Configuration */
+            isoLanguage: $isoLanguage,
+            country: $country,
+            addLocations: true,
+            addNextPlacesConfig: true
+        );
+
+        if ($this->locationService->hasError()) {
+            $this->setError($this->locationService->getError());
+            return null;
+        }
+
+        return $location;
     }
 
     /**

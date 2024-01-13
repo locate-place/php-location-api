@@ -38,6 +38,10 @@ class Query
 {
     final public const FILTER_COORDINATE = 'c';
 
+    final public const FILTER_COUNTRY = 'country';
+
+    final public const FILTER_LANGUAGE = 'language';
+
     final public const FILTER_QUERY = 'q';
 
     final public const URI_GEONAME_ID = 'geoname_id';
@@ -193,10 +197,15 @@ class Query
      * Returns parameter $key.
      *
      * @param string $key
+     * @param string|int|float|bool|null $default
      * @return string|int|float|bool|null
      */
-    public function getFilter(string $key): string|int|float|bool|null
+    public function getFilter(string $key, string|int|float|bool|null $default = null): string|int|float|bool|null
     {
+        if (!$this->hasFilter($key) && !is_null($default)) {
+            return $default;
+        }
+
         if (!$this->hasFilter($key)) {
             throw new LogicException(sprintf('The filter with given key "%s" does not exist.', $key));
         }
@@ -208,11 +217,12 @@ class Query
      * Returns parameter $key as string.
      *
      * @param string $key
+     * @param string|null $default
      * @return string
      */
-    public function getFilterAsString(string $key): string
+    public function getFilterAsString(string $key, string $default = null): string
     {
-        $parameter = $this->getFilter($key);
+        $parameter = $this->getFilter($key, $default);
 
         return match (true) {
             is_string($parameter) => $parameter,

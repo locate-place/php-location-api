@@ -301,7 +301,9 @@ EOT
             /* Configuration */
             isoLanguage: $isoLanguage,
             country: $country,
-            nextPlaces: $nextPlaces
+            addLocations: true,
+            addNextPlaces: $nextPlaces,
+            addNextPlacesConfig: true
         );
 
         $json = $this->getJson($location, $coordinateString, $isoLanguage);

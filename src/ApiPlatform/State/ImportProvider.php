@@ -22,6 +22,7 @@ use App\Entity\Country;
 use App\Entity\Import as ImportEntity;
 use App\Repository\ImportRepository;
 use App\Repository\LocationRepository;
+use App\Service\LocationService;
 use DateTimeImmutable;
 use Ixnode\PhpApiVersionBundle\ApiPlatform\Resource\Base\BasePublicResource;
 use Ixnode\PhpApiVersionBundle\ApiPlatform\State\Base\Wrapper\BaseResourceWrapperProvider;
@@ -50,17 +51,19 @@ final class ImportProvider extends BaseProviderCustom
      * @param ImportRepository $importRepository
      * @param LocationRepository $locationRepository
      * @param TranslatorInterface $translator
+     * @param LocationService $locationService
      */
     public function __construct(
-        protected Version               $version,
+        protected Version $version,
         protected ParameterBagInterface $parameterBag,
-        protected RequestStack          $request,
-        protected ImportRepository      $importRepository,
-        protected LocationRepository    $locationRepository,
-        protected TranslatorInterface   $translator
+        protected RequestStack $request,
+        protected ImportRepository $importRepository,
+        protected LocationRepository $locationRepository,
+        protected TranslatorInterface $translator,
+        protected LocationService $locationService
     )
     {
-        parent::__construct($version, $parameterBag, $request);
+        parent::__construct($version, $parameterBag, $request, $this->locationService);
     }
 
     /**

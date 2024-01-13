@@ -178,7 +178,7 @@ abstract class BaseLocationService extends BaseHelperLocationService
          * - U: undersea
          * - V: forest,heath,...
          */
-        if ($this->isNextPlaces()) {
+        if ($this->isAddNextPlaces()) {
             $locationResource->setNextPlaces($this->getDataTypeNextPlaces($locationEntity));
         }
 
@@ -747,7 +747,7 @@ abstract class BaseLocationService extends BaseHelperLocationService
             /* Complex structures. */
             KeyArray::COORDINATE => $this->getDataTypeCoordinate(
                 $locationEntity->getCoordinateIxnode(),
-                $this->coordinate ?? null,
+                $this->coordinateDistance ?? null,
                 $locationEntity->getCoordinate()?->getSrid()
             ),
             KeyArray::FEATURE => $this->getDataTypeFeature($locationEntity, $featureDetailed),
@@ -755,13 +755,13 @@ abstract class BaseLocationService extends BaseHelperLocationService
             KeyArray::PROPERTIES => $this->getDataTypeProperties($locationEntity),
 
             /* Add next places */
-            KeyArray::NEXT_PLACES_CONFIG => $this->getDataTypeNextPlacesConfig([
+            ...($this->isAddNextPlacesConfig() ? [KeyArray::NEXT_PLACES_CONFIG => $this->getDataTypeNextPlacesConfig([
                 KeyArray::CONFIG => $this->locationServiceConfig->getConfigNextPlacesGroups($locationEntity->getCountry()?->getCode() ?? CountryCode::DEFAULT),
                 KeyArray::ENDPOINTS => [
                     KeyArray::COORDINATE => '/api/v1/location/coordinate.json',
                     KeyArray::LIST => '/api/v1/location.json',
                 ],
-            ])
+            ])] : [])
         ];
     }
 
@@ -833,9 +833,15 @@ abstract class BaseLocationService extends BaseHelperLocationService
         $isBoroughVisible = $this->locationServiceConfig->isBoroughVisible($locationEntity);
         $isCityVisible = $this->locationServiceConfig->isCityVisible($locationEntity);
 
-        $district = $isDistrictVisible ? $this->locationRepository->findDistrictByLocation($locationEntity, $this->coordinate) : null;
-        $borough = $isBoroughVisible? $this->locationRepository->findBoroughByLocation($locationEntity, $this->coordinate) : null;
-        $city = $isCityVisible ? $this->locationRepository->findCityByLocation($district ?: $locationEntity, $this->coordinate) : null;
+        /* Try to get the current position or use the coordinate from the location entity. */
+        $coordinate = match (true) {
+            isset($this->coordinate) => $this->coordinate,
+            default => $locationEntity->getCoordinateIxnode(),
+        };
+
+        $district = $isDistrictVisible ? $this->locationRepository->findDistrictByLocation($locationEntity, $coordinate) : null;
+        $borough = $isBoroughVisible? $this->locationRepository->findBoroughByLocation($locationEntity, $coordinate) : null;
+        $city = $isCityVisible ? $this->locationRepository->findCityByLocation($district ?: $locationEntity, $coordinate) : null;
         $state = $this->locationRepository->findStateByLocation(($district ?: $city) ?: $locationEntity);
         $country = $this->locationRepository->findCountryByLocation($state);
 
