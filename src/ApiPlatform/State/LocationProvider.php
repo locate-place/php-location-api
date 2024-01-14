@@ -120,7 +120,7 @@ final class LocationProvider extends BaseProviderCustom
 
         $coordinate = $this->query->getCoordinate();
 
-        $locations = $this->locationService->getLocationsByByGeonameIds(
+        $locations = $this->locationService->getLocationsByGeonameIds(
             /* Search */
             geonameIds: $this->getGeonameIds(),
             coordinate: $coordinate,
@@ -184,9 +184,12 @@ final class LocationProvider extends BaseProviderCustom
             return [];
         }
 
+        $coordinate = $this->query->getCoordinate();
+
         $locations = $this->locationService->getLocationsBySearch(
             /* Search */
             search: $search,
+            coordinate: $coordinate,
 
             /* Search filter */
             featureClass: $queryParser->getFeatureClasses(),
@@ -198,7 +201,10 @@ final class LocationProvider extends BaseProviderCustom
             country: $country,
             addLocations: true,
             addNextPlaces: $this->isNextPlacesByFilter(),
-            addNextPlacesConfig: true
+            addNextPlacesConfig: true,
+
+            /* Sort configuration */
+            sortBy: !is_null($coordinate) ? LocationService::SORT_BY_RELEVANCE : LocationService::SORT_BY_NAME,
         );
 
         if ($this->locationService->hasError()) {

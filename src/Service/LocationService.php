@@ -53,6 +53,8 @@ final class LocationService extends BaseLocationService
 
     private const PERFORMANCE_SORT_LOCATIONS = 'usort';
 
+    private const PERFORMANCE_ARRAY_SLICE_LOCATIONS = 'array_slice';
+
     private const PERFORMANCE_ARRAY_FILTER_LOCATIONS = 'array_filter';
 
     private const PERFORMANCE_NAME_GET_LOCATION_RESOURCE_FULL = 'getLocationResourceFull';
@@ -61,11 +63,13 @@ final class LocationService extends BaseLocationService
 
     private const PERFORMANCE_NAME_FIND_ONE_BY = 'findOneBy';
 
+    final public const SORT_BY_DISTANCE = KeyArray::DISTANCE;
+
     final public const SORT_BY_GEONAME_ID = KeyArray::GEONAME_ID;
 
     final public const SORT_BY_NAME = KeyArray::NAME;
 
-    final public const SORT_BY_DISTANCE = KeyArray::DISTANCE;
+    final public const SORT_BY_RELEVANCE = KeyArray::RELEVANCE;
 
     /**
      * Returns locations by given geoname ids.
@@ -94,7 +98,7 @@ final class LocationService extends BaseLocationService
      * @throws TypeInvalidException
      * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
      */
-    public function getLocationsByByGeonameIds(
+    public function getLocationsByGeonameIds(
         /* Search */
         array $geonameIds,
         Coordinate $coordinate = null,
@@ -133,7 +137,7 @@ final class LocationService extends BaseLocationService
         $locations = [];
 
 
-        /* Save filter parameter and query locations */
+        /* Find locations by given geoname ids */
         $performanceLogger->logPerformance(function () use (&$locationEntities, $geonameIds) {
 
             /* Start task */
@@ -141,6 +145,23 @@ final class LocationService extends BaseLocationService
             /* Finish task */
 
         }, self::PERFORMANCE_NAME_FIND_LOCATIONS_BY_COORDINATE, $performanceGroupName, $performanceLogger->getAdditionalData(self::class, __FUNCTION__, __LINE__));
+
+
+
+        /* Sort array according to given $sortBy */
+        $performanceLogger->logPerformance(function () use (&$locationEntities, $coordinate, $sortBy) {
+
+            /* Start task */
+            match ($sortBy) {
+                self::SORT_BY_DISTANCE => $this->sortLocationEntitiesByDistance($locationEntities, $coordinate),
+                self::SORT_BY_GEONAME_ID => $this->sortLocationEntitiesByGeonameId($locationEntities),
+                self::SORT_BY_NAME => $this->sortLocationEntitiesByName($locationEntities),
+                default => null,
+            };
+            /* Finish task */
+
+        }, self::PERFORMANCE_SORT_LOCATIONS, $performanceGroupName, $performanceLogger->getAdditionalData(self::class, __FUNCTION__, __LINE__));
+
 
 
         /* Collect locations and add additional information */
@@ -166,20 +187,6 @@ final class LocationService extends BaseLocationService
         }, self::PERFORMANCE_ADD_LOCATIONS, $performanceGroupName, $performanceLogger->getAdditionalData(self::class, __FUNCTION__, __LINE__));
 
 
-        /* Sort array according to given $sortBy */
-        $performanceLogger->logPerformance(function () use (&$locations, $sortBy) {
-
-            /* Start task */
-            match ($sortBy) {
-                self::SORT_BY_GEONAME_ID => usort($locations, fn(Location $a, Location $b) => $a->getGeonameId() <=> $b->getGeonameId()),
-                self::SORT_BY_NAME => usort($locations, fn(Location $a, Location $b) => strcmp($a->getName(), $b->getName())),
-                self::SORT_BY_DISTANCE => usort($locations, fn(Location $a, Location $b) => $a->getCoordinate()->getDistance() <=> $b->getCoordinate()->getDistance()),
-                default => null,
-            };
-            /* Finish task */
-
-        }, self::PERFORMANCE_SORT_LOCATIONS, $performanceGroupName, $performanceLogger->getAdditionalData(self::class, __FUNCTION__, __LINE__));
-
 
         return $locations;
     }
@@ -188,6 +195,7 @@ final class LocationService extends BaseLocationService
      * Returns locations by given search string (filter limit, feature classes).
      *
      * @param string $search
+     * @param Coordinate|null $coordinate
      * @param array<int, string>|string|null $featureClass
      * @param array<int, string>|string|null $featureCode
      * @param int|null $limit
@@ -196,6 +204,7 @@ final class LocationService extends BaseLocationService
      * @param bool $addLocations
      * @param bool $addNextPlaces
      * @param bool $addNextPlacesConfig
+     * @param string $sortBy
      * @return array<int, Location>
      * @throws ArrayKeyNotFoundException
      * @throws CaseInvalidException
@@ -211,10 +220,13 @@ final class LocationService extends BaseLocationService
      * @throws TypeInvalidException
      * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
+     * @SuppressWarnings(PHPMD.ExcessiveParameterList)
      */
     public function getLocationsBySearch(
         /* Search */
         string $search,
+        Coordinate|null $coordinate = null,
 
         /* Search filter */
         array|string|null $featureClass = null,
@@ -226,7 +238,10 @@ final class LocationService extends BaseLocationService
         string $country = CountryCode::US,
         bool $addLocations = false,
         bool $addNextPlaces = false,
-        bool $addNextPlacesConfig = false
+        bool $addNextPlacesConfig = false,
+
+        /* Sort configuration */
+        string $sortBy = self::SORT_BY_GEONAME_ID
     ): array
     {
         /* Save search and env parameter */
@@ -235,7 +250,8 @@ final class LocationService extends BaseLocationService
             country: $country,
             addLocations: $addLocations,
             addNextPlaces: $addNextPlaces,
-            addNextPlacesConfig: $addNextPlacesConfig
+            addNextPlacesConfig: $addNextPlacesConfig,
+            coordinate: $coordinate
         );
 
         $performanceLogger = PerformanceLogger::getInstance();
@@ -246,7 +262,7 @@ final class LocationService extends BaseLocationService
         $performanceLogger->logPerformance(function () use (&$locationEntities, $search) {
 
             /* Start task */
-            $locationEntities = $this->locationRepository->findBy(['name' => $search]);
+            $locationEntities = $this->locationRepository->findBySearch($search);
             /* Finish task */
 
         }, self::PERFORMANCE_NAME_FIND_LOCATIONS_BY_NAME, $performanceGroupName, $performanceLogger->getAdditionalData(self::class, __FUNCTION__, __LINE__));
@@ -264,6 +280,34 @@ final class LocationService extends BaseLocationService
             /* Finish task */
 
         }, self::PERFORMANCE_ARRAY_FILTER_LOCATIONS, $performanceGroupName, $performanceLogger->getAdditionalData(self::class, __FUNCTION__, __LINE__));
+
+
+
+        /* Sort array according to given $sortBy */
+        $performanceLogger->logPerformance(function () use (&$locationEntities, $search, $coordinate, $sortBy) {
+
+            /* Start task */
+            match ($sortBy) {
+                self::SORT_BY_DISTANCE => $this->sortLocationEntitiesByDistance($locationEntities, $coordinate),
+                self::SORT_BY_GEONAME_ID => $this->sortLocationEntitiesByGeonameId($locationEntities),
+                self::SORT_BY_NAME => $this->sortLocationEntitiesByName($locationEntities),
+                self::SORT_BY_RELEVANCE => $this->sortLocationEntitiesByRelevance($locationEntities, $search, $coordinate),
+                default => null,
+            };
+            /* Finish task */
+
+        }, self::PERFORMANCE_SORT_LOCATIONS, $performanceGroupName, $performanceLogger->getAdditionalData(self::class, __FUNCTION__, __LINE__));
+
+
+
+        /* Limit the result */
+        $performanceLogger->logPerformance(function () use (&$locationEntities, $limit) {
+
+            /* Start task */
+            $locationEntities = array_slice($locationEntities, 0, $limit);
+            /* Finish task */
+
+        }, self::PERFORMANCE_ARRAY_SLICE_LOCATIONS, $performanceGroupName, $performanceLogger->getAdditionalData(self::class, __FUNCTION__, __LINE__));
 
 
 

@@ -30,6 +30,7 @@ use Ixnode\PhpException\Case\CaseUnsupportedException;
 use Ixnode\PhpException\Class\ClassInvalidException;
 use Ixnode\PhpException\Parser\ParserException;
 use Ixnode\PhpException\Type\TypeInvalidException;
+use LogicException;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
 /**
@@ -129,6 +130,37 @@ class LocationRepository extends ServiceEntityRepository
     public function findLocationsByGeonameIds(array $geonameIds): array
     {
         return $this->findBy(['geonameId' => $geonameIds]);
+    }
+
+    /**
+     * Finds the locations from given search string.
+     *
+     * @return array<int, Location>
+     */
+    public function findBySearch(string $search, int|null $limit = null): array
+    {
+        $qb = $this->createQueryBuilder('l')
+            ->andWhere('l.name LIKE :name')
+            ->setParameter('name', '%'.$search.'%')
+            ->setMaxResults($limit);
+
+        $locations = $qb->getQuery()->execute();
+
+        if (!is_array($locations)) {
+            throw new LogicException('Unsupported query type.');
+        }
+
+        $locationsResult = [];
+
+        foreach ($locations as $location) {
+            if (!$location instanceof Location) {
+                continue;
+            }
+
+            $locationsResult[] = $location;
+        }
+
+        return $locationsResult;
     }
 
     /**

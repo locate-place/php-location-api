@@ -557,6 +557,11 @@ abstract class BaseLocationService extends BaseHelperLocationService
             throw new CaseUnsupportedException('Unable to get timezone.');
         }
 
+        $timezoneString = match ($timezoneString) {
+            'Europe/Kyiv' => 'Europe/Kiev',
+            default => $timezoneString,
+        };
+
         $dateTimeZone = new DateTimeZone($timezoneString);
         $dateTime = new DateTime('now', $dateTimeZone);
         $locationArray = $dateTimeZone->getLocation();

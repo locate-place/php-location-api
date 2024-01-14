@@ -174,6 +174,8 @@ class KeyArray
 
     final public const RAW = 'raw';
 
+    final public const RELEVANCE = 'relevance';
+
     final public const SEARCH = 'search';
 
     final public const SHORT = 'short';

@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use App\Constants\DB\FeatureClass as FeatureClassConstants;
+use App\Constants\DB\FeatureCode as FeatureCodeConstants;
 use App\DBAL\GeoLocation\Types\PostgreSQL\PostGISType;
 use App\DBAL\GeoLocation\ValueObject\Point;
 use App\Entity\Trait\TimestampsTrait;
@@ -25,6 +27,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Ixnode\PhpCoordinate\Coordinate;
 use Ixnode\PhpException\Case\CaseUnsupportedException;
 use Ixnode\PhpException\Parser\ParserException;
+use LogicException;
 use Symfony\Component\Serializer\Annotation\Ignore;
 
 /**
@@ -593,5 +596,77 @@ class Location
             !is_null($elevation) => $elevation,
             default => null,
         };
+    }
+
+
+    /**
+     * Returns the relevance from given search and coordinate.
+     *
+     * @param string $search
+     * @param Coordinate|null $coordinate
+     * @return int
+     * @throws CaseUnsupportedException
+     * @throws ParserException
+     */
+    public function getRelevance(string $search, Coordinate|null $coordinate = null): int
+    {
+        $relevance = 200000; /* 20.000 km (half-earth circulation), to avoid relevance's < 0 */
+
+        $name = $this->getName();
+
+        if (is_null($name)) {
+            throw new LogicException(sprintf('Location "%d" does not have a name.', $this->getId()));
+        }
+
+        /* The given place is equal to search name. */
+        if (strtolower($name) === strtolower($search)) {
+            $relevance += 10000;
+        }
+
+        /* The given place starts with search name. */
+        if (str_starts_with(strtolower($name), strtolower($search))) {
+            $relevance += 7500;
+        }
+
+        /* The search name is a word within the given place */
+        if (preg_match(sprintf('~(^| )(%s)( |$)~i', $search), $name)) {
+            $relevance += 7500;
+        }
+
+        $featureClass = $this->getFeatureClass()?->getClass();
+        $featureCode = $this->getFeatureCode()?->getCode();
+
+        /* Admin Place */
+        if ($featureClass === FeatureClassConstants::A) {
+            $relevance += match ($featureCode) {
+                FeatureCodeConstants::ADM1, FeatureCodeConstants::ADM1H => 5000,
+                FeatureCodeConstants::ADM2, FeatureCodeConstants::ADM2H => 4500,
+                FeatureCodeConstants::ADM3, FeatureCodeConstants::ADM3H => 4000,
+                FeatureCodeConstants::ADM4, FeatureCodeConstants::ADM4H => 3500,
+                FeatureCodeConstants::ADM5, FeatureCodeConstants::ADM5H => 3000,
+                default => 2500,
+            };
+        }
+
+        /* If this is not a hotel: +2000 */
+        if ($featureCode !== FeatureCodeConstants::HTL) {
+            $relevance += 2000;
+        }
+
+        if (is_null($coordinate)) {
+            return $relevance;
+        }
+
+        $distanceMeter = $this->getCoordinateIxnode()->getDistance($coordinate);
+
+        /* Remove relevance:
+         * 1 km:     -10
+         * 10 km:    -100
+         * 100 km:   -1000
+         * 20000 km: -200000
+         */
+        $relevance -= intval(round(floatval($distanceMeter) * 0.01, 0));
+
+        return $relevance;
     }
 }

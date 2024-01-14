@@ -27,6 +27,8 @@ use App\Service\LocationServiceConfig;
 use App\Service\LocationServiceAlternateName;
 use Ixnode\PhpApiVersionBundle\Utils\Version\Version;
 use Ixnode\PhpCoordinate\Coordinate;
+use Ixnode\PhpException\Case\CaseUnsupportedException;
+use Ixnode\PhpException\Parser\ParserException;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -413,6 +415,79 @@ abstract class BaseHelperLocationService
         if (count($locationEntities) > $this->limit) {
             $locationEntities = array_slice($locationEntities, 0, $this->limit);
         }
+    }
+
+    /**
+     * Sort given location entities by name.
+     *
+     * @param LocationEntity[] $locationEntities
+     * @return void
+     */
+    protected function sortLocationEntitiesByName(array &$locationEntities): void
+    {
+        usort($locationEntities, fn(LocationEntity $locationA, LocationEntity $locationB) => strcmp($locationA->getName() ?: '', $locationB->getName() ?: ''));
+    }
+
+    /**
+     * Sort given location entities by geoname id.
+     *
+     * @param LocationEntity[] $locationEntities
+     * @return void
+     */
+    protected function sortLocationEntitiesByGeonameId(array &$locationEntities): void
+    {
+        usort($locationEntities, fn(LocationEntity $locationA, LocationEntity $locationB) => $locationA->getGeonameId() <=> $locationB->getGeonameId());
+    }
+
+    /**
+     * Sort given location entities by distance.
+     *
+     * @param LocationEntity[] $locationEntities
+     * @param Coordinate|null $coordinate
+     * @return void
+     * @throws CaseUnsupportedException
+     * @throws ParserException
+     */
+    protected function sortLocationEntitiesByDistance(array &$locationEntities, Coordinate|null $coordinate = null): void
+    {
+        /* No coordinate was given -> sort by name. */
+        if (is_null($coordinate)) {
+            $this->sortLocationEntitiesByName($locationEntities);
+            return;
+        }
+
+        $distances = [];
+
+        /* Build distances array. */
+        foreach ($locationEntities as $locationEntity) {
+            $distances[$locationEntity->getId()] = $locationEntity->getCoordinateIxnode()->getDistance($coordinate);
+        }
+
+        /* Sort by distance. */
+        usort($locationEntities, fn(LocationEntity $locationA, LocationEntity $locationB) => $distances[$locationA->getId()] <=> $distances[$locationB->getId()]);
+    }
+
+    /**
+     * Sort given location entities by relevance.
+     *
+     * @param LocationEntity[] $locationEntities
+     * @param string $search
+     * @param Coordinate|null $coordinate
+     * @return void
+     * @throws CaseUnsupportedException
+     * @throws ParserException
+     */
+    protected function sortLocationEntitiesByRelevance(array &$locationEntities, string $search, Coordinate|null $coordinate = null): void
+    {
+        $relevances = [];
+
+        /* Build distances array. */
+        foreach ($locationEntities as $locationEntity) {
+            $relevances[$locationEntity->getId()] = $locationEntity->getRelevance($search, $coordinate);
+        }
+
+        /* Sort by relevances. */
+        usort($locationEntities, fn(LocationEntity $locationA, LocationEntity $locationB) => $relevances[$locationB->getId()] <=> $relevances[$locationA->getId()]);
     }
 
     /**
