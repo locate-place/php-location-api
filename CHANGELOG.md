@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Releases
 
+### [0.1.28] - 2024-01-14
+
+* Add search endpoint; Add relevance sort
+* Add alternate_name index to table alternate_name and name index to location.
+* Add coordinate with location to given response
+* Add Query class to easily get filter (parameter), uri variables and pathes
+* Add LocationProvider descriptions
+* Add distance sort to examples endpoint
+
 ### [0.1.27] - 2024-01-11
 
 * Add example endpoint v2
