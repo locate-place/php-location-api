@@ -81,7 +81,6 @@ parameters:
                 name: cities
                 feature_codes:
                     - PPLA
-                    - PPLA1
                     - PPLA2
                     - PPLA3
             parks:
@@ -116,7 +115,6 @@ parameters:
                     cities:
                         feature_codes:
                             - PPLA
-                            - PPLA1
                             - PPLA2
                             - PPLA3
                             - PPLA4
