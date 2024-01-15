@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Releases
 
+### [0.1.30] - 2024-01-15
+
+* Fix next places configuration
+
 ### [0.1.29] - 2024-01-15
 
 * Add the parsed and translated query array to given array
