@@ -13,12 +13,16 @@ declare(strict_types=1);
 
 namespace App\Utils\Query;
 
+use App\Constants\DB\FeatureClass;
+use App\Constants\DB\FeatureCode;
 use App\Constants\Key\KeyArray;
+use App\Constants\Language\LanguageCode;
 use App\Tests\Unit\Utils\Query\ParserTest;
 use Ixnode\PhpCoordinate\Coordinate;
 use Ixnode\PhpException\Case\CaseUnsupportedException;
 use Ixnode\PhpException\Parser\ParserException;
 use LogicException;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
  * Class QueryParser
@@ -27,16 +31,17 @@ use LogicException;
  * @version 0.1.0 (2024-01-06)
  * @since 0.1.0 (2024-01-06) First version.
  * @link ParserTest
+ * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
  */
 class QueryParser
 {
-    final public const TYPE_SEARCH_GEONAME_ID = 'search_geoname_id';
+    final public const TYPE_SEARCH_GEONAME_ID = 'search-geoname-id';
 
-    final public const TYPE_SEARCH_COORDINATE = 'search_coordinate';
+    final public const TYPE_SEARCH_COORDINATE = 'search-coordinate';
 
-    final public const TYPE_SEARCH_LIST_GENERAL = 'search_list_general';
+    final public const TYPE_SEARCH_LIST_GENERAL = 'search-list-general';
 
-    final public const TYPE_SEARCH_LIST_WITH_FEATURES = 'search_list_with_features';
+    final public const TYPE_SEARCH_LIST_WITH_FEATURES = 'search-list-with-features';
 
     private const SEPARATOR_FEATURE_CODES = '|';
 
@@ -205,6 +210,40 @@ class QueryParser
     }
 
     /**
+     * Returns the feature classes translated.
+     *
+     * @param TranslatorInterface $translator
+     * @param string $locale
+     * @return array<int, array<string, string>>|null
+     * @throws CaseUnsupportedException
+     * @throws ParserException
+     */
+    public function getFeatureClassesTranslated(
+        TranslatorInterface $translator,
+        string $locale = LanguageCode::EN
+    ): array|null
+    {
+        $featureClasses = $this->getFeatureClasses();
+
+        if (is_null($featureClasses)) {
+            return null;
+        }
+
+        $translated = [];
+
+        foreach ($featureClasses as $featureClass) {
+            $featureClassInstance = new FeatureClass($translator);
+
+            $translated[] = [
+                KeyArray::CODE => $featureClass,
+                KeyArray::TRANSLATED => $featureClassInstance->translate($featureClass, $locale),
+            ];
+        }
+
+        return $translated;
+    }
+
+    /**
      * Returns the feature codes.
      *
      * @return string[]|null
@@ -216,6 +255,40 @@ class QueryParser
         $data = $this->getData();
 
         return $data[KeyArray::FEATURE_CODES];
+    }
+
+    /**
+     * Returns the feature codes translated.
+     *
+     * @param TranslatorInterface $translator
+     * @param string $locale
+     * @return array<int, array<string, string>>|null
+     * @throws CaseUnsupportedException
+     * @throws ParserException
+     */
+    public function getFeatureCodesTranslated(
+        TranslatorInterface $translator,
+        string $locale = LanguageCode::EN
+    ): array|null
+    {
+        $featureCodes = $this->getFeatureCodes();
+
+        if (is_null($featureCodes)) {
+            return null;
+        }
+
+        $translated = [];
+
+        foreach ($featureCodes as $featureCode) {
+            $featureCodeInstance = new FeatureCode($translator);
+
+            $translated[] = [
+                KeyArray::CODE => $featureCode,
+                KeyArray::TRANSLATED => $featureCodeInstance->translate($featureCode, $locale),
+            ];
+        }
+
+        return $translated;
     }
 
     /**
@@ -510,6 +583,82 @@ class QueryParser
         return [
             KeyArray::FEATURE_CLASSES => $featureClasses,
             KeyArray::FEATURE_CODES => $featureCodes,
+        ];
+    }
+
+
+    /**
+     * Returns the QueryParser configuration.
+     *
+     * @param TranslatorInterface|null $translator
+     * @return array<string, mixed>
+     * @throws CaseUnsupportedException
+     * @throws ParserException
+     */
+    public function get(
+        TranslatorInterface $translator = null,
+        string $locale = LanguageCode::EN
+    ): array
+    {
+        $search = $this->getSearch();
+        $coordinate = $this->getConfigCoordinate();
+
+        $featureClasses = is_null($translator) ?
+            $this->getFeatureClasses() :
+            $this->getFeatureClassesTranslated($translator, $locale)
+        ;
+        $featureCodes = is_null($translator) ?
+            $this->getFeatureCodes() :
+            $this->getFeatureCodesTranslated($translator, $locale)
+        ;
+
+        $geonameId = $this->getGeonameId();
+
+        return [
+            KeyArray::RAW => $this->query,
+            KeyArray::PARSED => [
+                KeyArray::TYPE => $this->getType(),
+                ...(is_null($search) ? [] : [KeyArray::SEARCH => $search]),
+                ...(is_null($coordinate) ? [] : [KeyArray::COORDINATE => $coordinate]),
+                ...(is_null($featureClasses) ? [] : [KeyArray::FEATURE_CLASSES => $featureClasses]),
+                ...(is_null($featureCodes) ? [] : [KeyArray::FEATURE_CODES => $featureCodes]),
+                ...(is_null($geonameId) ? [] : [KeyArray::GEONAME_ID => $geonameId]),
+            ],
+        ];
+    }
+
+    /**
+     * Returns the configuration array from the QueryParser.
+     *
+     * @return array<string, mixed>|null
+     * @throws CaseUnsupportedException
+     * @throws ParserException
+     */
+    private function getConfigCoordinate(): array|null
+    {
+        $coordinate = $this->getCoordinate();
+
+        if (is_null($coordinate)) {
+            return null;
+        }
+
+        return [
+            KeyArray::RAW => sprintf('%s, %s', $coordinate->getLatitudeDecimal(), $coordinate->getLongitudeDecimal()),
+            KeyArray::PARSED => [
+                KeyArray::LATITUDE => [
+                    KeyArray::DECIMAL => $coordinate->getLatitudeDecimal(),
+                    KeyArray::DMS => $coordinate->getLatitudeDMS(),
+                ],
+                KeyArray::LONGITUDE => [
+                    KeyArray::DECIMAL => $coordinate->getLongitudeDecimal(),
+                    KeyArray::DMS => $coordinate->getLongitudeDMS(),
+                ],
+                KeyArray::SRID => 4326,
+                KeyArray::LINKS => [
+                    KeyArray::GOOGLE => $coordinate->getLinkGoogle(),
+                    KeyArray::OPENSTREETMAP => $coordinate->getLinkOpenStreetMap(),
+                ],
+            ],
         ];
     }
 }

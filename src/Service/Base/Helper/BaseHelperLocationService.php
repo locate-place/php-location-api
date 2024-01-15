@@ -27,8 +27,16 @@ use App\Service\LocationServiceConfig;
 use App\Service\LocationServiceAlternateName;
 use Ixnode\PhpApiVersionBundle\Utils\Version\Version;
 use Ixnode\PhpCoordinate\Coordinate;
+use Ixnode\PhpException\ArrayType\ArrayKeyNotFoundException;
+use Ixnode\PhpException\Case\CaseInvalidException;
 use Ixnode\PhpException\Case\CaseUnsupportedException;
+use Ixnode\PhpException\File\FileNotFoundException;
+use Ixnode\PhpException\File\FileNotReadableException;
+use Ixnode\PhpException\Function\FunctionJsonEncodeException;
 use Ixnode\PhpException\Parser\ParserException;
+use Ixnode\PhpException\Type\TypeInvalidException;
+use Ixnode\PhpNamingConventions\Exception\FunctionReplaceException;
+use JsonException;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -40,6 +48,7 @@ use Symfony\Contracts\Translation\TranslatorInterface;
  * @version 0.1.0 (2023-07-31)
  * @since 0.1.0 (2023-07-31) First version.
  * @SuppressWarnings(PHPMD.TooManyFields)
+ * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
  */
 abstract class BaseHelperLocationService
 {
@@ -488,6 +497,47 @@ abstract class BaseHelperLocationService
 
         /* Sort by relevances. */
         usort($locationEntities, fn(LocationEntity $locationA, LocationEntity $locationB) => $relevances[$locationB->getId()] <=> $relevances[$locationA->getId()]);
+    }
+
+    /**
+     * Sort given locations by name.
+     *
+     * @param Location[] $locations
+     * @return void
+     */
+    protected function sortLocationsByName(array &$locations): void
+    {
+        usort($locations, fn(Location $locationA, Location $locationB) => strcmp($locationA->getName(), $locationB->getName()));
+    }
+
+    /**
+     * Sort given location entities by geoname id.
+     *
+     * @param Location[] $locations
+     * @return void
+     */
+    protected function sortLocationsByGeonameId(array &$locations): void
+    {
+        usort($locations, fn(Location $locationA, Location $locationB) => $locationA->getGeonameId() <=> $locationB->getGeonameId());
+    }
+
+    /**
+     * Sort given location entities by distance.
+     *
+     * @param Location[] $locations
+     * @return void
+     * @throws ArrayKeyNotFoundException
+     * @throws CaseInvalidException
+     * @throws FileNotFoundException
+     * @throws FileNotReadableException
+     * @throws FunctionJsonEncodeException
+     * @throws TypeInvalidException
+     * @throws FunctionReplaceException
+     * @throws JsonException
+     */
+    protected function sortLocationsByDistance(array &$locations): void
+    {
+        usort($locations, fn(Location $locationA, Location $locationB) => $locationA->getCoordinate()->getDistance() <=> $locationB->getCoordinate()->getDistance());
     }
 
     /**

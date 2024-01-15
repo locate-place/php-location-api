@@ -172,6 +172,8 @@ class KeyArray
 
     final public const PROPERTIES = 'properties';
 
+    final public const QUERY = 'query';
+
     final public const RAW = 'raw';
 
     final public const RELEVANCE = 'relevance';

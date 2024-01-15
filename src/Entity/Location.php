@@ -607,6 +607,8 @@ class Location
      * @return int
      * @throws CaseUnsupportedException
      * @throws ParserException
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+     * @SuppressWarnings(PHPMD.NPathComplexity)
      */
     public function getRelevance(string $search, Coordinate|null $coordinate = null): int
     {
@@ -651,6 +653,16 @@ class Location
         /* If this is not a hotel: +2000 */
         if ($featureCode !== FeatureCodeConstants::HTL) {
             $relevance += 2000;
+        }
+
+        $population = $this->getPopulationCompiled();
+
+        if ($population > 0 && $this->getFeatureClass()?->getClass() === FeatureClassConstants::P) {
+            $relevance += (int) round($population / 10);
+        }
+
+        if ($population > 0 && $this->getFeatureClass()?->getClass() === FeatureClassConstants::A) {
+            $relevance += (int) round($population / 100);
         }
 
         if (is_null($coordinate)) {

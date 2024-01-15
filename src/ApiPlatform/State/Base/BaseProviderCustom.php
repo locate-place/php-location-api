@@ -48,6 +48,7 @@ use LogicException;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Stopwatch\Stopwatch;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
  * Class BaseProviderCustom
@@ -65,12 +66,14 @@ class BaseProviderCustom extends BaseResourceWrapperProvider
      * @param ParameterBagInterface $parameterBag
      * @param RequestStack $request
      * @param LocationService $locationService
+     * @param TranslatorInterface $translator
      */
     public function __construct(
         Version $version,
         ParameterBagInterface $parameterBag,
         RequestStack $request,
-        protected LocationService $locationService
+        protected LocationService $locationService,
+        protected TranslatorInterface $translator,
     )
     {
         parent::__construct($version, $parameterBag, $request);
@@ -175,7 +178,7 @@ class BaseProviderCustom extends BaseResourceWrapperProvider
     /**
      * Extends the getUriVariablesOutput method.
      *
-     * @return array<int|string, array<string, mixed>|bool|int|string>
+     * @return array<int|string, array<string, mixed>|bool|int|string|null>
      * @throws ArrayKeyNotFoundException
      * @throws CaseInvalidException
      * @throws CaseUnsupportedException
@@ -188,16 +191,31 @@ class BaseProviderCustom extends BaseResourceWrapperProvider
      * @throws NonUniqueResultException
      * @throws ParserException
      * @throws TypeInvalidException
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+     * @SuppressWarnings(PHPMD.NPathComplexity)
      */
     protected function getUriVariablesOutput(): array
     {
         $uriVariablesOutput = parent::getUriVariablesOutput();
 
+        /* Add query information */
+        if (array_key_exists(KeyArray::QUERY, $uriVariablesOutput)) {
+            $givenQueryArray = $this->getGivenQueryArray();
+
+            switch (true) {
+                case !is_null($givenQueryArray):
+                    $uriVariablesOutput[KeyArray::QUERY] = $this->getGivenQueryArray();
+                    break;
+
+                default:
+                    unset($uriVariablesOutput[KeyArray::QUERY]);
+                    break;
+            }
+        }
+
         /* Add coordinate information. */
         if (array_key_exists(KeyArray::COORDINATE, $uriVariablesOutput)) {
-            $uriVariablesOutput[KeyArray::COORDINATE] = $this->getGivenCoordinateArray(
-                $uriVariablesOutput
-            );
+            $uriVariablesOutput[KeyArray::COORDINATE] = $this->getGivenCoordinateArray($uriVariablesOutput);
         }
 
         if (array_key_exists('language', $uriVariablesOutput)) {
@@ -239,9 +257,35 @@ class BaseProviderCustom extends BaseResourceWrapperProvider
     }
 
     /**
+     * Returns the given query array.
+     *
+     * @return array<string, mixed>|null
+     * @throws CaseUnsupportedException
+     * @throws ParserException
+     */
+    private function getGivenQueryArray(): array|null
+    {
+        $request = $this->request->getCurrentRequest();
+
+        if (is_null($request)) {
+            throw new LogicException('Unable to get current request.');
+        }
+
+        $query = new Query($request);
+
+        $queryParser = $query->getQueryParser();
+
+        if (is_null($queryParser)) {
+            return null;
+        }
+
+        return $queryParser->get($this->translator, LanguageCode::DE);
+    }
+
+    /**
      * Returns the coordinate given array.
      *
-     * @param array<int|string, bool|int|string> $uriVariablesOutput
+     * @param array<int|string, array<string, mixed>|bool|int|string|null> $uriVariablesOutput
      * @return array<string, mixed>
      * @throws ArrayKeyNotFoundException
      * @throws CaseInvalidException
@@ -258,7 +302,11 @@ class BaseProviderCustom extends BaseResourceWrapperProvider
      */
     private function getGivenCoordinateArray(array $uriVariablesOutput): array
     {
-        $coordinateString = (string) $uriVariablesOutput[KeyArray::COORDINATE];
+        $coordinateString = $uriVariablesOutput[KeyArray::COORDINATE];
+
+        if (!is_string($coordinateString)) {
+            throw new LogicException(sprintf('The coordinate string must be a string. "%s" given.', gettype($coordinateString)));
+        }
 
         $coordinate = new Coordinate($coordinateString);
 

@@ -25,10 +25,28 @@ use Symfony\Component\HttpFoundation\Request;
  * Terminology:
  * ------------
  *
- * - filter: A parameter that is used to filter or specify the results
- *   - &c=
- *   - &q=
- *   - etc.
+ * ===============
+ * Filter: A parameter that is used to filter or specify the results
+ * ---------------
+ * - &c=51.05811,13.74133
+ * ---------------
+ * - &country=DE
+ * - &country=GB
+ * - &country=US
+ * ---------------
+ * - &language=de
+ * - &language=en
+ * ---------------
+ * - &q=Dresden
+ * - &q=Berlin
+ * ---------------
+ * - &s=distance
+ * - &s=geoname-id
+ * - &s=name
+ * - &s=relevance
+ * ---------------
+ * - etc.
+ * ===============
  *
  * @author Björn Hempel <bjoern@hempel.li>
  * @version 0.1.0 (2024-01-11)
@@ -43,6 +61,8 @@ class Query
     final public const FILTER_LANGUAGE = 'language';
 
     final public const FILTER_QUERY = 'q';
+
+    final public const FILTER_SORT = 's';
 
     final public const URI_GEONAME_ID = 'geoname_id';
 
@@ -250,19 +270,35 @@ class Query
     }
 
     /**
+     * Returns the query parameter as string.
+     *
+     * @return string|int|null
+     */
+    public function getQueryParserString(): string|int|null
+    {
+        $isExampleRequest = $this->isExampleRequest();
+
+        return match (true) {
+            $this->hasFilter(self::FILTER_QUERY) => $this->getFilterAsString(self::FILTER_QUERY),
+            $this->hasUri(self::URI_GEONAME_ID) => $this->getUriAsInteger(self::URI_GEONAME_ID),
+            $isExampleRequest => self::WORD_EXAMPLES,
+            default => null,
+        };
+    }
+
+    /**
      * Returns the query parameter as QueryParser.
      *
      * @return QueryParser|null
      */
     public function getQueryParser(): QueryParser|null
     {
-        $isExampleRequest = $this->isExampleRequest();
+        $queryParserString = $this->getQueryParserString();
 
-        return match (true) {
-            $this->hasFilter(self::FILTER_QUERY) => new QueryParser($this->getFilterAsString(self::FILTER_QUERY)),
-            $this->hasUri(self::URI_GEONAME_ID) => new QueryParser($this->getUriAsInteger(self::URI_GEONAME_ID)),
-            $isExampleRequest => new QueryParser(self::WORD_EXAMPLES),
-            default => null,
-        };
+        if (is_null($queryParserString)) {
+            return null;
+        }
+
+        return new QueryParser($queryParserString);
     }
 }

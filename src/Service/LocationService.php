@@ -148,22 +148,6 @@ final class LocationService extends BaseLocationService
 
 
 
-        /* Sort array according to given $sortBy */
-        $performanceLogger->logPerformance(function () use (&$locationEntities, $coordinate, $sortBy) {
-
-            /* Start task */
-            match ($sortBy) {
-                self::SORT_BY_DISTANCE => $this->sortLocationEntitiesByDistance($locationEntities, $coordinate),
-                self::SORT_BY_GEONAME_ID => $this->sortLocationEntitiesByGeonameId($locationEntities),
-                self::SORT_BY_NAME => $this->sortLocationEntitiesByName($locationEntities),
-                default => null,
-            };
-            /* Finish task */
-
-        }, self::PERFORMANCE_SORT_LOCATIONS, $performanceGroupName, $performanceLogger->getAdditionalData(self::class, __FUNCTION__, __LINE__));
-
-
-
         /* Collect locations and add additional information */
         $performanceLogger->logPerformance(function () use ($locationEntities, &$locations, $namesFull) {
 
@@ -185,6 +169,22 @@ final class LocationService extends BaseLocationService
             /* Finish task */
 
         }, self::PERFORMANCE_ADD_LOCATIONS, $performanceGroupName, $performanceLogger->getAdditionalData(self::class, __FUNCTION__, __LINE__));
+
+
+
+        /* Sort array according to given $sortBy */
+        $performanceLogger->logPerformance(function () use (&$locations, $sortBy) {
+
+            /* Start task */
+            match ($sortBy) {
+                self::SORT_BY_GEONAME_ID => $this->sortLocationsByGeonameId($locations),
+                self::SORT_BY_NAME => $this->sortLocationsByName($locations),
+                self::SORT_BY_DISTANCE => $this->sortLocationsByDistance($locations),
+                default => null,
+            };
+            /* Finish task */
+
+        }, self::PERFORMANCE_SORT_LOCATIONS, $performanceGroupName, $performanceLogger->getAdditionalData(self::class, __FUNCTION__, __LINE__));
 
 
 
@@ -344,6 +344,7 @@ final class LocationService extends BaseLocationService
      * @param bool $addLocations
      * @param bool $addNextPlaces
      * @param bool $addNextPlacesConfig
+     * @param string $sortBy
      * @return array<int, Location>
      * @throws ArrayKeyNotFoundException
      * @throws CaseInvalidException
@@ -375,7 +376,10 @@ final class LocationService extends BaseLocationService
         string $country = CountryCode::US,
         bool $addLocations = false,
         bool $addNextPlaces = false,
-        bool $addNextPlacesConfig = false
+        bool $addNextPlacesConfig = false,
+
+        /* Sort configuration */
+        string $sortBy = self::SORT_BY_GEONAME_ID
     ): array
     {
         /* Save search and env parameter */
@@ -410,6 +414,26 @@ final class LocationService extends BaseLocationService
             /* Finish task */
 
         }, self::PERFORMANCE_NAME_FIND_LOCATIONS_BY_COORDINATE, $performanceGroupName, $performanceLogger->getAdditionalData(self::class, __FUNCTION__, __LINE__));
+
+
+
+        /* Sort array according to given $sortBy */
+        $search = '';
+        $performanceLogger->logPerformance(function () use (&$locationEntities, $search, $coordinate, $sortBy) {
+
+            /* Start task */
+            match ($sortBy) {
+                self::SORT_BY_DISTANCE => $this->sortLocationEntitiesByDistance($locationEntities, $coordinate),
+                self::SORT_BY_GEONAME_ID => $this->sortLocationEntitiesByGeonameId($locationEntities),
+                self::SORT_BY_NAME => $this->sortLocationEntitiesByName($locationEntities),
+                self::SORT_BY_RELEVANCE => $this->sortLocationEntitiesByRelevance($locationEntities, $search, $coordinate),
+                default => null,
+            };
+            /* Finish task */
+
+        }, self::PERFORMANCE_SORT_LOCATIONS, $performanceGroupName, $performanceLogger->getAdditionalData(self::class, __FUNCTION__, __LINE__));
+
+
 
         /* Collect locations and add additional information */
         $performanceLogger->logPerformance(function () use ($locationEntities, &$locations) {

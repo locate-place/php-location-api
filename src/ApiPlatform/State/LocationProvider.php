@@ -23,6 +23,7 @@ use App\Constants\DB\Limit;
 use App\Constants\Key\KeyArray;
 use App\Repository\LocationRepository;
 use App\Service\LocationService;
+use App\Utils\Query\Query;
 use App\Utils\Query\QueryParser;
 use Doctrine\ORM\NonUniqueResultException;
 use Ixnode\PhpApiVersionBundle\ApiPlatform\Resource\Base\BasePublicResource;
@@ -71,10 +72,10 @@ final class LocationProvider extends BaseProviderCustom
         protected RequestStack $request,
         protected LocationRepository $locationRepository,
         protected TranslatorInterface $translator,
-        protected LocationService $locationService,
+        protected LocationService $locationService
     )
     {
-        parent::__construct($version, $parameterBag, $request, $locationService);
+        parent::__construct($version, $parameterBag, $request, $locationService, $translator);
     }
 
     /**
@@ -135,7 +136,10 @@ final class LocationProvider extends BaseProviderCustom
             addNextPlacesConfig: true,
 
             /* Sort configuration */
-            sortBy: !is_null($coordinate) ? LocationService::SORT_BY_DISTANCE : LocationService::SORT_BY_NAME,
+            sortBy: $this->query->getFilterAsString(
+                Query::FILTER_SORT,
+                !is_null($coordinate) ? LocationService::SORT_BY_DISTANCE : LocationService::SORT_BY_NAME
+            ),
 
             /* Other configuration */
             namesFull: $this->getNamesFull()
@@ -204,7 +208,10 @@ final class LocationProvider extends BaseProviderCustom
             addNextPlacesConfig: true,
 
             /* Sort configuration */
-            sortBy: !is_null($coordinate) ? LocationService::SORT_BY_RELEVANCE : LocationService::SORT_BY_NAME,
+            sortBy: $this->query->getFilterAsString(
+                Query::FILTER_SORT,
+                LocationService::SORT_BY_RELEVANCE
+            ),
         );
 
         if ($this->locationService->hasError()) {
@@ -265,7 +272,13 @@ final class LocationProvider extends BaseProviderCustom
             country: $country,
             addLocations: true,
             addNextPlaces: $this->isNextPlacesByFilter(),
-            addNextPlacesConfig: true
+            addNextPlacesConfig: true,
+
+            /* Sort configuration */
+            sortBy: $this->query->getFilterAsString(
+                Query::FILTER_SORT,
+                LocationService::SORT_BY_RELEVANCE
+            ),
         );
 
         if ($this->locationService->hasError()) {

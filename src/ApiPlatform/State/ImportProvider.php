@@ -63,7 +63,7 @@ final class ImportProvider extends BaseProviderCustom
         protected LocationService $locationService
     )
     {
-        parent::__construct($version, $parameterBag, $request, $this->locationService);
+        parent::__construct($version, $parameterBag, $request, $locationService, $translator);
     }
 
     /**
