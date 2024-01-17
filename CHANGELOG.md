@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Releases
 
+### [0.1.31] - 2024-01-17
+
+* Fix next places configuration
+* Add further feature code translations
+* Add geoname id to geoname id query
+
 ### [0.1.30] - 2024-01-15
 
 * Fix next places configuration
