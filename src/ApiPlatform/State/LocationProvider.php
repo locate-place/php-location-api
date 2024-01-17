@@ -41,6 +41,7 @@ use Ixnode\PhpException\Parser\ParserException;
 use Ixnode\PhpException\Type\TypeInvalidException;
 use Ixnode\PhpNamingConventions\Exception\FunctionReplaceException;
 use JsonException;
+use LogicException;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -291,21 +292,22 @@ final class LocationProvider extends BaseProviderCustom
     /**
      * Returns a location resource that matches the given geoname id.
      *
+     * @param QueryParser $queryParser
      * @return BasePublicResource
      * @throws ArrayKeyNotFoundException
+     * @throws CaseInvalidException
      * @throws CaseUnsupportedException
      * @throws ClassInvalidException
-     * @throws NonUniqueResultException
-     * @throws ParserException
-     * @throws TypeInvalidException
-     * @throws CaseInvalidException
      * @throws FileNotFoundException
      * @throws FileNotReadableException
      * @throws FunctionJsonEncodeException
      * @throws FunctionReplaceException
      * @throws JsonException
+     * @throws NonUniqueResultException
+     * @throws ParserException
+     * @throws TypeInvalidException
      */
-    private function doProvideGetWithGeonameId(): BasePublicResource
+    private function doProvideGetWithGeonameId(QueryParser $queryParser): BasePublicResource
     {
         [
             KeyArray::ISO_LANGUAGE => $isoLanguage,
@@ -318,9 +320,15 @@ final class LocationProvider extends BaseProviderCustom
 
         $coordinate = $this->query->getCoordinate();
 
+        $geonameId = $queryParser->getGeonameId();
+
+        if (is_null($geonameId)) {
+            throw new LogicException('Unexpected behaviour: geoname id is null.');
+        }
+
         $location = $this->locationService->getLocationByGeonameId(
             /* Search */
-            geonameId: $this->getUriInteger(Name::GEONAME_ID),
+            geonameId: $geonameId,
             coordinate: $coordinate,
 
             /* Search filter */
@@ -539,6 +547,7 @@ final class LocationProvider extends BaseProviderCustom
              * - https://www.location-api.localhost/api/v1/location/coordinate.json?q=51.119882,%2013.132567
              * - https://www.location-api.localhost/api/v1/location/coordinate.json?q=51.119882,%2013.132567&language=en&country=US
              * - https://www.location-api.localhost/api/v1/location/coordinate.json?q=51.119882,%2013.132567&language=en&country=US&next_places
+             * - https://www.location-api.localhost/api/v1/location/coordinate.json?q=51.119882,%2013.132567&language=en&country=US&next_places=1
              */
             case $this->getRequestMethod() === Request::METHOD_GET && $queryParser->isType(QueryParser::TYPE_SEARCH_COORDINATE):
                 return $this->doProvideGetWithCoordinate($queryParser);
@@ -549,10 +558,13 @@ final class LocationProvider extends BaseProviderCustom
              * - https://www.location-api.localhost/api/v1/location/2830942.json
              * - https://www.location-api.localhost/api/v1/location/2830942.json?language=de&country=DE
              * - https://www.location-api.localhost/api/v1/location/2830942.json?language=de&country=DE&next_places
+             * - https://www.location-api.localhost/api/v1/location/2830942.json?language=de&country=DE&next_places=1
              * - https://www.location-api.localhost/api/v1/location/2830942.json?c=51.05811,13.74133 // current position
+             * - https://www.location-api.localhost/api/v1/location/coordinate.json?q=2830942&country=DE&language=de&next_places=1
+             * - https://www.location-api.localhost/api/v1/location/coordinate.json?q=2830942&country=DE&language=de&next_places=1&c=51.05811,13.74133
              */
             case $this->getRequestMethod() === Request::METHOD_GET && $this->hasUri(Name::GEONAME_ID):
-                return $this->doProvideGetWithGeonameId();
+                return $this->doProvideGetWithGeonameId($queryParser);
 
 
 

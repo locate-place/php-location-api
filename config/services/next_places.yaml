@@ -19,15 +19,15 @@ parameters:
                 DE:
                     default: 2
                     feature_class:
-                        A: 11
-                        H: 11
-                        L: 11
-                        P: 11
-                        R: 11
-                        S: 11
-                        T: 11
-                        U: 11
-                        V: 11
+                        A: 10
+                        H: 10
+                        L: 10
+                        P: 10
+                        R: 10
+                        S: 10
+                        T: 10
+                        U: 10
+                        V: 10
                     feature_code:
                         S.AIRP: 4 # Airports
 
@@ -47,19 +47,19 @@ parameters:
                 S.AIRP: 150000 # Airports
             overwrites:
                 DE:
-                    default: 1001
+                    default: 1000
                     feature_class:
-                        A: 10001
-                        H: 10001
-                        L: 10001
-                        P: 10001
-                        R: 10001
-                        S: 10001
-                        T: 10001
-                        U: 10001
-                        V: 15001
+                        A: 10000
+                        H: 10000
+                        L: 10000
+                        P: 10000
+                        R: 10000
+                        S: 10000
+                        T: 10000
+                        U: 10000
+                        V: 15000
                     feature_code:
-                        S.AIRP: 15001 # Airports
+                        S.AIRP: 15000 # Airports
 
         use_admin_codes_general:
             default: false
@@ -109,7 +109,7 @@ parameters:
         overwrites:
             US:
                 default:
-                    distance: 100001 # Within a radius of 100 kilometers (100.000 meters)
+                    distance: 100000 # Within a radius of 100 kilometers (100.000 meters)
                     limit: 10        # Max. 10 results per request
                 next:
                     cities:
