@@ -74,7 +74,7 @@ abstract class BaseHelperLocationService
 
     protected Coordinate $coordinate;
 
-    protected Coordinate $coordinateDistance;
+    protected Coordinate $currentPosition;
 
     private string $isoLanguage = LanguageCode::EN;
 
@@ -151,18 +151,18 @@ abstract class BaseHelperLocationService
     /**
      * @return Coordinate
      */
-    public function getCoordinateDistance(): Coordinate
+    public function getCurrentPosition(): Coordinate
     {
-        return $this->coordinateDistance;
+        return $this->currentPosition;
     }
 
     /**
-     * @param Coordinate $coordinateDistance
+     * @param Coordinate $currentPosition
      * @return self
      */
-    public function setCoordinateDistance(Coordinate $coordinateDistance): self
+    public function setCurrentPosition(Coordinate $currentPosition): self
     {
-        $this->coordinateDistance = $coordinateDistance;
+        $this->currentPosition = $currentPosition;
 
         return $this;
     }
@@ -549,7 +549,7 @@ abstract class BaseHelperLocationService
      * @param bool $addNextPlaces
      * @param bool $addNextPlacesConfig
      * @param Coordinate|null $coordinate
-     * @param Coordinate|null $coordinateDistance
+     * @param Coordinate|null $currentPosition
      * @return void
      */
     protected function update(
@@ -559,7 +559,7 @@ abstract class BaseHelperLocationService
         bool $addNextPlaces,
         bool $addNextPlacesConfig,
         Coordinate|null $coordinate = null,
-        Coordinate|null $coordinateDistance = null,
+        Coordinate|null $currentPosition = null,
     ): void
     {
         $this->setIsoLanguage($isoLanguage);
@@ -568,12 +568,12 @@ abstract class BaseHelperLocationService
         $this->setAddNextPlaces($addNextPlaces);
         $this->setAddNextPlacesConfig($addNextPlacesConfig);
 
-        if (!is_null($coordinate) && is_null($coordinateDistance)) {
-            $coordinateDistance = $coordinate;
-        }
+//        if (!is_null($coordinate) && is_null($currentPosition)) {
+//            $currentPosition = $coordinate;
+//        }
 
         !is_null($coordinate) && $this->setCoordinate($coordinate);
-        !is_null($coordinateDistance) && $this->setCoordinateDistance($coordinateDistance);
+        !is_null($currentPosition) && $this->setCurrentPosition($currentPosition);
 
         $this->featureClassService->setLocaleByLanguageAndCountry($isoLanguage, $country);
         $this->featureCodeService->setLocaleByLanguageAndCountry($isoLanguage, $country);

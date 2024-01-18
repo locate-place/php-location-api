@@ -194,7 +194,7 @@ abstract class BaseLocationService extends BaseHelperLocationService
     /**
      * Gets all places from the given feature class.
      *
-     * @param LocationEntity $locationEntity
+     * @param CoordinateIxnode $searchPosition Use the current position or the one of the main location.
      * @param string $featureClass
      * @param int $distanceMeter
      * @param int $limit
@@ -212,7 +212,7 @@ abstract class BaseLocationService extends BaseHelperLocationService
      * @throws TypeInvalidException
      */
     private function getPlacesFromFeatureClass(
-        LocationEntity $locationEntity,
+        CoordinateIxnode $searchPosition,
         string $featureClass,
         int $distanceMeter,
         int $limit
@@ -221,7 +221,7 @@ abstract class BaseLocationService extends BaseHelperLocationService
         $featureCodes = $this->locationServiceConfig->getFeatureCodesByFeatureClass($featureClass);
 
         $locations = $this->locationRepository->findLocationsByCoordinate(
-            coordinate: $locationEntity->getCoordinateIxnode(),
+            coordinate: $searchPosition,
             distanceMeter: $distanceMeter,
             featureClasses: $featureClass,
             featureCodes: $featureCodes,
@@ -231,7 +231,10 @@ abstract class BaseLocationService extends BaseHelperLocationService
         $locationArray = [];
 
         foreach ($locations as $location) {
-            $locationArray[] = $this->getLocationBaseInformation(locationEntity: $location);
+            $locationArray[] = $this->getLocationBaseInformation(
+                locationEntity: $location,
+                searchPosition: $searchPosition
+            );
         }
 
         return $locationArray;
@@ -430,6 +433,7 @@ abstract class BaseLocationService extends BaseHelperLocationService
         $nextPlaces = new NextPlaces();
 
         foreach (FeatureClass::ALL as $featureClass) {
+            /* Ignore administrative locations. */
             if ($featureClass === FeatureClass::A) {
                 continue;
             }
@@ -682,17 +686,31 @@ abstract class BaseLocationService extends BaseHelperLocationService
     {
         $featureClassName = $this->featureClassService->translate($featureClass);
 
+        /* Use the search coordinate or the main location as coordinate:
+         * - isset($this->coordinate) means that the coordinate was given by query parameter.
+         */
+        $searchPosition = $this->coordinate ?? $locationEntity->getCoordinateIxnode();
+        $searchPositionType = isset($this->coordinate) ? 'coordinate' : 'location';
+
         $nextPlacesFeatureArray = $this->getPlacesFromFeatureClass(
-            $locationEntity,
-            $featureClass,
-            $distanceMeter,
-            $limit
+            searchPosition: $searchPosition,
+            featureClass: $featureClass,
+            distanceMeter: $distanceMeter,
+            limit: $limit
         );
 
         /* Add config part */
         $nextPlaces->addValue([$featureClass, KeyArray::CONFIG], [
             KeyArray::DISTANCE_METER => $distanceMeter,
             KeyArray::LIMIT => $limit,
+            KeyArray::COORDINATE => $this->getDataTypeCoordinate($searchPosition, null),
+            KeyArray::COORDINATE_TYPE => $searchPositionType,
+            KeyArray::LOCATION => [
+                KeyArray::NAME => $this->locationContainer->getAlternateName(
+                    $locationEntity,
+                    $this->getIsoLanguage()
+                ),
+            ],
         ]);
 
         /* Add feature part */
@@ -712,6 +730,7 @@ abstract class BaseLocationService extends BaseHelperLocationService
      * Returns the base information of a location entity.
      *
      * @param LocationEntity $locationEntity
+     * @param CoordinateIxnode|null $searchPosition
      * @param string|null $nameFull
      * @param bool $featureDetailed
      * @return array<string, mixed>
@@ -729,6 +748,7 @@ abstract class BaseLocationService extends BaseHelperLocationService
      */
     private function getLocationBaseInformation(
         LocationEntity $locationEntity,
+        CoordinateIxnode $searchPosition = null,
         string $nameFull = null,
         bool $featureDetailed = false
     ): array
@@ -752,7 +772,7 @@ abstract class BaseLocationService extends BaseHelperLocationService
             /* Complex structures. */
             KeyArray::COORDINATE => $this->getDataTypeCoordinate(
                 $locationEntity->getCoordinateIxnode(),
-                $this->coordinateDistance ?? null,
+                !is_null($searchPosition) ? $searchPosition : ($this->currentPosition ?? null),
                 $locationEntity->getCoordinate()?->getSrid()
             ),
             KeyArray::FEATURE => $this->getDataTypeFeature($locationEntity, $featureDetailed),

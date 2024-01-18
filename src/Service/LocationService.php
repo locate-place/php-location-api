@@ -75,7 +75,7 @@ final class LocationService extends BaseLocationService
      * Returns locations by given geoname ids.
      *
      * @param int[] $geonameIds
-     * @param Coordinate|null $coordinate
+     * @param Coordinate|null $currentPosition
      * @param string $isoLanguage
      * @param string $country
      * @param bool $addLocations
@@ -101,12 +101,12 @@ final class LocationService extends BaseLocationService
     public function getLocationsByGeonameIds(
         /* Search */
         array $geonameIds,
-        Coordinate $coordinate = null,
 
         /* Search filter */
         /* --- no filter --- */
 
         /* Configuration */
+        Coordinate $currentPosition = null,
         string $isoLanguage = LanguageCode::EN,
         string $country = CountryCode::US,
         bool $addLocations = false,
@@ -127,7 +127,7 @@ final class LocationService extends BaseLocationService
             addLocations: $addLocations,
             addNextPlaces: $nextPlaces,
             addNextPlacesConfig: $addNextPlacesConfig,
-            coordinate: $coordinate,
+            currentPosition: $currentPosition,
         );
 
         $performanceLogger = PerformanceLogger::getInstance();
@@ -195,7 +195,7 @@ final class LocationService extends BaseLocationService
      * Returns locations by given search string (filter limit, feature classes).
      *
      * @param string $search
-     * @param Coordinate|null $coordinate
+     * @param Coordinate|null $currentPosition
      * @param array<int, string>|string|null $featureClass
      * @param array<int, string>|string|null $featureCode
      * @param int|null $limit
@@ -226,7 +226,6 @@ final class LocationService extends BaseLocationService
     public function getLocationsBySearch(
         /* Search */
         string $search,
-        Coordinate|null $coordinate = null,
 
         /* Search filter */
         array|string|null $featureClass = null,
@@ -234,6 +233,7 @@ final class LocationService extends BaseLocationService
         int|null $limit = Limit::LIMIT_10,
 
         /* Configuration */
+        Coordinate|null $currentPosition = null,
         string $isoLanguage = LanguageCode::EN,
         string $country = CountryCode::US,
         bool $addLocations = false,
@@ -251,7 +251,7 @@ final class LocationService extends BaseLocationService
             addLocations: $addLocations,
             addNextPlaces: $addNextPlaces,
             addNextPlacesConfig: $addNextPlacesConfig,
-            coordinate: $coordinate
+            currentPosition: $currentPosition
         );
 
         $performanceLogger = PerformanceLogger::getInstance();
@@ -284,14 +284,14 @@ final class LocationService extends BaseLocationService
 
 
         /* Sort array according to given $sortBy */
-        $performanceLogger->logPerformance(function () use (&$locationEntities, $search, $coordinate, $sortBy) {
+        $performanceLogger->logPerformance(function () use (&$locationEntities, $search, $currentPosition, $sortBy) {
 
             /* Start task */
             match ($sortBy) {
-                self::SORT_BY_DISTANCE => $this->sortLocationEntitiesByDistance($locationEntities, $coordinate),
+                self::SORT_BY_DISTANCE => $this->sortLocationEntitiesByDistance($locationEntities, $currentPosition),
                 self::SORT_BY_GEONAME_ID => $this->sortLocationEntitiesByGeonameId($locationEntities),
                 self::SORT_BY_NAME => $this->sortLocationEntitiesByName($locationEntities),
-                self::SORT_BY_RELEVANCE => $this->sortLocationEntitiesByRelevance($locationEntities, $search, $coordinate),
+                self::SORT_BY_RELEVANCE => $this->sortLocationEntitiesByRelevance($locationEntities, $search, $currentPosition),
                 default => null,
             };
             /* Finish task */
@@ -339,6 +339,7 @@ final class LocationService extends BaseLocationService
      * @param array<int, string>|string|null $featureClass
      * @param array<int, string>|string|null $featureCode
      * @param int|null $limit
+     * @param Coordinate|null $currentPosition
      * @param string $isoLanguage
      * @param string $country
      * @param bool $addLocations
@@ -372,6 +373,7 @@ final class LocationService extends BaseLocationService
         int|null $limit = Limit::LIMIT_10,
 
         /* Configuration */
+        Coordinate $currentPosition = null,
         string $isoLanguage = LanguageCode::EN,
         string $country = CountryCode::US,
         bool $addLocations = false,
@@ -389,7 +391,8 @@ final class LocationService extends BaseLocationService
             addLocations: $addLocations,
             addNextPlaces: $addNextPlaces,
             addNextPlacesConfig: $addNextPlacesConfig,
-            coordinate: $coordinate
+            coordinate: $coordinate,
+            currentPosition: $currentPosition
         );
 
         $performanceLogger = PerformanceLogger::getInstance();
@@ -456,7 +459,7 @@ final class LocationService extends BaseLocationService
      * Returns Location ressource by given geoname id.
      *
      * @param int $geonameId
-     * @param Coordinate|null $coordinate
+     * @param Coordinate|null $currentPosition
      * @param string $isoLanguage
      * @param string $country
      * @param bool $addLocations
@@ -480,12 +483,12 @@ final class LocationService extends BaseLocationService
     public function getLocationByGeonameId(
         /* Search */
         int $geonameId,
-        Coordinate $coordinate = null,
 
         /* Search filter */
         /* --- no filter --- */
 
         /* Configuration */
+        Coordinate $currentPosition = null,
         string $isoLanguage = LanguageCode::EN,
         string $country = CountryCode::US,
         bool $addLocations = false,
@@ -503,13 +506,8 @@ final class LocationService extends BaseLocationService
             addLocations: $addLocations,
             addNextPlaces: $addNextPlaces,
             addNextPlacesConfig: $addNextPlacesConfig,
-
-            /** @link BaseLocationService::getServiceLocationContainerFromLocationRepository */
-            // coordinate: Use the one from the geoname id (see BaseLocationService::getServiceLocationContainerFromLocationRepository).
-            coordinateDistance: $coordinate
+            currentPosition: $currentPosition
         );
-
-
 
         /* Execute $this->locationRepository->findOneBy() and log performance. */
         $location = null;
@@ -553,6 +551,7 @@ final class LocationService extends BaseLocationService
      * Returns Location ressource by given coordinate string.
      *
      * @param Coordinate $coordinate
+     * @param Coordinate|null $currentPosition
      * @param string $isoLanguage
      * @param string $country
      * @param bool $addLocations
@@ -581,6 +580,7 @@ final class LocationService extends BaseLocationService
         /* --- no filter --- */
 
         /* Configuration */
+        Coordinate $currentPosition = null,
         string $isoLanguage = LanguageCode::EN,
         string $country = CountryCode::US,
         bool $addLocations = false,
@@ -595,7 +595,8 @@ final class LocationService extends BaseLocationService
             addLocations: $addLocations,
             addNextPlaces: $addNextPlaces,
             addNextPlacesConfig: $addNextPlacesConfig,
-            coordinate: $coordinate
+            coordinate: $coordinate,
+            currentPosition: $currentPosition
         );
 
 //        $adminConfiguration = $this->locationRepository->findNextAdminConfiguration(

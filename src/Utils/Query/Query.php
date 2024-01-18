@@ -252,13 +252,13 @@ class Query
     }
 
     /**
-     * Returns the coordinate parameter as Coordinate.
+     * Returns the own coordinate (own position) parameter as Coordinate.
      *
      * @return Coordinate|null
      * @throws CaseUnsupportedException
      * @throws ParserException
      */
-    public function getCoordinate(): Coordinate|null
+    public function getCurrentPosition(): Coordinate|null
     {
         $key = self::FILTER_COORDINATE;
 

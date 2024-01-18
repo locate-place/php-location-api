@@ -321,6 +321,10 @@ class BaseProviderCustom extends BaseResourceWrapperProvider
                     KeyArray::DECIMAL => $coordinate->getLongitudeDecimal(),
                     KeyArray::DMS => $coordinate->getLongitudeDMS(),
                 ],
+                KeyArray::LINKS => [
+                    KeyArray::GOOGLE => $coordinate->getLinkGoogle(),
+                    KeyArray::OPENSTREETMAP => $coordinate->getLinkOpenStreetMap(),
+                ]
             ],
             KeyArray::LOCATION => $this->getLocation($coordinate),
         ];

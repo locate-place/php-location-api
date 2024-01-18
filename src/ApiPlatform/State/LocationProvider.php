@@ -120,17 +120,17 @@ final class LocationProvider extends BaseProviderCustom
             return [];
         }
 
-        $coordinate = $this->query->getCoordinate();
+        $currentPosition = $this->query->getCurrentPosition();
 
         $locations = $this->locationService->getLocationsByGeonameIds(
             /* Search */
             geonameIds: $this->getGeonameIds(),
-            coordinate: $coordinate,
 
             /* Search filter */
             /* --- no filter --- */
 
             /* Configuration */
+            currentPosition: $currentPosition,
             isoLanguage: $isoLanguage,
             country: $country,
             addLocations: true,
@@ -139,7 +139,7 @@ final class LocationProvider extends BaseProviderCustom
             /* Sort configuration */
             sortBy: $this->query->getFilterAsString(
                 Query::FILTER_SORT,
-                !is_null($coordinate) ? LocationService::SORT_BY_DISTANCE : LocationService::SORT_BY_NAME
+                !is_null($currentPosition) ? LocationService::SORT_BY_DISTANCE : LocationService::SORT_BY_NAME
             ),
 
             /* Other configuration */
@@ -189,12 +189,11 @@ final class LocationProvider extends BaseProviderCustom
             return [];
         }
 
-        $coordinate = $this->query->getCoordinate();
+        $currentPosition = $this->query->getCurrentPosition();
 
         $locations = $this->locationService->getLocationsBySearch(
             /* Search */
             search: $search,
-            coordinate: $coordinate,
 
             /* Search filter */
             featureClass: $queryParser->getFeatureClasses(),
@@ -202,6 +201,7 @@ final class LocationProvider extends BaseProviderCustom
             limit: $this->hasFilter(Name::LIMIT) ? $this->getFilterInteger(Name::LIMIT) : Limit::LIMIT_10,
 
             /* Configuration */
+            currentPosition: $currentPosition,
             isoLanguage: $isoLanguage,
             country: $country,
             addLocations: true,
@@ -269,6 +269,7 @@ final class LocationProvider extends BaseProviderCustom
             limit: $this->hasFilter(Name::LIMIT) ? $this->getFilterInteger(Name::LIMIT) : Limit::LIMIT_10,
 
             /* Configuration */
+            currentPosition: $this->query->getCurrentPosition(),
             isoLanguage: $isoLanguage,
             country: $country,
             addLocations: true,
@@ -318,7 +319,7 @@ final class LocationProvider extends BaseProviderCustom
             return (new LocationResource())->setGeonameId(0);
         }
 
-        $coordinate = $this->query->getCoordinate();
+        $currentPosition = $this->query->getCurrentPosition();
 
         $geonameId = $queryParser->getGeonameId();
 
@@ -329,12 +330,12 @@ final class LocationProvider extends BaseProviderCustom
         $location = $this->locationService->getLocationByGeonameId(
             /* Search */
             geonameId: $geonameId,
-            coordinate: $coordinate,
 
             /* Search filter */
             /* --- no filter --- */
 
             /* Configuration */
+            currentPosition: $currentPosition,
             isoLanguage: $isoLanguage,
             country: $country,
             addLocations: true,
@@ -393,6 +394,7 @@ final class LocationProvider extends BaseProviderCustom
             /* --- no filter --- */
 
             /* Configuration */
+            currentPosition: $this->query->getCurrentPosition(),
             isoLanguage: $isoLanguage,
             country: $country,
             addLocations: true,

@@ -44,6 +44,8 @@ class KeyArray
 
     final public const COORDINATE_STRING = 'coordinate-string';
 
+    final public const COORDINATE_TYPE = 'coordinate-type';
+
     final public const COUNTRY = 'country';
 
     final public const CURRENT_TIME = 'current-time';

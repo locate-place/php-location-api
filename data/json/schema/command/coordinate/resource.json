@@ -33,31 +33,14 @@
                 "decimal": 8.50417,
                 "dms": "8°30′15.012″E"
             },
-            "srid": 4326,
-            "distance": {
-                "meters": {
-                    "value": 454.1,
-                    "unit": "m",
-                    "value-formatted": "454,1 m"
-                },
-                "kilometers": {
-                    "value": 0.454,
-                    "unit": "km",
-                    "value-formatted": "0,454 km"
-                }
-            },
-            "direction": {
-                "degree": 125.28,
-                "cardinal-direction": "SE",
-                "cardinal-direction-translated": "South-East"
-            }
+            "srid": 4326
         },
         "timezone": {
             "timezone": "Europe/Zurich",
             "country": "CH",
             "current-time": {
-                "timezone": "2024-01-11T00:42:00+01:00",
-                "utc": "2024-01-10T23:42:00+00:00"
+                "timezone": "2024-01-18T22:58:57+01:00",
+                "utc": "2024-01-18T21:58:57+00:00"
             },
             "offset": "+01:00",
             "coordinate": {
@@ -112,7 +95,6 @@
                     "name": "cities",
                     "feature_codes": [
                         "PPLA",
-                        "PPLA1",
                         "PPLA2",
                         "PPLA3"
                     ]
@@ -179,24 +161,7 @@
                         "decimal": 8.50417,
                         "dms": "8°30′15.012″E"
                     },
-                    "srid": 4326,
-                    "distance": {
-                        "meters": {
-                            "value": 454.1,
-                            "unit": "m",
-                            "value-formatted": "454,1 m"
-                        },
-                        "kilometers": {
-                            "value": 0.454,
-                            "unit": "km",
-                            "value-formatted": "0,454 km"
-                        }
-                    },
-                    "direction": {
-                        "degree": 125.28,
-                        "cardinal-direction": "SE",
-                        "cardinal-direction-translated": "South-East"
-                    }
+                    "srid": 4326
                 },
                 "feature": {
                     "code": "PPLX",
@@ -234,7 +199,6 @@
                             "name": "cities",
                             "feature_codes": [
                                 "PPLA",
-                                "PPLA1",
                                 "PPLA2",
                                 "PPLA3"
                             ]
@@ -301,24 +265,7 @@
                         "decimal": 8.55,
                         "dms": "8°33′0″E"
                     },
-                    "srid": 4326,
-                    "distance": {
-                        "meters": {
-                            "value": 3765.6,
-                            "unit": "m",
-                            "value-formatted": "3.765,6 m"
-                        },
-                        "kilometers": {
-                            "value": 3.766,
-                            "unit": "km",
-                            "value-formatted": "3,766 km"
-                        }
-                    },
-                    "direction": {
-                        "degree": 90,
-                        "cardinal-direction": "E",
-                        "cardinal-direction-translated": "East"
-                    }
+                    "srid": 4326
                 },
                 "feature": {
                     "code": "PPLA",
@@ -356,7 +303,6 @@
                             "name": "cities",
                             "feature_codes": [
                                 "PPLA",
-                                "PPLA1",
                                 "PPLA2",
                                 "PPLA3"
                             ]
@@ -423,24 +369,7 @@
                         "decimal": 8.66667,
                         "dms": "8°40′0.012″E"
                     },
-                    "srid": 4326,
-                    "distance": {
-                        "meters": {
-                            "value": 13723.1,
-                            "unit": "m",
-                            "value-formatted": "13.723,1 m"
-                        },
-                        "kilometers": {
-                            "value": 13.723,
-                            "unit": "km",
-                            "value-formatted": "13,723 km"
-                        }
-                    },
-                    "direction": {
-                        "degree": 73.3,
-                        "cardinal-direction": "E",
-                        "cardinal-direction-translated": "East"
-                    }
+                    "srid": 4326
                 },
                 "feature": {
                     "code": "ADM1",
@@ -478,7 +407,6 @@
                             "name": "cities",
                             "feature_codes": [
                                 "PPLA",
-                                "PPLA1",
                                 "PPLA2",
                                 "PPLA3"
                             ]
@@ -545,24 +473,7 @@
                         "decimal": 8.01427,
                         "dms": "8°0′51.372″E"
                     },
-                    "srid": 4326,
-                    "distance": {
-                        "meters": {
-                            "value": 54848.8,
-                            "unit": "m",
-                            "value-formatted": "54.848,8 m"
-                        },
-                        "kilometers": {
-                            "value": 54.849,
-                            "unit": "km",
-                            "value-formatted": "54,849 km"
-                        }
-                    },
-                    "direction": {
-                        "degree": -127.04,
-                        "cardinal-direction": "SW",
-                        "cardinal-direction-translated": "South-West"
-                    }
+                    "srid": 4326
                 },
                 "feature": {
                     "code": "PCLI",
@@ -600,7 +511,6 @@
                             "name": "cities",
                             "feature_codes": [
                                 "PPLA",
-                                "PPLA1",
                                 "PPLA2",
                                 "PPLA3"
                             ]
@@ -677,9 +587,9 @@
             }
         }
     },
-    "time-taken": "654 ms",
-    "memory-taken": "53 MB",
-    "version": "0.1.26",
+    "time-taken": "860 ms",
+    "memory-taken": "55 MB",
+    "version": "0.1.31",
     "data-licence": {
         "full": "Creative Commons Attribution 4.0 License",
         "short": "CC-BY 4.0",
