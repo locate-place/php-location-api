@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Releases
 
+### [0.1.32] - 2024-01-18
+
+* Fix distance calculation within next-places area: Use given coordinate or main location
+
 ### [0.1.31] - 2024-01-17
 
 * Fix next places configuration
