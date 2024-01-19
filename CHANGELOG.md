@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Releases
 
+### [0.1.33] - 2024-01-19
+
+* Add distance and direction for search coordinate and user position
+
 ### [0.1.32] - 2024-01-18
 
 * Fix distance calculation within next-places area: Use given coordinate or main location
