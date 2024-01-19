@@ -62,7 +62,11 @@ class KeyArray
 
     final public const DIRECTION = 'direction';
 
+    final public const DIRECTION_USER = 'direction-user';
+
     final public const DISTANCE = 'distance';
+
+    final public const DISTANCE_USER = 'distance-user';
 
     final public const DMS = 'dms';
 

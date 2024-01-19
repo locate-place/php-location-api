@@ -61,6 +61,7 @@ use NumberFormatter;
  * @version 0.1.0 (2023-07-31)
  * @since 0.1.0 (2023-07-31) First version.
  * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
+ * @SuppressWarnings(PHPMD.ExcessiveClassLength)
  */
 abstract class BaseLocationService extends BaseHelperLocationService
 {
@@ -245,6 +246,7 @@ abstract class BaseLocationService extends BaseHelperLocationService
      *
      * @param CoordinateIxnode|null $coordinateEntity
      * @param CoordinateIxnode|null $coordinateSource
+     * @param CoordinateIxnode|null $coordinateUser
      * @param int|null $srid
      * @return Coordinate
      * @throws CaseUnsupportedException
@@ -254,6 +256,7 @@ abstract class BaseLocationService extends BaseHelperLocationService
     private function getDataTypeCoordinate(
         CoordinateIxnode|null $coordinateEntity,
         CoordinateIxnode|null $coordinateSource,
+        CoordinateIxnode|null $coordinateUser,
         int|null $srid = null
     ): Coordinate
     {
@@ -263,6 +266,11 @@ abstract class BaseLocationService extends BaseHelperLocationService
         if (is_null($coordinateEntity)) {
             return $coordinate;
         }
+
+        $srid = match (true) {
+            !is_null($srid) => $srid,
+            default => Point::SRID_WSG84,
+        };
 
         /* See: https://de.wikipedia.org/wiki/Geographische_Breite */
         $coordinate->addValue(KeyArray::LATITUDE, [
@@ -277,15 +285,58 @@ abstract class BaseLocationService extends BaseHelperLocationService
         ]);
 
         /* See: https://de.wikipedia.org/wiki/SRID, https://de.wikipedia.org/wiki/World_Geodetic_System_1984, etc. */
-        $coordinate->addValue(KeyArray::SRID, $srid ?: Point::SRID_WSG84);
+        $coordinate->addValue(KeyArray::SRID, $srid);
 
-        if (is_null($coordinateSource)) {
-            return $coordinate;
+        /* Add the distance and direction according to given source coordinate. */
+        if (!is_null($coordinateSource)) {
+            $this->addDistanceAndDirection(
+                coordinate: $coordinate,
+                coordinateEntity: $coordinateEntity,
+                coordinateDistance: $coordinateSource,
+                keyNameDistance: KeyArray::DISTANCE,
+                keyNameDirection: KeyArray::DIRECTION,
+            );
         }
 
-        $distanceMeters = $coordinateSource->getDistance($coordinateEntity);
-        $distanceKilometers = $coordinateSource->getDistance($coordinateEntity, CoordinateIxnode::RETURN_KILOMETERS);
-        $coordinate->addValue(KeyArray::DISTANCE, [
+        /* Add the distance and direction according to given user coordinate. */
+        if (!is_null($coordinateUser)) {
+            $this->addDistanceAndDirection(
+                coordinate: $coordinate,
+                coordinateEntity: $coordinateEntity,
+                coordinateDistance: $coordinateUser,
+                keyNameDistance: KeyArray::DISTANCE_USER,
+                keyNameDirection: KeyArray::DIRECTION_USER,
+            );
+        }
+
+        return $coordinate;
+    }
+
+    /**
+     * Adds the distance and direction to the given coordinate.
+     *
+     * @param Coordinate $coordinate
+     * @param CoordinateIxnode $coordinateEntity
+     * @param CoordinateIxnode $coordinateDistance
+     * @param string $keyNameDistance
+     * @param string $keyNameDirection
+     * @return void
+     * @throws CaseUnsupportedException
+     * @throws FunctionReplaceException
+     * @throws TypeInvalidException
+     */
+    private function addDistanceAndDirection(
+        Coordinate $coordinate,
+        CoordinateIxnode $coordinateEntity,
+        CoordinateIxnode $coordinateDistance,
+        string $keyNameDistance,
+        string $keyNameDirection
+    ): void
+    {
+        /* Add distance. */
+        $distanceMeters = $coordinateDistance->getDistance($coordinateEntity);
+        $distanceKilometers = $coordinateDistance->getDistance($coordinateEntity, CoordinateIxnode::RETURN_KILOMETERS);
+        $coordinate->addValue($keyNameDistance, [
             KeyArray::METERS => [
                 KeyArray::VALUE => $distanceMeters,
                 KeyArray::UNIT => Length::METERS_SHORT,
@@ -298,15 +349,14 @@ abstract class BaseLocationService extends BaseHelperLocationService
             ],
         ]);
 
-        $direction = $coordinateSource->getDirection($coordinateEntity);
+        /* Add direction. */
+        $direction = $coordinateDistance->getDirection($coordinateEntity);
         $directionTranslated = $this->translateCardinalDirection($direction);
-        $coordinate->addValue(KeyArray::DIRECTION, [
-            KeyArray::DEGREE => $coordinateSource->getDegree($coordinateEntity),
+        $coordinate->addValue($keyNameDirection, [
+            KeyArray::DEGREE => $coordinateDistance->getDegree($coordinateEntity),
             KeyArray::CARDINAL_DIRECTION => $direction,
             KeyArray::CARDINAL_DIRECTION_TRANSLATED => $directionTranslated,
         ]);
-
-        return $coordinate;
     }
 
     /**
@@ -588,8 +638,9 @@ abstract class BaseLocationService extends BaseHelperLocationService
         ]);
         $timezone->addValue(KeyArray::OFFSET, $offset);
         $timezone->addValue(KeyArray::COORDINATE, $this->getDataTypeCoordinate(
-            $coordinateEntity,
-            $this->coordinate ?? null
+            coordinateEntity: $coordinateEntity,
+            coordinateSource: $this->coordinate ?? null,
+            coordinateUser: $this->currentPosition ?? null,
         )->getArray());
 
         return $timezone;
@@ -703,7 +754,11 @@ abstract class BaseLocationService extends BaseHelperLocationService
         $nextPlaces->addValue([$featureClass, KeyArray::CONFIG], [
             KeyArray::DISTANCE_METER => $distanceMeter,
             KeyArray::LIMIT => $limit,
-            KeyArray::COORDINATE => $this->getDataTypeCoordinate($searchPosition, null),
+            KeyArray::COORDINATE => $this->getDataTypeCoordinate(
+                coordinateEntity: $searchPosition,
+                coordinateSource: null,
+                coordinateUser: null,
+            ),
             KeyArray::COORDINATE_TYPE => $searchPositionType,
             KeyArray::LOCATION => [
                 KeyArray::NAME => $this->locationContainer->getAlternateName(
@@ -762,6 +817,16 @@ abstract class BaseLocationService extends BaseHelperLocationService
             default => $name,
         };
 
+        /* Determine the position of coordinate to calculate the distance:
+         * - $searchPosition: The main location which is shown.
+         * - $this->coordinate: The given search coordinate.
+         */
+        $coordinateSource = match (true) {
+            !is_null($searchPosition) => $searchPosition,
+            isset($this->coordinate) => $this->coordinate,
+            default => null,
+        };
+
         return [
             /* Single fields. */
             ...(is_int($geonameId) ? [KeyArray::GEONAME_ID => $geonameId] : []),
@@ -771,9 +836,10 @@ abstract class BaseLocationService extends BaseHelperLocationService
 
             /* Complex structures. */
             KeyArray::COORDINATE => $this->getDataTypeCoordinate(
-                $locationEntity->getCoordinateIxnode(),
-                !is_null($searchPosition) ? $searchPosition : ($this->currentPosition ?? null),
-                $locationEntity->getCoordinate()?->getSrid()
+                coordinateEntity: $locationEntity->getCoordinateIxnode(),
+                coordinateSource: $coordinateSource,
+                coordinateUser: $this->currentPosition ?? null,
+                srid: $locationEntity->getCoordinate()?->getSrid()
             ),
             KeyArray::FEATURE => $this->getDataTypeFeature($locationEntity, $featureDetailed),
             KeyArray::LINKS => $this->getDataTypeLinks($locationEntity),
