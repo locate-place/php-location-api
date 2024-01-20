@@ -291,6 +291,39 @@ final class LocationProvider extends BaseProviderCustom
     }
 
     /**
+     * Returns a collection of location resources that matches the given geoname id (usually one result).
+     *
+     * @param QueryParser $queryParser
+     * @return BasePublicResource[]
+     * @throws ArrayKeyNotFoundException
+     * @throws CaseInvalidException
+     * @throws CaseUnsupportedException
+     * @throws ClassInvalidException
+     * @throws FileNotFoundException
+     * @throws FileNotReadableException
+     * @throws FunctionJsonEncodeException
+     * @throws FunctionReplaceException
+     * @throws JsonException
+     * @throws NonUniqueResultException
+     * @throws ParserException
+     * @throws TypeInvalidException
+     */
+    private function doProvideGetCollectionByGeonameId(QueryParser $queryParser): array
+    {
+        $location = $this->doProvideGetWithGeonameId($queryParser);
+
+        if (!$location instanceof LocationResource) {
+            return [];
+        }
+
+        if ($location->getGeonameId() === 0) {
+            return [];
+        }
+
+        return [$location];
+    }
+
+    /**
      * Returns a location resource that matches the given geoname id.
      *
      * @param QueryParser $queryParser
@@ -479,9 +512,9 @@ final class LocationProvider extends BaseProviderCustom
         switch (true) {
 
             /*
-             * ------
-             * Schema
-             * ------
+             * ---------
+             * 0) Schema
+             * ---------
              */
 
             /*
@@ -499,9 +532,9 @@ final class LocationProvider extends BaseProviderCustom
 
 
             /*
-             * ----
-             * Data
-             * ----
+             * -------
+             * A) List
+             * -------
              */
 
             /* A-1) Show example locations (list search):
@@ -540,8 +573,22 @@ final class LocationProvider extends BaseProviderCustom
             case $this->getRequestMethod() === BaseResourceWrapperProvider::METHOD_GET_COLLECTION && $queryParser->isType(QueryParser::TYPE_SEARCH_LIST_WITH_FEATURES):
                 return $this->doProvideGetCollectionByCoordinate($queryParser);
 
+            /* A-5) Geoname ID search (list search):
+             * ---------------------------------------------------------------------------
+             *
+             * - https://www.location-api.localhost/api/v1/location.json?q=2879139
+             * - https://www.location-api.localhost/api/v1/location.json?q=2879139&country=DE&language=de
+             */
+            case $this->getRequestMethod() === BaseResourceWrapperProvider::METHOD_GET_COLLECTION && $queryParser->isType(QueryParser::TYPE_SEARCH_GEONAME_ID):
+                return $this->doProvideGetCollectionByGeonameId($queryParser);
 
 
+
+            /*
+             * ---------
+             * B) Detail
+             * ---------
+             */
 
             /* B-1) Coordinate search (single location search):
              * ------------------------------------------------
