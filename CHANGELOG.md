@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Releases
 
+### [0.1.34] - 2024-01-20
+
+* Separate distance sort
+  * distance vs. distance-user
+  * relevance vs. relevance-user
+
 ### [0.1.33] - 2024-01-19
 
 * Add distance and direction for search coordinate and user position
