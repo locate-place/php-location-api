@@ -65,11 +65,15 @@ final class LocationService extends BaseLocationService
 
     final public const SORT_BY_DISTANCE = KeyArray::DISTANCE;
 
+    final public const SORT_BY_DISTANCE_USER = KeyArray::DISTANCE_USER;
+
     final public const SORT_BY_GEONAME_ID = KeyArray::GEONAME_ID;
 
     final public const SORT_BY_NAME = KeyArray::NAME;
 
     final public const SORT_BY_RELEVANCE = KeyArray::RELEVANCE;
+
+    final public const SORT_BY_RELEVANCE_USER = KeyArray::RELEVANCE_USER;
 
     /**
      * Returns locations by given geoname ids.
@@ -180,6 +184,7 @@ final class LocationService extends BaseLocationService
                 self::SORT_BY_GEONAME_ID => $this->sortLocationsByGeonameId($locations),
                 self::SORT_BY_NAME => $this->sortLocationsByName($locations),
                 self::SORT_BY_DISTANCE => $this->sortLocationsByDistance($locations),
+                self::SORT_BY_DISTANCE_USER => $this->sortLocationsByDistanceUser($locations),
                 default => null,
             };
             /* Finish task */
@@ -288,7 +293,9 @@ final class LocationService extends BaseLocationService
 
             /* Start task */
             match ($sortBy) {
-                self::SORT_BY_DISTANCE => $this->sortLocationEntitiesByDistance($locationEntities, $currentPosition),
+                self::SORT_BY_DISTANCE,
+                self::SORT_BY_DISTANCE_USER => $this->sortLocationEntitiesByDistance($locationEntities, $currentPosition),
+
                 self::SORT_BY_GEONAME_ID => $this->sortLocationEntitiesByGeonameId($locationEntities),
                 self::SORT_BY_NAME => $this->sortLocationEntitiesByName($locationEntities),
                 self::SORT_BY_RELEVANCE => $this->sortLocationEntitiesByRelevance($locationEntities, $search, $currentPosition),
@@ -422,11 +429,12 @@ final class LocationService extends BaseLocationService
 
         /* Sort array according to given $sortBy */
         $search = '';
-        $performanceLogger->logPerformance(function () use (&$locationEntities, $search, $coordinate, $sortBy) {
+        $performanceLogger->logPerformance(function () use (&$locationEntities, $search, $coordinate, $currentPosition, $sortBy) {
 
             /* Start task */
             match ($sortBy) {
                 self::SORT_BY_DISTANCE => $this->sortLocationEntitiesByDistance($locationEntities, $coordinate),
+                self::SORT_BY_DISTANCE_USER => $this->sortLocationEntitiesByDistance($locationEntities, $currentPosition),
                 self::SORT_BY_GEONAME_ID => $this->sortLocationEntitiesByGeonameId($locationEntities),
                 self::SORT_BY_NAME => $this->sortLocationEntitiesByName($locationEntities),
                 self::SORT_BY_RELEVANCE => $this->sortLocationEntitiesByRelevance($locationEntities, $search, $coordinate),

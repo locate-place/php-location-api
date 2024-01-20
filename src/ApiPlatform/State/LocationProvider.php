@@ -139,7 +139,7 @@ final class LocationProvider extends BaseProviderCustom
             /* Sort configuration */
             sortBy: $this->query->getFilterAsString(
                 Query::FILTER_SORT,
-                !is_null($currentPosition) ? LocationService::SORT_BY_DISTANCE : LocationService::SORT_BY_NAME
+                !is_null($currentPosition) ? LocationService::SORT_BY_DISTANCE_USER : LocationService::SORT_BY_NAME
             ),
 
             /* Other configuration */

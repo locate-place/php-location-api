@@ -184,6 +184,8 @@ class KeyArray
 
     final public const RELEVANCE = 'relevance';
 
+    final public const RELEVANCE_USER = 'relevance-user';
+
     final public const SEARCH = 'search';
 
     final public const SHORT = 'short';

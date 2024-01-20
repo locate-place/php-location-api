@@ -58,4 +58,28 @@ class Coordinate extends DataType
 
         return (float) self::DISTANCE_UNAVAILABLE_ON_EARTH;
     }
+
+    /**
+     * Returns the distance in meters to the position of the user.
+     *
+     * @return float
+     * @throws ArrayKeyNotFoundException
+     * @throws CaseInvalidException
+     * @throws FileNotFoundException
+     * @throws FileNotReadableException
+     * @throws FunctionJsonEncodeException
+     * @throws TypeInvalidException
+     * @throws FunctionReplaceException
+     * @throws JsonException
+     */
+    public function getDistanceUser(): float
+    {
+        $path = [KeyArray::DISTANCE_USER, KeyArray::METERS, KeyArray::VALUE];
+
+        if ($this->hasKey($path)) {
+            return $this->getKeyFloat($path);
+        }
+
+        return (float) self::DISTANCE_UNAVAILABLE_ON_EARTH;
+    }
 }

@@ -537,7 +537,30 @@ abstract class BaseHelperLocationService
      */
     protected function sortLocationsByDistance(array &$locations): void
     {
-        usort($locations, fn(Location $locationA, Location $locationB) => $locationA->getCoordinate()->getDistance() <=> $locationB->getCoordinate()->getDistance());
+        usort($locations, fn(Location $locationA, Location $locationB) =>
+            $locationA->getCoordinate()->getDistance() <=> $locationB->getCoordinate()->getDistance()
+        );
+    }
+
+    /**
+     * Sort given location entities by distance from user position.
+     *
+     * @param Location[] $locations
+     * @return void
+     * @throws ArrayKeyNotFoundException
+     * @throws CaseInvalidException
+     * @throws FileNotFoundException
+     * @throws FileNotReadableException
+     * @throws FunctionJsonEncodeException
+     * @throws TypeInvalidException
+     * @throws FunctionReplaceException
+     * @throws JsonException
+     */
+    protected function sortLocationsByDistanceUser(array &$locations): void
+    {
+        usort($locations, fn(Location $locationA, Location $locationB) =>
+            $locationA->getCoordinate()->getDistanceUser() <=> $locationB->getCoordinate()->getDistanceUser()
+        );
     }
 
     /**
