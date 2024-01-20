@@ -234,7 +234,8 @@ abstract class BaseLocationService extends BaseHelperLocationService
         foreach ($locations as $location) {
             $locationArray[] = $this->getLocationBaseInformation(
                 locationEntity: $location,
-                searchPosition: $searchPosition
+                searchPosition: $searchPosition,
+                featureDetailed: true
             );
         }
 
