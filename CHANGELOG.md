@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Releases
 
+### [0.1.37] - 2024-01-21
+
+* No case-sensitive search
+* Fix relevance-user sorting
+* Adjust next places configuration
+
 ### [0.1.36] - 2024-01-20
 
 * Add geoname id list search
