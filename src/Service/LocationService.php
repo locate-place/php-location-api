@@ -296,9 +296,12 @@ final class LocationService extends BaseLocationService
                 self::SORT_BY_DISTANCE,
                 self::SORT_BY_DISTANCE_USER => $this->sortLocationEntitiesByDistance($locationEntities, $currentPosition),
 
+                self::SORT_BY_RELEVANCE,
+                self::SORT_BY_RELEVANCE_USER => $this->sortLocationEntitiesByRelevance($locationEntities, $search, $currentPosition),
+
                 self::SORT_BY_GEONAME_ID => $this->sortLocationEntitiesByGeonameId($locationEntities),
                 self::SORT_BY_NAME => $this->sortLocationEntitiesByName($locationEntities),
-                self::SORT_BY_RELEVANCE => $this->sortLocationEntitiesByRelevance($locationEntities, $search, $currentPosition),
+
                 default => null,
             };
             /* Finish task */

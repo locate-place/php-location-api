@@ -140,7 +140,7 @@ class LocationRepository extends ServiceEntityRepository
     public function findBySearch(string $search, int|null $limit = null): array
     {
         $qb = $this->createQueryBuilder('l')
-            ->andWhere('l.name LIKE :name')
+            ->andWhere('LOWER(l.name) LIKE LOWER(:name)')
             ->setParameter('name', '%'.$search.'%')
             ->setMaxResults($limit);
 
