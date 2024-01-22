@@ -202,10 +202,11 @@ final class LocationService extends BaseLocationService
      * Returns locations by given search string (filter limit, feature classes).
      *
      * @param string $search
-     * @param Coordinate|null $currentPosition
      * @param array<int, string>|string|null $featureClass
      * @param array<int, string>|string|null $featureCode
      * @param int|null $limit
+     * @param int $page
+     * @param Coordinate|null $currentPosition
      * @param string $isoLanguage
      * @param string $country
      * @param bool $addLocations
@@ -238,6 +239,7 @@ final class LocationService extends BaseLocationService
         array|string|null $featureClass = null,
         array|string|null $featureCode = null,
         int|null $limit = Limit::LIMIT_10,
+        int $page = self::PAGE_FIRST,
 
         /* Configuration */
         Coordinate|null $currentPosition = null,
@@ -284,6 +286,7 @@ final class LocationService extends BaseLocationService
                 $locationEntities,
                 fn(LocationEntity $locationEntity) => !in_array($locationEntity->getFeatureCode()?->getCode(), ['', null])
             );
+            $this->setResultCount(count($locationEntities));
             /* Finish task */
 
         }, self::PERFORMANCE_ARRAY_FILTER_LOCATIONS, $performanceGroupName, $performanceLogger->getAdditionalData(self::class, __FUNCTION__, __LINE__));
@@ -313,10 +316,10 @@ final class LocationService extends BaseLocationService
 
 
         /* Limit the result */
-        $performanceLogger->logPerformance(function () use (&$locationEntities, $limit) {
+        $performanceLogger->logPerformance(function () use (&$locationEntities, $limit, $page) {
 
             /* Start task */
-            $locationEntities = array_slice($locationEntities, 0, $limit);
+            $this->limitResult($locationEntities, $limit, $page);
             /* Finish task */
 
         }, self::PERFORMANCE_ARRAY_SLICE_LOCATIONS, $performanceGroupName, $performanceLogger->getAdditionalData(self::class, __FUNCTION__, __LINE__));
@@ -456,7 +459,13 @@ final class LocationService extends BaseLocationService
 
 
         /* Limit the result */
-        $this->limitResult($locationEntities, $limit, $page);
+        $performanceLogger->logPerformance(function () use (&$locationEntities, $limit, $page) {
+
+            /* Start task */
+            $this->limitResult($locationEntities, $limit, $page);
+            /* Finish task */
+
+        }, self::PERFORMANCE_ARRAY_SLICE_LOCATIONS, $performanceGroupName, $performanceLogger->getAdditionalData(self::class, __FUNCTION__, __LINE__));
 
 
 
