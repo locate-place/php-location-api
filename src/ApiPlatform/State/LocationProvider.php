@@ -221,7 +221,7 @@ final class LocationProvider extends BaseProviderCustom
         if ($this->locationService->hasError()) {
             $this->setError($this->locationService->getError());
         }
-        
+
         if ($this->locationService->hasResultCount()) {
             $this->setResults([
                 KeyArray::TOTAL => $this->locationService->getResultCount(),
