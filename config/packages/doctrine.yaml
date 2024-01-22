@@ -51,6 +51,7 @@ doctrine:
                 auto_mapping: true
                 dql:
                     string_functions:
+                        ILIKE: App\DBAL\GeoLocation\Functions\Other\ILike
                         DistanceOperator: App\DBAL\GeoLocation\Functions\PostgreSQL\DistanceOperator
                         ST_Distance : App\DBAL\GeoLocation\Functions\PostgreSQL\ST_Distance
                         ST_DWithin: App\DBAL\GeoLocation\Functions\PostgreSQL\ST_DWithin

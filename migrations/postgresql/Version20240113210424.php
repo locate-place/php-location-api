@@ -34,13 +34,21 @@ final class Version20240113210424 extends AbstractMigration
     }
 
     /**
+     * EXPLAIN ANALYSE SELECT *
+FROM location
+WHERE name ILIKE LOWER('%dresden%')
+     *
+     * ANALYZE "location";
+     * VACUUM ANALYZE "location";
+     * REINDEX TABLE "location";
+     *
      * @param Schema $schema
      * @return void
      */
     public function up(Schema $schema): void
     {
-        $this->addSql('CREATE INDEX IDX_AD89C8ABAD89C8AB ON alternate_name (alternate_name)');
-        $this->addSql('CREATE INDEX IDX_5E9E89CB5E237E06 ON location (name)');
+        $this->addSql('CREATE INDEX IDX_AD89C8ABAD89C8AB ON alternate_name USING GIN (alternate_name gin_trgm_ops);');
+        $this->addSql('CREATE INDEX IDX_5E9E89CB5E237E06 ON location USING GIN (name gin_trgm_ops);');
     }
 
     /**
