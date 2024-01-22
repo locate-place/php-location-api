@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Releases
 
+### [0.1.39] - 2024-01-23
+
+* Refactoring
+* Add page filter to search endpoint
+* Add stations to next places; Introduce the page filter; Add results to list endpoints
+* Optimize text search
+  * Add pg_trgm extension to PostgreSQL
+  * Add gin_trgm index to location.name and alternate_name.alternate_name
+  * Add ILIKE operator to doctrine
+
 ### [0.1.38] - 2024-01-22
 
 * Use the distance and limit configuration from next_places.yaml if no one was given (list search)
