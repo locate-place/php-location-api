@@ -68,9 +68,13 @@ class Query
 
     final public const FILTER_LIMIT = 'limit';
 
+    final public const FILTER_PAGE = 'page';
+
     final public const URI_GEONAME_ID = 'geoname_id';
 
     final public const WORD_EXAMPLES = 'examples';
+
+    private const PAGE_FIRST = 1;
 
     /** @var array<string, mixed> $uriVariables */
     private array $uriVariables = [];
@@ -318,6 +322,22 @@ class Query
 
         if (!$this->hasFilter($key)) {
             return null;
+        }
+
+        return $this->getFilterAsInt($key);
+    }
+
+    /**
+     * Returns the page parameter.
+     *
+     * @return int
+     */
+    public function getPage(): int
+    {
+        $key = self::FILTER_PAGE;
+
+        if (!$this->hasFilter($key)) {
+            return self::PAGE_FIRST;
         }
 
         return $this->getFilterAsInt($key);

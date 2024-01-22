@@ -168,6 +168,8 @@ class KeyArray
 
     final public const OPENSTREETMAP = 'openstreetmap';
 
+    final public const PAGE = 'page';
+
     final public const PARSED = 'parsed';
 
     final public const PLACES = 'places';
@@ -186,6 +188,8 @@ class KeyArray
 
     final public const RELEVANCE_USER = 'relevance-user';
 
+    final public const RESULTS = 'results';
+
     final public const SEARCH = 'search';
 
     final public const SHORT = 'short';
@@ -201,6 +205,8 @@ class KeyArray
     final public const TIME_TAKEN = 'time-taken';
 
     final public const TIMEZONE = 'timezone';
+
+    final public const TOTAL = 'total';
 
     final public const TRANSLATED = 'translated';
 

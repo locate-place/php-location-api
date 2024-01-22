@@ -92,6 +92,15 @@ parameters:
                 feature_codes:
                     - AIRP
                 distance: 200000
+            stations:
+                name: stations
+                feature_codes:
+                    - BUSTN
+                    - BUSTP
+                    - MTRO
+                    - RSTN
+                    - RSTP
+                distance: 20000
             cinemas:
                 name: cinemas
                 feature_codes:

@@ -75,6 +75,8 @@ final class LocationService extends BaseLocationService
 
     final public const SORT_BY_RELEVANCE_USER = KeyArray::RELEVANCE_USER;
 
+    private const PAGE_FIRST = 1;
+
     /**
      * Returns locations by given geoname ids.
      *
@@ -349,6 +351,7 @@ final class LocationService extends BaseLocationService
      * @param array<int, string>|string|null $featureClass
      * @param array<int, string>|string|null $featureCode
      * @param int|null $limit
+     * @param int $page
      * @param Coordinate|null $currentPosition
      * @param string $isoLanguage
      * @param string $country
@@ -371,6 +374,7 @@ final class LocationService extends BaseLocationService
      * @throws TypeInvalidException
      * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
      * @SuppressWarnings(PHPMD.ExcessiveParameterList)
+     * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
      */
     public function getLocationsByCoordinate(
         /* Search */
@@ -381,6 +385,7 @@ final class LocationService extends BaseLocationService
         array|string|null $featureClass = null,
         array|string|null $featureCode = null,
         int|null $limit = Limit::LIMIT_10,
+        int $page = self::PAGE_FIRST,
 
         /* Configuration */
         Coordinate $currentPosition = null,
@@ -424,6 +429,7 @@ final class LocationService extends BaseLocationService
                 limit: $this->limit
             );
             $this->doAfterQueryTasks($locationEntities);
+            $this->setResultCount(is_countable($locationEntities) ? count($locationEntities) : 0);
             /* Finish task */
 
         }, self::PERFORMANCE_NAME_FIND_LOCATIONS_BY_COORDINATE, $performanceGroupName, $performanceLogger->getAdditionalData(self::class, __FUNCTION__, __LINE__));
@@ -446,6 +452,11 @@ final class LocationService extends BaseLocationService
             /* Finish task */
 
         }, self::PERFORMANCE_SORT_LOCATIONS, $performanceGroupName, $performanceLogger->getAdditionalData(self::class, __FUNCTION__, __LINE__));
+
+
+
+        /* Limit the result */
+        $this->limitResult($locationEntities, $limit, $page);
 
 
 

@@ -56,10 +56,14 @@ use Symfony\Contracts\Translation\TranslatorInterface;
  * @author Björn Hempel <bjoern@hempel.li>
  * @version 0.1.0 (2023-07-04)
  * @since 0.1.0 (2023-07-04) First version.
+ * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
  */
 class BaseProviderCustom extends BaseResourceWrapperProvider
 {
     protected readonly Query $query;
+
+    /** @var array<int|string, mixed>|null $results */
+    private array|null $results = null;
 
     /**
      * @param Version $version
@@ -113,6 +117,10 @@ class BaseProviderCustom extends BaseResourceWrapperProvider
             ->setMemoryTaken($memoryTaken)
             ->setTimeTaken($timeTaken)
         ;
+
+        if ($this->hasResults()) {
+            $resourceWrapper->setResults($this->getResults());
+        }
 
         return $resourceWrapper;
     }
@@ -560,5 +568,34 @@ class BaseProviderCustom extends BaseResourceWrapperProvider
         }
 
         return $namesFull;
+    }
+
+    /**
+     * @return bool
+     */
+    protected function hasResults()
+    {
+        return !is_null($this->results);
+    }
+
+    /**
+     * @return array<int|string, mixed>
+     */
+    protected function getResults(): array
+    {
+        if (is_null($this->results)) {
+            throw new LogicException('Results must be an array.');
+        }
+
+        return $this->results;
+    }
+
+    /**
+     * @param array<int|string, mixed> $results
+     * @return void
+     */
+    protected function setResults(array $results): void
+    {
+        $this->results = $results;
     }
 }

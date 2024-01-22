@@ -269,6 +269,7 @@ final class LocationProvider extends BaseProviderCustom
             featureClass: $queryParser->getFeatureClasses(),
             featureCode: $queryParser->getFeatureCodes(),
             limit: $this->locationServiceConfig->getLimitByQuery($this->query),
+            page: $this->query->getPage(),
 
             /* Configuration */
             currentPosition: $this->query->getCurrentPosition(),
@@ -287,6 +288,14 @@ final class LocationProvider extends BaseProviderCustom
 
         if ($this->locationService->hasError()) {
             $this->setError($this->locationService->getError());
+        }
+
+        if ($this->locationService->hasResultCount()) {
+            $this->setResults([
+                KeyArray::TOTAL => $this->locationService->getResultCount(),
+                KeyArray::RESULTS => count($locations),
+                KeyArray::PAGE => 0,
+            ]);
         }
 
         return $locations;

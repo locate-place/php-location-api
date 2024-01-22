@@ -46,6 +46,9 @@ class ResourceWrapperCustom extends ResourceWrapper
     /** @var array<int|string, mixed> $performance */
     private array $performance;
 
+    /** @var array<int|string, mixed> $results */
+    private array $results;
+
     /**
      * @return array{full: string, short: string, url: string}
      */
@@ -137,6 +140,25 @@ class ResourceWrapperCustom extends ResourceWrapper
     public function setPerformance(array $performance): self
     {
         $this->performance = $performance;
+
+        return $this;
+    }
+
+    /**
+     * @return array<int|string, mixed>
+     */
+    public function getResults(): array
+    {
+        return $this->results;
+    }
+
+    /**
+     * @param array<int|string, mixed> $results
+     * @return self
+     */
+    public function setResults(array $results): self
+    {
+        $this->results = $results;
 
         return $this;
     }

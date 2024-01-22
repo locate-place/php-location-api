@@ -37,6 +37,7 @@ use Ixnode\PhpException\Parser\ParserException;
 use Ixnode\PhpException\Type\TypeInvalidException;
 use Ixnode\PhpNamingConventions\Exception\FunctionReplaceException;
 use JsonException;
+use LogicException;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -53,6 +54,8 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 abstract class BaseHelperLocationService
 {
     protected ?string $error = null;
+
+    protected int|null $resultCount = null;
 
     protected float $timeStart;
 
@@ -297,6 +300,43 @@ abstract class BaseHelperLocationService
     }
 
     /**
+     * Gets the number of results.
+     *
+     * @return int
+     */
+    public function getResultCount(): int
+    {
+        if (is_null($this->resultCount)) {
+            throw new LogicException('Result count must be an integer.');
+        }
+
+        return $this->resultCount;
+    }
+
+    /**
+     * Checks if a count of results is available.
+     *
+     * @return bool
+     */
+    public function hasResultCount(): bool
+    {
+        return is_int($this->resultCount);
+    }
+
+    /**
+     * Sets the number of results.
+     *
+     * @param int $resultCount
+     * @return self
+     */
+    protected function setResultCount(int $resultCount): self
+    {
+        $this->resultCount = $resultCount;
+
+        return $this;
+    }
+
+    /**
      * Returns an empty Location entity.
      *
      * @param int|null $geonameId
@@ -497,6 +537,29 @@ abstract class BaseHelperLocationService
 
         /* Sort by relevances. */
         usort($locationEntities, fn(LocationEntity $locationA, LocationEntity $locationB) => $relevances[$locationB->getId()] <=> $relevances[$locationA->getId()]);
+    }
+
+    /**
+     * Limits the result.
+     *
+     * Page 1 (10 results per page):
+     *   - 0 - 9
+     * Page 2 (10 results per page):
+     *   - 10 - 19
+     * etc.
+     *
+     * @param LocationEntity[] $locationEntities
+     * @param int|null $limit
+     * @param int $page
+     * @return void
+     */
+    protected function limitResult(array &$locationEntities, int|null $limit, int $page = 1): void
+    {
+        if (is_null($limit)) {
+            return;
+        }
+
+        $locationEntities = array_slice($locationEntities, ($page - 1) * $limit, $limit);
     }
 
     /**
