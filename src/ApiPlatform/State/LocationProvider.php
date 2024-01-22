@@ -18,11 +18,11 @@ use App\ApiPlatform\Resource\Base;
 use App\ApiPlatform\Resource\Location as LocationResource;
 use App\ApiPlatform\Route\LocationRoute;
 use App\ApiPlatform\State\Base\BaseProviderCustom;
-use App\Constants\DB\Distance;
 use App\Constants\DB\Limit;
 use App\Constants\Key\KeyArray;
 use App\Repository\LocationRepository;
 use App\Service\LocationService;
+use App\Service\LocationServiceConfig;
 use App\Utils\Query\Query;
 use App\Utils\Query\QueryParser;
 use Doctrine\ORM\NonUniqueResultException;
@@ -66,6 +66,7 @@ final class LocationProvider extends BaseProviderCustom
      * @param LocationRepository $locationRepository
      * @param TranslatorInterface $translator
      * @param LocationService $locationService
+     * @param LocationServiceConfig $locationServiceConfig
      */
     public function __construct(
         protected Version $version,
@@ -73,7 +74,8 @@ final class LocationProvider extends BaseProviderCustom
         protected RequestStack $request,
         protected LocationRepository $locationRepository,
         protected TranslatorInterface $translator,
-        protected LocationService $locationService
+        protected LocationService $locationService,
+        private readonly LocationServiceConfig $locationServiceConfig,
     )
     {
         parent::__construct($version, $parameterBag, $request, $locationService, $translator);
@@ -263,10 +265,10 @@ final class LocationProvider extends BaseProviderCustom
             coordinate: $coordinate,
 
             /* Search filter */
-            distanceMeter: $this->hasFilter(Name::DISTANCE) ? $this->getFilterInteger(Name::DISTANCE) : Distance::DISTANCE_1000,
+            distanceMeter: $this->locationServiceConfig->getDistanceByQuery($this->query),
             featureClass: $queryParser->getFeatureClasses(),
             featureCode: $queryParser->getFeatureCodes(),
-            limit: $this->hasFilter(Name::LIMIT) ? $this->getFilterInteger(Name::LIMIT) : Limit::LIMIT_10,
+            limit: $this->locationServiceConfig->getLimitByQuery($this->query),
 
             /* Configuration */
             currentPosition: $this->query->getCurrentPosition(),

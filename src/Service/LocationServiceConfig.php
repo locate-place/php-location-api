@@ -15,10 +15,12 @@ namespace App\Service;
 
 use App\Constants\DB\Distance;
 use App\Constants\DB\FeatureClass;
+use App\Constants\DB\FeatureCode;
 use App\Constants\DB\Limit;
 use App\Constants\Key\KeyArray;
 use App\Constants\Language\CountryCode;
 use App\Entity\Location;
+use App\Utils\Query\Query;
 use Ixnode\PhpApiVersionBundle\Utils\TypeCasting\TypeCastingHelper;
 use Ixnode\PhpContainer\Json;
 use Ixnode\PhpException\ArrayType\ArrayKeyNotFoundException;
@@ -27,11 +29,13 @@ use Ixnode\PhpException\Case\CaseUnsupportedException;
 use Ixnode\PhpException\File\FileNotFoundException;
 use Ixnode\PhpException\File\FileNotReadableException;
 use Ixnode\PhpException\Function\FunctionJsonEncodeException;
+use Ixnode\PhpException\Parser\ParserException;
 use Ixnode\PhpException\Type\TypeInvalidException;
 use Ixnode\PhpNamingConventions\Exception\FunctionReplaceException;
 use JsonException;
 use LogicException;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
  * Class LocationServiceConfig
@@ -68,8 +72,12 @@ final class LocationServiceConfig
 
     /**
      * @param ParameterBagInterface $parameterBag
+     * @param TranslatorInterface $translator
      */
-    public function __construct(protected ParameterBagInterface $parameterBag)
+    public function __construct(
+        protected ParameterBagInterface $parameterBag,
+        protected TranslatorInterface $translator
+    )
     {
     }
 
@@ -1266,6 +1274,169 @@ final class LocationServiceConfig
             (new TypeCastingHelper($distance))->strval(),
             gettype($distance)
         ));
+    }
+
+    /**
+     * Returns the limit according to the given query.
+     *
+     * @param Query $query
+     * @return int|null
+     * @throws ArrayKeyNotFoundException
+     * @throws CaseInvalidException
+     * @throws CaseUnsupportedException
+     * @throws FileNotFoundException
+     * @throws FileNotReadableException
+     * @throws FunctionJsonEncodeException
+     * @throws FunctionReplaceException
+     * @throws JsonException
+     * @throws ParserException
+     * @throws TypeInvalidException
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+     * @SuppressWarnings(PHPMD.NPathComplexity)
+     */
+    public function getLimitByQuery(Query $query): int|null
+    {
+        $country = $query->getCountry();
+
+        /* Check if the limit was given by query. */
+        $limit = $query->getLimit();
+        if (!is_null($limit)) {
+            return $limit;
+        }
+
+        /* Check if the query parser is available. */
+        $queryParser = $query->getQueryParser();
+        if (is_null($queryParser)) {
+            return $this->getLimit(country: $country);
+        }
+
+        $featureClasses = $queryParser->getFeatureClasses();
+        $featureCodes = $queryParser->getFeatureCodes();
+
+        if (is_null($featureClasses) && is_null($featureCodes)) {
+            return $this->getLimit(country: $country);
+        }
+
+        $featureCodeTranslator = new FeatureCode($this->translator);
+
+        $limit = 0;
+
+        if (is_array($featureCodes)) {
+            foreach ($featureCodes as $featureCode) {
+                $featureClass = $featureCodeTranslator->getFeatureClass($featureCode);
+
+                $limit = max($limit, $this->getLimit(
+                    featureClass: $featureClass,
+                    featureCode: $featureCode,
+                    country: $country
+                ));
+            }
+
+            return $limit > 0 ? $limit : $this->getLimit(country: $country);
+        }
+
+        foreach ($featureClasses as $featureClass) {
+
+            $limit = max($limit, $this->getLimit(
+                featureClass: $featureClass,
+                country: $country
+            ));
+        }
+
+        return $limit > 0 ? $limit : $this->getLimit(country: $country);
+    }
+
+    /**
+     * Returns the distance according to the given query.
+     *
+     * @param Query $query
+     * @return int
+     * @throws ArrayKeyNotFoundException
+     * @throws CaseInvalidException
+     * @throws CaseUnsupportedException
+     * @throws FileNotFoundException
+     * @throws FileNotReadableException
+     * @throws FunctionJsonEncodeException
+     * @throws FunctionReplaceException
+     * @throws JsonException
+     * @throws TypeInvalidException
+     * @throws ParserException
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+     * @SuppressWarnings(PHPMD.NPathComplexity)
+     */
+    public function getDistanceByQuery(Query $query): int
+    {
+        $country = $query->getCountry();
+
+        /* Check if the distance was given by query. */
+        $distance = $query->getDistance();
+        if (!is_null($distance)) {
+            return $distance;
+        }
+
+        /* Check if the query parser is available. */
+        $queryParser = $query->getQueryParser();
+        if (is_null($queryParser)) {
+            $distance = $this->getDistance(country: $country);
+            return $distance ?? Distance::DISTANCE_1000;
+        }
+
+        $featureClasses = $queryParser->getFeatureClasses();
+        $featureCodes = $queryParser->getFeatureCodes();
+
+        if (is_null($featureClasses) && is_null($featureCodes)) {
+            $distance = $this->getDistance(country: $country);
+            return $distance ?? Distance::DISTANCE_1000;
+        }
+
+        $featureCodeTranslator = new FeatureCode($this->translator);
+
+        $distance = 0;
+
+        if (is_array($featureCodes)) {
+            foreach ($featureCodes as $featureCode) {
+                $featureClass = $featureCodeTranslator->getFeatureClass($featureCode);
+
+                $distanceFeatureCode = $this->getDistance(
+                    featureClass: $featureClass,
+                    featureCode: $featureCode,
+                    country: $country
+                );
+
+                if (is_null($distanceFeatureCode)) {
+                    continue;
+                }
+
+                $distance = max($distance, $distanceFeatureCode);
+            }
+
+            if ($distance > 0) {
+                return $distance;
+            }
+
+            $distance = $this->getDistance(country: $country);
+            return $distance ?? Distance::DISTANCE_1000;
+        }
+
+        foreach ($featureClasses as $featureClass) {
+            $distanceFeatureClass = $this->getDistance(
+                featureClass: $featureClass,
+                country: $country
+            );
+
+            if (is_null($distanceFeatureClass)) {
+                continue;
+            }
+
+            $distance = max($distance, $distanceFeatureClass);
+        }
+
+        if ($distance > 0) {
+            return $distance;
+        }
+
+        $distance = $this->getDistance(country: $country);
+        return $distance ?? Distance::DISTANCE_1000;
     }
 
     /**

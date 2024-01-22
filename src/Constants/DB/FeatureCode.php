@@ -1555,7 +1555,7 @@ class FeatureCode extends BaseFeature
      * @param string $featureCode
      * @return string
      */
-    private function getFeatureClass(string $featureCode): string
+    public function getFeatureClass(string $featureCode): string
     {
         foreach (self::ALL as $featureClass => $featureCodes) {
             if (in_array($featureCode, $featureCodes, true)) {

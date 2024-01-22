@@ -71,7 +71,7 @@ class TestCommandTest extends BaseFunctionalCommandTest
                         $this->repository->getRepository(LocationRepository::class),
                         $this->repository->getRepository(AlternateNameRepository::class),
                         $this->translator,
-                        new LocationServiceConfig($this->parameterBag)
+                        new LocationServiceConfig($this->parameterBag, $this->translator)
                     ),
                     $this->parameterBag,
                     $this->serializer

@@ -14,10 +14,10 @@ parameters:
                 U: 10
                 V: 10
             feature_code:
-                S.AIRP: 3 # Airports
+                S.AIRP: 10 # Airports
             overwrites:
                 DE:
-                    default: 2
+                    default: 1
                     feature_class:
                         A: 10
                         H: 10
@@ -29,7 +29,7 @@ parameters:
                         U: 10
                         V: 10
                     feature_code:
-                        S.AIRP: 4 # Airports
+                        S.AIRP: 10 # Airports
 
         distance:
             default: 1000
@@ -44,7 +44,7 @@ parameters:
                 U: 10000
                 V: 15000
             feature_code:
-                S.AIRP: 150000 # Airports
+                S.AIRP: 200000 # Airports
             overwrites:
                 DE:
                     default: 1000
@@ -59,7 +59,7 @@ parameters:
                         U: 10000
                         V: 15000
                     feature_code:
-                        S.AIRP: 15000 # Airports
+                        S.AIRP: 200000 # Airports
 
         use_admin_codes_general:
             default: false

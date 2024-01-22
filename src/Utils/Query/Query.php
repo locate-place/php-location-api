@@ -64,6 +64,10 @@ class Query
 
     final public const FILTER_SORT = 's';
 
+    final public const FILTER_DISTANCE = 'distance';
+
+    final public const FILTER_LIMIT = 'limit';
+
     final public const URI_GEONAME_ID = 'geoname_id';
 
     final public const WORD_EXAMPLES = 'examples';
@@ -252,6 +256,24 @@ class Query
     }
 
     /**
+     * Returns parameter $key as string.
+     *
+     * @param string $key
+     * @param string|null $default
+     * @return int
+     */
+    public function getFilterAsInt(string $key, string $default = null): int
+    {
+        $parameter = $this->getFilter($key, $default);
+
+        return match (true) {
+            is_string($parameter) => (int) $parameter,
+            is_int($parameter) => $parameter,
+            default => throw new LogicException(sprintf('The filter with given key "%s" is not an integer.', $key)),
+        };
+    }
+
+    /**
      * Returns the own coordinate (own position) parameter as Coordinate.
      *
      * @return Coordinate|null
@@ -267,6 +289,70 @@ class Query
         }
 
         return new Coordinate($this->getFilterAsString($key));
+    }
+
+    /**
+     * Returns the distance parameter.
+     *
+     * @return int|null
+     */
+    public function getDistance(): int|null
+    {
+        $key = self::FILTER_DISTANCE;
+
+        if (!$this->hasFilter($key)) {
+            return null;
+        }
+
+        return $this->getFilterAsInt($key);
+    }
+
+    /**
+     * Returns the limit parameter.
+     *
+     * @return int|null
+     */
+    public function getLimit(): int|null
+    {
+        $key = self::FILTER_LIMIT;
+
+        if (!$this->hasFilter($key)) {
+            return null;
+        }
+
+        return $this->getFilterAsInt($key);
+    }
+
+    /**
+     * Returns the country parameter.
+     *
+     * @return string|null
+     */
+    public function getCountry(): string|null
+    {
+        $key = self::FILTER_COUNTRY;
+
+        if (!$this->hasFilter($key)) {
+            return null;
+        }
+
+        return $this->getFilterAsString($key);
+    }
+
+    /**
+     * Returns the language parameter.
+     *
+     * @return string|null
+     */
+    public function getLanguage(): string|null
+    {
+        $key = self::FILTER_LANGUAGE;
+
+        if (!$this->hasFilter($key)) {
+            return null;
+        }
+
+        return $this->getFilterAsString($key);
     }
 
     /**
