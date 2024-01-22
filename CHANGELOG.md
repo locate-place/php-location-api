@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Releases
 
+### [0.1.38] - 2024-01-22
+
+* Use the distance and limit configuration from next_places.yaml if no one was given (list search)
+
 ### [0.1.37] - 2024-01-21
 
 * No case-sensitive search
