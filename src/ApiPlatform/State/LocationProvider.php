@@ -152,6 +152,8 @@ final class LocationProvider extends BaseProviderCustom
             $this->setError($this->locationService->getError());
         }
 
+        $this->setResultsFromLocations($locations);
+
         return $locations;
     }
 
@@ -222,13 +224,7 @@ final class LocationProvider extends BaseProviderCustom
             $this->setError($this->locationService->getError());
         }
 
-        if ($this->locationService->hasResultCount()) {
-            $this->setResults([
-                KeyArray::TOTAL => $this->locationService->getResultCount(),
-                KeyArray::RESULTS => count($locations),
-                KeyArray::PAGE => $this->query->getPage(),
-            ]);
-        }
+        $this->setResultsFromLocations($locations);
 
         return $locations;
     }
@@ -299,13 +295,7 @@ final class LocationProvider extends BaseProviderCustom
             $this->setError($this->locationService->getError());
         }
 
-        if ($this->locationService->hasResultCount()) {
-            $this->setResults([
-                KeyArray::TOTAL => $this->locationService->getResultCount(),
-                KeyArray::RESULTS => count($locations),
-                KeyArray::PAGE => $this->query->getPage(),
-            ]);
-        }
+        $this->setResultsFromLocations($locations);
 
         return $locations;
     }

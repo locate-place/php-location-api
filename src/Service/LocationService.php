@@ -148,6 +148,7 @@ final class LocationService extends BaseLocationService
 
             /* Start task */
             $locationEntities = $this->locationRepository->findLocationsByGeonameIds($geonameIds);
+            $this->setResultCount(count($locationEntities));
             /* Finish task */
 
         }, self::PERFORMANCE_NAME_FIND_LOCATIONS_BY_COORDINATE, $performanceGroupName, $performanceLogger->getAdditionalData(self::class, __FUNCTION__, __LINE__));

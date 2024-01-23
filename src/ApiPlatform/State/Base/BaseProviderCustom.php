@@ -598,4 +598,23 @@ class BaseProviderCustom extends BaseResourceWrapperProvider
     {
         $this->results = $results;
     }
+
+    /**
+     * Sets the result from given location array.
+     *
+     * @param array<int, Location> $locations
+     * @return void
+     */
+    protected function setResultsFromLocations(array $locations): void
+    {
+        if (!$this->locationService->hasResultCount()) {
+            return;
+        }
+
+        $this->setResults([
+            KeyArray::TOTAL => $this->locationService->getResultCount(),
+            KeyArray::RESULTS => count($locations),
+            KeyArray::PAGE => $this->query->getPage(),
+        ]);
+    }
 }
