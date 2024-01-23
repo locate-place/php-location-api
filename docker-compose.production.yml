@@ -80,6 +80,7 @@ services:
       - "traefik.http.routers.${NAMESPACE_UNDERLINE_DEVELOPMENT}_https.middlewares=${NAMESPACE_UNDERLINE_DEVELOPMENT}_frame,${NAMESPACE_UNDERLINE}_remove_headers"
       - "traefik.http.routers.${NAMESPACE_UNDERLINE_DEVELOPMENT}_https.service=${NAMESPACE_UNDERLINE_DEVELOPMENT}_https_lb"
       - "traefik.http.routers.${NAMESPACE_UNDERLINE_DEVELOPMENT}_https.tls=true"
+      - "traefik.http.routers.${NAMESPACE_UNDERLINE}_https.tls.certresolver=letsencryptresolver"
       # network
       - "traefik.docker.network=${NETWORK_NAME_TRAEFIK_PUBLIC_PRODUCTION}"
 
