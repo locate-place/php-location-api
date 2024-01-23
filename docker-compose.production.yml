@@ -61,25 +61,25 @@ services:
       # enable traefik
       - "traefik.enable=true"
       # middleware -> https redirect
-      - "traefik.http.middlewares.${NAMESPACE_UNDERLINE_DEVELOPMENT}_https.redirectscheme.scheme=https"
-      - "traefik.http.middlewares.${NAMESPACE_UNDERLINE_DEVELOPMENT}_frame.headers.customFrameOptionsValue=sameorigin"
+      - "traefik.http.middlewares.${NAMESPACE_UNDERLINE}_https.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.${NAMESPACE_UNDERLINE}_frame.headers.customFrameOptionsValue=sameorigin"
       # middleware -> remove headers
       - "traefik.http.middlewares.${NAMESPACE_UNDERLINE}_remove_headers.headers.customResponseHeaders.Server="
       - "traefik.http.middlewares.${NAMESPACE_UNDERLINE}_remove_headers.headers.customResponseHeaders.X-Powered-By="
       # services (load balancer)
-      - "traefik.http.services.${NAMESPACE_UNDERLINE_DEVELOPMENT}_https_lb.loadbalancer.server.port=${PORT_HTTPS}"
-      - "traefik.http.services.${NAMESPACE_UNDERLINE_DEVELOPMENT}_https_lb.loadbalancer.server.scheme=https"
+      - "traefik.http.services.${NAMESPACE_UNDERLINE}_https_lb.loadbalancer.server.port=${PORT_HTTPS}"
+      - "traefik.http.services.${NAMESPACE_UNDERLINE}_https_lb.loadbalancer.server.scheme=https"
       # http layer -> redirect https
-      - "traefik.http.routers.${NAMESPACE_UNDERLINE_DEVELOPMENT}_http.entrypoints=web"
-      - "traefik.http.routers.${NAMESPACE_UNDERLINE_DEVELOPMENT}_http.rule=Host(`${URL_PRODUCTION}`)"
-      - "traefik.http.routers.${NAMESPACE_UNDERLINE_DEVELOPMENT}_http.middlewares=${NAMESPACE_UNDERLINE_DEVELOPMENT}_https"
-      - "traefik.http.routers.${NAMESPACE_UNDERLINE_DEVELOPMENT}_http.service=${NAMESPACE_UNDERLINE_DEVELOPMENT}_https_lb"
+      - "traefik.http.routers.${NAMESPACE_UNDERLINE}_http.entrypoints=web"
+      - "traefik.http.routers.${NAMESPACE_UNDERLINE}_http.rule=Host(`${URL_PRODUCTION}`)"
+      - "traefik.http.routers.${NAMESPACE_UNDERLINE}_http.middlewares=${NAMESPACE_UNDERLINE}_https"
+      - "traefik.http.routers.${NAMESPACE_UNDERLINE}_http.service=${NAMESPACE_UNDERLINE}_https_lb"
       # https layer
-      - "traefik.http.routers.${NAMESPACE_UNDERLINE_DEVELOPMENT}_https.entrypoints=websecure"
-      - "traefik.http.routers.${NAMESPACE_UNDERLINE_DEVELOPMENT}_https.rule=Host(`${URL_PRODUCTION}`)"
-      - "traefik.http.routers.${NAMESPACE_UNDERLINE_DEVELOPMENT}_https.middlewares=${NAMESPACE_UNDERLINE_DEVELOPMENT}_frame,${NAMESPACE_UNDERLINE}_remove_headers"
-      - "traefik.http.routers.${NAMESPACE_UNDERLINE_DEVELOPMENT}_https.service=${NAMESPACE_UNDERLINE_DEVELOPMENT}_https_lb"
-      - "traefik.http.routers.${NAMESPACE_UNDERLINE_DEVELOPMENT}_https.tls=true"
+      - "traefik.http.routers.${NAMESPACE_UNDERLINE}_https.entrypoints=websecure"
+      - "traefik.http.routers.${NAMESPACE_UNDERLINE}_https.rule=Host(`${URL_PRODUCTION}`)"
+      - "traefik.http.routers.${NAMESPACE_UNDERLINE}_https.middlewares=${NAMESPACE_UNDERLINE}_frame,${NAMESPACE_UNDERLINE}_remove_headers"
+      - "traefik.http.routers.${NAMESPACE_UNDERLINE}_https.service=${NAMESPACE_UNDERLINE}_https_lb"
+      - "traefik.http.routers.${NAMESPACE_UNDERLINE}_https.tls=true"
       - "traefik.http.routers.${NAMESPACE_UNDERLINE}_https.tls.certresolver=letsencryptresolver"
       # network
       - "traefik.docker.network=${NETWORK_NAME_TRAEFIK_PUBLIC_PRODUCTION}"
