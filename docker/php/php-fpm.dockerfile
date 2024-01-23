@@ -27,7 +27,7 @@ ENV COMPOSER_VERSION 2.4.4
 ENV COMPOSER_ALLOW_SUPERUSER 1
 
 # Set environment variables (Node)
-ENV NODE_VERSION_MAYOR 16
+ENV NODE_VERSION_MAYOR 18
 
 # Set environment variables (General)
 ENV WORK_DIRECTORY /var/www/web
