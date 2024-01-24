@@ -137,7 +137,7 @@ parameters:
                     - HLL
                     - MT
                     - PK
-                distance: 10000
+                distance: 50000
         overwrites:
             US:
                 default:
