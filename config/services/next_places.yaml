@@ -105,6 +105,13 @@ parameters:
                 name: cinemas
                 feature_codes:
                     - THTR
+            beaches:
+                name: beaches
+                feature_codes:
+                    - BCH
+                    - BCHS
+                    - RDGB
+                    - SHOR
             churches:
                 name: churches
                 feature_codes:
@@ -115,6 +122,22 @@ parameters:
                     - LK
                     - LKS
                     - STM
+            hotels:
+                name: hotels
+                feature_codes:
+                    - HTL
+            hospitals:
+                name: hospitals
+                feature_codes:
+                    - HSP
+                distance: 50000
+            mountains:
+                name: mountains, hills
+                feature_codes:
+                    - HLL
+                    - MT
+                    - PK
+                distance: 10000
         overwrites:
             US:
                 default:
