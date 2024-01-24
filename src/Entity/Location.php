@@ -672,7 +672,7 @@ class Location
             FeatureCodeConstants::MT,
             FeatureCodeConstants::PK,
         ])) {
-            $relevance += (int) round($elevation / 10);
+            $relevance += (int) round($elevation / 5);
         }
 
         if (is_null($coordinate)) {
