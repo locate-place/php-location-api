@@ -665,6 +665,16 @@ class Location
             $relevance += (int) round($population / 100);
         }
 
+        $elevation = $this->getElevationCompiled();
+
+        if ($elevation > 0 && in_array($this->getFeatureCode()?->getCode(), [
+            FeatureCodeConstants::HLL,
+            FeatureCodeConstants::MT,
+            FeatureCodeConstants::PK,
+        ])) {
+            $relevance += (int) round($elevation * 10);
+        }
+
         if (is_null($coordinate)) {
             return $relevance;
         }
