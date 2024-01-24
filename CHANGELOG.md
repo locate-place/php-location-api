@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Releases
 
+### [0.1.41] - 2024-01-24
+
+* Add next places
+* Add calendar.twelvepics.com domain to COORS
+
 ### [0.1.40] - 2024-01-23
 
 * Add production docker setup
