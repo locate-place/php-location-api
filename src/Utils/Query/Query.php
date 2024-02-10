@@ -54,9 +54,9 @@ use Symfony\Component\HttpFoundation\Request;
  */
 class Query
 {
-    final public const FILTER_COORDINATE = 'c';
-
     final public const FILTER_COUNTRY = 'country';
+
+    final public const FILTER_CURRENT_POSITION = 'p';
 
     final public const FILTER_LANGUAGE = 'language';
 
@@ -286,7 +286,7 @@ class Query
      */
     public function getCurrentPosition(): Coordinate|null
     {
-        $key = self::FILTER_COORDINATE;
+        $key = self::FILTER_CURRENT_POSITION;
 
         if (!$this->hasFilter($key)) {
             return null;
