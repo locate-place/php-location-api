@@ -130,6 +130,8 @@ parameters:
                 name: hospitals
                 feature_codes:
                     - HSP
+                    - HSPC
+                    - HSPD
                 distance: 50000
             mountains:
                 name: mountains, hills
