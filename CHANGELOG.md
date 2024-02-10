@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Releases
 
+### [0.1.42] - 2024-02-10
+
+* Add hospitals to next places
+* Change own position parameter from c to p
+
 ### [0.1.41] - 2024-01-24
 
 * Add next places
