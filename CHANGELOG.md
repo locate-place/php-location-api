@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Releases
 
+### [0.1.43] - 2024-02-11
+
+* Switch own coordinate shortcut from c to p
+
 ### [0.1.42] - 2024-02-10
 
 * Add hospitals to next places
