@@ -620,7 +620,7 @@ final class LocationProvider extends BaseProviderCustom
              * - https://www.location-api.localhost/api/v1/location/2830942.json?language=de&country=DE&next_places=1
              * - https://www.location-api.localhost/api/v1/location/2830942.json?c=51.05811,13.74133 // current position
              * - https://www.location-api.localhost/api/v1/location/coordinate.json?q=2830942&country=DE&language=de&next_places=1
-             * - https://www.location-api.localhost/api/v1/location/coordinate.json?q=2830942&country=DE&language=de&next_places=1&c=51.05811,13.74133
+             * - https://www.location-api.localhost/api/v1/location/coordinate.json?q=2830942&country=DE&language=de&next_places=1&p=51.05811,13.74133
              */
             case $this->getRequestMethod() === Request::METHOD_GET && $this->hasUri(Name::GEONAME_ID):
                 return $this->doProvideGetWithGeonameId($queryParser);

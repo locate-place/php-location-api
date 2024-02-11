@@ -24,7 +24,7 @@ class Name
 {
     final public const COORDINATE = 'coordinate';
 
-    final public const COORDINATE_SHORT = 'c';
+    final public const COORDINATE_SHORT = 'p';
 
     final public const COUNTRY = 'country';
 
