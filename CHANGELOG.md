@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Releases
 
+### [0.1.44] - 2024-02-18
+
+* Fix valid state if error occurred
+
 ### [0.1.43] - 2024-02-11
 
 * Switch own coordinate shortcut from c to p
