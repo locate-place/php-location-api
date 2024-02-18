@@ -28,11 +28,14 @@ class LocaleCode
 
     final public const EN_US = 'en_US';
 
+    final public const ES_ES = 'es_ES';
+
 
 
     final public const ALL = [
         self::DE_DE,
         self::EN_GB,
         self::EN_US,
+        self::ES_ES,
     ];
 }
