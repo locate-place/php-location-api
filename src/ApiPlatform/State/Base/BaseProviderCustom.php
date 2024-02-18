@@ -177,7 +177,7 @@ class BaseProviderCustom extends BaseResourceWrapperProvider
         $error = $resourceWrapper->getError();
 
         if (!is_null($error)) {
-            $resourceWrapperNew->setError($error);
+            $resourceWrapperNew->setError($error)->setValid(false);
         }
 
         return $resourceWrapperNew;
