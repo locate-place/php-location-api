@@ -25,9 +25,12 @@ use Doctrine\ORM\Mapping as ORM;
  * @since 0.1.0 (2023-08-27) First version.
  */
 #[ORM\Entity(repositoryClass: AlternateNameRepository::class)]
+#[ORM\Index(columns: ['location_id'])]
 #[ORM\Index(columns: ['alternate_name_id'])]
 #[ORM\Index(columns: ['iso_language'])]
 #[ORM\Index(columns: ['alternate_name'])]
+#[ORM\Index(columns: ['type'])]
+#[ORM\Index(columns: ['source'])]
 #[ORM\HasLifecycleCallbacks]
 class AlternateName
 {
@@ -62,6 +65,15 @@ class AlternateName
 
     #[ORM\Column]
     private ?int $alternateNameId = null;
+
+    #[ORM\Column(length: 14, nullable: true)]
+    private ?string $type = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $source = null;
+
+    #[ORM\Column]
+    private ?bool $changed = null;
 
     /**
      * @return int|null
@@ -219,6 +231,42 @@ class AlternateName
     public function setAlternateNameId(int $alternateNameId): static
     {
         $this->alternateNameId = $alternateNameId;
+
+        return $this;
+    }
+
+    public function getType(): ?string
+    {
+        return $this->type;
+    }
+
+    public function setType(?string $type): static
+    {
+        $this->type = $type;
+
+        return $this;
+    }
+
+    public function getSource(): ?string
+    {
+        return $this->source;
+    }
+
+    public function setSource(?string $source): static
+    {
+        $this->source = $source;
+
+        return $this;
+    }
+
+    public function isChanged(): ?bool
+    {
+        return $this->changed;
+    }
+
+    public function setChanged(bool $changed): static
+    {
+        $this->changed = $changed;
 
         return $this;
     }

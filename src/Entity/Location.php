@@ -38,11 +38,13 @@ use Symfony\Component\Serializer\Annotation\Ignore;
  * @since 0.1.0 (2023-06-27) First version.
  * @SuppressWarnings(PHPMD.TooManyFields)
  * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
+ * @SuppressWarnings(PHPMD.ExcessivePublicCount)
  */
 #[ORM\Entity(repositoryClass: LocationRepository::class)]
 #[ORM\Index(columns: ['coordinate'], flags: ['gist'])]
 #[ORM\Index(columns: ['geoname_id'])]
 #[ORM\Index(columns: ['name'])]
+#[ORM\Index(columns: ['source'])]
 #[ORM\HasLifecycleCallbacks]
 class Location
 {
@@ -108,10 +110,18 @@ class Location
     #[ORM\OneToMany(mappedBy: 'location', targetEntity: AlternateName::class, orphanRemoval: true)]
     private Collection $alternateNames;
 
+    /** @var Collection<int, Property> $properties */
+    #[ORM\OneToMany(mappedBy: 'location', targetEntity: Property::class, orphanRemoval: true)]
+    private Collection $properties;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $source = null;
+
     public function __construct()
     {
         $this->imports = new ArrayCollection();
         $this->alternateNames = new ArrayCollection();
+        $this->properties = new ArrayCollection();
     }
 
     /**
@@ -579,6 +589,44 @@ class Location
         return $this;
     }
 
+    /**
+     * @return Collection<int, Property>
+     */
+    public function getProperties(): Collection
+    {
+        return $this->properties;
+    }
+
+    /**
+     * @param Property $property
+     * @return $this
+     */
+    public function addProperty(Property $property): static
+    {
+        if (!$this->properties->contains($property)) {
+            $this->properties->add($property);
+            $property->setLocation($this);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param Property $property
+     * @return $this
+     */
+    public function removeProperty(Property $property): static
+    {
+        if ($this->properties->removeElement($property)) {
+            // set the owning side to null (unless already changed)
+            if ($property->getLocation() === $this) {
+                $property->setLocation(null);
+            }
+        }
+
+        return $this;
+    }
+
 
 
     /**
@@ -690,5 +738,17 @@ class Location
         $relevance -= intval(round(floatval($distanceMeter) * 0.01, 0));
 
         return $relevance;
+    }
+
+    public function getSource(): ?string
+    {
+        return $this->source;
+    }
+
+    public function setSource(?string $source): static
+    {
+        $this->source = $source;
+
+        return $this;
     }
 }

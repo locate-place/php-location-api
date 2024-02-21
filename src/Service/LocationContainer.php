@@ -14,6 +14,8 @@ declare(strict_types=1);
 namespace App\Service;
 
 use App\Entity\Location;
+use Ixnode\PhpException\Class\ClassInvalidException;
+use Ixnode\PhpException\Type\TypeInvalidException;
 
 /**
  * Class LocationContainer
@@ -290,6 +292,8 @@ final class LocationContainer
     /**
      * @param string $isoLanguage
      * @return string|null
+     * @throws ClassInvalidException
+     * @throws TypeInvalidException
      */
     public function getCountryName(string $isoLanguage): string|null
     {
@@ -304,18 +308,19 @@ final class LocationContainer
         return $this->locationServiceAlternateName->getNameByIsoLanguage($this->country, $isoLanguage);
     }
 
-
-
     /**
      * Returns the alternate name of the given location type and language.
      *
      * @param Location|null $location
      * @param string $isoLanguage
      * @param bool $useLocationName
+     * @param string|null $language
      * @return string|null
+     * @throws ClassInvalidException
+     * @throws TypeInvalidException
      * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
      */
-    public function getAlternateName(Location|null $location, string $isoLanguage, bool $useLocationName = false): string|null
+    public function getAlternateName(Location|null $location, string $isoLanguage, bool $useLocationName = false, string $language = null): string|null
     {
         if (is_null($location)) {
             return null;
@@ -325,6 +330,6 @@ final class LocationContainer
             return $useLocationName ? $location->getName() : null;
         }
 
-        return $this->locationServiceAlternateName->getNameByIsoLanguage($location, $isoLanguage);
+        return $this->locationServiceAlternateName->getNameByIsoLanguage($location, $isoLanguage, $language);
     }
 }

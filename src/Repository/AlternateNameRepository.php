@@ -13,13 +13,19 @@ declare(strict_types=1);
 
 namespace App\Repository;
 
+use App\Constants\Language\LanguageCode;
 use App\Entity\AlternateName;
 use App\Entity\Location;
+use App\Utils\Wikipedia\Wikipedia;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use Ixnode\PhpChecker\CheckerArray;
 use Ixnode\PhpException\Class\ClassInvalidException;
 use Ixnode\PhpException\Type\TypeInvalidException;
+use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 
 /**
  * Class AlternateNameRepository
@@ -78,11 +84,16 @@ class AlternateNameRepository extends ServiceEntityRepository
      *
      * @param Location $location
      * @param string $isoLanguage
+     * @param string|null $language
      * @return AlternateName|null
      * @throws ClassInvalidException
      * @throws TypeInvalidException
+     * @throws ClientExceptionInterface
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
      */
-    public function findOneByIsoLanguage(Location $location, string $isoLanguage): ?AlternateName
+    public function findOneByIsoLanguage(Location $location, string $isoLanguage, string $language = null): ?AlternateName
     {
         $alternateNames = $this->findByIsoLanguage($location, $isoLanguage);
 
@@ -90,6 +101,14 @@ class AlternateNameRepository extends ServiceEntityRepository
             return null;
         }
 
-        return $alternateNames[0];
+        if ($isoLanguage !== LanguageCode::LINK) {
+            return $alternateNames[0];
+        }
+
+        if (is_null($language)) {
+            return null;
+        }
+
+        return (new Wikipedia($alternateNames))->getWikipediaLink($language);
     }
 }

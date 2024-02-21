@@ -404,6 +404,7 @@ abstract class BaseLocationService extends BaseHelperLocationService
      * @throws FunctionReplaceException
      * @throws ParserException
      * @throws TypeInvalidException
+     * @throws ClassInvalidException
      */
     private function getDataTypeLinks(
         LocationEntity $locationEntity
@@ -411,7 +412,7 @@ abstract class BaseLocationService extends BaseHelperLocationService
     {
         $links = new Links();
 
-        $wikipediaLink = $this->locationContainer->getAlternateName($locationEntity, LanguageCode::LINK);
+        $wikipediaLink = $this->locationContainer->getAlternateName($locationEntity, LanguageCode::LINK, false, $this->getIsoLanguage());
         $isWikipediaLink = is_string($wikipediaLink) && str_starts_with($wikipediaLink, 'http');
 
         if ($isWikipediaLink) {
@@ -800,6 +801,7 @@ abstract class BaseLocationService extends BaseHelperLocationService
      * @throws JsonException
      * @throws ParserException
      * @throws TypeInvalidException
+     * @throws ClassInvalidException
      * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
      */
     private function getLocationBaseInformation(

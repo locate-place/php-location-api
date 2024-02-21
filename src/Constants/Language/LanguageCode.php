@@ -26,6 +26,8 @@ class LanguageCode
 
     final public const EN = 'en';
 
+    final public const ES = 'es';
+
     final public const ICAO = 'icao';
 
     final public const IATA = 'iata';

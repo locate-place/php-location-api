@@ -20,6 +20,7 @@ use App\Entity\Location;
 use App\Service\LocationServiceConfig;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\NonUniqueResultException;
+use Doctrine\ORM\NoResultException;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 use Ixnode\PhpApiVersionBundle\Utils\TypeCasting\TypeCastingHelper;
@@ -713,5 +714,82 @@ class LocationRepository extends ServiceEntityRepository
                 };
             }
         }
+    }
+
+    /**
+     * Finds locations with at least one iso_language == $isoLanguage.
+     *
+     * @param string $isoLanguage
+     * @param bool $typeMustBeNull
+     * @param int|null $id
+     * @param int|null $limit
+     * @return array<int, Location>
+     * @throws ClassInvalidException
+     * @throws TypeInvalidException
+     * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
+     */
+    public function findLocationsWithLinkIsoLanguage(
+        string $isoLanguage,
+        bool $typeMustBeNull = false,
+        int|null $id = null,
+        int|null $limit = null
+    ): array
+    {
+        $queryBuilder = $this->createQueryBuilder('l')
+            ->leftJoin('l.alternateNames', 'a')
+
+            ->where('a.isoLanguage = :isoLanguage')
+            ->setParameter('isoLanguage', $isoLanguage)
+        ;
+
+        if ($typeMustBeNull) {
+            $queryBuilder->andWhere('a.type IS NULL');
+        }
+
+        if (!is_null($id)) {
+            $queryBuilder
+                ->andWhere('l.id = :id')
+                ->setParameter('id', $id)
+            ;
+        }
+
+        if (!is_null($limit)) {
+            $queryBuilder->setMaxResults($limit);
+        }
+
+        return array_values(
+            (new CheckerArray($queryBuilder->getQuery()->getResult()))
+                ->checkClass(Location::class)
+        );
+    }
+
+    /**
+     * Returns the number of locations with given iso language.
+     *
+     * @param string $isoLanguage
+     * @return int
+     * @throws NonUniqueResultException
+     * @throws TypeInvalidException
+     * @throws NoResultException
+     */
+    public function getNumberOfLocationsIsoLanguage(string $isoLanguage): int
+    {
+        $queryBuilder = $this->createQueryBuilder('l');
+
+        $queryBuilder
+            ->select('COUNT(l)')
+            ->leftJoin('l.alternateNames', 'a')
+            ->where('a.isoLanguage = :isoLanguage')
+            ->setParameter('isoLanguage', $isoLanguage)
+            ->andWhere('a.type IS NULL')
+        ;
+
+        $count = $queryBuilder->getQuery()->getSingleScalarResult();
+
+        if (!is_int($count)) {
+            throw new TypeInvalidException('int', gettype($count));
+        }
+
+        return $count;
     }
 }

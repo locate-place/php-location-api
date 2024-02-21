@@ -14,7 +14,8 @@
         <properties>
             <property name="exceptions" description="Comma-separated class name list of exceptions" value="
                 \App\Utils\Performance\PerformanceLogger,
-                \App\Utils\Query\QueryParser
+                \App\Utils\Query\QueryParser,
+                \Symfony\Component\HttpClient\HttpClient
             " />
             <property name="ignorepattern" description="Ignore methods matching this regex. Example: /^create/i" value="" />
         </properties>
