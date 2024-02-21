@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Releases
 
+### [0.1.46] - 2024-02-22
+
+* Add wikipedia parser
+  * Adds english, german and spanish pages
+* Adds type, source and changed to alternate_name table
+* Adds source to location table
+* Adds new property table for other (new) location properties
+
 ### [0.1.45] - 2024-02-18
 
 * Activation of the Spanish language
