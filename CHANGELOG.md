@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Releases
 
+### [0.1.49] - 2024-02-23
+
+* Add more bad timezones
+
 ### [0.1.48] - 2024-02-22
 
 * Add other links to location
