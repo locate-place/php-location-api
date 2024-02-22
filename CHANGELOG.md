@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Releases
 
+### [0.1.48] - 2024-02-22
+
+* Add other links to location
+
 ### [0.1.47] - 2024-02-22
 
 * Search for next place or admin place if another place than A or P was given
