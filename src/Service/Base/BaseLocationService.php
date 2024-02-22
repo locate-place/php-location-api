@@ -933,10 +933,24 @@ abstract class BaseLocationService extends BaseHelperLocationService
             default => $locationEntity->getCoordinateIxnode(),
         };
 
-        $district = $isDistrictVisible ? $this->locationRepository->findDistrictByLocation($locationEntity, $coordinate) : null;
-        $borough = $isBoroughVisible? $this->locationRepository->findBoroughByLocation($locationEntity, $coordinate) : null;
-        $city = $isCityVisible ? $this->locationRepository->findCityByLocation($district ?: $locationEntity, $coordinate) : null;
-        $state = $this->locationRepository->findStateByLocation(($district ?: $city) ?: $locationEntity);
+        /* Find the next place if other feature class than A or P was found. */
+        $locationEntityPlace = match ($locationEntity->getFeatureClass()?->getClass()) {
+            FeatureClass::A, FeatureClass::P => $locationEntity,
+            default => $this->locationRepository->findNextLocationByCoordinate(
+                coordinate: $coordinate,
+                featureClasses: $this->locationServiceConfig->getLocationReferenceFeatureClass(),
+                featureCodes: $this->locationServiceConfig->getLocationReferenceFeatureCodes(),
+            ),
+        };
+
+        if (is_null($locationEntityPlace)) {
+            throw new LogicException('Unable to find next place for given location entity.');
+        }
+
+        $district = $isDistrictVisible ? $this->locationRepository->findDistrictByLocation($locationEntityPlace, $coordinate) : null;
+        $borough = $isBoroughVisible? $this->locationRepository->findBoroughByLocation($locationEntityPlace, $coordinate) : null;
+        $city = $isCityVisible ? $this->locationRepository->findCityByLocation($district ?: $locationEntityPlace, $coordinate) : null;
+        $state = $this->locationRepository->findStateByLocation(($district ?: $city) ?: $locationEntityPlace);
         $country = $this->locationRepository->findCountryByLocation($state);
 
         if (is_null($city) && !is_null($district)) {

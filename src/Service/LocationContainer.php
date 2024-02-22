@@ -16,6 +16,10 @@ namespace App\Service;
 use App\Entity\Location;
 use Ixnode\PhpException\Class\ClassInvalidException;
 use Ixnode\PhpException\Type\TypeInvalidException;
+use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 
 /**
  * Class LocationContainer
@@ -106,8 +110,16 @@ final class LocationContainer
     }
 
     /**
+     * Returns the district name.
+     *
      * @param string $isoLanguage
      * @return string|null
+     * @throws ClassInvalidException
+     * @throws TypeInvalidException
+     * @throws ClientExceptionInterface
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
      */
     public function getDistrictName(string $isoLanguage): string|null
     {
@@ -152,8 +164,16 @@ final class LocationContainer
     }
 
     /**
+     * Returns the borough name.
+     *
      * @param string $isoLanguage
      * @return string|null
+     * @throws ClassInvalidException
+     * @throws ClientExceptionInterface
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
+     * @throws TypeInvalidException
      */
     public function getBoroughName(string $isoLanguage): string|null
     {
@@ -198,8 +218,16 @@ final class LocationContainer
     }
 
     /**
+     * Returns the city name.
+     *
      * @param string $isoLanguage
      * @return string|null
+     * @throws ClassInvalidException
+     * @throws ClientExceptionInterface
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
+     * @throws TypeInvalidException
      */
     public function getCityName(string $isoLanguage): string|null
     {
