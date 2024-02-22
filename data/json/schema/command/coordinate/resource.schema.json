@@ -534,6 +534,13 @@
                         "openstreetmap"
                     ],
                     "additionalProperties": false
+                },
+                "other": {
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "pattern": "^https?://.*$"
+                    }
                 }
             },
             "required": [

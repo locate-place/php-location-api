@@ -1,22 +1,22 @@
 {
     "$schema": "resource.schema.json",
     "data": {
-        "geoname-id": 6295497,
-        "name": "Zürich (Kreis 3) / Friesenberg",
-        "name-full": "Zürich (Kreis 3) / Friesenberg, Zürich, Zürich, Schweiz",
-        "updated-at": "2023-08-21T23:08:34+00:00",
+        "geoname-id": 6545310,
+        "name": "Mitte",
+        "name-full": "Mitte, Berlin, Berlin, Deutschland",
+        "updated-at": "2023-08-21T19:01:01+00:00",
         "properties": {
             "population": {
-                "value": 9909,
+                "value": 102338,
                 "unit": "#",
-                "value-formatted": "9.909"
+                "value-formatted": "102.338"
             },
             "elevation": {
-                "value": 465,
+                "value": 48,
                 "unit": "m",
-                "value-formatted": "465 m"
+                "value-formatted": "48 m"
             },
-            "country": "CH"
+            "country": "DE"
         },
         "feature": {
             "code": "PPLX",
@@ -26,65 +26,82 @@
         },
         "coordinate": {
             "latitude": {
-                "decimal": 47.36372,
-                "dms": "47°21′49.392″N"
+                "decimal": 52.52003,
+                "dms": "52°31′12.108″N"
             },
             "longitude": {
-                "decimal": 8.50417,
-                "dms": "8°30′15.012″E"
+                "decimal": 13.40489,
+                "dms": "13°24′17.604″E"
             },
-            "srid": 4326
+            "srid": 4326,
+            "distance": {
+                "meters": {
+                    "value": 337.8,
+                    "unit": "m",
+                    "value-formatted": "337,8 m"
+                },
+                "kilometers": {
+                    "value": 0.338,
+                    "unit": "km",
+                    "value-formatted": "0,338 km"
+                }
+            },
+            "direction": {
+                "degree": -97.17,
+                "cardinal-direction": "W",
+                "cardinal-direction-translated": "West"
+            }
         },
         "timezone": {
-            "timezone": "Europe/Zurich",
-            "country": "CH",
+            "timezone": "Europe/Berlin",
+            "country": "DE",
             "current-time": {
-                "timezone": "2024-01-18T22:58:57+01:00",
-                "utc": "2024-01-18T21:58:57+00:00"
+                "timezone": "2024-02-22T23:07:34+01:00",
+                "utc": "2024-02-22T22:07:34+00:00"
             },
             "offset": "+01:00",
             "coordinate": {
                 "latitude": {
-                    "decimal": 47.38333,
-                    "dms": "47°22′59.988″N"
+                    "decimal": 52.5,
+                    "dms": "52°30′0″N"
                 },
                 "longitude": {
-                    "decimal": 8.53333,
-                    "dms": "8°31′59.988″E"
+                    "decimal": 13.36666,
+                    "dms": "13°21′59.976″E"
                 },
                 "srid": 4326,
                 "distance": {
                     "meters": {
-                        "value": 3119.4,
+                        "value": 3712.8,
                         "unit": "m",
-                        "value-formatted": "3.119,4 m"
+                        "value-formatted": "3.712,8 m"
                     },
                     "kilometers": {
-                        "value": 3.119,
+                        "value": 3.713,
                         "unit": "km",
-                        "value-formatted": "3,119 km"
+                        "value-formatted": "3,713 km"
                     }
                 },
                 "direction": {
-                    "degree": 63.44,
-                    "cardinal-direction": "NE",
-                    "cardinal-direction-translated": "North-East"
+                    "degree": -115.58,
+                    "cardinal-direction": "SW",
+                    "cardinal-direction-translated": "South-West"
                 }
             }
         },
         "links": {
-            "wikipedia": {
-                "this": "https://en.wikipedia.org/wiki/Friesenberg",
-                "locations": {
-                    "district-locality": "https://en.wikipedia.org/wiki/Friesenberg",
-                    "city-municipality": "https://en.wikipedia.org/wiki/Z%C3%BCrich",
-                    "state": "https://en.wikipedia.org/wiki/Canton_of_Zurich",
-                    "country": "https://en.wikipedia.org/wiki/Switzerland"
-                }
-            },
             "maps": {
-                "google": "https://www.google.de/maps/place/47.363720+8.504170",
-                "openstreetmap": "https://www.openstreetmap.org/?lat=47.363720&lon=8.504170&mlat=47.363720&mlon=8.504170&zoom=14&layers=M"
+                "google": "https://www.google.de/maps/place/52.520030+13.404890",
+                "openstreetmap": "https://www.openstreetmap.org/?lat=52.520030&lon=13.404890&mlat=52.520030&mlon=13.404890&zoom=14&layers=M"
+            },
+            "wikipedia": {
+                "this": "https://de.wikipedia.org/wiki/Berlin-Mitte",
+                "locations": {
+                    "district-locality": "https://de.wikipedia.org/wiki/Berlin-Mitte",
+                    "city-municipality": "https://de.wikipedia.org/wiki/Berlin",
+                    "state": "https://de.wikipedia.org/wiki/Berlin",
+                    "country": "https://de.wikipedia.org/wiki/Deutschland"
+                }
             }
         },
         "next-places-config": {
@@ -115,12 +132,35 @@
                         "AIRP"
                     ]
                 },
+                "stations": {
+                    "distance": 20000,
+                    "limit": 10,
+                    "name": "stations",
+                    "feature_codes": [
+                        "BUSTN",
+                        "BUSTP",
+                        "MTRO",
+                        "RSTN",
+                        "RSTP"
+                    ]
+                },
                 "cinemas": {
                     "distance": 100000,
                     "limit": 10,
                     "name": "cinemas",
                     "feature_codes": [
                         "THTR"
+                    ]
+                },
+                "beaches": {
+                    "distance": 100000,
+                    "limit": 10,
+                    "name": "beaches",
+                    "feature_codes": [
+                        "BCH",
+                        "BCHS",
+                        "RDGB",
+                        "SHOR"
                     ]
                 },
                 "churches": {
@@ -140,6 +180,34 @@
                         "LKS",
                         "STM"
                     ]
+                },
+                "hotels": {
+                    "distance": 100000,
+                    "limit": 10,
+                    "name": "hotels",
+                    "feature_codes": [
+                        "HTL"
+                    ]
+                },
+                "hospitals": {
+                    "distance": 50000,
+                    "limit": 10,
+                    "name": "hospitals",
+                    "feature_codes": [
+                        "HSP",
+                        "HSPC",
+                        "HSPD"
+                    ]
+                },
+                "mountains": {
+                    "distance": 50000,
+                    "limit": 10,
+                    "name": "mountains, hills",
+                    "feature_codes": [
+                        "HLL",
+                        "MT",
+                        "PK"
+                    ]
                 }
             },
             "endpoints": {
@@ -149,19 +217,36 @@
         },
         "locations": {
             "district-locality": {
-                "geoname-id": 6295497,
-                "name": "Zürich (Kreis 3) / Friesenberg",
-                "updated-at": "2023-08-21T23:08:34+00:00",
+                "geoname-id": 6545310,
+                "name": "Mitte",
+                "updated-at": "2023-08-21T19:01:01+00:00",
                 "coordinate": {
                     "latitude": {
-                        "decimal": 47.36372,
-                        "dms": "47°21′49.392″N"
+                        "decimal": 52.52003,
+                        "dms": "52°31′12.108″N"
                     },
                     "longitude": {
-                        "decimal": 8.50417,
-                        "dms": "8°30′15.012″E"
+                        "decimal": 13.40489,
+                        "dms": "13°24′17.604″E"
                     },
-                    "srid": 4326
+                    "srid": 4326,
+                    "distance": {
+                        "meters": {
+                            "value": 337.8,
+                            "unit": "m",
+                            "value-formatted": "337,8 m"
+                        },
+                        "kilometers": {
+                            "value": 0.338,
+                            "unit": "km",
+                            "value-formatted": "0,338 km"
+                        }
+                    },
+                    "direction": {
+                        "degree": -97.17,
+                        "cardinal-direction": "W",
+                        "cardinal-direction-translated": "West"
+                    }
                 },
                 "feature": {
                     "code": "PPLX",
@@ -170,26 +255,26 @@
                     "class-name": "Städte, Dörfer, etc."
                 },
                 "links": {
-                    "wikipedia": {
-                        "this": "https://en.wikipedia.org/wiki/Friesenberg"
-                    },
                     "maps": {
-                        "google": "https://www.google.de/maps/place/47.363720+8.504170",
-                        "openstreetmap": "https://www.openstreetmap.org/?lat=47.363720&lon=8.504170&mlat=47.363720&mlon=8.504170&zoom=14&layers=M"
+                        "google": "https://www.google.de/maps/place/52.520030+13.404890",
+                        "openstreetmap": "https://www.openstreetmap.org/?lat=52.520030&lon=13.404890&mlat=52.520030&mlon=13.404890&zoom=14&layers=M"
+                    },
+                    "wikipedia": {
+                        "this": "https://de.wikipedia.org/wiki/Berlin-Mitte"
                     }
                 },
                 "properties": {
                     "population": {
-                        "value": 9909,
+                        "value": 102338,
                         "unit": "#",
-                        "value-formatted": "9.909"
+                        "value-formatted": "102.338"
                     },
                     "elevation": {
-                        "value": 465,
+                        "value": 48,
                         "unit": "m",
-                        "value-formatted": "465 m"
+                        "value-formatted": "48 m"
                     },
-                    "country": "CH"
+                    "country": "DE"
                 },
                 "next-places-config": {
                     "config": {
@@ -219,12 +304,35 @@
                                 "AIRP"
                             ]
                         },
+                        "stations": {
+                            "distance": 20000,
+                            "limit": 10,
+                            "name": "stations",
+                            "feature_codes": [
+                                "BUSTN",
+                                "BUSTP",
+                                "MTRO",
+                                "RSTN",
+                                "RSTP"
+                            ]
+                        },
                         "cinemas": {
                             "distance": 100000,
                             "limit": 10,
                             "name": "cinemas",
                             "feature_codes": [
                                 "THTR"
+                            ]
+                        },
+                        "beaches": {
+                            "distance": 100000,
+                            "limit": 10,
+                            "name": "beaches",
+                            "feature_codes": [
+                                "BCH",
+                                "BCHS",
+                                "RDGB",
+                                "SHOR"
                             ]
                         },
                         "churches": {
@@ -243,6 +351,34 @@
                                 "LK",
                                 "LKS",
                                 "STM"
+                            ]
+                        },
+                        "hotels": {
+                            "distance": 100000,
+                            "limit": 10,
+                            "name": "hotels",
+                            "feature_codes": [
+                                "HTL"
+                            ]
+                        },
+                        "hospitals": {
+                            "distance": 50000,
+                            "limit": 10,
+                            "name": "hospitals",
+                            "feature_codes": [
+                                "HSP",
+                                "HSPC",
+                                "HSPD"
+                            ]
+                        },
+                        "mountains": {
+                            "distance": 50000,
+                            "limit": 10,
+                            "name": "mountains, hills",
+                            "feature_codes": [
+                                "HLL",
+                                "MT",
+                                "PK"
                             ]
                         }
                     },
@@ -253,47 +389,64 @@
                 }
             },
             "city-municipality": {
-                "geoname-id": 2657896,
-                "name": "Zürich",
-                "updated-at": "2023-08-21T23:08:27+00:00",
+                "geoname-id": 2950159,
+                "name": "Berlin",
+                "updated-at": "2023-08-21T19:00:23+00:00",
                 "coordinate": {
                     "latitude": {
-                        "decimal": 47.36667,
-                        "dms": "47°22′0.012″N"
+                        "decimal": 52.52437,
+                        "dms": "52°31′27.732″N"
                     },
                     "longitude": {
-                        "decimal": 8.55,
-                        "dms": "8°33′0″E"
+                        "decimal": 13.41053,
+                        "dms": "13°24′37.908″E"
                     },
-                    "srid": 4326
+                    "srid": 4326,
+                    "distance": {
+                        "meters": {
+                            "value": 417.3,
+                            "unit": "m",
+                            "value-formatted": "417,3 m"
+                        },
+                        "kilometers": {
+                            "value": 0.417,
+                            "unit": "km",
+                            "value-formatted": "0,417 km"
+                        }
+                    },
+                    "direction": {
+                        "degree": 11.4,
+                        "cardinal-direction": "N",
+                        "cardinal-direction-translated": "North"
+                    }
                 },
                 "feature": {
-                    "code": "PPLA",
-                    "code-name": "Sitz einer Verwaltungseinheit erster Ordnung",
+                    "code": "PPLC",
+                    "code-name": "Hauptstadt einer politischen Einheit",
                     "class": "P",
                     "class-name": "Städte, Dörfer, etc."
                 },
                 "links": {
-                    "wikipedia": {
-                        "this": "https://en.wikipedia.org/wiki/Z%C3%BCrich"
-                    },
                     "maps": {
-                        "google": "https://www.google.de/maps/place/47.366670+8.550000",
-                        "openstreetmap": "https://www.openstreetmap.org/?lat=47.366670&lon=8.550000&mlat=47.366670&mlon=8.550000&zoom=14&layers=M"
+                        "google": "https://www.google.de/maps/place/52.524370+13.410530",
+                        "openstreetmap": "https://www.openstreetmap.org/?lat=52.524370&lon=13.410530&mlat=52.524370&mlon=13.410530&zoom=14&layers=M"
+                    },
+                    "wikipedia": {
+                        "this": "https://de.wikipedia.org/wiki/Berlin"
                     }
                 },
                 "properties": {
                     "population": {
-                        "value": 341730,
+                        "value": 3426354,
                         "unit": "#",
-                        "value-formatted": "341.730"
+                        "value-formatted": "3.426.354"
                     },
                     "elevation": {
-                        "value": 429,
+                        "value": 43,
                         "unit": "m",
-                        "value-formatted": "429 m"
+                        "value-formatted": "43 m"
                     },
-                    "country": "CH"
+                    "country": "DE"
                 },
                 "next-places-config": {
                     "config": {
@@ -323,12 +476,35 @@
                                 "AIRP"
                             ]
                         },
+                        "stations": {
+                            "distance": 20000,
+                            "limit": 10,
+                            "name": "stations",
+                            "feature_codes": [
+                                "BUSTN",
+                                "BUSTP",
+                                "MTRO",
+                                "RSTN",
+                                "RSTP"
+                            ]
+                        },
                         "cinemas": {
                             "distance": 100000,
                             "limit": 10,
                             "name": "cinemas",
                             "feature_codes": [
                                 "THTR"
+                            ]
+                        },
+                        "beaches": {
+                            "distance": 100000,
+                            "limit": 10,
+                            "name": "beaches",
+                            "feature_codes": [
+                                "BCH",
+                                "BCHS",
+                                "RDGB",
+                                "SHOR"
                             ]
                         },
                         "churches": {
@@ -347,6 +523,34 @@
                                 "LK",
                                 "LKS",
                                 "STM"
+                            ]
+                        },
+                        "hotels": {
+                            "distance": 100000,
+                            "limit": 10,
+                            "name": "hotels",
+                            "feature_codes": [
+                                "HTL"
+                            ]
+                        },
+                        "hospitals": {
+                            "distance": 50000,
+                            "limit": 10,
+                            "name": "hospitals",
+                            "feature_codes": [
+                                "HSP",
+                                "HSPC",
+                                "HSPD"
+                            ]
+                        },
+                        "mountains": {
+                            "distance": 50000,
+                            "limit": 10,
+                            "name": "mountains, hills",
+                            "feature_codes": [
+                                "HLL",
+                                "MT",
+                                "PK"
                             ]
                         }
                     },
@@ -357,19 +561,36 @@
                 }
             },
             "state": {
-                "geoname-id": 2657895,
-                "name": "Zürich",
-                "updated-at": "2023-08-21T23:08:27+00:00",
+                "geoname-id": 2950157,
+                "name": "Berlin",
+                "updated-at": "2023-08-21T19:00:23+00:00",
                 "coordinate": {
                     "latitude": {
-                        "decimal": 47.41667,
-                        "dms": "47°25′0.012″N"
+                        "decimal": 52.5,
+                        "dms": "52°30′0″N"
                     },
                     "longitude": {
-                        "decimal": 8.66667,
-                        "dms": "8°40′0.012″E"
+                        "decimal": 13.41667,
+                        "dms": "13°25′0.012″E"
                     },
-                    "srid": 4326
+                    "srid": 4326,
+                    "distance": {
+                        "meters": {
+                            "value": 2342.5,
+                            "unit": "m",
+                            "value-formatted": "2.342,5 m"
+                        },
+                        "kilometers": {
+                            "value": 2.343,
+                            "unit": "km",
+                            "value-formatted": "2,343 km"
+                        }
+                    },
+                    "direction": {
+                        "degree": 161.54,
+                        "cardinal-direction": "S",
+                        "cardinal-direction-translated": "South"
+                    }
                 },
                 "feature": {
                     "code": "ADM1",
@@ -378,26 +599,26 @@
                     "class-name": "Länder, Bundesländer, Regionen, etc."
                 },
                 "links": {
-                    "wikipedia": {
-                        "this": "https://en.wikipedia.org/wiki/Canton_of_Zurich"
-                    },
                     "maps": {
-                        "google": "https://www.google.de/maps/place/47.416670+8.666670",
-                        "openstreetmap": "https://www.openstreetmap.org/?lat=47.416670&lon=8.666670&mlat=47.416670&mlon=8.666670&zoom=14&layers=M"
+                        "google": "https://www.google.de/maps/place/52.500000+13.416670",
+                        "openstreetmap": "https://www.openstreetmap.org/?lat=52.500000&lon=13.416670&mlat=52.500000&mlon=13.416670&zoom=14&layers=M"
+                    },
+                    "wikipedia": {
+                        "this": "https://de.wikipedia.org/wiki/Berlin"
                     }
                 },
                 "properties": {
                     "population": {
-                        "value": 1553423,
+                        "value": 3677472,
                         "unit": "#",
-                        "value-formatted": "1.553.423"
+                        "value-formatted": "3.677.472"
                     },
                     "elevation": {
-                        "value": 526,
+                        "value": 39,
                         "unit": "m",
-                        "value-formatted": "526 m"
+                        "value-formatted": "39 m"
                     },
-                    "country": "CH"
+                    "country": "DE"
                 },
                 "next-places-config": {
                     "config": {
@@ -427,12 +648,35 @@
                                 "AIRP"
                             ]
                         },
+                        "stations": {
+                            "distance": 20000,
+                            "limit": 10,
+                            "name": "stations",
+                            "feature_codes": [
+                                "BUSTN",
+                                "BUSTP",
+                                "MTRO",
+                                "RSTN",
+                                "RSTP"
+                            ]
+                        },
                         "cinemas": {
                             "distance": 100000,
                             "limit": 10,
                             "name": "cinemas",
                             "feature_codes": [
                                 "THTR"
+                            ]
+                        },
+                        "beaches": {
+                            "distance": 100000,
+                            "limit": 10,
+                            "name": "beaches",
+                            "feature_codes": [
+                                "BCH",
+                                "BCHS",
+                                "RDGB",
+                                "SHOR"
                             ]
                         },
                         "churches": {
@@ -451,6 +695,34 @@
                                 "LK",
                                 "LKS",
                                 "STM"
+                            ]
+                        },
+                        "hotels": {
+                            "distance": 100000,
+                            "limit": 10,
+                            "name": "hotels",
+                            "feature_codes": [
+                                "HTL"
+                            ]
+                        },
+                        "hospitals": {
+                            "distance": 50000,
+                            "limit": 10,
+                            "name": "hospitals",
+                            "feature_codes": [
+                                "HSP",
+                                "HSPC",
+                                "HSPD"
+                            ]
+                        },
+                        "mountains": {
+                            "distance": 50000,
+                            "limit": 10,
+                            "name": "mountains, hills",
+                            "feature_codes": [
+                                "HLL",
+                                "MT",
+                                "PK"
                             ]
                         }
                     },
@@ -461,19 +733,36 @@
                 }
             },
             "country": {
-                "geoname-id": 2658434,
-                "name": "Schweiz",
-                "updated-at": "2023-08-21T23:08:27+00:00",
+                "geoname-id": 2921044,
+                "name": "Deutschland",
+                "updated-at": "2023-08-21T18:59:25+00:00",
                 "coordinate": {
                     "latitude": {
-                        "decimal": 47.00016,
-                        "dms": "47°0′0.576″N"
+                        "decimal": 51.5,
+                        "dms": "51°30′0″N"
                     },
                     "longitude": {
-                        "decimal": 8.01427,
-                        "dms": "8°0′51.372″E"
+                        "decimal": 10.5,
+                        "dms": "10°30′0″E"
                     },
-                    "srid": 4326
+                    "srid": 4326,
+                    "distance": {
+                        "meters": {
+                            "value": 229195.3,
+                            "unit": "m",
+                            "value-formatted": "229.195,3 m"
+                        },
+                        "kilometers": {
+                            "value": 229.195,
+                            "unit": "km",
+                            "value-formatted": "229,195 km"
+                        }
+                    },
+                    "direction": {
+                        "degree": -109.33,
+                        "cardinal-direction": "W",
+                        "cardinal-direction-translated": "West"
+                    }
                 },
                 "feature": {
                     "code": "PCLI",
@@ -482,26 +771,29 @@
                     "class-name": "Länder, Bundesländer, Regionen, etc."
                 },
                 "links": {
-                    "wikipedia": {
-                        "this": "https://en.wikipedia.org/wiki/Switzerland"
-                    },
                     "maps": {
-                        "google": "https://www.google.de/maps/place/47.000160+8.014270",
-                        "openstreetmap": "https://www.openstreetmap.org/?lat=47.000160&lon=8.014270&mlat=47.000160&mlon=8.014270&zoom=14&layers=M"
-                    }
+                        "google": "https://www.google.de/maps/place/51.500000+10.500000",
+                        "openstreetmap": "https://www.openstreetmap.org/?lat=51.500000&lon=10.500000&mlat=51.500000&mlon=10.500000&zoom=14&layers=M"
+                    },
+                    "wikipedia": {
+                        "this": "https://de.wikipedia.org/wiki/Deutschland"
+                    },
+                    "other": [
+                        "http://id.loc.gov/authorities/names/n80125931"
+                    ]
                 },
                 "properties": {
                     "population": {
-                        "value": 8516543,
+                        "value": 82927922,
                         "unit": "#",
-                        "value-formatted": "8.516.543"
+                        "value-formatted": "82.927.922"
                     },
                     "elevation": {
-                        "value": 931,
+                        "value": 303,
                         "unit": "m",
-                        "value-formatted": "931 m"
+                        "value-formatted": "303 m"
                     },
-                    "country": "CH"
+                    "country": "DE"
                 },
                 "next-places-config": {
                     "config": {
@@ -531,12 +823,35 @@
                                 "AIRP"
                             ]
                         },
+                        "stations": {
+                            "distance": 20000,
+                            "limit": 10,
+                            "name": "stations",
+                            "feature_codes": [
+                                "BUSTN",
+                                "BUSTP",
+                                "MTRO",
+                                "RSTN",
+                                "RSTP"
+                            ]
+                        },
                         "cinemas": {
                             "distance": 100000,
                             "limit": 10,
                             "name": "cinemas",
                             "feature_codes": [
                                 "THTR"
+                            ]
+                        },
+                        "beaches": {
+                            "distance": 100000,
+                            "limit": 10,
+                            "name": "beaches",
+                            "feature_codes": [
+                                "BCH",
+                                "BCHS",
+                                "RDGB",
+                                "SHOR"
                             ]
                         },
                         "churches": {
@@ -555,6 +870,34 @@
                                 "LK",
                                 "LKS",
                                 "STM"
+                            ]
+                        },
+                        "hotels": {
+                            "distance": 100000,
+                            "limit": 10,
+                            "name": "hotels",
+                            "feature_codes": [
+                                "HTL"
+                            ]
+                        },
+                        "hospitals": {
+                            "distance": 50000,
+                            "limit": 10,
+                            "name": "hospitals",
+                            "feature_codes": [
+                                "HSP",
+                                "HSPC",
+                                "HSPD"
+                            ]
+                        },
+                        "mountains": {
+                            "distance": 50000,
+                            "limit": 10,
+                            "name": "mountains, hills",
+                            "feature_codes": [
+                                "HLL",
+                                "MT",
+                                "PK"
                             ]
                         }
                     },
@@ -568,15 +911,15 @@
     },
     "given": {
         "coordinate": {
-            "raw": "47.36667 8.5",
+            "raw": "52.520645 13.409779",
             "parsed": {
                 "latitude": {
-                    "decimal": 47.36667,
-                    "dms": "47°22′0.012″N"
+                    "decimal": 52.520645,
+                    "dms": "52°31′14.322″N"
                 },
                 "longitude": {
-                    "decimal": 8.5,
-                    "dms": "8°30′0″E"
+                    "decimal": 13.409779,
+                    "dms": "13°24′35.2044″E"
                 }
             }
         },
@@ -587,9 +930,9 @@
             }
         }
     },
-    "time-taken": "860 ms",
-    "memory-taken": "55 MB",
-    "version": "0.1.31",
+    "time-taken": "137 ms",
+    "memory-taken": "58 MB",
+    "version": "0.1.47",
     "data-licence": {
         "full": "Creative Commons Attribution 4.0 License",
         "short": "CC-BY 4.0",

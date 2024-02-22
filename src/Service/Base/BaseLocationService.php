@@ -31,9 +31,11 @@ use App\DataTypes\NextPlacesConfig;
 use App\DataTypes\Properties;
 use App\DataTypes\Timezone;
 use App\DBAL\GeoLocation\ValueObject\Point;
+use App\Entity\AlternateName;
 use App\Entity\Location as LocationEntity;
 use App\Service\Base\Helper\BaseHelperLocationService;
 use App\Service\LocationContainer;
+use App\Utils\Wikipedia\Wikipedia;
 use DateTime;
 use DateTimeImmutable;
 use DateTimeZone;
@@ -53,6 +55,10 @@ use Ixnode\PhpNamingConventions\Exception\FunctionReplaceException;
 use JsonException;
 use LogicException;
 use NumberFormatter;
+use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 
 /**
  * Class BaseLocationService
@@ -62,12 +68,15 @@ use NumberFormatter;
  * @since 0.1.0 (2023-07-31) First version.
  * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
  * @SuppressWarnings(PHPMD.ExcessiveClassLength)
+ * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  */
 abstract class BaseLocationService extends BaseHelperLocationService
 {
     private const DEFAULT_DISTANCE_METER = 100_000;
 
     private const DEFAULT_LIMIT = 100;
+
+    private const ZERO_RESULT = 0;
 
     /**
      * Returns a Location entity.
@@ -80,6 +89,7 @@ abstract class BaseLocationService extends BaseHelperLocationService
      * @throws CaseInvalidException
      * @throws CaseUnsupportedException
      * @throws ClassInvalidException
+     * @throws ClientExceptionInterface
      * @throws FileNotFoundException
      * @throws FileNotReadableException
      * @throws FunctionJsonEncodeException
@@ -87,6 +97,9 @@ abstract class BaseLocationService extends BaseHelperLocationService
      * @throws JsonException
      * @throws NonUniqueResultException
      * @throws ParserException
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
      * @throws TypeInvalidException
      * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
      */
@@ -143,6 +156,7 @@ abstract class BaseLocationService extends BaseHelperLocationService
      * @throws CaseInvalidException
      * @throws CaseUnsupportedException
      * @throws ClassInvalidException
+     * @throws ClientExceptionInterface
      * @throws FileNotFoundException
      * @throws FileNotReadableException
      * @throws FunctionJsonEncodeException
@@ -150,6 +164,9 @@ abstract class BaseLocationService extends BaseHelperLocationService
      * @throws JsonException
      * @throws NonUniqueResultException
      * @throws ParserException
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
      * @throws TypeInvalidException
      */
     protected function getLocationResourceFull(LocationEntity $locationEntity): LocationResource
@@ -204,12 +221,16 @@ abstract class BaseLocationService extends BaseHelperLocationService
      * @throws CaseInvalidException
      * @throws CaseUnsupportedException
      * @throws ClassInvalidException
+     * @throws ClientExceptionInterface
      * @throws FileNotFoundException
      * @throws FileNotReadableException
      * @throws FunctionJsonEncodeException
      * @throws FunctionReplaceException
      * @throws JsonException
      * @throws ParserException
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
      * @throws TypeInvalidException
      */
     private function getPlacesFromFeatureClass(
@@ -401,10 +422,14 @@ abstract class BaseLocationService extends BaseHelperLocationService
      * @param LocationEntity $locationEntity
      * @return Links
      * @throws CaseUnsupportedException
+     * @throws ClassInvalidException
      * @throws FunctionReplaceException
      * @throws ParserException
      * @throws TypeInvalidException
-     * @throws ClassInvalidException
+     * @throws ClientExceptionInterface
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
      */
     private function getDataTypeLinks(
         LocationEntity $locationEntity
@@ -412,17 +437,34 @@ abstract class BaseLocationService extends BaseHelperLocationService
     {
         $links = new Links();
 
-        $wikipediaLink = $this->locationContainer->getAlternateName($locationEntity, LanguageCode::LINK, false, $this->getIsoLanguage());
-        $isWikipediaLink = is_string($wikipediaLink) && str_starts_with($wikipediaLink, 'http');
-
-        if ($isWikipediaLink) {
-            $links->addValue(Path::WIKIPEDIA_THIS, $wikipediaLink);
-        }
-
+        /* Add google maps and open street map link. */
         $coordinateEntity = $locationEntity->getCoordinateIxnode();
 
         $links->addValue([KeyArray::MAPS, KeyArray::GOOGLE], $coordinateEntity->getLinkGoogle());
         $links->addValue([KeyArray::MAPS, KeyArray::OPENSTREETMAP], $coordinateEntity->getLinkOpenStreetMap());
+
+
+
+        /* Add alternate name links. */
+        $alternateNames = $this->alternateNameRepository->findByIsoLanguage($locationEntity, LanguageCode::LINK);
+        if (count($alternateNames) <= self::ZERO_RESULT) {
+            return $links;
+        }
+
+        $wikipedia = new Wikipedia($alternateNames);
+
+        /* Add wikipedia link. */
+        $alternateNameWikipediaLink = $wikipedia->getWikipediaLink($this->getIsoLanguage());
+        if ($alternateNameWikipediaLink instanceof AlternateName) {
+            $links->addValue(Path::WIKIPEDIA_THIS, $alternateNameWikipediaLink->getAlternateName());
+        }
+
+        /* Add other links. */
+        $otherLinks = array_map(fn(AlternateName $alternateName) => $alternateName->getAlternateName(), $wikipedia->getAlternateNamesOther());
+
+        if (count($otherLinks) > self::ZERO_RESULT) {
+            $links->addValue(KeyArray::OTHER, $otherLinks);
+        }
 
         return $links;
     }
@@ -434,12 +476,17 @@ abstract class BaseLocationService extends BaseHelperLocationService
      * @throws ArrayKeyNotFoundException
      * @throws CaseInvalidException
      * @throws CaseUnsupportedException
+     * @throws ClassInvalidException
+     * @throws ClientExceptionInterface
      * @throws FileNotFoundException
      * @throws FileNotReadableException
      * @throws FunctionJsonEncodeException
      * @throws FunctionReplaceException
      * @throws JsonException
      * @throws ParserException
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
      * @throws TypeInvalidException
      */
     private function getDataTypeLocations(): Locations
@@ -472,12 +519,16 @@ abstract class BaseLocationService extends BaseHelperLocationService
      * @throws CaseInvalidException
      * @throws CaseUnsupportedException
      * @throws ClassInvalidException
+     * @throws ClientExceptionInterface
      * @throws FileNotFoundException
      * @throws FileNotReadableException
      * @throws FunctionJsonEncodeException
      * @throws FunctionReplaceException
      * @throws JsonException
      * @throws ParserException
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
      * @throws TypeInvalidException
      */
     private function getDataTypeNextPlaces(LocationEntity $locationEntity): NextPlaces
@@ -657,12 +708,17 @@ abstract class BaseLocationService extends BaseHelperLocationService
      * @throws ArrayKeyNotFoundException
      * @throws CaseInvalidException
      * @throws CaseUnsupportedException
+     * @throws ClassInvalidException
+     * @throws ClientExceptionInterface
      * @throws FileNotFoundException
      * @throws FileNotReadableException
      * @throws FunctionJsonEncodeException
      * @throws FunctionReplaceException
      * @throws JsonException
      * @throws ParserException
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
      * @throws TypeInvalidException
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      * @SuppressWarnings(PHPMD.NPathComplexity)
@@ -721,12 +777,16 @@ abstract class BaseLocationService extends BaseHelperLocationService
      * @throws CaseInvalidException
      * @throws CaseUnsupportedException
      * @throws ClassInvalidException
+     * @throws ClientExceptionInterface
      * @throws FileNotFoundException
      * @throws FileNotReadableException
      * @throws FunctionJsonEncodeException
      * @throws FunctionReplaceException
      * @throws JsonException
      * @throws ParserException
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
      * @throws TypeInvalidException
      */
     public function addDataToNextPlaces(
@@ -794,14 +854,18 @@ abstract class BaseLocationService extends BaseHelperLocationService
      * @throws ArrayKeyNotFoundException
      * @throws CaseInvalidException
      * @throws CaseUnsupportedException
+     * @throws ClassInvalidException
+     * @throws ClientExceptionInterface
      * @throws FileNotFoundException
      * @throws FileNotReadableException
      * @throws FunctionJsonEncodeException
      * @throws FunctionReplaceException
      * @throws JsonException
      * @throws ParserException
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
      * @throws TypeInvalidException
-     * @throws ClassInvalidException
      * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
      */
     private function getLocationBaseInformation(

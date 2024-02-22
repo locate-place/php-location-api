@@ -162,6 +162,8 @@ class KeyArray
 
     final public const NEXT_PLACES_CONFIG = 'next-places-config';
 
+    final public const OTHER = 'other';
+
     final public const NUMBER = 'number';
 
     final public const OFFSET = 'offset';

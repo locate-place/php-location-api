@@ -318,9 +318,15 @@ final class LocationContainer
     }
 
     /**
+     * Returns the country name.
+     *
      * @param string $isoLanguage
      * @return string|null
      * @throws ClassInvalidException
+     * @throws ClientExceptionInterface
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
      * @throws TypeInvalidException
      */
     public function getCountryName(string $isoLanguage): string|null
@@ -345,10 +351,19 @@ final class LocationContainer
      * @param string|null $language
      * @return string|null
      * @throws ClassInvalidException
+     * @throws ClientExceptionInterface
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
      * @throws TypeInvalidException
      * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
      */
-    public function getAlternateName(Location|null $location, string $isoLanguage, bool $useLocationName = false, string $language = null): string|null
+    public function getAlternateName(
+        Location|null $location,
+        string $isoLanguage,
+        bool $useLocationName = false,
+        string $language = null
+    ): string|null
     {
         if (is_null($location)) {
             return null;
@@ -358,6 +373,10 @@ final class LocationContainer
             return $useLocationName ? $location->getName() : null;
         }
 
-        return $this->locationServiceAlternateName->getNameByIsoLanguage($location, $isoLanguage, $language);
+        return $this->locationServiceAlternateName->getNameByIsoLanguage(
+            $location,
+            $isoLanguage,
+            $language
+        );
     }
 }
