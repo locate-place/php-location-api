@@ -30,6 +30,8 @@ class CountryCode
 
     final public const MT = 'MT';
 
+    final public const RU = 'RU';
+
     final public const SE = 'SE';
 
     final public const US = 'US';

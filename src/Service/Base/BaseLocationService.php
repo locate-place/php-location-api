@@ -646,17 +646,14 @@ abstract class BaseLocationService extends BaseHelperLocationService
     }
 
     /**
-     * Returns the coordinate data type.
+     * Returns the DateTimeZone object from given location entity.
      *
      * @param LocationEntity $locationEntity
-     * @return Timezone
+     * @return DateTimeZone
      * @throws CaseUnsupportedException
-     * @throws FunctionReplaceException
-     * @throws ParserException
-     * @throws TypeInvalidException
      * @throws Exception
      */
-    private function getDataTypeTimezone(LocationEntity $locationEntity): Timezone
+    private function getDateTimeZone(LocationEntity $locationEntity): DateTimeZone
     {
         $timezoneString = $locationEntity->getTimezone()?->getTimezone();
 
@@ -669,7 +666,32 @@ abstract class BaseLocationService extends BaseHelperLocationService
             default => $timezoneString,
         };
 
-        $dateTimeZone = new DateTimeZone($timezoneString);
+        if (!empty($timezoneString)) {
+            return new DateTimeZone($timezoneString);
+        }
+
+        /* Use the timezone from the country code. Fuzzy. I know. */
+        return match ($locationEntity->getCountry()?->getCode()) {
+            CountryCode::RU => new DateTimeZone('Europe/Moscow'),
+            default => throw new LogicException(sprintf('Unable to find timezone for given location with geoname id: %d', $locationEntity->getGeonameId())),
+        };
+    }
+
+    /**
+     * Returns the coordinate data type.
+     *
+     * @param LocationEntity $locationEntity
+     * @return Timezone
+     * @throws CaseUnsupportedException
+     * @throws FunctionReplaceException
+     * @throws ParserException
+     * @throws TypeInvalidException
+     * @throws Exception
+     */
+    private function getDataTypeTimezone(LocationEntity $locationEntity): Timezone
+    {
+        $dateTimeZone = $this->getDateTimeZone($locationEntity);
+
         $dateTime = new DateTime('now', $dateTimeZone);
         $locationArray = $dateTimeZone->getLocation();
 
