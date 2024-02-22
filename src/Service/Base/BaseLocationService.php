@@ -19,6 +19,7 @@ use App\Constants\Key\KeyArray;
 use App\Constants\Language\CountryCode;
 use App\Constants\Language\LanguageCode;
 use App\Constants\Path\Path;
+use App\Constants\Timezone\Timezone as TimezoneDefault;
 use App\Constants\Translation\Translation;
 use App\Constants\Unit\Length;
 use App\Constants\Unit\Numero;
@@ -671,10 +672,17 @@ abstract class BaseLocationService extends BaseHelperLocationService
         }
 
         /* Use the timezone from the country code. Fuzzy. I know. */
-        return match ($locationEntity->getCountry()?->getCode()) {
-            CountryCode::RU => new DateTimeZone('Europe/Moscow'),
-            default => throw new LogicException(sprintf('Unable to find timezone for given location with geoname id: %d', $locationEntity->getGeonameId())),
-        };
+        $countryCode = $locationEntity->getCountry()?->getCode();
+
+        if (is_null($countryCode)) {
+            throw new CaseUnsupportedException(sprintf('Bad timezone for location with geoname id "%d".', $locationEntity->getGeonameId()));
+        }
+        
+        if (array_key_exists($countryCode, TimezoneDefault::DEFAULT)) {
+            return new DateTimeZone(TimezoneDefault::DEFAULT[$countryCode]);
+        }
+
+        throw new CaseUnsupportedException(sprintf('Bad timezone for location with geoname id "%d".', $locationEntity->getGeonameId()));
     }
 
     /**

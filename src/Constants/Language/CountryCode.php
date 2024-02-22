@@ -26,6 +26,8 @@ class CountryCode
 
     final public const DE = 'DE';
 
+    final public const ES = 'ES';
+
     final public const GB = 'GB';
 
     final public const MT = 'MT';
@@ -33,6 +35,8 @@ class CountryCode
     final public const RU = 'RU';
 
     final public const SE = 'SE';
+
+    final public const UA = 'UA';
 
     final public const US = 'US';
 

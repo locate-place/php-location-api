@@ -35,6 +35,10 @@ use Ixnode\PhpException\Type\TypeInvalidException;
 use Ixnode\PhpNamingConventions\Exception\FunctionReplaceException;
 use JsonException;
 use LogicException;
+use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 
 /**
  * Class LocationService
@@ -510,6 +514,10 @@ final class LocationService extends BaseLocationService
      * @throws NonUniqueResultException
      * @throws ParserException
      * @throws TypeInvalidException
+     * @throws ClientExceptionInterface
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
      * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
      */
     public function getLocationByGeonameId(

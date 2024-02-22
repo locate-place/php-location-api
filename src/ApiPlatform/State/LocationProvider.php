@@ -45,6 +45,10 @@ use LogicException;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
@@ -58,6 +62,8 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 final class LocationProvider extends BaseProviderCustom
 {
     private const FILE_SCHEMA_COORDINATE = 'data/json/schema/command/coordinate/resource.schema.json';
+
+    private const SEARCH_MINIMUM_LENGTH = 3;
 
     /**
      * @param Version $version
@@ -193,6 +199,11 @@ final class LocationProvider extends BaseProviderCustom
             return [];
         }
 
+        if (mb_strlen($search) < self::SEARCH_MINIMUM_LENGTH) {
+            $this->setError(sprintf('At least %s characters are required to search.', self::SEARCH_MINIMUM_LENGTH));
+            return [];
+        }
+
         $currentPosition = $this->query->getCurrentPosition();
 
         $locations = $this->locationService->getLocationsBySearch(
@@ -309,6 +320,7 @@ final class LocationProvider extends BaseProviderCustom
      * @throws CaseInvalidException
      * @throws CaseUnsupportedException
      * @throws ClassInvalidException
+     * @throws ClientExceptionInterface
      * @throws FileNotFoundException
      * @throws FileNotReadableException
      * @throws FunctionJsonEncodeException
@@ -316,6 +328,9 @@ final class LocationProvider extends BaseProviderCustom
      * @throws JsonException
      * @throws NonUniqueResultException
      * @throws ParserException
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
      * @throws TypeInvalidException
      */
     private function doProvideGetCollectionByGeonameId(QueryParser $queryParser): array
@@ -350,6 +365,10 @@ final class LocationProvider extends BaseProviderCustom
      * @throws NonUniqueResultException
      * @throws ParserException
      * @throws TypeInvalidException
+     * @throws ClientExceptionInterface
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
      */
     private function doProvideGetWithGeonameId(QueryParser $queryParser): BasePublicResource
     {
@@ -496,6 +515,7 @@ final class LocationProvider extends BaseProviderCustom
      * @throws CaseInvalidException
      * @throws CaseUnsupportedException
      * @throws ClassInvalidException
+     * @throws ClientExceptionInterface
      * @throws FileNotFoundException
      * @throws FileNotReadableException
      * @throws FunctionJsonEncodeException
@@ -503,6 +523,9 @@ final class LocationProvider extends BaseProviderCustom
      * @throws JsonException
      * @throws NonUniqueResultException
      * @throws ParserException
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
      * @throws TypeInvalidException
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
