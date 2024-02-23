@@ -167,6 +167,7 @@ class Wikipedia
             if (!is_null($linkParsed)) {
                 $language = $linkParsed['language'];
                 $this->alternateNamesWikipedia[$language] = $alternateName;
+                continue;
             }
 
             /* Another link was found. */
