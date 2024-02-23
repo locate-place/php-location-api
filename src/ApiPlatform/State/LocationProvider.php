@@ -25,6 +25,7 @@ use App\Service\LocationService;
 use App\Service\LocationServiceConfig;
 use App\Utils\Query\Query;
 use App\Utils\Query\QueryParser;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\NonUniqueResultException;
 use Ixnode\PhpApiVersionBundle\ApiPlatform\Resource\Base\BasePublicResource;
 use Ixnode\PhpApiVersionBundle\ApiPlatform\State\Base\Wrapper\BaseResourceWrapperProvider;
@@ -73,6 +74,7 @@ final class LocationProvider extends BaseProviderCustom
      * @param TranslatorInterface $translator
      * @param LocationService $locationService
      * @param LocationServiceConfig $locationServiceConfig
+     * @param EntityManagerInterface $entityManager
      */
     public function __construct(
         protected Version $version,
@@ -82,9 +84,10 @@ final class LocationProvider extends BaseProviderCustom
         protected TranslatorInterface $translator,
         protected LocationService $locationService,
         private readonly LocationServiceConfig $locationServiceConfig,
+        protected EntityManagerInterface $entityManager
     )
     {
-        parent::__construct($version, $parameterBag, $request, $locationService, $translator);
+        parent::__construct($version, $parameterBag, $request, $locationService, $translator, $entityManager);
     }
 
     /**
@@ -132,7 +135,73 @@ final class LocationProvider extends BaseProviderCustom
 
         $locations = $this->locationService->getLocationsByGeonameIds(
             /* Search */
-            geonameIds: $this->getGeonameIds(),
+            geonameIds: $this->getExampleGeonameIds(),
+
+            /* Search filter */
+            /* --- no filter --- */
+
+            /* Configuration */
+            currentPosition: $currentPosition,
+            isoLanguage: $isoLanguage,
+            country: $country,
+            addLocations: true,
+            addNextPlacesConfig: true,
+
+            /* Sort configuration */
+            sortBy: $this->query->getFilterAsString(
+                Query::FILTER_SORT,
+                !is_null($currentPosition) ? LocationService::SORT_BY_DISTANCE_USER : LocationService::SORT_BY_NAME
+            ),
+
+            /* Other configuration */
+            namesFull: $this->getNamesFull()
+        );
+
+        if ($this->locationService->hasError()) {
+            $this->setError($this->locationService->getError());
+        }
+
+        $this->setResultsFromLocations($locations);
+
+        return $locations;
+    }
+
+    /**
+     * Returns a collection of location resources from countries:
+     *
+     * - https://www.location-api.localhost/api/v1/location/countries.json?language=de&country=DE
+     * - https://www.location-api.localhost/api/v1/location/countries.json?language=de&country=DE&c=51.061002,13.740674
+     *
+     * @return BasePublicResource[]
+     * @throws ArrayKeyNotFoundException
+     * @throws CaseInvalidException
+     * @throws CaseUnsupportedException
+     * @throws ClassInvalidException
+     * @throws FileNotFoundException
+     * @throws FileNotReadableException
+     * @throws FunctionJsonEncodeException
+     * @throws FunctionReplaceException
+     * @throws JsonException
+     * @throws NonUniqueResultException
+     * @throws ParserException
+     * @throws TypeInvalidException
+     */
+    private function doProvideGetCollectionByCountries(): array
+    {
+        [
+            KeyArray::ISO_LANGUAGE => $isoLanguage,
+            KeyArray::COUNTRY => $country,
+        ] = $this->getIsoLanguageAndCountryByFilter();
+
+        if (is_null($isoLanguage) || is_null($country)) {
+            return [];
+        }
+
+        $currentPosition = $this->query->getCurrentPosition();
+
+        $locations = $this->locationService->getLocationsByGeonameIds(
+            /* Search */
+            geonameIds: $this->getCountryGeonameIds(),
 
             /* Search filter */
             /* --- no filter --- */
@@ -580,7 +649,17 @@ final class LocationProvider extends BaseProviderCustom
             case $this->getRequestMethod() === BaseResourceWrapperProvider::METHOD_GET_COLLECTION && $this->query->isExampleRequest():
                 return $this->doProvideGetCollectionByExamples();
 
-            /* A-2) Simple search (list search):
+            /* A-2) Show country locations (list search):
+             * ------------------------------------------
+             *
+             * - https://www.location-api.localhost/api/v1/location/countries.json
+             * - https://www.location-api.localhost/api/v1/location/countries.json?language=de&country=DE
+             * - https://www.location-api.localhost/api/v1/location/countries.json?language=de&country=DE&c=51.061002,13.740674
+             */
+            case $this->getRequestMethod() === BaseResourceWrapperProvider::METHOD_GET_COLLECTION && $this->query->isCountryRequest():
+                return $this->doProvideGetCollectionByCountries();
+
+            /* A-3) Simple search (list search):
              * ---------------------------------
              *
              * - https://www.location-api.localhost/api/v1/location.json?q=Berlin&limit=10
@@ -589,7 +668,7 @@ final class LocationProvider extends BaseProviderCustom
             case $this->getRequestMethod() === BaseResourceWrapperProvider::METHOD_GET_COLLECTION && $queryParser->isType(QueryParser::TYPE_SEARCH_LIST_GENERAL):
                 return $this->doProvideGetCollectionBySearch($queryParser);
 
-            /* A-3) Next places search (list search, all, DEPRECATED!!!):
+            /* A-4) Next places search (list search, all, DEPRECATED!!!):
              * ----------------------------------------------------------
              *
              * - https://www.location-api.localhost/api/v1/location.json?q=51.05811,13.74133&distance=1000&limit=10
@@ -597,7 +676,7 @@ final class LocationProvider extends BaseProviderCustom
              */
             case $this->getRequestMethod() === BaseResourceWrapperProvider::METHOD_GET_COLLECTION && $queryParser->isType(QueryParser::TYPE_SEARCH_COORDINATE):
 
-            /* A-4) Next places search (list search, feature code search: Airports, etc.):
+            /* A-5) Next places search (list search, feature code search: Airports, etc.):
              * ---------------------------------------------------------------------------
              *
              * - https://www.location-api.localhost/api/v1/location.json?q=AIRP%2051.05811,13.74133&distance=150000&limit=10
@@ -606,7 +685,7 @@ final class LocationProvider extends BaseProviderCustom
             case $this->getRequestMethod() === BaseResourceWrapperProvider::METHOD_GET_COLLECTION && $queryParser->isType(QueryParser::TYPE_SEARCH_LIST_WITH_FEATURES):
                 return $this->doProvideGetCollectionByCoordinate($queryParser);
 
-            /* A-5) Geoname ID search (list search):
+            /* A-6) Geoname ID search (list search):
              * ---------------------------------------------------------------------------
              *
              * - https://www.location-api.localhost/api/v1/location.json?q=2879139

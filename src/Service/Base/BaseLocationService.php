@@ -677,7 +677,7 @@ abstract class BaseLocationService extends BaseHelperLocationService
         if (is_null($countryCode)) {
             throw new CaseUnsupportedException(sprintf('Bad timezone for location with geoname id "%d".', $locationEntity->getGeonameId()));
         }
-        
+
         if (array_key_exists($countryCode, TimezoneDefault::DEFAULT)) {
             return new DateTimeZone(TimezoneDefault::DEFAULT[$countryCode]);
         }

@@ -24,6 +24,7 @@ use App\Repository\ImportRepository;
 use App\Repository\LocationRepository;
 use App\Service\LocationService;
 use DateTimeImmutable;
+use Doctrine\ORM\EntityManagerInterface;
 use Ixnode\PhpApiVersionBundle\ApiPlatform\Resource\Base\BasePublicResource;
 use Ixnode\PhpApiVersionBundle\ApiPlatform\State\Base\Wrapper\BaseResourceWrapperProvider;
 use Ixnode\PhpApiVersionBundle\Utils\Version\Version;
@@ -52,6 +53,7 @@ final class ImportProvider extends BaseProviderCustom
      * @param LocationRepository $locationRepository
      * @param TranslatorInterface $translator
      * @param LocationService $locationService
+     * @param EntityManagerInterface $entityManager
      */
     public function __construct(
         protected Version $version,
@@ -60,10 +62,11 @@ final class ImportProvider extends BaseProviderCustom
         protected ImportRepository $importRepository,
         protected LocationRepository $locationRepository,
         protected TranslatorInterface $translator,
-        protected LocationService $locationService
+        protected LocationService $locationService,
+        protected EntityManagerInterface $entityManager
     )
     {
-        parent::__construct($version, $parameterBag, $request, $locationService, $translator);
+        parent::__construct($version, $parameterBag, $request, $locationService, $translator, $entityManager);
     }
 
     /**

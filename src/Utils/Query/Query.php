@@ -147,6 +147,16 @@ class Query
     }
 
     /**
+     * Returns if the request is a country request.
+     *
+     * @return bool
+     */
+    public function isCountryRequest(): bool
+    {
+        return $this->hasPath('countries(:?\.(:?json|html))?');
+    }
+
+    /**
      * Returns if the request contains a uri.
      *
      * @param string $key
@@ -382,12 +392,12 @@ class Query
      */
     public function getQueryParserString(): string|int|null
     {
-        $isExampleRequest = $this->isExampleRequest();
+        $isExampleOrCountryRequest = $this->isExampleRequest() || $this->isCountryRequest();
 
         return match (true) {
             $this->hasFilter(self::FILTER_QUERY) => $this->getFilterAsString(self::FILTER_QUERY),
             $this->hasUri(self::URI_GEONAME_ID) => $this->getUriAsInteger(self::URI_GEONAME_ID),
-            $isExampleRequest => self::WORD_EXAMPLES,
+            $isExampleOrCountryRequest => self::WORD_EXAMPLES,
             default => null,
         };
     }

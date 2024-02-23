@@ -13,7 +13,8 @@ declare(strict_types=1);
 
 namespace App\Repository;
 
-use App\Constants\DB\FeatureClass;
+use App\Constants\DB\FeatureClass as DbFeatureClass;
+use App\Constants\DB\FeatureCode as DbFeatureCode;
 use App\Entity\Country;
 use App\Entity\FeatureCode;
 use App\Entity\Location;
@@ -394,8 +395,8 @@ class LocationRepository extends ServiceEntityRepository
      */
     public function findNextAdminConfiguration(
         Coordinate $coordinate,
-        array|string|null $featureClasses = FeatureClass::A,
-        array|string|null $featureCodes = FeatureClass::A,
+        array|string|null $featureClasses = DbFeatureClass::A,
+        array|string|null $featureCodes = DbFeatureClass::A,
     ): array
     {
         $location = $this->findNextLocationByCoordinate(
@@ -585,7 +586,7 @@ class LocationRepository extends ServiceEntityRepository
         $queryBuilder
             ->leftJoin('l.featureClass', 'fcl')
             ->andWhere('fcl.class = :featureClass')
-            ->setParameter('featureClass', FeatureClass::A);
+            ->setParameter('featureClass', DbFeatureClass::A);
 
         $queryBuilder
             ->leftJoin('l.featureCode', 'fco')
@@ -615,6 +616,7 @@ class LocationRepository extends ServiceEntityRepository
      *
      * @param Country $country
      * @return int
+     * @throws NoResultException
      * @throws NonUniqueResultException
      * @throws TypeInvalidException
      */
@@ -760,6 +762,22 @@ class LocationRepository extends ServiceEntityRepository
         return array_values(
             (new CheckerArray($queryBuilder->getQuery()->getResult()))
                 ->checkClass(Location::class)
+        );
+    }
+
+    /**
+     * Returns all capital cities.
+     *
+     * @return Location[]
+     * @throws CaseUnsupportedException
+     * @throws ClassInvalidException
+     * @throws TypeInvalidException
+     */
+    public function findCapitals(): array
+    {
+        return $this->findLocationsByCoordinate(
+            featureClasses: DbFeatureClass::P,
+            featureCodes: DbFeatureCode::PPLC,
         );
     }
 

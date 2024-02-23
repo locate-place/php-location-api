@@ -22,9 +22,12 @@ use App\Constants\Language\CountryCode;
 use App\Constants\Language\LanguageCode;
 use App\Constants\Language\LocaleCode;
 use App\Constants\Place\Search;
+use App\Entity\Location as LocationEntity;
+use App\Repository\LocationRepository;
 use App\Service\LocationService;
 use App\Utils\Performance\PerformanceLogger;
 use App\Utils\Query\Query;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\NonUniqueResultException;
 use Exception;
 use Ixnode\PhpApiVersionBundle\ApiPlatform\Resource\Base\BasePublicResource;
@@ -71,6 +74,7 @@ class BaseProviderCustom extends BaseResourceWrapperProvider
      * @param RequestStack $request
      * @param LocationService $locationService
      * @param TranslatorInterface $translator
+     * @param EntityManagerInterface $entityManager
      */
     public function __construct(
         Version $version,
@@ -78,6 +82,7 @@ class BaseProviderCustom extends BaseResourceWrapperProvider
         RequestStack $request,
         protected LocationService $locationService,
         protected TranslatorInterface $translator,
+        protected EntityManagerInterface $entityManager
     )
     {
         parent::__construct($version, $parameterBag, $request);
@@ -539,7 +544,7 @@ class BaseProviderCustom extends BaseResourceWrapperProvider
      *
      * @return int[]
      */
-    protected function getGeonameIds(): array
+    protected function getExampleGeonameIds(): array
     {
         $geonameIds = [];
 
@@ -550,6 +555,25 @@ class BaseProviderCustom extends BaseResourceWrapperProvider
         }
 
         return $geonameIds;
+    }
+
+    /**
+     * Returns some geoname id country.
+     *
+     * @return int[]
+     * @throws CaseUnsupportedException
+     * @throws ClassInvalidException
+     * @throws TypeInvalidException
+     */
+    protected function getCountryGeonameIds(): array
+    {
+        /** @var LocationRepository $locationRepository */
+        $locationRepository = $this->entityManager->getRepository(LocationEntity::class);
+
+        return array_filter(
+            array_map(fn(LocationEntity $location) => $location->getGeonameId(), $locationRepository->findCapitals()),
+            fn($geonameId) => !is_null($geonameId)
+        );
     }
 
     /**
@@ -573,7 +597,7 @@ class BaseProviderCustom extends BaseResourceWrapperProvider
     /**
      * @return bool
      */
-    protected function hasResults()
+    protected function hasResults(): bool
     {
         return !is_null($this->results);
     }
