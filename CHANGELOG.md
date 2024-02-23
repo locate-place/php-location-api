@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Releases
 
+### [0.1.51] - 2024-02-23
+
+* Fix other links
+
 ### [0.1.50] - 2024-02-23
 
 * Add location/countries endpoint
