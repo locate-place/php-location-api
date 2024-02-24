@@ -66,7 +66,7 @@ class AlternateName
     #[ORM\Column]
     private ?int $alternateNameId = null;
 
-    #[ORM\Column(length: 14, nullable: true)]
+    #[ORM\Column(length: 16, nullable: true)]
     private ?string $type = null;
 
     #[ORM\Column(length: 255, nullable: true)]
@@ -235,11 +235,18 @@ class AlternateName
         return $this;
     }
 
+    /**
+     * @return string|null
+     */
     public function getType(): ?string
     {
         return $this->type;
     }
 
+    /**
+     * @param string|null $type
+     * @return $this
+     */
     public function setType(?string $type): static
     {
         $this->type = $type;
@@ -247,11 +254,18 @@ class AlternateName
         return $this;
     }
 
+    /**
+     * @return string|null
+     */
     public function getSource(): ?string
     {
         return $this->source;
     }
 
+    /**
+     * @param string|null $source
+     * @return $this
+     */
     public function setSource(?string $source): static
     {
         $this->source = $source;
@@ -259,11 +273,18 @@ class AlternateName
         return $this;
     }
 
+    /**
+     * @return bool|null
+     */
     public function isChanged(): ?bool
     {
         return $this->changed;
     }
 
+    /**
+     * @param bool $changed
+     * @return $this
+     */
     public function setChanged(bool $changed): static
     {
         $this->changed = $changed;

@@ -21,6 +21,7 @@
         "ixnode/php-date-parser": "^1.0",
         "ixnode/php-exception": "*",
         "ixnode/php-timezone": "^0.1.17",
+        "ixnode/php-web-crawler": "^0.1.2",
         "symfony/config": "6.3.*",
         "symfony/console": "6.3.*",
         "symfony/dotenv": "6.3.*",
