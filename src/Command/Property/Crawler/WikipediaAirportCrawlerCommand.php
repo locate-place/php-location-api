@@ -82,15 +82,25 @@ EOT
      * Returns the crawler query Field class.
      *
      * @param string $key
-     * @param string $search
+     * @param string|string[] $search
      * @param Converter[] $converters
      * @param string $subElements
      * @return Field
      */
-    private function getField(string $key, string $search, array $converters = [], string $subElements = ''): Field
+    private function getField(string $key, string|array $search, array $converters = [], string $subElements = ''): Field
     {
+        if (is_string($search)) {
+            $search = [$search];
+        }
+
+        foreach ($search as &$value) {
+            $value = sprintf('contains(., "%s")', $value);
+        }
+
+        $search = implode(' or ', $search);
+
         return new Field($key, new XpathTextNode(
-            sprintf('/html/body//tr[th[contains(@class, "infobox-label") and contains(., "%s")]]/td[contains(@class, "infobox-data")]%s', $search, $subElements),
+            sprintf('/html/body//tr[th[contains(@class, "infobox-label") and (%s)]]/td[contains(@class, "infobox-data")]%s', $search, $subElements),
             ...$converters
         ));
     }
@@ -103,7 +113,7 @@ EOT
     private function getFieldsAirport(): array
     {
         return [
-            $this->getField('airport-passengers', 'Passengers', [new Number()]),
+            $this->getField('airport-passengers', ['Passengers', 'Passenger volume'], [new Number()]),
             $this->getField('airport-movements', 'Aircraft movements', [new Number()]),
             $this->getField('airport-website', 'Website', [new Trim()], '//a/@href'),
             $this->getField('airport-operator', 'Operator', [new Trim()]),
