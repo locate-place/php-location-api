@@ -782,6 +782,23 @@ class LocationRepository extends ServiceEntityRepository
     }
 
     /**
+     * Returns all airports.
+     *
+     * @return Location[]
+     * @throws CaseUnsupportedException
+     * @throws ClassInvalidException
+     * @throws TypeInvalidException
+     */
+    public function findAirports(): array
+    {
+        return $this->findLocationsByCoordinate(
+            featureClasses: DbFeatureClass::S,
+            featureCodes: DbFeatureCode::AIRP,
+            limit: 100,
+        );
+    }
+
+    /**
      * Returns the number of locations with given iso language.
      *
      * @param string $isoLanguage

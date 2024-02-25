@@ -544,7 +544,7 @@ class BaseProviderCustom extends BaseResourceWrapperProvider
      *
      * @return int[]
      */
-    protected function getExampleGeonameIds(): array
+    protected function getGeonameIdsExample(): array
     {
         $geonameIds = [];
 
@@ -565,13 +565,32 @@ class BaseProviderCustom extends BaseResourceWrapperProvider
      * @throws ClassInvalidException
      * @throws TypeInvalidException
      */
-    protected function getCountryGeonameIds(): array
+    protected function getGeonameIdsCountry(): array
     {
         /** @var LocationRepository $locationRepository */
         $locationRepository = $this->entityManager->getRepository(LocationEntity::class);
 
         return array_filter(
             array_map(fn(LocationEntity $location) => $location->getGeonameId(), $locationRepository->findCapitals()),
+            fn($geonameId) => !is_null($geonameId)
+        );
+    }
+
+    /**
+     * Returns some geoname id airport.
+     *
+     * @return int[]
+     * @throws CaseUnsupportedException
+     * @throws ClassInvalidException
+     * @throws TypeInvalidException
+     */
+    protected function getGeonameIdsAirport(): array
+    {
+        /** @var LocationRepository $locationRepository */
+        $locationRepository = $this->entityManager->getRepository(LocationEntity::class);
+
+        return array_filter(
+            array_map(fn(LocationEntity $location) => $location->getGeonameId(), $locationRepository->findAirports()),
             fn($geonameId) => !is_null($geonameId)
         );
     }

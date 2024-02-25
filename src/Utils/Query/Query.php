@@ -157,6 +157,16 @@ class Query
     }
 
     /**
+     * Returns if the request is an airport request.
+     *
+     * @return bool
+     */
+    public function isAirportRequest(): bool
+    {
+        return $this->hasPath('airports(:?\.(:?json|html))?');
+    }
+
+    /**
      * Returns if the request contains a uri.
      *
      * @param string $key
@@ -392,12 +402,14 @@ class Query
      */
     public function getQueryParserString(): string|int|null
     {
-        $isExampleOrCountryRequest = $this->isExampleRequest() || $this->isCountryRequest();
+        $isGeonameIdsRequest = $this->isExampleRequest() ||
+            $this->isCountryRequest() ||
+            $this->isAirportRequest();
 
         return match (true) {
             $this->hasFilter(self::FILTER_QUERY) => $this->getFilterAsString(self::FILTER_QUERY),
             $this->hasUri(self::URI_GEONAME_ID) => $this->getUriAsInteger(self::URI_GEONAME_ID),
-            $isExampleOrCountryRequest => self::WORD_EXAMPLES,
+            $isGeonameIdsRequest => self::WORD_EXAMPLES,
             default => null,
         };
     }
