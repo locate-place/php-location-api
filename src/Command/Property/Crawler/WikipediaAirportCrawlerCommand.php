@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace App\Command\Property\Crawler;
 
+use App\Constants\Key\KeyArray;
 use Ixnode\PhpContainer\Json;
 use Ixnode\PhpException\ArrayType\ArrayKeyNotFoundException;
 use Ixnode\PhpException\Case\CaseInvalidException;
@@ -21,7 +22,8 @@ use Ixnode\PhpException\File\FileNotReadableException;
 use Ixnode\PhpException\Function\FunctionJsonEncodeException;
 use Ixnode\PhpException\Type\TypeInvalidException;
 use Ixnode\PhpNamingConventions\Exception\FunctionReplaceException;
-use Ixnode\PhpWebCrawler\Converter\Converter;
+use Ixnode\PhpWebCrawler\Converter\Base\Converter;
+use Ixnode\PhpWebCrawler\Converter\Boolean;
 use Ixnode\PhpWebCrawler\Converter\Number;
 use Ixnode\PhpWebCrawler\Converter\PregMatch;
 use Ixnode\PhpWebCrawler\Converter\Sprintf;
@@ -30,6 +32,7 @@ use Ixnode\PhpWebCrawler\Output\Field;
 use Ixnode\PhpWebCrawler\Output\Group;
 use Ixnode\PhpWebCrawler\Source\Url;
 use Ixnode\PhpWebCrawler\Source\XpathSections;
+use Ixnode\PhpWebCrawler\Value\LastUrl;
 use Ixnode\PhpWebCrawler\Value\XpathTextNode;
 use JsonException;
 use LogicException;
@@ -51,6 +54,10 @@ class WikipediaAirportCrawlerCommand extends Command
 {
     protected static $defaultName = 'crawler:wikipedia:airport';
 
+    private const ZERO_RESULT = 0;
+
+    private const DOMAIN_WIKIPEDIA = 'https://en.wikipedia.org';
+
     /**
      * Configures the command.
      */
@@ -60,7 +67,7 @@ class WikipediaAirportCrawlerCommand extends Command
             ->setName(strval(self::$defaultName))
             ->setDescription('Crawls wikipedia pages for airport properties.')
             ->setDefinition([
-                new InputArgument('iata', InputArgument::REQUIRED, 'The iata code to be parsed.'),
+                new InputArgument(KeyArray::IATA, InputArgument::REQUIRED, 'The iata code to be parsed.'),
             ])
             ->setHelp(
                 <<<'EOT'
@@ -69,75 +76,6 @@ The <info>crawler:wikipedia:airport</info> crawls wikipedia pages for airport pr
 
 EOT
             );
-    }
-
-    /**
-     * Returns the airport wikipedia page from wikipedia search.
-     *
-     * @return array{link: string, name: string}|null
-     * @throws ArrayKeyNotFoundException
-     * @throws CaseInvalidException
-     * @throws FileNotFoundException
-     * @throws FileNotReadableException
-     * @throws FunctionJsonEncodeException
-     * @throws FunctionReplaceException
-     * @throws JsonException
-     * @throws TypeInvalidException
-     */
-    private function getPage(string $iata): array|null
-    {
-        $domain = 'https://en.wikipedia.org';
-        $site = sprintf('%s/wiki/%s', $domain, $iata);
-
-        $url = new Url(
-            $site,
-            new Field('title', new XpathTextNode('/html/head/title')),
-            new Group(
-                'hits',
-                new XpathSections(
-                    '/html/body//div[@id="mw-content-text"]//ul/li[contains(translate(., \'ABCDEFGHIJKLMNOPQRSTUVWXYZ\', \'abcdefghijklmnopqrstuvwxyz\'), \'airport\')]',
-                    new Field('link', new XpathTextNode('./a/@href', new Sprintf($domain.'%s'))),
-                    new Field('name', new XpathTextNode('./a/text()')),
-                )
-            )
-        );
-
-        $hits = $url->parse()->getKeyArray('hits');
-
-        if (count($hits) <= 0) {
-            return null;
-        }
-
-        $hit = $hits[0];
-
-        if (!is_array($hit)) {
-            return null;
-        }
-
-        if (!array_key_exists('link', $hit)) {
-            return null;
-        }
-
-        $link = $hit['link'];
-
-        if (!is_string($link)) {
-            return null;
-        }
-
-        if (!array_key_exists('name', $hit)) {
-            return null;
-        }
-
-        $name = $hit['name'];
-
-        if (!is_string($name)) {
-            return null;
-        }
-
-        return [
-            'link' => $link,
-            'name' => $name,
-        ];
     }
 
     /**
@@ -158,21 +96,13 @@ EOT
     }
 
     /**
-     * Returns the parsed wikipedia data.
+     * Returns the airport Field classes.
      *
-     * @param string $wikipediaPage
-     * @return Json
-     * @throws FileNotFoundException
-     * @throws FileNotReadableException
-     * @throws FunctionJsonEncodeException
-     * @throws FunctionReplaceException
-     * @throws JsonException
-     * @throws TypeInvalidException
+     * @return Field[]
      */
-    private function getPageData(string $wikipediaPage): Json
+    private function getFieldsAirport(): array
     {
-        $url = new Url(
-            $wikipediaPage,
+        return [
             $this->getField('airport-passengers', 'Passengers', [new Number()]),
             $this->getField('airport-movements', 'Aircraft movements', [new Number()]),
             $this->getField('airport-website', 'Website', [new Trim()], '//a/@href'),
@@ -186,6 +116,80 @@ EOT
                 new Trim(),
                 new PregMatch('~Statistics \(([0-9]+)\)~', 1)
             ))
+        ];
+    }
+
+    /**
+     * Returns the airport wikipedia page from wikipedia search.
+     *
+     * @param string $iata
+     * @return Json|null
+     * @throws ArrayKeyNotFoundException
+     * @throws CaseInvalidException
+     * @throws FileNotFoundException
+     * @throws FileNotReadableException
+     * @throws FunctionJsonEncodeException
+     * @throws FunctionReplaceException
+     * @throws JsonException
+     * @throws TypeInvalidException
+     */
+    private function getPage(string $iata): Json|null
+    {
+        $site = sprintf('%s/wiki/%s', self::DOMAIN_WIKIPEDIA, $iata);
+
+        $url = new Url(
+            $site,
+            new Field('title', new XpathTextNode('/html/head/title')),
+            new Field('last-url', new LastUrl()),
+            new Field('is-list-page', new XpathTextNode('/html/body//*[@id="mw-content-text"]/div/p[contains(., "may refer to:")]', new Boolean())),
+            new Group(
+                'hits',
+                new XpathSections(
+                    '/html/body//div[@id="mw-content-text"]//ul/li[contains(translate(., \'ABCDEFGHIJKLMNOPQRSTUVWXYZ\', \'abcdefghijklmnopqrstuvwxyz\'), \'airport\')]',
+                    new Field('link', new XpathTextNode('./a/@href', new Sprintf(self::DOMAIN_WIKIPEDIA.'%s'))),
+                    new Field('name', new XpathTextNode('./a/text()')),
+                )
+            ),
+            new Group(
+                'airport',
+                ...$this->getFieldsAirport()
+            )
+        );
+
+        $parsed = $url->parse();
+
+        return match (true) {
+            $parsed->getKeyBoolean('is-list-page') => $parsed,
+            $parsed->hasKey('hits') && (count($parsed->getKeyArray('hits')) > self::ZERO_RESULT) => $parsed,
+            default => null,
+        };
+    }
+
+    /**
+     * Returns the parsed wikipedia data.
+     *
+     * @param Json $parsed
+     * @return Json
+     * @throws ArrayKeyNotFoundException
+     * @throws CaseInvalidException
+     * @throws FileNotFoundException
+     * @throws FileNotReadableException
+     * @throws FunctionJsonEncodeException
+     * @throws FunctionReplaceException
+     * @throws JsonException
+     * @throws TypeInvalidException
+     */
+    private function getPageData(Json $parsed): Json
+    {
+        if (!$parsed->getKeyBoolean('is-list-page')) {
+            return $parsed->getKeyJson('airport');
+        }
+
+        $link = $parsed->getKeyString(['hits', '0', 'link']);
+
+        $url = new Url(
+            $link,
+            ...$this->getFieldsAirport()
         );
 
         return $url->parse();
@@ -209,7 +213,7 @@ EOT
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $iata = $input->getArgument('iata');
+        $iata = $input->getArgument(KeyArray::IATA);
 
         if (!is_string($iata)) {
             throw new LogicException('Unsupported type of iata given.');
@@ -217,24 +221,31 @@ EOT
 
         $iata = strtoupper($iata);
 
-        $page = $this->getPage($iata);
+        $parsed = $this->getPage($iata);
 
-        if (is_null($page)) {
+        if (is_null($parsed)) {
             $output->writeln(sprintf('<error>No airport page found for %s.</error>', $iata));
             return Command::FAILURE;
         }
 
-        $name = $page['name'];
-        $link = $page['link'];
+        $isListPage = $parsed->getKeyBoolean('is-list-page');
 
-        $output->writeln(sprintf('IATA: %s', $iata));
-        $output->writeln(sprintf('Name: %s', $name));
-        $output->writeln(sprintf('Link: %s', $link));
+        $name = $isListPage ? $parsed->getKeyString(['hits', '0', 'name']) : $parsed->getKeyString('title');
+        $link = $isListPage ? $parsed->getKeyString(['hits', '0', 'link']) : $parsed->getKeyString('last-url');
 
-        $data = $this->getPageData($link);
+        $output->writeln('');
+        $output->writeln(sprintf('IATA:   %s', $iata));
+        $output->writeln(sprintf('Name:   %s', $name));
+        $output->writeln(sprintf('Link:   %s', $link));
 
+        $data = $this->getPageData($parsed);
+
+        $output->writeln('');
         $output->writeln('Data:');
+        $output->writeln('---');
         $output->writeln($data->getJsonStringFormatted());
+        $output->writeln('---');
+        $output->writeln('');
 
         return Command::SUCCESS;
     }
