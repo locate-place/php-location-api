@@ -22,12 +22,18 @@ use Ixnode\PhpException\File\FileNotReadableException;
 use Ixnode\PhpException\Function\FunctionJsonEncodeException;
 use Ixnode\PhpException\Type\TypeInvalidException;
 use Ixnode\PhpNamingConventions\Exception\FunctionReplaceException;
-use Ixnode\PhpWebCrawler\Converter\Base\Converter;
-use Ixnode\PhpWebCrawler\Converter\Boolean;
-use Ixnode\PhpWebCrawler\Converter\Number;
-use Ixnode\PhpWebCrawler\Converter\PregMatch;
-use Ixnode\PhpWebCrawler\Converter\Sprintf;
-use Ixnode\PhpWebCrawler\Converter\Trim;
+use Ixnode\PhpWebCrawler\Converter\Collection\Base\ConverterArray;
+use Ixnode\PhpWebCrawler\Converter\Collection\First;
+use Ixnode\PhpWebCrawler\Converter\Collection\Implode;
+use Ixnode\PhpWebCrawler\Converter\Collection\RemoveEmpty;
+use Ixnode\PhpWebCrawler\Converter\Scalar\Base\Converter;
+use Ixnode\PhpWebCrawler\Converter\Scalar\Boolean;
+use Ixnode\PhpWebCrawler\Converter\Scalar\Number;
+use Ixnode\PhpWebCrawler\Converter\Scalar\PregMatch;
+use Ixnode\PhpWebCrawler\Converter\Scalar\Replace;
+use Ixnode\PhpWebCrawler\Converter\Scalar\Sprintf;
+use Ixnode\PhpWebCrawler\Converter\Scalar\ToLower;
+use Ixnode\PhpWebCrawler\Converter\Scalar\Trim;
 use Ixnode\PhpWebCrawler\Output\Field;
 use Ixnode\PhpWebCrawler\Output\Group;
 use Ixnode\PhpWebCrawler\Source\Url;
@@ -56,7 +62,13 @@ class WikipediaAirportCrawlerCommand extends Command
 
     private const ZERO_RESULT = 0;
 
+    private const NUMBER_1 = 1;
+
+    private const SEPARATOR_COUNT = 20;
+
     private const DOMAIN_WIKIPEDIA = 'https://en.wikipedia.org';
+
+    private OutputInterface $output;
 
     /**
      * Configures the command.
@@ -79,22 +91,106 @@ EOT
     }
 
     /**
+     * Returns the link or name from parsed response.
+     *
+     * @param Json $parsed
+     * @param string $listKeyName
+     * @param string $detailKeyName
+     * @return string
+     * @throws ArrayKeyNotFoundException
+     * @throws CaseInvalidException
+     * @throws FileNotFoundException
+     * @throws FileNotReadableException
+     * @throws FunctionJsonEncodeException
+     * @throws FunctionReplaceException
+     * @throws JsonException
+     * @throws TypeInvalidException
+     */
+    private function getProperty(Json $parsed, string $listKeyName, string $detailKeyName): string
+    {
+        if (!$parsed->getKeyBoolean('is-list-page')) {
+            return $parsed->getKeyString($detailKeyName);
+        }
+
+        if (!$parsed->hasKey('hits') || count($parsed->getKeyArray('hits')) <= self::ZERO_RESULT) {
+            return $parsed->getKeyString($detailKeyName);
+        }
+
+        $property = $parsed->getKey(['hits', 0, $listKeyName]);
+
+        $property = match (true) {
+            is_string($property) => $property,
+            is_array($property) && count($property) > self::ZERO_RESULT => $property[0],
+            default => throw new LogicException(sprintf('Invalid link type given: %s', gettype($property))),
+        };
+
+        if (!is_string($property)) {
+            throw new LogicException(sprintf('Invalid link type given: %s', gettype($property)));
+        }
+
+        return $property;
+    }
+
+    /**
+     * Returns the property name.
+     *
+     * @param Json $parsed
+     * @return string
+     * @throws ArrayKeyNotFoundException
+     * @throws CaseInvalidException
+     * @throws FileNotFoundException
+     * @throws FileNotReadableException
+     * @throws FunctionJsonEncodeException
+     * @throws FunctionReplaceException
+     * @throws JsonException
+     * @throws TypeInvalidException
+     */
+    private function getPropertyName(Json $parsed): string
+    {
+        return $this->getProperty($parsed, 'name', 'title');
+    }
+
+    /**
+     * Returns the property link.
+     *
+     * @param Json $parsed
+     * @return string
+     * @throws ArrayKeyNotFoundException
+     * @throws CaseInvalidException
+     * @throws FileNotFoundException
+     * @throws FileNotReadableException
+     * @throws FunctionJsonEncodeException
+     * @throws FunctionReplaceException
+     * @throws JsonException
+     * @throws TypeInvalidException
+     */
+    private function getPropertyLink(Json $parsed): string
+    {
+        return $this->getProperty($parsed, 'link', 'last-url');
+    }
+
+    /**
      * Returns the crawler query Field class.
      *
      * @param string $key
      * @param string|string[] $search
-     * @param Converter[] $converters
+     * @param string|null $searchNot
+     * @param Converter[]|ConverterArray[] $converters
      * @param string $subElements
      * @return Field
      */
-    private function getField(string $key, string|array $search, array $converters = [], string $subElements = ''): Field
+    private function getField(string $key, string|array $search, string $searchNot = null, array $converters = [], string $subElements = ''): Field
     {
         if (is_string($search)) {
             $search = [$search];
         }
 
         foreach ($search as &$value) {
-            $value = sprintf('contains(., "%s")', $value);
+            $value = sprintf(
+                '(contains(translate(., "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz"), "%s")%s)',
+                strtolower($value),
+                !is_null($searchNot) ? sprintf(' and not(contains(translate(., "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz"), "%s"))', strtolower($searchNot)) : ''
+            );
         }
 
         $search = implode(' or ', $search);
@@ -108,24 +204,81 @@ EOT
     /**
      * Returns the airport Field classes.
      *
+     * @param string $iata
      * @return Field[]
      */
-    private function getFieldsAirport(): array
+    private function getFieldsAirport(string $iata): array
     {
         return [
-            $this->getField('airport-passengers', ['Passengers', 'Passenger volume'], [new Number()]),
-            $this->getField('airport-movements', 'Aircraft movements', [new Number()]),
-            $this->getField('airport-website', 'Website', [new Trim()], '//a/@href'),
-            $this->getField('airport-operator', 'Operator', [new Trim()]),
-            $this->getField('airport-opened', 'Opened', [
-                new Trim(),
-                new PregMatch('/(\d{4}-\d{2}-\d{2})/', 1),
-            ]),
+            $this->getField(
+                key: 'airport-passengers',
+                search: ['passengers', 'passenger volume'],
+                searchNot: 'change',
+                converters: [new Number(['.', ','], '')]
+            ),
+            $this->getField(
+                key: 'airport-movements',
+                search: ['aircraft movements', 'movements', 'aircraft operations'],
+                searchNot: 'change',
+                converters: [new Number(['.', ','], '')]
+            ),
+            $this->getField(
+                key: 'airport-cargo',
+                search: ['cargo'],
+                searchNot: 'change',
+                converters: [new Number(['.', ','], '')]
+            ),
+            $this->getField(
+                key: 'airport-website',
+                search: 'website',
+                converters: [new Trim()],
+                subElements: '//a/@href'
+            ),
+            $this->getField(
+                key: 'airport-operator-complex',
+                search: 'operator',
+                converters: [new Trim(), new RemoveEmpty(), new Implode(), new Replace(', (', ' (')],
+                subElements: '//*[not(./text()/parent::style)]/text()'
+            ),
+            $this->getField(
+                key: 'airport-operator',
+                search: 'operator',
+                converters: [new Trim(), new RemoveEmpty(), new Implode()],
+                subElements: '/text()'
+            ),
+            $this->getField(
+                key: 'airport-opened',
+                search: 'opened',
+                converters: [
+                    new Trim(),
+                    new PregMatch('/(\d{4}(?:-\d{2}-\d{2})?)/', 1),
+                ]
+            ),
+            $this->getField(
+                key: 'airport-type',
+                search: 'airport type',
+                converters: [
+                    new Trim(),
+                    new ToLower(),
+                    new Replace('/', ', ')
+                ]
+            ),
             new Field('airport-statistics-year', new XpathTextNode(
                 '/html/body//tr/th[contains(@class, "infobox-header") and contains(., "Statistics")]/text()',
                 new Trim(),
                 new PregMatch('~Statistics \(([0-9]+)\)~', 1)
-            ))
+            )),
+            new Field('airport-iata-confirmed', new XpathTextNode(
+                sprintf('/html/body//span[@class="nickname" and contains(text(), "%s")]', $iata),
+                new Boolean(),
+                new First()
+            )),
+            // [\x{C2A0}] [\x{00AE}]
+            $this->getField(
+                key: 'elevation',
+                search: 'elevation',
+                converters: [new Trim(), new PregMatch('~([0-9]+(?:[,.][0-9]+)?)(?:[\xc2\xa0 ]+)m~', 1), new Number([',', '.'], '')]
+            )
         ];
     }
 
@@ -151,34 +304,52 @@ EOT
             $site,
             new Field('title', new XpathTextNode('/html/head/title')),
             new Field('last-url', new LastUrl()),
-            new Field('is-list-page', new XpathTextNode('/html/body//*[@id="mw-content-text"]/div/p[contains(., "may refer to:")]', new Boolean())),
+            new Field('is-list-page', new XpathTextNode('/html/body//*[@id="mw-content-text"]/div/p[contains(., "may refer to:") or contains(., "can refer to:") or contains(., "may also refer to:")]', new Boolean())),
             new Group(
                 'hits',
                 new XpathSections(
-                    '/html/body//div[@id="mw-content-text"]//ul/li[contains(translate(., \'ABCDEFGHIJKLMNOPQRSTUVWXYZ\', \'abcdefghijklmnopqrstuvwxyz\'), \'airport\')]',
-                    new Field('link', new XpathTextNode('./a/@href', new Sprintf(self::DOMAIN_WIKIPEDIA.'%s'))),
-                    new Field('name', new XpathTextNode('./a/text()')),
+                    '/html/body//div[@id="mw-content-text"]//ul/li[contains(translate(., "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz"), "airport") or contains(translate(., "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz"), "iata")]',
+                    new Field('link', new XpathTextNode('./a[not(contains(@href, "airport_code"))]/@href', new Sprintf(self::DOMAIN_WIKIPEDIA.'%s'))),
+                    new Field('name', new XpathTextNode('./a[not(contains(@href, "airport_code"))]/text()')),
+                )
+            ),
+            new Group(
+                'hits-deep',
+                new XpathSections(
+                    '/html/body//div[@id="mw-content-text"]//ul/li/ul/li[contains(translate(., "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz"), "airport") or contains(translate(., "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz"), "iata")]',
+                    new Field('link', new XpathTextNode('./a[not(contains(@href, "airport_code"))]/@href', new Sprintf(self::DOMAIN_WIKIPEDIA.'%s'))),
+                    new Field('name', new XpathTextNode('./a[not(contains(@href, "airport_code"))]/text()')),
                 )
             ),
             new Group(
                 'airport',
-                ...$this->getFieldsAirport()
+                ...$this->getFieldsAirport($iata)
             )
         );
 
         $parsed = $url->parse();
 
+        if ($parsed->hasKey('hits-deep') && count($parsed->getKeyArray('hits-deep')) > self::ZERO_RESULT) {
+            $parsed->addValue('hits', $parsed->getKeyArray('hits-deep'));
+        }
+
+        $parsed->deleteKey('hits-deep');
+
+//        print $parsed->getJsonStringFormatted().PHP_EOL;
+//        exit();
+
         return match (true) {
-            $parsed->getKeyBoolean('is-list-page') => $parsed,
+            !$parsed->getKeyBoolean('is-list-page') => $parsed,
             $parsed->hasKey('hits') && (count($parsed->getKeyArray('hits')) > self::ZERO_RESULT) => $parsed,
             default => null,
         };
     }
 
     /**
-     * Returns the parsed wikipedia data.
+     * Returns the parsed wikipedia data (not formatted).
      *
      * @param Json $parsed
+     * @param string $iata
      * @return Json
      * @throws ArrayKeyNotFoundException
      * @throws CaseInvalidException
@@ -189,20 +360,128 @@ EOT
      * @throws JsonException
      * @throws TypeInvalidException
      */
-    private function getPageData(Json $parsed): Json
+    private function doGetPageData(Json $parsed, string $iata): Json
     {
         if (!$parsed->getKeyBoolean('is-list-page')) {
             return $parsed->getKeyJson('airport');
         }
 
-        $link = $parsed->getKeyString(['hits', '0', 'link']);
+        $link = $this->getPropertyLink($parsed);
 
         $url = new Url(
             $link,
-            ...$this->getFieldsAirport()
+            ...$this->getFieldsAirport($iata)
         );
 
         return $url->parse();
+    }
+
+    /**
+     * Returns the parsed wikipedia data.
+     *
+     * @param Json $parsed
+     * @param string $iata
+     * @return Json
+     * @throws ArrayKeyNotFoundException
+     * @throws CaseInvalidException
+     * @throws FileNotFoundException
+     * @throws FileNotReadableException
+     * @throws FunctionJsonEncodeException
+     * @throws FunctionReplaceException
+     * @throws JsonException
+     * @throws TypeInvalidException
+     */
+    private function getPageData(Json $parsed, string $iata): Json
+    {
+        $pageData = $this->doGetPageData($parsed, $iata);
+
+        $airportOperatorComplex = $pageData->getKey('airport-operator-complex');
+        $airportOperator = $pageData->getKey('airport-operator');
+
+        if (!is_string($airportOperatorComplex) && !is_null($airportOperatorComplex)) {
+            throw new TypeInvalidException(sprintf('Unsupported type for airport-operator-complex: %s', gettype($airportOperatorComplex)));
+        }
+
+        if (!is_string($airportOperator) &&!is_null($airportOperator)) {
+            throw new TypeInvalidException(sprintf('Unsupported type for airport-operator: %s', gettype($airportOperator)));
+        }
+
+        $operators = [];
+
+        if (is_string($airportOperatorComplex)) {
+            $operators[] = $airportOperatorComplex;
+        }
+
+        if (is_string($airportOperator)) {
+            $operators[] = $airportOperator;
+        }
+
+        $airportOperator = implode(', ', $operators);
+
+        $pageData->addValue('airport-operator', $airportOperator);
+        $pageData->deleteKey('airport-operator-complex');
+
+        return $pageData;
+    }
+
+    /**
+     * Do the iata job.
+     *
+     * @param string $iata
+     * @return int
+     * @throws ArrayKeyNotFoundException
+     * @throws CaseInvalidException
+     * @throws FileNotFoundException
+     * @throws FileNotReadableException
+     * @throws FunctionJsonEncodeException
+     * @throws FunctionReplaceException
+     * @throws JsonException
+     * @throws TypeInvalidException
+     */
+    private function doIata(string $iata): int
+    {
+        $iata = strtoupper($iata);
+
+        $parsed = $this->getPage($iata);
+
+        if (is_null($parsed)) {
+            $this->output->writeln(sprintf('<error>No airport page found for %s.</error>', $iata));
+            return Command::FAILURE;
+        }
+
+        $isListPage = $parsed->getKeyBoolean('is-list-page');
+
+        /* Use the first hit or the title and the last url of the page. */
+        $name = $this->getPropertyName($parsed);
+        $link = $this->getPropertyLink($parsed);
+        $numberHits = $isListPage ? count($parsed->getKeyArray('hits')) : self::NUMBER_1;
+
+        /* Get the airport data. */
+        $data = $this->getPageData($parsed, $iata);
+        $airportIataConfirmed = $data->hasKey('airport-iata-confirmed') && $data->getKeyBoolean('airport-iata-confirmed');
+
+        /* Last URL */
+        $lastUrl = $parsed->getKey('last-url');
+        $lastUrl = is_string($lastUrl) ? $lastUrl  : null;
+
+        $this->output->writeln(str_repeat('=', self::SEPARATOR_COUNT));
+        $this->output->writeln(sprintf('<info>Search for iata code "%s"</info>', $iata));
+        $this->output->writeln(str_repeat('=', self::SEPARATOR_COUNT));
+        $this->output->writeln(sprintf('Hits:   %d', $numberHits));
+        $this->output->writeln(sprintf('Type:   %s', $isListPage ? sprintf('%d found via list search from "%s"', $numberHits, $lastUrl) : 'Direct Page'));
+        $this->output->writeln(str_repeat('-', self::SEPARATOR_COUNT));
+        $this->output->writeln(sprintf('IATA:   %s', $iata));
+        $this->output->writeln(sprintf('Name:   %s', $name));
+        $this->output->writeln(sprintf('Link:   %s', $link));
+        $this->output->writeln(str_repeat('-', self::SEPARATOR_COUNT));
+        $this->output->writeln('Data:');
+        $this->output->writeln($data->getJsonStringFormatted());
+        $this->output->writeln(str_repeat('=', self::SEPARATOR_COUNT));
+        $this->output->writeln($airportIataConfirmed ? '<info>IATA confirmed.</info>' : '<error>IATA not confirmed.</error>');
+        $this->output->writeln(str_repeat('=', self::SEPARATOR_COUNT));
+        $this->output->writeln('');
+
+        return $airportIataConfirmed ? Command::SUCCESS : Command::FAILURE;
     }
 
     /**
@@ -223,40 +502,27 @@ EOT
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        $this->output = $output;
+
         $iata = $input->getArgument(KeyArray::IATA);
 
         if (!is_string($iata)) {
             throw new LogicException('Unsupported type of iata given.');
         }
 
-        $iata = strtoupper($iata);
+        $iatas = [$iata];
 
-        $parsed = $this->getPage($iata);
+        $this->output->writeln('');
+        foreach ($iatas as $iata) {
+            $return = $this->doIata($iata);
 
-        if (is_null($parsed)) {
-            $output->writeln(sprintf('<error>No airport page found for %s.</error>', $iata));
-            return Command::FAILURE;
+            if ($return !== Command::SUCCESS) {
+                $this->output->writeln('');
+                return $return;
+            }
         }
 
-        $isListPage = $parsed->getKeyBoolean('is-list-page');
-
-        $name = $isListPage ? $parsed->getKeyString(['hits', '0', 'name']) : $parsed->getKeyString('title');
-        $link = $isListPage ? $parsed->getKeyString(['hits', '0', 'link']) : $parsed->getKeyString('last-url');
-
-        $output->writeln('');
-        $output->writeln(sprintf('IATA:   %s', $iata));
-        $output->writeln(sprintf('Name:   %s', $name));
-        $output->writeln(sprintf('Link:   %s', $link));
-
-        $data = $this->getPageData($parsed);
-
-        $output->writeln('');
-        $output->writeln('Data:');
-        $output->writeln('---');
-        $output->writeln($data->getJsonStringFormatted());
-        $output->writeln('---');
-        $output->writeln('');
-
+        $this->output->writeln('');
         return Command::SUCCESS;
     }
 }

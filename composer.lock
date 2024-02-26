@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "eb4c75817c8540742f45a0b5c59af379",
+    "content-hash": "6d163ed13a8809dda3a3471c85e29ea0",
     "packages": [
         {
             "name": "adhocore/cli",
@@ -1992,16 +1992,16 @@
         },
         {
             "name": "ixnode/php-container",
-            "version": "0.1.22",
+            "version": "0.1.23",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ixnode/php-container.git",
-                "reference": "6aee3e3dd1ecb5e6b0b2d888aab791c1a767e04c"
+                "reference": "9fc30a65c4d34e9e63a03a094e0280ac177dfb84"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ixnode/php-container/zipball/6aee3e3dd1ecb5e6b0b2d888aab791c1a767e04c",
-                "reference": "6aee3e3dd1ecb5e6b0b2d888aab791c1a767e04c",
+                "url": "https://api.github.com/repos/ixnode/php-container/zipball/9fc30a65c4d34e9e63a03a094e0280ac177dfb84",
+                "reference": "9fc30a65c4d34e9e63a03a094e0280ac177dfb84",
                 "shasum": ""
             },
             "require": {
@@ -2052,9 +2052,9 @@
             ],
             "support": {
                 "issues": "https://github.com/ixnode/php-container/issues",
-                "source": "https://github.com/ixnode/php-container/tree/0.1.22"
+                "source": "https://github.com/ixnode/php-container/tree/0.1.23"
             },
-            "time": "2023-12-30T00:27:59+00:00"
+            "time": "2024-02-25T21:37:37+00:00"
         },
         {
             "name": "ixnode/php-coordinate",
@@ -2488,16 +2488,16 @@
         },
         {
             "name": "ixnode/php-web-crawler",
-            "version": "0.1.10",
+            "version": "0.1.18",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ixnode/php-web-crawler.git",
-                "reference": "5349838c0011395f8f0e79bea54e1f167e30560a"
+                "reference": "770b713ca5b393a33deaa5b0d85b498525c7b7a9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ixnode/php-web-crawler/zipball/5349838c0011395f8f0e79bea54e1f167e30560a",
-                "reference": "5349838c0011395f8f0e79bea54e1f167e30560a",
+                "url": "https://api.github.com/repos/ixnode/php-web-crawler/zipball/770b713ca5b393a33deaa5b0d85b498525c7b7a9",
+                "reference": "770b713ca5b393a33deaa5b0d85b498525c7b7a9",
                 "shasum": ""
             },
             "require": {
@@ -2553,9 +2553,9 @@
             ],
             "support": {
                 "issues": "https://github.com/ixnode/php-web-crawler/issues",
-                "source": "https://github.com/ixnode/php-web-crawler/tree/0.1.10"
+                "source": "https://github.com/ixnode/php-web-crawler/tree/0.1.18"
             },
-            "time": "2024-02-25T01:48:28+00:00"
+            "time": "2024-02-26T00:23:59+00:00"
         },
         {
             "name": "monolog/monolog",
