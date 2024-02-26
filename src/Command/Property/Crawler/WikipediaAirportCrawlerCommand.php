@@ -58,7 +58,68 @@ use Symfony\Component\Console\Output\OutputInterface;
  * @version 0.1.0 (2024-02-24)
  * @since 0.1.0 (2024-02-24) First version.
  *
- * @example bin/console crawler:wikipedia:airport
+ * @example bin/console crawler:wikipedia:airport MAD
+ *
+ * ====================
+ * Search for iata code "MAD"
+ * ====================
+ * Hits:   1
+ * Type:   1 found via list search from "https://en.wikipedia.org/wiki/MAD"
+ * --------------------
+ * IATA:   MAD
+ * Name:   Adolfo Suárez Madrid–Barajas Airport
+ * Link:   https://en.wikipedia.org/wiki/Adolfo_Su%C3%A1rez_Madrid%E2%80%93Barajas_Airport
+ * --------------------
+ * Data:
+ * {
+ *     "data": {
+ *         "airport": {
+ *             "iata": "MAD",
+ *             "icao": "LEMD",
+ *             "wmo": "08221",
+ *             "passengers": 50633652,
+ *             "movements": 351906,
+ *             "cargo": 566372618,
+ *             "website": "http://www.aena.es/en/madrid-barajas-airport/index.html",
+ *             "operator": "Aena, Bombardier Transportation",
+ *             "opened": "1931-04-22",
+ *             "type": "public",
+ *             "statistics-year": "2022",
+ *             "runways": [
+ *                 {
+ *                     "direction": "14R/32L",
+ *                     "length": 4100,
+ *                     "surface": "asphalt"
+ *                 },
+ *                 {
+ *                     "direction": "18L/36R",
+ *                     "length": 3500,
+ *                     "surface": "asphalt"
+ *                 },
+ *                 {
+ *                     "direction": "14L/32R",
+ *                     "length": 3500,
+ *                     "surface": "asphalt"
+ *                 },
+ *                 {
+ *                     "direction": "18R/36L",
+ *                     "length": 4350,
+ *                     "surface": "asphalt/concrete"
+ *                 }
+ *             ]
+ *         },
+ *         "general": {
+ *             "elevation": 610
+ *         }
+ *     },
+ *     "source": {
+ *         "source": "wiki",
+ *         "link": "https://en.wikipedia.org/wiki/Adolfo_Su%C3%A1rez_Madrid%E2%80%93Barajas_Airport"
+ *     }
+ * }
+ * ====================
+ * IATA confirmed.
+ * ====================
  */
 class WikipediaAirportCrawlerCommand extends Command
 {
@@ -280,6 +341,7 @@ EOT
                         converters: [
                             new Trim(),
                             new PregMatch('/(\d{4}(?:-\d{2}-\d{2})?)/', 1),
+                            new First()
                         ]
                     ),
                     $this->getField(
