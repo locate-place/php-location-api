@@ -16,6 +16,7 @@ namespace App\Entity;
 use App\Entity\Trait\TimestampsTrait;
 use App\Repository\PropertyRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 /**
  * Class Property
@@ -25,10 +26,17 @@ use Doctrine\ORM\Mapping as ORM;
  * @since 0.1.0 (2024-02-20) First version.
  */
 #[ORM\Entity(repositoryClass: PropertyRepository::class)]
+#[UniqueEntity(
+    fields: ['property_name', 'property_type', 'property_language'],
+    message: 'The code combination is already used with this class.',
+    errorPath: 'property_name'
+)]
+#[ORM\UniqueConstraint(columns: ['property_name', 'property_type', 'property_language'])]
 #[ORM\Index(columns: ['location_id'])]
 #[ORM\Index(columns: ['property_name'])]
 #[ORM\Index(columns: ['property_value'])]
 #[ORM\Index(columns: ['property_language'])]
+#[ORM\Index(columns: ['property_type'])]
 #[ORM\HasLifecycleCallbacks]
 class Property
 {
@@ -43,6 +51,10 @@ class Property
     #[ORM\JoinColumn(nullable: false)]
     private ?Location $location = null;
 
+    #[ORM\ManyToOne(inversedBy: 'properties')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Source $source = null;
+
     #[ORM\Column(length: 200)]
     private ?string $propertyName = null;
 
@@ -51,6 +63,9 @@ class Property
 
     #[ORM\Column(length: 7, nullable: true)]
     private ?string $propertyLanguage = null;
+
+    #[ORM\Column(length: 63, nullable: true)]
+    private ?string $propertyType = null;
 
     /**
      * @return int|null
@@ -75,6 +90,25 @@ class Property
     public function setLocation(?Location $location): static
     {
         $this->location = $location;
+
+        return $this;
+    }
+
+    /**
+     * @return Source|null
+     */
+    public function getSource(): ?Source
+    {
+        return $this->source;
+    }
+
+    /**
+     * @param Source|null $source
+     * @return $this
+     */
+    public function setSource(?Source $source): static
+    {
+        $this->source = $source;
 
         return $this;
     }
@@ -132,6 +166,25 @@ class Property
     public function setPropertyLanguage(?string $propertyLanguage): static
     {
         $this->propertyLanguage = $propertyLanguage;
+
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getPropertyType(): ?string
+    {
+        return $this->propertyType;
+    }
+
+    /**
+     * @param string|null $propertyType
+     * @return $this
+     */
+    public function setPropertyType(?string $propertyType): static
+    {
+        $this->propertyType = $propertyType;
 
         return $this;
     }
