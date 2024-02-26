@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "6d163ed13a8809dda3a3471c85e29ea0",
+    "content-hash": "bd5a72b6baa59254c072e91721bd6d81",
     "packages": [
         {
             "name": "adhocore/cli",
@@ -2488,16 +2488,16 @@
         },
         {
             "name": "ixnode/php-web-crawler",
-            "version": "0.1.18",
+            "version": "0.1.20",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ixnode/php-web-crawler.git",
-                "reference": "770b713ca5b393a33deaa5b0d85b498525c7b7a9"
+                "reference": "30aefe13b97bef587b65bbe12c25cc48d375a82f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ixnode/php-web-crawler/zipball/770b713ca5b393a33deaa5b0d85b498525c7b7a9",
-                "reference": "770b713ca5b393a33deaa5b0d85b498525c7b7a9",
+                "url": "https://api.github.com/repos/ixnode/php-web-crawler/zipball/30aefe13b97bef587b65bbe12c25cc48d375a82f",
+                "reference": "30aefe13b97bef587b65bbe12c25cc48d375a82f",
                 "shasum": ""
             },
             "require": {
@@ -2553,9 +2553,9 @@
             ],
             "support": {
                 "issues": "https://github.com/ixnode/php-web-crawler/issues",
-                "source": "https://github.com/ixnode/php-web-crawler/tree/0.1.18"
+                "source": "https://github.com/ixnode/php-web-crawler/tree/0.1.20"
             },
-            "time": "2024-02-26T00:23:59+00:00"
+            "time": "2024-02-26T17:03:11+00:00"
         },
         {
             "name": "monolog/monolog",

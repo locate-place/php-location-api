@@ -23,6 +23,7 @@ use Ixnode\PhpException\Function\FunctionJsonEncodeException;
 use Ixnode\PhpException\Type\TypeInvalidException;
 use Ixnode\PhpNamingConventions\Exception\FunctionReplaceException;
 use Ixnode\PhpWebCrawler\Converter\Collection\Base\ConverterArray;
+use Ixnode\PhpWebCrawler\Converter\Collection\Chunk;
 use Ixnode\PhpWebCrawler\Converter\Collection\First;
 use Ixnode\PhpWebCrawler\Converter\Collection\Implode;
 use Ixnode\PhpWebCrawler\Converter\Collection\RemoveEmpty;
@@ -65,6 +66,10 @@ class WikipediaAirportCrawlerCommand extends Command
     private const NUMBER_1 = 1;
 
     private const SEPARATOR_COUNT = 20;
+
+    private const RUNWAY_CHUNK_SIZE = 3;
+
+    private const RUNWAY_SEPARATOR = ', ';
 
     private const DOMAIN_WIKIPEDIA = 'https://en.wikipedia.org';
 
@@ -204,80 +209,106 @@ EOT
     /**
      * Returns the airport Field classes.
      *
-     * @param string $iata
-     * @return Field[]
+     * @return Field[]|Group[]
+     * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
      */
-    private function getFieldsAirport(string $iata): array
+    private function getFieldsAirport(): array
     {
+        $xpathRunwaysTable = '/html/body//tr/th[contains(@class, "infobox-header") and contains(., "Runways")]/ancestor::tr/following-sibling::tr[1]/td[contains(@class, "infobox-full-data")]/table%s';
+
         return [
-            $this->getField(
-                key: 'airport-passengers',
-                search: ['passengers', 'passenger volume'],
-                searchNot: 'change',
-                converters: [new Number(['.', ','], '')]
-            ),
-            $this->getField(
-                key: 'airport-movements',
-                search: ['aircraft movements', 'movements', 'aircraft operations'],
-                searchNot: 'change',
-                converters: [new Number(['.', ','], '')]
-            ),
-            $this->getField(
-                key: 'airport-cargo',
-                search: ['cargo'],
-                searchNot: 'change',
-                converters: [new Number(['.', ','], '')]
-            ),
-            $this->getField(
-                key: 'airport-website',
-                search: 'website',
-                converters: [new Trim()],
-                subElements: '//a/@href'
-            ),
-            $this->getField(
-                key: 'airport-operator-complex',
-                search: 'operator',
-                converters: [new Trim(), new RemoveEmpty(), new Implode(), new Replace(', (', ' (')],
-                subElements: '//*[not(./text()/parent::style)]/text()'
-            ),
-            $this->getField(
-                key: 'airport-operator',
-                search: 'operator',
-                converters: [new Trim(), new RemoveEmpty(), new Implode()],
-                subElements: '/text()'
-            ),
-            $this->getField(
-                key: 'airport-opened',
-                search: 'opened',
-                converters: [
+            new Group(
+                'airport',
+                new Field('iata', new XpathTextNode(
+                    '/html/body//li/span/a[contains(text(), "IATA")]/../span[@class="nickname"]',
+                    new First()
+                )),
+                new Field('icao', new XpathTextNode(
+                    '/html/body//li/span/a[contains(text(), "ICAO")]/../span[@class="nickname"]',
+                    new First()
+                )),
+                new Field('wmo', new XpathTextNode(
+                    '/html/body//li/span/a[contains(text(), "WMO")]/../span[@class="nickname"]',
+                    new First(),
+                    new Number()
+                )),
+                $this->getField(
+                    key: 'passengers',
+                    search: ['passengers', 'passenger volume'],
+                    searchNot: 'change',
+                    converters: [new Number(['.', ','], '')]
+                ),
+                $this->getField(
+                    key: 'movements',
+                    search: ['aircraft movements', 'movements', 'aircraft operations'],
+                    searchNot: 'change',
+                    converters: [new Number(['.', ','], '')]
+                ),
+                $this->getField(
+                    key: 'cargo',
+                    search: ['cargo'],
+                    searchNot: 'change',
+                    converters: [new Number(['.', ','], '')]
+                ),
+                $this->getField(
+                    key: 'website',
+                    search: 'website',
+                    converters: [new Trim()],
+                    subElements: '//a/@href'
+                ),
+                $this->getField(
+                    key: 'operator-complex',
+                    search: 'operator',
+                    converters: [new Trim(), new RemoveEmpty(), new Implode(), new Replace(', (', ' (')],
+                    subElements: '//*[not(./text()/parent::style)]/text()'
+                ),
+                $this->getField(
+                    key: 'operator',
+                    search: 'operator',
+                    converters: [new Trim(), new RemoveEmpty(), new Implode()],
+                    subElements: '/text()'
+                ),
+                $this->getField(
+                    key: 'opened',
+                    search: 'opened',
+                    converters: [
+                        new Trim(),
+                        new PregMatch('/(\d{4}(?:-\d{2}-\d{2})?)/', 1),
+                    ]
+                ),
+                $this->getField(
+                    key: 'type',
+                    search: 'airport type',
+                    converters: [
+                        new Trim(),
+                        new ToLower(),
+                        new Replace('/', ', ')
+                    ]
+                ),
+                new Field('statistics-year', new XpathTextNode(
+                    '/html/body//tr/th[contains(@class, "infobox-header") and contains(., "Statistics")]/text()',
                     new Trim(),
-                    new PregMatch('/(\d{4}(?:-\d{2}-\d{2})?)/', 1),
-                ]
-            ),
-            $this->getField(
-                key: 'airport-type',
-                search: 'airport type',
-                converters: [
+                    new PregMatch('~Statistics \(([0-9]+)\)~', 1)
+                )),
+                new Field('runways', new XpathTextNode(
+                    sprintf($xpathRunwaysTable, '//tr[position() > 2]/td[position() = 1 or position() = 2 or position() = 4]'),
                     new Trim(),
-                    new ToLower(),
-                    new Replace('/', ', ')
-                ]
+                    new Chunk(
+                        chunkSize: self::RUNWAY_CHUNK_SIZE,
+                        separator: self::RUNWAY_SEPARATOR,
+                        arrayKeys: ['direction', 'length', 'surface'],
+                        scalarConverters: [null, new Number([',', '.'], ''), new ToLower()])
+                    )
+                ),
             ),
-            new Field('airport-statistics-year', new XpathTextNode(
-                '/html/body//tr/th[contains(@class, "infobox-header") and contains(., "Statistics")]/text()',
-                new Trim(),
-                new PregMatch('~Statistics \(([0-9]+)\)~', 1)
-            )),
-            new Field('airport-iata-confirmed', new XpathTextNode(
-                sprintf('/html/body//span[@class="nickname" and contains(text(), "%s")]', $iata),
-                new Boolean(),
-                new First()
-            )),
-            // [\x{C2A0}] [\x{00AE}]
-            $this->getField(
-                key: 'elevation',
-                search: 'elevation',
-                converters: [new Trim(), new PregMatch('~([0-9]+(?:[,.][0-9]+)?)(?:[\xc2\xa0 ]+)m~', 1), new Number([',', '.'], '')]
+
+            new Group(
+                'general',
+                $this->getField(
+                    key: 'elevation',
+                    search: 'elevation',
+                    converters: [new Trim(), new PregMatch('~([0-9]+(?:[,.][0-9]+)?)(?:[\xc2\xa0 ]+)m~', 1), new Number([',', '.'], '')]
+                )
             )
         ];
     }
@@ -322,9 +353,9 @@ EOT
                 )
             ),
             new Group(
-                'airport',
-                ...$this->getFieldsAirport($iata)
-            )
+                'data',
+                ...$this->getFieldsAirport()
+            ),
         );
 
         $parsed = $url->parse();
@@ -334,9 +365,6 @@ EOT
         }
 
         $parsed->deleteKey('hits-deep');
-
-//        print $parsed->getJsonStringFormatted().PHP_EOL;
-//        exit();
 
         return match (true) {
             !$parsed->getKeyBoolean('is-list-page') => $parsed,
@@ -349,7 +377,6 @@ EOT
      * Returns the parsed wikipedia data (not formatted).
      *
      * @param Json $parsed
-     * @param string $iata
      * @return Json
      * @throws ArrayKeyNotFoundException
      * @throws CaseInvalidException
@@ -360,17 +387,17 @@ EOT
      * @throws JsonException
      * @throws TypeInvalidException
      */
-    private function doGetPageData(Json $parsed, string $iata): Json
+    private function doGetPageData(Json $parsed): Json
     {
         if (!$parsed->getKeyBoolean('is-list-page')) {
-            return $parsed->getKeyJson('airport');
+            return $parsed->getKeyJson(['data']);
         }
 
         $link = $this->getPropertyLink($parsed);
 
         $url = new Url(
             $link,
-            ...$this->getFieldsAirport($iata)
+            ...$this->getFieldsAirport()
         );
 
         return $url->parse();
@@ -380,7 +407,6 @@ EOT
      * Returns the parsed wikipedia data.
      *
      * @param Json $parsed
-     * @param string $iata
      * @return Json
      * @throws ArrayKeyNotFoundException
      * @throws CaseInvalidException
@@ -391,12 +417,12 @@ EOT
      * @throws JsonException
      * @throws TypeInvalidException
      */
-    private function getPageData(Json $parsed, string $iata): Json
+    private function getPageData(Json $parsed): Json
     {
-        $pageData = $this->doGetPageData($parsed, $iata);
+        $pageData = $this->doGetPageData($parsed);
 
-        $airportOperatorComplex = $pageData->getKey('airport-operator-complex');
-        $airportOperator = $pageData->getKey('airport-operator');
+        $airportOperatorComplex = $pageData->getKey(['airport', 'operator-complex']);
+        $airportOperator = $pageData->getKey(['airport', 'operator']);
 
         if (!is_string($airportOperatorComplex) && !is_null($airportOperatorComplex)) {
             throw new TypeInvalidException(sprintf('Unsupported type for airport-operator-complex: %s', gettype($airportOperatorComplex)));
@@ -416,10 +442,10 @@ EOT
             $operators[] = $airportOperator;
         }
 
-        $airportOperator = implode(', ', $operators);
+        $airportOperator = count($operators) > self::ZERO_RESULT ? implode(', ', $operators) : null;
 
-        $pageData->addValue('airport-operator', $airportOperator);
-        $pageData->deleteKey('airport-operator-complex');
+        $pageData->addValue(['airport', 'operator'], $airportOperator);
+        $pageData->deleteKey(['airport', 'operator-complex']);
 
         return $pageData;
     }
@@ -457,8 +483,8 @@ EOT
         $numberHits = $isListPage ? count($parsed->getKeyArray('hits')) : self::NUMBER_1;
 
         /* Get the airport data. */
-        $data = $this->getPageData($parsed, $iata);
-        $airportIataConfirmed = $data->hasKey('airport-iata-confirmed') && $data->getKeyBoolean('airport-iata-confirmed');
+        $data = $this->getPageData($parsed);
+        $airportIataConfirmed = $data->hasKey(['airport', 'iata']) && $data->getKey(['airport', 'iata']) === $iata;
 
         /* Last URL */
         $lastUrl = $parsed->getKey('last-url');
