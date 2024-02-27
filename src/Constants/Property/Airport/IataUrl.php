@@ -22,15 +22,27 @@ namespace App\Constants\Property\Airport;
  */
 class IataUrl
 {
+    final public const AOC = 'https://en.wikipedia.org/wiki/Leipzig%E2%80%93Altenburg_Airport';
+    final public const BBJ = 'https://en.wikipedia.org/wiki/Bitburg_Airport';
     final public const BYU = 'https://en.wikipedia.org/wiki/Bayreuth_Airport';
+    final public const FMM = 'https://en.wikipedia.org/wiki/Memmingen_Airport';
     final public const FRZ = 'https://en.wikipedia.org/wiki/Fritzlar_Air_Base';
     final public const JFK = 'https://en.wikipedia.org/wiki/John_F._Kennedy_International_Airport';
+    final public const LBC = 'https://en.wikipedia.org/wiki/L%C3%BCbeck_Airport';
+    final public const QEF = 'https://en.wikipedia.org/wiki/Frankfurt_Egelsbach_Airport';
+    final public const SZW = 'https://en.wikipedia.org/wiki/Parchim_International_Airport';
     final public const ZNV = 'https://en.wikipedia.org/wiki/Koblenz-Winningen_Airport';
 
     final public const URL = [
+        'AOC' => self::AOC,
+        'BBJ' => self::BBJ,
         'BYU' => self::BYU,
+        'FMM' => self::FMM,
         'FRZ' => self::FRZ,
         'JFK' => self::JFK,
+        'LBC' => self::LBC,
+        'QEF' => self::QEF,
+        'SZW' => self::SZW,
         'ZNV' => self::ZNV,
     ];
 }

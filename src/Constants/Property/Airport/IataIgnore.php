@@ -22,9 +22,18 @@ namespace App\Constants\Property\Airport;
  */
 class IataIgnore
 {
-    final public const GUT = 'GUT';
-
     final public const IGNORE = [
-        'GUT' => self::GUT,
+        'BFE' => 'BFE',
+        'EIB' => 'EIB',
+        'GKE' => 'GKE',
+        'GUT' => 'GUT',
+        'IZE' => 'IZE',
+        'OBF' => 'OBF',
+        'QPK' => 'QPK',
+        'SPM' => 'SPM',
+        'WBG' => 'WBG',
+        'WIE' => 'WIE',
+        'ZCN' => 'ZCN',
+        'ZMG' => 'ZMG',
     ];
 }

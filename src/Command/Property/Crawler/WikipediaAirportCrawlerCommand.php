@@ -132,6 +132,16 @@ use Symfony\Component\Console\Output\OutputInterface;
  * ====================
  * IATA confirmed.
  * ====================
+ *
+ * @example
+ *
+ * SELECT p.id, p.location_id, p.property_name, p.property_value, l.name, a.alternate_name
+ * FROM property p
+ * JOIN location l ON p.location_id = l.id
+ * JOIN alternate_name a ON a.location_id = l.id
+ * WHERE p.property_name = 'passengers' AND a.iso_language = 'iata'
+ * ORDER BY property_value::INTEGER DESC
+ *
  */
 class WikipediaAirportCrawlerCommand extends Command
 {
@@ -144,6 +154,15 @@ class WikipediaAirportCrawlerCommand extends Command
         'It refers to:',
         'can also refer to:',
         'may stand for:',
+        'are used for:',
+    ];
+
+    private const WIKIPEDIA_AIRPORT_SEARCHES = [
+        'airport',
+        'iata',
+        'airfield',
+        'airbase',
+        'air base',
     ];
 
     private const ZERO_RESULT = 0;
@@ -157,6 +176,10 @@ class WikipediaAirportCrawlerCommand extends Command
     private const RUNWAY_SEPARATOR = ', ';
 
     private const DOMAIN_WIKIPEDIA = 'https://en.wikipedia.org';
+
+    private const DOMAIN_WIKIPEDIA_SEARCH = 'https://en.wikipedia.org/wiki/%s';
+
+    private const DOMAIN_WIKIPEDIA_SEARCH_DISAMBIGUATION = 'https://en.wikipedia.org/wiki/%s_(disambiguation)';
 
     private int $propertiesAdded = 0;
 
@@ -193,6 +216,7 @@ class WikipediaAirportCrawlerCommand extends Command
                 new InputOption(KeyArray::MAX_RESULTS, null, InputOption::VALUE_OPTIONAL, 'Maximum number of results to return', null),
                 new InputOption(KeyArray::DEBUG_PAGE, null, InputOption::VALUE_NONE, 'Enable debug mode (page view)'),
                 new InputOption(KeyArray::DEBUG_SEARCH, null, InputOption::VALUE_NONE, 'Enable debug mode (search view)'),
+                new InputOption(KeyArray::FORCE, null, InputOption::VALUE_NONE, 'Forces already imported iata codes'),
             ])
             ->setHelp(
                 <<<'EOT'
@@ -253,6 +277,7 @@ EOT
         $property = match (true) {
             is_string($property) => $property,
             is_array($property) && count($property) > self::ZERO_RESULT => $property[0],
+            is_null($property) => '',
             default => throw new LogicException(sprintf('Invalid link type given: %s', gettype($property))),
         };
 
@@ -366,19 +391,22 @@ EOT
                         key: 'passengers',
                         search: ['passengers', 'passenger volume'],
                         searchNot: 'change',
-                        converters: [new Number(['.', ','], ''), new HighestNumber()]
+                        converters: [new First(), new Number(['.', ','], ''), new HighestNumber()],
+                        subElements: '//text()',
                     ),
                     $this->getField(
                         key: 'movements',
                         search: ['aircraft movements', 'movements', 'aircraft operations'],
                         searchNot: 'change',
-                        converters: [new Number(['.', ','], ''), new HighestNumber()]
+                        converters: [new First(), new Number(['.', ','], ''), new HighestNumber()],
+                        subElements: '//text()',
                     ),
                     $this->getField(
                         key: 'cargo',
                         search: ['cargo'],
                         searchNot: 'change',
-                        converters: [new Number(['.', ','], ''), new HighestNumber()]
+                        converters: [new First(), new Number(['.', ','], ''), new HighestNumber()],
+                        subElements: '//text()',
                     ),
                     $this->getField(
                         key: 'website',
@@ -417,9 +445,9 @@ EOT
                         ]
                     ),
                     new Field('statistics-year', new XpathTextNode(
-                        '/html/body//tr/th[contains(@class, "infobox-header") and contains(., "Statistics")]/text()',
+                        '/html/body//tr/th[contains(@class, "infobox-header") and contains(., "Statistics")]',
                         new Trim(),
-                        new PregMatch('~Statistics \(([0-9]+)\)~', 1)
+                        new PregMatch('~Statistics \(([0-9]+)(?:\[[0-9]+\])?\)~', 1)
                     )),
                     new Field('runways', new XpathTextNode(
                         sprintf($xpathRunwaysTable, '//tr[position() > 2]/td[position() = 1 or position() = 2 or position() = 4]'),
@@ -436,8 +464,8 @@ EOT
                                     new PregReplace('~[ ]*[/,]+[ ]*~', '/'),
                                 )
                             ]
-                        ))
-                    ),
+                        )
+                    )),
                 ),
 
                 new Group(
@@ -470,7 +498,7 @@ EOT
             $search = [$search];
         }
 
-        $search = array_map(fn(string $item) => sprintf('contains(., "%s")', $item), $search);
+        $search = array_map(fn(string $item) => sprintf('contains(translate(., "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz"), "%s")', $item), $search);
 
         return implode(' or ', $search);
     }
@@ -478,6 +506,7 @@ EOT
     /**
      * Returns the airport wikipedia page from wikipedia search.
      *
+     * @param string $template
      * @param string $iata
      * @return Json|null
      * @throws ArrayKeyNotFoundException
@@ -489,11 +518,11 @@ EOT
      * @throws JsonException
      * @throws TypeInvalidException
      */
-    private function getPage(string $iata): Json|null
+    private function getPage(string $template, string $iata): Json|null
     {
         $site = match (true) {
             array_key_exists($iata, IataUrl::URL) => IataUrl::URL[$iata],
-            default => sprintf('%s/wiki/%s', self::DOMAIN_WIKIPEDIA, $iata),
+            default => sprintf($template, $iata),
         };
 
         $url = new Url(
@@ -508,7 +537,7 @@ EOT
             new Group(
                 'hits',
                 new XpathSections(
-                    '/html/body//div[@id="mw-content-text"]//ul/li[contains(translate(., "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz"), "airport") or contains(translate(., "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz"), "iata") or contains(translate(., "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz"), "airfield")]',
+                    sprintf('/html/body//div[@id="mw-content-text"]//ul/li[%s]', $this->getXpathContains(self::WIKIPEDIA_AIRPORT_SEARCHES)),
                     new Field('link', new XpathTextNode('./a[not(contains(@href, "airport_code"))]/@href', new Sprintf(self::DOMAIN_WIKIPEDIA.'%s'))),
                     new Field('name', new XpathTextNode('./a[not(contains(@href, "airport_code"))]/text()')),
                 )
@@ -608,17 +637,9 @@ EOT
             throw new TypeInvalidException(sprintf('Unsupported type for airport-operator: %s', gettype($airportOperator)));
         }
 
-        $operators = [];
-
-        if (is_string($airportOperatorComplex)) {
-            $operators[] = $airportOperatorComplex;
+        if (is_null($airportOperator) && is_string($airportOperatorComplex)) {
+            $airportOperator = $airportOperatorComplex;
         }
-
-        if (is_string($airportOperator)) {
-            $operators[] = $airportOperator;
-        }
-
-        $airportOperator = count($operators) > self::ZERO_RESULT ? implode(', ', $operators) : null;
 
         $pageData->addValue(['data', 'airport', 'operator'], $airportOperator);
         $pageData->deleteKey(['data', 'airport', 'operator-complex']);
@@ -821,14 +842,22 @@ EOT
             throw new LogicException('Location does not exist.');
         }
 
-        $parsed = $this->getPage($iata);
-
+        $parsed = $this->getPage(self::DOMAIN_WIKIPEDIA_SEARCH, $iata);
         if (is_null($parsed)) {
             $this->output->writeln(sprintf('<error>No airport page found for %s on wikipedia page.</error>', $iata));
             return Command::FAILURE;
         }
-
         $isListPage = $parsed->getKeyBoolean('is-list-page');
+
+        /* Try disambiguation page if this is not a list page and no iata is found. */
+        if (!$isListPage && $parsed->getKey(['data', 'data', 'airport', 'iata']) === null) {
+            $parsed = $this->getPage(self::DOMAIN_WIKIPEDIA_SEARCH_DISAMBIGUATION, $iata);
+            if (is_null($parsed)) {
+                $this->output->writeln(sprintf('<error>No airport page found for %s on wikipedia page.</error>', $iata));
+                return Command::FAILURE;
+            }
+            $isListPage = $parsed->getKeyBoolean('is-list-page');
+        }
 
         /* Use the first hit or the title and the last url of the page. */
         $name = $this->getPropertyName($parsed);
@@ -950,6 +979,12 @@ EOT
     {
         $this->output = $output;
         $this->input = $input;
+
+        $force = (bool) $this->input->getOption(KeyArray::FORCE);
+
+        if ($force) {
+            $this->setIgnoreExistingProperties(false);
+        }
 
         $iatas = $this->getIatas();
 

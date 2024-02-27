@@ -100,6 +100,8 @@ class KeyArray
 
     final public const FEATURE_CODE_NAME = 'code-name';
 
+    final public const FORCE = 'force';
+
     final public const FULL = 'full';
 
     final public const GENERAL = 'general';
