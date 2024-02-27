@@ -45,6 +45,7 @@ class Source
     #[ORM\Column(length: 2048, nullable: true)]
     private ?string $sourceLink = null;
 
+    /** @var Collection<int, Property> $properties */
     #[ORM\OneToMany(mappedBy: 'source', targetEntity: Property::class, orphanRemoval: true)]
     private Collection $properties;
 

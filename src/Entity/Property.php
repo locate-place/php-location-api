@@ -67,6 +67,9 @@ class Property
     #[ORM\Column(length: 63, nullable: true)]
     private ?string $propertyType = null;
 
+    #[ORM\Column(nullable: true)]
+    private ?int $propertyNumber = null;
+
     /**
      * @return int|null
      */
@@ -185,6 +188,25 @@ class Property
     public function setPropertyType(?string $propertyType): static
     {
         $this->propertyType = $propertyType;
+
+        return $this;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getPropertyNumber(): ?int
+    {
+        return $this->propertyNumber;
+    }
+
+    /**
+     * @param int|null $propertyNumber
+     * @return $this
+     */
+    public function setPropertyNumber(?int $propertyNumber): static
+    {
+        $this->propertyNumber = $propertyNumber;
 
         return $this;
     }

@@ -13,11 +13,15 @@ declare(strict_types=1);
 
 namespace App\Repository;
 
+use App\Constants\DB\FeatureClass;
+use App\Constants\DB\FeatureCode as DbFeatureCode;
 use App\Constants\Language\LanguageCode;
+use App\Constants\Property\Airport\IataIgnore;
 use App\Entity\AlternateName;
 use App\Entity\Location;
 use App\Utils\Wikipedia\Wikipedia;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\Persistence\ManagerRegistry;
 use Ixnode\PhpChecker\CheckerArray;
 use Ixnode\PhpException\Class\ClassInvalidException;
@@ -110,5 +114,102 @@ class AlternateNameRepository extends ServiceEntityRepository
         }
 
         return (new Wikipedia($alternateNames))->getWikipediaLink($language);
+    }
+
+    /**
+     * Find one AlternateName entity by given iata code.
+     *
+     * @param string $iata
+     * @param bool $ignoreExistingProperties
+     * @return AlternateName|null
+     * @throws NonUniqueResultException
+     * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
+     */
+    public function findOneByAirportAndIata(string $iata, bool $ignoreExistingProperties = false): ?AlternateName
+    {
+        if (array_key_exists($iata, IataIgnore::IGNORE)) {
+            return null;
+        }
+
+        $queryBuilder = $this->createQueryBuilder('a');
+
+        $queryBuilder
+            ->leftJoin('a.location', 'l')
+            ->leftJoin('l.featureClass', 'fcl')
+            ->leftJoin('l.featureCode', 'fco')
+
+            ->andWhere('fcl.class = :featureClass')
+            ->setParameter('featureClass', FeatureClass::S)
+
+            ->andWhere('fco.code = :featureCode')
+            ->setParameter('featureCode', DbFeatureCode::AIRP)
+
+            ->andWhere('a.isoLanguage = :isoLanguage')
+            ->setParameter('isoLanguage', LanguageCode::IATA)
+
+            ->andWhere('a.alternateName = :alternateName')
+            ->setParameter('alternateName', $iata)
+
+            ->setMaxResults(1)
+        ;
+
+        if ($ignoreExistingProperties) {
+            $queryBuilder
+                ->andWhere('NOT EXISTS (SELECT 1 FROM App\Entity\Property p WHERE p.location = l)');
+        }
+
+        $alternateName = $queryBuilder->getQuery()->getOneOrNullResult();
+
+        if ($alternateName instanceof AlternateName) {
+            return $alternateName;
+        }
+
+        return null;
+    }
+
+    /**
+     * Find all AlternateName entity by given airport feature code.
+     *
+     * @param int|null $maxResults
+     * @param bool $ignoreExistingProperties
+     * @return string[]
+     * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
+     */
+    public function findIataCodes(int $maxResults = null, bool $ignoreExistingProperties = false): array
+    {
+        $queryBuilder = $this->createQueryBuilder('a');
+
+        $queryBuilder
+            ->select('a.alternateName')
+
+            ->leftJoin('a.location', 'l')
+            ->leftJoin('l.featureClass', 'fcl')
+            ->leftJoin('l.featureCode', 'fco')
+
+            ->andWhere('fcl.class = :featureClass')
+            ->setParameter('featureClass', FeatureClass::S)
+
+            ->andWhere('fco.code = :featureCode')
+            ->setParameter('featureCode', DbFeatureCode::AIRP)
+
+            ->andWhere('a.isoLanguage = :isoLanguage')
+            ->setParameter('isoLanguage', LanguageCode::IATA)
+
+            ->andWhere('a.alternateName NOT IN (:excludedNames)')
+            ->setParameter('excludedNames', array_values(IataIgnore::IGNORE))
+        ;
+
+        if (!is_null($maxResults)) {
+            $queryBuilder->setMaxResults($maxResults);
+        }
+
+        if ($ignoreExistingProperties) {
+            $queryBuilder
+                ->andWhere('NOT EXISTS (SELECT 1 FROM App\Entity\Property p WHERE p.location = l)');
+        }
+
+        $result = $queryBuilder->getQuery()->getScalarResult();
+
+        return array_column($result, 'alternateName');
     }
 }

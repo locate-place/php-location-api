@@ -14,6 +14,14 @@ declare(strict_types=1);
 namespace App\Command\Property\Crawler;
 
 use App\Constants\Key\KeyArray;
+use App\Constants\Property\Airport\IataUrl;
+use App\Entity\Location;
+use App\Entity\Property;
+use App\Entity\Source;
+use App\Repository\AlternateNameRepository;
+use App\Repository\SourceRepository;
+use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\NonUniqueResultException;
 use Ixnode\PhpContainer\Json;
 use Ixnode\PhpException\ArrayType\ArrayKeyNotFoundException;
 use Ixnode\PhpException\Case\CaseInvalidException;
@@ -25,6 +33,7 @@ use Ixnode\PhpNamingConventions\Exception\FunctionReplaceException;
 use Ixnode\PhpWebCrawler\Converter\Collection\Base\ConverterArray;
 use Ixnode\PhpWebCrawler\Converter\Collection\Chunk;
 use Ixnode\PhpWebCrawler\Converter\Collection\First;
+use Ixnode\PhpWebCrawler\Converter\Collection\HighestNumber;
 use Ixnode\PhpWebCrawler\Converter\Collection\Implode;
 use Ixnode\PhpWebCrawler\Converter\Collection\RemoveEmpty;
 use Ixnode\PhpWebCrawler\Converter\Scalar\Base\Converter;
@@ -49,6 +58,7 @@ use LogicException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
@@ -57,6 +67,8 @@ use Symfony\Component\Console\Output\OutputInterface;
  * @author Björn Hempel <bjoern@hempel.li>
  * @version 0.1.0 (2024-02-24)
  * @since 0.1.0 (2024-02-24) First version.
+ * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
+ * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  *
  * @example bin/console crawler:wikipedia:airport MAD
  *
@@ -113,7 +125,7 @@ use Symfony\Component\Console\Output\OutputInterface;
  *         }
  *     },
  *     "source": {
- *         "source": "wiki",
+ *         "type": "wiki",
  *         "link": "https://en.wikipedia.org/wiki/Adolfo_Su%C3%A1rez_Madrid%E2%80%93Barajas_Airport"
  *     }
  * }
@@ -124,6 +136,15 @@ use Symfony\Component\Console\Output\OutputInterface;
 class WikipediaAirportCrawlerCommand extends Command
 {
     protected static $defaultName = 'crawler:wikipedia:airport';
+
+    private const WIKIPEDIA_LIST_SEARCHES = [
+        'may refer to:',
+        'can refer to:',
+        'may also refer to:',
+        'It refers to:',
+        'can also refer to:',
+        'may stand for:',
+    ];
 
     private const ZERO_RESULT = 0;
 
@@ -137,7 +158,27 @@ class WikipediaAirportCrawlerCommand extends Command
 
     private const DOMAIN_WIKIPEDIA = 'https://en.wikipedia.org';
 
+    private int $propertiesAdded = 0;
+
+    private bool $ignoreExistingProperties = true;
+
     private OutputInterface $output;
+
+    private InputInterface $input;
+
+    /**
+     * @param EntityManagerInterface $entityManager
+     * @param AlternateNameRepository $alternateNameRepository
+     * @param SourceRepository $sourceRepository
+     */
+    public function __construct(
+        protected readonly EntityManagerInterface $entityManager,
+        protected AlternateNameRepository $alternateNameRepository,
+        protected SourceRepository $sourceRepository
+    )
+    {
+        parent::__construct();
+    }
 
     /**
      * Configures the command.
@@ -148,7 +189,10 @@ class WikipediaAirportCrawlerCommand extends Command
             ->setName(strval(self::$defaultName))
             ->setDescription('Crawls wikipedia pages for airport properties.')
             ->setDefinition([
-                new InputArgument(KeyArray::IATA, InputArgument::REQUIRED, 'The iata code to be parsed.'),
+                new InputArgument(KeyArray::IATA, InputArgument::OPTIONAL, 'The iata code to be parsed.', null),
+                new InputOption(KeyArray::MAX_RESULTS, null, InputOption::VALUE_OPTIONAL, 'Maximum number of results to return', null),
+                new InputOption(KeyArray::DEBUG_PAGE, null, InputOption::VALUE_NONE, 'Enable debug mode (page view)'),
+                new InputOption(KeyArray::DEBUG_SEARCH, null, InputOption::VALUE_NONE, 'Enable debug mode (search view)'),
             ])
             ->setHelp(
                 <<<'EOT'
@@ -157,6 +201,25 @@ The <info>crawler:wikipedia:airport</info> crawls wikipedia pages for airport pr
 
 EOT
             );
+    }
+
+    /**
+     * @return bool
+     */
+    public function isIgnoreExistingProperties(): bool
+    {
+        return $this->ignoreExistingProperties;
+    }
+
+    /**
+     * @param bool $ignoreExistingProperties
+     * @return self
+     */
+    public function setIgnoreExistingProperties(bool $ignoreExistingProperties): self
+    {
+        $this->ignoreExistingProperties = $ignoreExistingProperties;
+
+        return $this;
     }
 
     /**
@@ -273,11 +336,11 @@ EOT
     /**
      * Returns the airport Field classes.
      *
-     * @param string|null $link
+     * @param string $link
      * @return Field[]|Group[]
      * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
      */
-    private function getFieldsAirport(string $link = null): array
+    private function getFieldsAirport(string $link): array
     {
         $xpathRunwaysTable = '/html/body//tr/th[contains(@class, "infobox-header") and contains(., "Runways")]/ancestor::tr/following-sibling::tr[1]/td[contains(@class, "infobox-full-data")]/table%s';
 
@@ -303,24 +366,24 @@ EOT
                         key: 'passengers',
                         search: ['passengers', 'passenger volume'],
                         searchNot: 'change',
-                        converters: [new Number(['.', ','], '')]
+                        converters: [new Number(['.', ','], ''), new HighestNumber()]
                     ),
                     $this->getField(
                         key: 'movements',
                         search: ['aircraft movements', 'movements', 'aircraft operations'],
                         searchNot: 'change',
-                        converters: [new Number(['.', ','], '')]
+                        converters: [new Number(['.', ','], ''), new HighestNumber()]
                     ),
                     $this->getField(
                         key: 'cargo',
                         search: ['cargo'],
                         searchNot: 'change',
-                        converters: [new Number(['.', ','], '')]
+                        converters: [new Number(['.', ','], ''), new HighestNumber()]
                     ),
                     $this->getField(
                         key: 'website',
                         search: 'website',
-                        converters: [new Trim()],
+                        converters: [new Trim(), new First()],
                         subElements: '//a/@href'
                     ),
                     $this->getField(
@@ -389,10 +452,27 @@ EOT
 
             new Group(
                 'source',
-                new Field('source', new Text('wiki')),
+                new Field('type', new Text('wikipedia')),
                 new Field('link', new Text($link))
             )
         ];
+    }
+
+    /**
+     * Returns the contains query for XPath expressions.
+     *
+     * @param string|string[] $search
+     * @return string
+     */
+    private function getXpathContains(string|array $search): string
+    {
+        if (is_string($search)) {
+            $search = [$search];
+        }
+
+        $search = array_map(fn(string $item) => sprintf('contains(., "%s")', $item), $search);
+
+        return implode(' or ', $search);
     }
 
     /**
@@ -411,17 +491,24 @@ EOT
      */
     private function getPage(string $iata): Json|null
     {
-        $site = sprintf('%s/wiki/%s', self::DOMAIN_WIKIPEDIA, $iata);
+        $site = match (true) {
+            array_key_exists($iata, IataUrl::URL) => IataUrl::URL[$iata],
+            default => sprintf('%s/wiki/%s', self::DOMAIN_WIKIPEDIA, $iata),
+        };
 
         $url = new Url(
             $site,
             new Field('title', new XpathTextNode('/html/head/title')),
             new Field('last-url', new LastUrl()),
-            new Field('is-list-page', new XpathTextNode('/html/body//*[@id="mw-content-text"]/div/p[contains(., "may refer to:") or contains(., "can refer to:") or contains(., "may also refer to:")]', new Boolean())),
+            new Field('is-list-page', new XpathTextNode(
+                sprintf('/html/body//*[@id="mw-content-text"]/div/p[%s]', $this->getXpathContains(self::WIKIPEDIA_LIST_SEARCHES)),
+                new Boolean(),
+                new First()
+            )),
             new Group(
                 'hits',
                 new XpathSections(
-                    '/html/body//div[@id="mw-content-text"]//ul/li[contains(translate(., "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz"), "airport") or contains(translate(., "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz"), "iata")]',
+                    '/html/body//div[@id="mw-content-text"]//ul/li[contains(translate(., "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz"), "airport") or contains(translate(., "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz"), "iata") or contains(translate(., "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz"), "airfield")]',
                     new Field('link', new XpathTextNode('./a[not(contains(@href, "airport_code"))]/@href', new Sprintf(self::DOMAIN_WIKIPEDIA.'%s'))),
                     new Field('name', new XpathTextNode('./a[not(contains(@href, "airport_code"))]/text()')),
                 )
@@ -436,11 +523,16 @@ EOT
             ),
             new Group(
                 'data',
-                ...$this->getFieldsAirport()
+                ...$this->getFieldsAirport($site)
             ),
         );
 
         $parsed = $url->parse();
+
+        if ((bool) $this->input->getOption(KeyArray::DEBUG_SEARCH)) {
+            $this->printDebug($parsed->getJsonStringFormatted());
+            return null;
+        }
 
         if ($parsed->hasKey('hits-deep') && count($parsed->getKeyArray('hits-deep')) > self::ZERO_RESULT) {
             $parsed->addValue('hits', $parsed->getKeyArray('hits-deep'));
@@ -491,7 +583,7 @@ EOT
      *
      * @param Json $parsed
      * @param string $link
-     * @return Json
+     * @return Json|null
      * @throws ArrayKeyNotFoundException
      * @throws CaseInvalidException
      * @throws FileNotFoundException
@@ -501,7 +593,7 @@ EOT
      * @throws JsonException
      * @throws TypeInvalidException
      */
-    private function getPageData(Json $parsed, string $link): Json
+    private function getPageData(Json $parsed, string $link): Json|null
     {
         $pageData = $this->doGetPageData($parsed, $link);
 
@@ -531,7 +623,163 @@ EOT
         $pageData->addValue(['data', 'airport', 'operator'], $airportOperator);
         $pageData->deleteKey(['data', 'airport', 'operator-complex']);
 
+        if ((bool) $this->input->getOption(KeyArray::DEBUG_PAGE)) {
+            $this->printDebug($pageData->getJsonStringFormatted());
+            return null;
+        }
+
         return $pageData;
+    }
+
+    /**
+     * Returns the source entity.
+     *
+     * @param string $sourceType
+     * @param string $sourceLink
+     * @return Source
+     */
+    private function getSourceEntity(string $sourceType, string $sourceLink): Source
+    {
+        $source = $this->sourceRepository->findOneBy(['sourceType' => $sourceType, 'sourceLink' => $sourceLink]);
+
+        if (is_null($source)) {
+            $source = new Source();
+            $source->setSourceType($sourceType);
+            $source->setSourceLink($sourceLink);
+            $this->entityManager->persist($source);
+            $this->entityManager->flush();
+        }
+
+        return $source;
+    }
+
+    /**
+     * Returns the property entity.
+     *
+     * @param Location $location
+     * @param Source $source
+     * @param string $name
+     * @param string|int $value
+     * @param string $type
+     * @param int|null $number
+     * @return Property
+     */
+    private function getPropertyEntity(
+        Location $location,
+        Source $source,
+        string $name,
+        string|int $value,
+        string $type,
+        int $number = null
+    ): Property
+    {
+        $property = new Property();
+        $property->setLocation($location);
+        $property->setSource($source);
+        $property->setPropertyName($name);
+        $property->setPropertyValue((string) $value);
+        $property->setPropertyType($type);
+
+        if (!is_null($number)) {
+            $property->setPropertyNumber($number);
+        }
+
+        return $property;
+    }
+
+    /**
+     * Adds the given array data to db.
+     *
+     * @param Location $location
+     * @param Source $source
+     * @param array<string|int, mixed> $data
+     * @param string $type
+     * @param int|null $number
+     * @return void
+     */
+    private function doAddProperties(
+        Location $location,
+        Source $source,
+        array $data,
+        string $type,
+        int|null $number = null
+    ): void
+    {
+        foreach ($data as $key => $value) {
+            switch (true) {
+                /* Ignore empty values. */
+                case is_null($value):
+                    break;
+
+                /* Add strings and integer values to db. */
+                case is_string($value):
+                case is_int($value):
+                    $this->entityManager->persist(
+                        $this->getPropertyEntity($location, $source, (string) $key, $value, $type, $number)
+                    );
+                    $this->propertiesAdded++;
+                    break;
+
+                /* Recursive iteration for arrays. */
+                case is_array($value):
+                    foreach ($value as $index => $subData) {
+                        if (!is_int($index)) {
+                            throw new LogicException(sprintf('Unsupported type for array index: %s', gettype($index)));
+                        }
+
+                        $this->doAddProperties($location, $source, $subData, $type, $index);
+                    }
+                    break;
+
+                default:
+                    throw new LogicException(sprintf('Unsupported type for key "%s": %s', $key, gettype($value)));
+            }
+        }
+    }
+
+    /**
+     * Adds properties to the given location entity.
+     *
+     * @param Location $location
+     * @param Json $data
+     * @return void
+     * @throws ArrayKeyNotFoundException
+     * @throws CaseInvalidException
+     * @throws FileNotFoundException
+     * @throws FileNotReadableException
+     * @throws FunctionJsonEncodeException
+     * @throws FunctionReplaceException
+     * @throws JsonException
+     * @throws TypeInvalidException
+     */
+    private function addProperties(Location $location, Json $data): void
+    {
+        $source = $this->getSourceEntity(
+            $data->getKeyString(['source', 'type']),
+            $data->getKeyString(['source', 'link'])
+        );
+
+        /* Delete existing properties. */
+        $properties = $location->getProperties();
+        if (count($properties) > self::ZERO_RESULT) {
+            $this->output->write(sprintf('Delete %d properties from location ... ', count($properties)));
+            foreach ($properties as $property) {
+                $this->entityManager->remove($property);
+            }
+            $this->entityManager->flush();
+            $this->output->writeln('Done.');
+        }
+
+        $this->propertiesAdded = 0;
+
+        $dataAirport = $data->getKeyArray([KeyArray::DATA, KeyArray::AIRPORT]);
+        $this->doAddProperties($location, $source, $dataAirport, KeyArray::AIRPORT);
+
+        $dataGeneral = $data->getKeyArray([KeyArray::DATA, KeyArray::GENERAL]);
+        $this->doAddProperties($location, $source, $dataGeneral, KeyArray::GENERAL);
+
+        $this->entityManager->flush();
+        $this->output->writeln(sprintf('Added %d properties to location.', $this->propertiesAdded));
     }
 
     /**
@@ -547,15 +795,36 @@ EOT
      * @throws FunctionReplaceException
      * @throws JsonException
      * @throws TypeInvalidException
+     * @throws NonUniqueResultException
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+     * @SuppressWarnings(PHPMD.NPathComplexity)
      */
     private function doIata(string $iata): int
     {
         $iata = strtoupper($iata);
 
+        $this->output->writeln('');
+        $this->output->writeln(sprintf('Starting iata: %s', $iata));
+        $this->output->writeln('');
+
+        $alternateName = $this->alternateNameRepository->findOneByAirportAndIata($iata, $this->isIgnoreExistingProperties());
+
+        /* Only existing airports are allowed. */
+        if (is_null($alternateName)) {
+            $this->output->writeln(sprintf('<error>No airport location without properties found for %s within db or is ignored (IataIgnore::IGNORE).</error>', $iata));
+            return Command::FAILURE;
+        }
+
+        $location = $alternateName->getLocation();
+
+        if (is_null($location)) {
+            throw new LogicException('Location does not exist.');
+        }
+
         $parsed = $this->getPage($iata);
 
         if (is_null($parsed)) {
-            $this->output->writeln(sprintf('<error>No airport page found for %s.</error>', $iata));
+            $this->output->writeln(sprintf('<error>No airport page found for %s on wikipedia page.</error>', $iata));
             return Command::FAILURE;
         }
 
@@ -568,6 +837,12 @@ EOT
 
         /* Get the airport data. */
         $data = $this->getPageData($parsed, $link);
+
+        if (is_null($data)) {
+            $this->output->writeln(sprintf('<error>No airport page found for %s on wikipedia page.</error>', $iata));
+            return Command::FAILURE;
+        }
+
         $airportIataConfirmed = $data->hasKey(['data', 'airport', 'iata']) && $data->getKey(['data', 'airport', 'iata']) === $iata;
 
         /* Last URL */
@@ -577,12 +852,15 @@ EOT
         $this->output->writeln(str_repeat('=', self::SEPARATOR_COUNT));
         $this->output->writeln(sprintf('<info>Search for iata code "%s"</info>', $iata));
         $this->output->writeln(str_repeat('=', self::SEPARATOR_COUNT));
-        $this->output->writeln(sprintf('Hits:   %d', $numberHits));
-        $this->output->writeln(sprintf('Type:   %s', $isListPage ? sprintf('%d found via list search from "%s"', $numberHits, $lastUrl) : 'Direct Page'));
+        $this->output->writeln(sprintf('Hits:        %d', $numberHits));
+        $this->output->writeln(sprintf('Type:        %s', $isListPage ? sprintf('%d found via list search from "%s"', $numberHits, $lastUrl) : 'Direct Page'));
         $this->output->writeln(str_repeat('-', self::SEPARATOR_COUNT));
-        $this->output->writeln(sprintf('IATA:   %s', $iata));
-        $this->output->writeln(sprintf('Name:   %s', $name));
-        $this->output->writeln(sprintf('Link:   %s', $link));
+        $this->output->writeln(sprintf('AN ID:       %s', $alternateName->getId()));
+        $this->output->writeln(sprintf('Location ID: %s', $location->getId()));
+        $this->output->writeln(str_repeat('-', self::SEPARATOR_COUNT));
+        $this->output->writeln(sprintf('IATA:        %s', $iata));
+        $this->output->writeln(sprintf('Name:        %s', $name));
+        $this->output->writeln(sprintf('Link:        %s', $link));
         $this->output->writeln(str_repeat('-', self::SEPARATOR_COUNT));
         $this->output->writeln('Data:');
         $this->output->writeln($data->getJsonStringFormatted());
@@ -591,7 +869,64 @@ EOT
         $this->output->writeln(str_repeat('=', self::SEPARATOR_COUNT));
         $this->output->writeln('');
 
-        return $airportIataConfirmed ? Command::SUCCESS : Command::FAILURE;
+        if (!$airportIataConfirmed) {
+            return Command::FAILURE;
+        }
+
+        /* Add properties from wikipedia page. */
+        $this->output->writeln(str_repeat('=', self::SEPARATOR_COUNT));
+        $this->output->writeln('<info>DB actions.</info>');
+        $this->output->writeln(str_repeat('=', self::SEPARATOR_COUNT));
+        $this->addProperties($location, $data);
+        $this->output->writeln(str_repeat('=', self::SEPARATOR_COUNT));
+        $this->output->writeln('<info>DB actions done.</info>');
+        $this->output->writeln(str_repeat('=', self::SEPARATOR_COUNT));
+
+        return Command::SUCCESS;
+    }
+
+    /**
+     * Returns all iata codes.
+     *
+     * @return string[]
+     */
+    private function getIatas(): array
+    {
+        $iata = $this->input->getArgument(KeyArray::IATA);
+
+        if (!is_string($iata) && !is_null($iata)) {
+            throw new LogicException('Unsupported type of iata given.');
+        }
+
+        if (is_string($iata)) {
+            return [$iata];
+        }
+
+        $maxResults = $this->input->getOption(KeyArray::MAX_RESULTS);
+
+        $maxResults = match (true) {
+            is_null($maxResults), is_int($maxResults) => $maxResults,
+            is_string($maxResults) => (int) $maxResults,
+            default => throw new LogicException('Unsupported type of max results given.')
+        };
+
+        return $this->alternateNameRepository->findIataCodes($maxResults, true);
+    }
+
+    /**
+     * Prints debug message.
+     *
+     * @param string $message
+     * @return void
+     */
+    private function printDebug(string $message): void
+    {
+        $this->output->writeln(str_repeat('=', self::SEPARATOR_COUNT));
+        $this->output->writeln('<info>Debug.</info>');
+        $this->output->writeln(str_repeat('=', self::SEPARATOR_COUNT));
+        $this->output->writeln($message);
+        $this->output->writeln(str_repeat('=', self::SEPARATOR_COUNT));
+        $this->output->writeln('');
     }
 
     /**
@@ -600,27 +935,23 @@ EOT
      * @param InputInterface $input
      * @param OutputInterface $output
      * @return int
+     * @throws ArrayKeyNotFoundException
+     * @throws CaseInvalidException
      * @throws FileNotFoundException
      * @throws FileNotReadableException
      * @throws FunctionJsonEncodeException
      * @throws FunctionReplaceException
      * @throws JsonException
+     * @throws NonUniqueResultException
      * @throws TypeInvalidException
-     * @throws ArrayKeyNotFoundException
-     * @throws CaseInvalidException
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $this->output = $output;
+        $this->input = $input;
 
-        $iata = $input->getArgument(KeyArray::IATA);
-
-        if (!is_string($iata)) {
-            throw new LogicException('Unsupported type of iata given.');
-        }
-
-        $iatas = [$iata];
+        $iatas = $this->getIatas();
 
         $this->output->writeln('');
         foreach ($iatas as $iata) {

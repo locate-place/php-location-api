@@ -22,6 +22,8 @@ namespace App\Constants\Key;
  */
 class KeyArray
 {
+    final public const AIRPORT = 'airport';
+
     final public const AIRPORT_CODES = 'airport_codes';
 
     final public const ALTERNATE_NAMES = 'alternate_names';
@@ -53,6 +55,10 @@ class KeyArray
     final public const DATA = 'data';
 
     final public const DATA_LICENCE = 'data-licence';
+
+    final public const DEBUG_PAGE = 'debug-page';
+
+    final public const DEBUG_SEARCH = 'debug-search';
 
     final public const DECIMAL = 'decimal';
 
@@ -95,6 +101,8 @@ class KeyArray
     final public const FEATURE_CODE_NAME = 'code-name';
 
     final public const FULL = 'full';
+
+    final public const GENERAL = 'general';
 
     final public const GEONAME_ID = 'geoname-id';
 
@@ -147,6 +155,8 @@ class KeyArray
     final public const MAPS = 'maps';
 
     final public const MAP_LINKS = 'map-links';
+
+    final public const MAX_RESULTS = 'max-results';
 
     final public const METHOD = 'method';
 
