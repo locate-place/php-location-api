@@ -20,6 +20,7 @@ use App\Entity\Property;
 use App\Entity\Source;
 use App\Repository\AlternateNameRepository;
 use App\Repository\SourceRepository;
+use App\Utils\Constant\IgnoreBuilder;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\NonUniqueResultException;
 use Ixnode\PhpContainer\Json;
@@ -193,11 +194,13 @@ class WikipediaAirportCrawlerCommand extends Command
      * @param EntityManagerInterface $entityManager
      * @param AlternateNameRepository $alternateNameRepository
      * @param SourceRepository $sourceRepository
+     * @param IgnoreBuilder $ignoreBuilder
      */
     public function __construct(
         protected readonly EntityManagerInterface $entityManager,
         protected AlternateNameRepository $alternateNameRepository,
-        protected SourceRepository $sourceRepository
+        protected SourceRepository $sourceRepository,
+        protected IgnoreBuilder $ignoreBuilder
     )
     {
         parent::__construct();
@@ -977,6 +980,9 @@ EOT
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        /* Set Property Airport IataIgnore class. */
+        $this->ignoreBuilder->setClassPath(['Constants', 'Property', 'Airport', 'IataIgnore']);
+
         $this->output = $output;
         $this->input = $input;
 
@@ -991,6 +997,11 @@ EOT
         $this->output->writeln('');
         foreach ($iatas as $iata) {
             $return = $this->doIata($iata);
+
+            if ($force) {
+                $this->ignoreBuilder->addIgnoreVariable('IST', 'No page available.', true);
+                continue;
+            }
 
             if ($return !== Command::SUCCESS) {
                 $this->output->writeln('');

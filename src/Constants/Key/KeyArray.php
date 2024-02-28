@@ -118,6 +118,8 @@ class KeyArray
 
     final public const IATA = 'iata';
 
+    final public const KEY = 'key';
+
     final public const KILOMETERS = 'kilometers';
 
     final public const LANGUAGE = 'language';
@@ -193,6 +195,8 @@ class KeyArray
     final public const POPULATION = 'population';
 
     final public const PROPERTIES = 'properties';
+
+    final public const REASON = 'reason';
 
     final public const QUERY = 'query';
 
