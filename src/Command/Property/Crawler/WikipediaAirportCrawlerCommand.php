@@ -391,11 +391,13 @@ EOT
                     'airport',
                     new Field('iata', new XpathTextNode(
                         '/html/body//li/span/a[contains(text(), "IATA")]/../span[@class="nickname"]',
-                        new First()
+                        new First(),
+                        new PregMatch('~([A-Z]+)~', self::NUMBER_1),
                     )),
                     new Field('icao', new XpathTextNode(
                         '/html/body//li/span/a[contains(text(), "ICAO")]/../span[@class="nickname"]',
-                        new First()
+                        new First(),
+                        new PregMatch('~([A-Z]+)~', self::NUMBER_1),
                     )),
                     new Field('wmo', new XpathTextNode(
                         '/html/body//li/span/a[contains(text(), "WMO")]/../span[@class="nickname"]',
