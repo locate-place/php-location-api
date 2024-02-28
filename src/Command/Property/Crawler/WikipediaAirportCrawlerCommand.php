@@ -176,6 +176,18 @@ class WikipediaAirportCrawlerCommand extends Command
 
     private const RUNWAY_SEPARATOR = ', ';
 
+    private const IGNORE_CLASS_PATH = ['Constants', 'Property', 'Airport', 'IataIgnore'];
+
+    private const COMMAND_ALREADY_EXISTS_OR_IGNORED = 3;
+
+    private const COMMAND_NOT_FOUND_LIST = 4;
+
+    private const COMMAND_NOT_FOUND_LIST_DISAMBIGUATION = 5;
+
+    private const COMMAND_NOT_FOUND_PAGE = 6;
+
+    private const COMMAND_NOT_CONFIRMED = 7;
+
     private const DOMAIN_WIKIPEDIA = 'https://en.wikipedia.org';
 
     private const DOMAIN_WIKIPEDIA_SEARCH = 'https://en.wikipedia.org/wiki/%s';
@@ -836,7 +848,7 @@ EOT
         /* Only existing airports are allowed. */
         if (is_null($alternateName)) {
             $this->output->writeln(sprintf('<error>No airport location without properties found for %s within db or is ignored (IataIgnore::IGNORE).</error>', $iata));
-            return Command::FAILURE;
+            return self::COMMAND_ALREADY_EXISTS_OR_IGNORED;
         }
 
         $location = $alternateName->getLocation();
@@ -848,7 +860,7 @@ EOT
         $parsed = $this->getPage(self::DOMAIN_WIKIPEDIA_SEARCH, $iata);
         if (is_null($parsed)) {
             $this->output->writeln(sprintf('<error>No airport page found for %s on wikipedia page.</error>', $iata));
-            return Command::FAILURE;
+            return self::COMMAND_NOT_FOUND_LIST;
         }
         $isListPage = $parsed->getKeyBoolean('is-list-page');
 
@@ -857,7 +869,7 @@ EOT
             $parsed = $this->getPage(self::DOMAIN_WIKIPEDIA_SEARCH_DISAMBIGUATION, $iata);
             if (is_null($parsed)) {
                 $this->output->writeln(sprintf('<error>No airport page found for %s on wikipedia page.</error>', $iata));
-                return Command::FAILURE;
+                return self::COMMAND_NOT_FOUND_LIST_DISAMBIGUATION;
             }
             $isListPage = $parsed->getKeyBoolean('is-list-page');
         }
@@ -872,7 +884,7 @@ EOT
 
         if (is_null($data)) {
             $this->output->writeln(sprintf('<error>No airport page found for %s on wikipedia page.</error>', $iata));
-            return Command::FAILURE;
+            return self::COMMAND_NOT_FOUND_PAGE;
         }
 
         $airportIataConfirmed = $data->hasKey(['data', 'airport', 'iata']) && $data->getKey(['data', 'airport', 'iata']) === $iata;
@@ -902,7 +914,7 @@ EOT
         $this->output->writeln('');
 
         if (!$airportIataConfirmed) {
-            return Command::FAILURE;
+            return self::COMMAND_NOT_CONFIRMED;
         }
 
         /* Add properties from wikipedia page. */
@@ -962,6 +974,24 @@ EOT
     }
 
     /**
+     * Returns the "ignore" message by given return value.
+     *
+     * @param int $return
+     * @return string|null
+     */
+    private function getIgnoreMessage(int $return): string|null
+    {
+        return match ($return) {
+            self::COMMAND_ALREADY_EXISTS_OR_IGNORED => null,
+            self::COMMAND_NOT_FOUND_LIST => 'Airport not found in Wikipedia search.',
+            self::COMMAND_NOT_FOUND_LIST_DISAMBIGUATION => 'Airport not found in Wikipedia disambiguation search.',
+            self::COMMAND_NOT_FOUND_PAGE => 'Airport not found in Wikipedia page.',
+            self::COMMAND_NOT_CONFIRMED => 'Airport not confirmed on Wikipedia page.',
+            default => throw new LogicException(sprintf('Unsupported return code "%s".', $return)),
+        };
+    }
+
+    /**
      * Execute the commands.
      *
      * @param InputInterface $input
@@ -976,12 +1006,11 @@ EOT
      * @throws JsonException
      * @throws NonUniqueResultException
      * @throws TypeInvalidException
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         /* Set Property Airport IataIgnore class. */
-        $this->ignoreBuilder->setClassPath(['Constants', 'Property', 'Airport', 'IataIgnore']);
+        $this->ignoreBuilder->setClassPath(self::IGNORE_CLASS_PATH);
 
         $this->output = $output;
         $this->input = $input;
@@ -998,14 +1027,21 @@ EOT
         foreach ($iatas as $iata) {
             $return = $this->doIata($iata);
 
-            if ($force) {
-                $this->ignoreBuilder->addIgnoreVariable('IST', 'No page available.', true);
+            /* Success returned. */
+            if ($return === Command::SUCCESS) {
                 continue;
             }
 
-            if ($return !== Command::SUCCESS) {
+            /* Stop here if no force mode was set. */
+            if (!$force) {
                 $this->output->writeln('');
                 return $return;
+            }
+
+            $message = $this->getIgnoreMessage($return);
+
+            if (!is_null($message)) {
+                $this->ignoreBuilder->addIgnoreVariable($iata, $message);
             }
         }
 
