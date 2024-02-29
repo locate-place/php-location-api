@@ -490,7 +490,7 @@ EOT
                     $this->getField(
                         key: 'elevation',
                         search: 'elevation',
-                        converters: [new Trim(), new PregMatch('~([0-9]+(?:[,.][0-9]+)?)(?:[\xc2\xa0 ]+)m~', 1), new Number([',', '.'], '')]
+                        converters: [new First(), new Trim(), new PregMatch('~([0-9]+(?:[,.][0-9]+)?)(?:[\xc2\xa0 ]+)m~', 1), new Number([',', '.'], '')]
                     )
                 ),
             ),
@@ -1043,7 +1043,7 @@ EOT
             $message = $this->getIgnoreMessage($return);
 
             if (!is_null($message)) {
-                $this->ignoreBuilder->addIgnoreVariable($iata, $message);
+                $this->ignoreBuilder->addIgnoreVariable($iata, $message, true);
             }
         }
 

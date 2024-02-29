@@ -634,6 +634,7 @@ abstract class BaseLocationService extends BaseHelperLocationService
      * @return void
      * @throws FunctionReplaceException
      * @throws TypeInvalidException
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      */
     private function addAdditionalDataTypeProperties(Properties $properties, LocationEntity $locationEntity): void
     {
@@ -643,6 +644,43 @@ abstract class BaseLocationService extends BaseHelperLocationService
 
         if (!is_null($airportCodes) && count($airportCodes) > 0) {
             $properties->addValue(KeyArray::AIRPORT_CODES, $airportCodes);
+        }
+
+        $propertyValues = [];
+
+        foreach ($locationEntity->getProperties() as $property) {
+            $type = $property->getPropertyType();
+
+            if (is_null($type)) {
+                throw new LogicException('Property type is null.');
+            }
+
+            if (!array_key_exists($type, $propertyValues)) {
+                $propertyValues[$type] = [];
+            }
+
+            $number = $property->getPropertyNumber();
+            $name = $property->getPropertyName();
+            $value = $property->getPropertyValue();
+
+            if (is_null($name)) {
+                throw new LogicException('Property type is null.');
+            }
+
+            if (is_null($number)) {
+                $propertyValues[$type][$name] = $value;
+                continue;
+            }
+
+            if (!array_key_exists($name, $propertyValues[$type])) {
+                $propertyValues[$type][$name] = [];
+            }
+
+            $propertyValues[$type][$name][$number] = $value;
+        }
+
+        foreach ($propertyValues as $type => $values) {
+            $properties->addValue($type, $values);
         }
     }
 

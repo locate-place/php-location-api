@@ -194,10 +194,11 @@ class AlternateNameRepository extends ServiceEntityRepository
 
             ->andWhere('a.isoLanguage = :isoLanguage')
             ->setParameter('isoLanguage', LanguageCode::IATA)
-
-            ->andWhere('a.alternateName NOT IN (:excludedNames)')
-            ->setParameter('excludedNames', array_keys(IataIgnore::IGNORE))
         ;
+
+        $queryBuilder
+            ->andWhere('a.alternateName NOT IN (:excludedNames)')
+            ->setParameter('excludedNames', array_keys(IataIgnore::IGNORE));
 
         if (!is_null($maxResults)) {
             $queryBuilder->setMaxResults($maxResults);
