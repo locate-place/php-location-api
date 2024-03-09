@@ -707,24 +707,29 @@ class Location
             $relevance += 2000;
         }
 
+        /* Population */
         $population = $this->getPopulationCompiled();
-
-        if ($population > 0 && $this->getFeatureClass()?->getClass() === FeatureClassConstants::P) {
+        if (!is_null($population) && $population > 0 && $this->getFeatureClass()?->getClass() === FeatureClassConstants::P) {
             $relevance += (int) round($population / 10);
         }
-
-        if ($population > 0 && $this->getFeatureClass()?->getClass() === FeatureClassConstants::A) {
+        if (!is_null($population) && $population > 0 && $this->getFeatureClass()?->getClass() === FeatureClassConstants::A) {
             $relevance += (int) round($population / 100);
         }
 
+        /* Elevation */
         $elevation = $this->getElevationOverall();
-
-        if ($elevation > 0 && in_array($this->getFeatureCode()?->getCode(), [
+        if (!is_null($elevation) && $elevation > 0 && in_array($this->getFeatureCode()?->getCode(), [
             FeatureCodeConstants::HLL,
             FeatureCodeConstants::MT,
             FeatureCodeConstants::PK,
         ])) {
             $relevance += (int) round($elevation / 5);
+        }
+
+        /* Airport Passengers */
+        $airportPassenger = $this->getAirportPassenger();
+        if ($airportPassenger > 0 && $this->getFeatureCode()?->getCode() == FeatureCodeConstants::AIRP) {
+            $relevance += (int) round($airportPassenger / 100);
         }
 
         if (is_null($coordinate)) {
@@ -754,5 +759,23 @@ class Location
         $this->source = $source;
 
         return $this;
+    }
+
+
+
+    /**
+     * @return int|null
+     */
+    public function getAirportPassenger(): ?int
+    {
+        $properties = $this->getProperties();
+
+        foreach ($properties as $property) {
+            if ($property->getPropertyType() === 'airport' && $property->getPropertyName() === 'passengers') {
+                return (int) $property->getPropertyValue();
+            }
+        }
+
+        return null;
     }
 }
