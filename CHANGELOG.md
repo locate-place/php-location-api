@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Releases
 
+### [0.1.53] - 2024-03-09
+
+* Split search by space and add AND search
+
 ### [0.1.52] - 2024-03-08
 
 * Introduced new Wikipedia parser for crawling airport properties, enhancing iata and icao detection, and adding a debug mode for detailed operation analysis. 
