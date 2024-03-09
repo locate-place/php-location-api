@@ -635,6 +635,7 @@ abstract class BaseLocationService extends BaseHelperLocationService
      * @throws FunctionReplaceException
      * @throws TypeInvalidException
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+     * @SuppressWarnings(PHPMD.NPathComplexity)
      */
     private function addAdditionalDataTypeProperties(Properties $properties, LocationEntity $locationEntity): void
     {
@@ -648,7 +649,13 @@ abstract class BaseLocationService extends BaseHelperLocationService
 
         $propertyValues = [];
 
-        foreach ($locationEntity->getProperties() as $property) {
+        $locationEntityProperties = $locationEntity->getProperties();
+
+        if (count($locationEntityProperties) <= 0) {
+            return;
+        }
+
+        foreach ($locationEntityProperties as $property) {
             $type = $property->getPropertyType();
 
             if (is_null($type)) {
