@@ -206,7 +206,7 @@ final class LocationService extends BaseLocationService
     /**
      * Returns locations by given search string (filter limit, feature classes).
      *
-     * @param string $search
+     * @param string|string[] $search
      * @param array<int, string>|string|null $featureClass
      * @param array<int, string>|string|null $featureCode
      * @param int|null $limit
@@ -223,6 +223,7 @@ final class LocationService extends BaseLocationService
      * @throws CaseInvalidException
      * @throws CaseUnsupportedException
      * @throws ClassInvalidException
+     * @throws ClientExceptionInterface
      * @throws FileNotFoundException
      * @throws FileNotReadableException
      * @throws FunctionJsonEncodeException
@@ -230,6 +231,9 @@ final class LocationService extends BaseLocationService
      * @throws JsonException
      * @throws NonUniqueResultException
      * @throws ParserException
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
      * @throws TypeInvalidException
      * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
@@ -238,7 +242,7 @@ final class LocationService extends BaseLocationService
      */
     public function getLocationsBySearch(
         /* Search */
-        string $search,
+        string|array $search,
 
         /* Search filter */
         array|string|null $featureClass = null,

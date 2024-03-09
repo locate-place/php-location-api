@@ -292,17 +292,23 @@ class QueryParser
     }
 
     /**
-     * Returns the search string.
+     * Returns the search array.
      *
-     * @return string|null
+     * @return string[]|null
      * @throws CaseUnsupportedException
      * @throws ParserException
      */
-    public function getSearch(): string|null
+    public function getSearch(): array|null
     {
         $data = $this->getData();
 
-        return $data[KeyArray::SEARCH];
+        $searchString = $data[KeyArray::SEARCH];
+
+        if (!is_string($searchString)) {
+            return null;
+        }
+
+        return array_filter(explode(" ", $searchString), fn($word) => !empty($word));
     }
 
     /**

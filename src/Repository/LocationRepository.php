@@ -137,15 +137,26 @@ class LocationRepository extends ServiceEntityRepository
     /**
      * Finds the locations from given search string.
      *
+     * @param string|string[] $search
+     * @param int|null $limit
      * @return array<int, Location>
      */
-    public function findBySearch(string $search, int|null $limit = null): array
+    public function findBySearch(string|array $search, int|null $limit = null): array
     {
+        if (is_string($search)) {
+            $search = [$search];
+        }
+
         $qb = $this->createQueryBuilder('l')
             ->join('l.alternateNames', 'a')
-            ->andWhere('ILIKE(a.alternateName, :name) = true')
-            ->setParameter('name', '%'.$search.'%')
-            ->setMaxResults($limit);
+            ->setMaxResults($limit)
+        ;
+
+        /* Loop through each search term and add it as an AND condition */
+        foreach ($search as $index => $term) {
+            $qb->andWhere('ILIKE(a.alternateName, :name'.$index.') = true')
+                ->setParameter('name'.$index, '%'.$term.'%');
+        }
 
         $locations = $qb->getQuery()->execute();
 

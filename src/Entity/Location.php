@@ -650,7 +650,7 @@ class Location
     /**
      * Returns the relevance from given search and coordinate.
      *
-     * @param string $search
+     * @param string|string[] $search
      * @param Coordinate|null $coordinate
      * @return int
      * @throws CaseUnsupportedException
@@ -658,8 +658,12 @@ class Location
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      * @SuppressWarnings(PHPMD.NPathComplexity)
      */
-    public function getRelevance(string $search, Coordinate|null $coordinate = null): int
+    public function getRelevance(string|array $search, Coordinate|null $coordinate = null): int
     {
+        if (is_array($search)) {
+            $search = implode(' ', $search);
+        }
+
         $relevance = 200000; /* 20.000 km (half-earth circulation), to avoid relevance's < 0 */
 
         $name = $this->getName();

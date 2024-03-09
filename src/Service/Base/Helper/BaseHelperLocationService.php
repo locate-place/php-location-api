@@ -520,13 +520,13 @@ abstract class BaseHelperLocationService
      * Sort given location entities by relevance.
      *
      * @param LocationEntity[] $locationEntities
-     * @param string $search
+     * @param string|string[] $search
      * @param Coordinate|null $coordinate
      * @return void
      * @throws CaseUnsupportedException
      * @throws ParserException
      */
-    protected function sortLocationEntitiesByRelevance(array &$locationEntities, string $search, Coordinate|null $coordinate = null): void
+    protected function sortLocationEntitiesByRelevance(array &$locationEntities, string|array $search, Coordinate|null $coordinate = null): void
     {
         $relevances = [];
 

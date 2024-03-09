@@ -182,6 +182,7 @@ final class LocationProvider extends BaseProviderCustom
      * @throws CaseInvalidException
      * @throws CaseUnsupportedException
      * @throws ClassInvalidException
+     * @throws ClientExceptionInterface
      * @throws FileNotFoundException
      * @throws FileNotReadableException
      * @throws FunctionJsonEncodeException
@@ -189,6 +190,9 @@ final class LocationProvider extends BaseProviderCustom
      * @throws JsonException
      * @throws NonUniqueResultException
      * @throws ParserException
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
      * @throws TypeInvalidException
      */
     private function doProvideGetCollectionBySearch(QueryParser $queryParser): array
@@ -209,9 +213,11 @@ final class LocationProvider extends BaseProviderCustom
             return [];
         }
 
-        if (mb_strlen($search) < self::SEARCH_MINIMUM_LENGTH) {
-            $this->setError(sprintf('At least %s characters are required to search.', self::SEARCH_MINIMUM_LENGTH));
-            return [];
+        foreach ($search as $searchPart) {
+            if (mb_strlen($searchPart) < self::SEARCH_MINIMUM_LENGTH) {
+                $this->setError(sprintf('At least %s characters are required to search ("%s").', self::SEARCH_MINIMUM_LENGTH, $searchPart));
+                return [];
+            }
         }
 
         $currentPosition = $this->query->getCurrentPosition();
