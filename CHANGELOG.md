@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Releases
 
+### [0.1.52] - 2024-02-23
+
+* Introduced new Wikipedia parser for crawling airport properties, enhancing iata and icao detection, and adding a debug mode for detailed operation analysis. 
+* Improved the crawling process with the inclusion of IgnoreBuilder for better management of constants and ignore rules, alongside force parameter implementation for more controlled crawling. 
+* Expanded data accuracy and coverage by requesting disambiguation pages, adding ignored airports, and incorporating more IATA codes to enhance property detection. 
+* Enhanced data structure by introducing property_type and source_id fields, extending VARCHAR limits for better data handling, and adding a source to track property origins. 
+* Refined airport data extraction by identifying key metrics like 'Passengers' and 'Passenger volume', adding endpoints for airport data retrieval, and refining the crawler's functionality. 
+* General refactoring and optimizations including command addition for improved usability, airport wikipedia crawler example for guidance, and field type adjustments for data consistency.
+
 ### [0.1.51] - 2024-02-23
 
 * Fix other links
