@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Releases
 
+### [0.1.55] - 2024-03-10
+
+* Fix airport parser (wrong cargo number)
+
 ### [0.1.54] - 2024-03-09
 
 * Add airport passengers to relevance
