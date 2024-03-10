@@ -212,6 +212,8 @@ class KeyArray
 
     final public const SHORT = 'short';
 
+    final public const SKIP_IMPORT = 'skip-import';
+
     final public const SRID = 'srid';
 
     final public const STATE = 'state';

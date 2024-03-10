@@ -232,6 +232,7 @@ class WikipediaAirportCrawlerCommand extends Command
                 new InputOption(KeyArray::DEBUG_PAGE, null, InputOption::VALUE_NONE, 'Enable debug mode (page view)'),
                 new InputOption(KeyArray::DEBUG_SEARCH, null, InputOption::VALUE_NONE, 'Enable debug mode (search view)'),
                 new InputOption(KeyArray::FORCE, null, InputOption::VALUE_NONE, 'Forces already imported iata codes'),
+                new InputOption(KeyArray::SKIP_IMPORT, null, InputOption::VALUE_NONE, 'Skip import'),
             ])
             ->setHelp(
                 <<<'EOT'
@@ -408,21 +409,21 @@ EOT
                         key: 'passengers',
                         search: ['passengers', 'passenger volume'],
                         searchNot: 'change',
-                        converters: [new First(), new Number(['.', ','], ''), new HighestNumber()],
+                        converters: [new Number(['.', ','], ''), new HighestNumber()],
                         subElements: '//text()',
                     ),
                     $this->getField(
                         key: 'movements',
                         search: ['aircraft movements', 'movements', 'aircraft operations'],
                         searchNot: 'change',
-                        converters: [new First(), new Number(['.', ','], ''), new HighestNumber()],
+                        converters: [new Number(['.', ','], ''), new HighestNumber()],
                         subElements: '//text()',
                     ),
                     $this->getField(
                         key: 'cargo',
-                        search: ['cargo'],
+                        search: ['cargo', 'freight'],
                         searchNot: 'change',
-                        converters: [new First(), new Number(['.', ','], ''), new HighestNumber()],
+                        converters: [new Number(['.', ','], ''), new HighestNumber()],
                         subElements: '//text()',
                     ),
                     $this->getField(
@@ -919,12 +920,17 @@ EOT
             return self::COMMAND_NOT_CONFIRMED;
         }
 
+        $skipImport = (bool) $this->input->getOption(KeyArray::SKIP_IMPORT);
+
         /* Add properties from wikipedia page. */
         $this->output->writeln(str_repeat('=', self::SEPARATOR_COUNT));
         $this->output->writeln('<info>DB actions.</info>');
-        $this->output->writeln(str_repeat('=', self::SEPARATOR_COUNT));
-        $this->addProperties($location, $data);
-        $this->output->writeln(str_repeat('=', self::SEPARATOR_COUNT));
+        $this->output->writeln(str_repeat('-', self::SEPARATOR_COUNT));
+        match (true) {
+            $skipImport => $this->output->writeln('<info>Skip import.</info>'),
+            default => $this->addProperties($location, $data),
+        };
+        $this->output->writeln(str_repeat('-', self::SEPARATOR_COUNT));
         $this->output->writeln('<info>DB actions done.</info>');
         $this->output->writeln(str_repeat('=', self::SEPARATOR_COUNT));
 
