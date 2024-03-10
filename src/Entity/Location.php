@@ -729,7 +729,7 @@ class Location
         /* Airport Passengers */
         $airportPassenger = $this->getAirportPassenger();
         if ($airportPassenger > 0 && $this->getFeatureCode()?->getCode() == FeatureCodeConstants::AIRP) {
-            $relevance += (int) round($airportPassenger / 100);
+            $relevance += (int) round($airportPassenger / 1000);
         }
 
         if (is_null($coordinate)) {
