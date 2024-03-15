@@ -211,6 +211,28 @@ abstract class BaseLocationImport extends Base
     }
 
     /**
+     * Sets the update_at field of Import entity.
+     *
+     * @return void
+     */
+    protected function updateImportEntity(): void
+    {
+        if (!isset($this->import)) {
+            return;
+        }
+
+        $executionTime = (int) round(microtime(true) - $this->timeStart);
+
+        $this->import
+            ->setUpdatedAt(new DateTimeImmutable())
+            ->setExecutionTime($executionTime)
+            ->setRows($this->importedRows)
+        ;
+        $this->entityManager->persist($this->import);
+        $this->entityManager->flush();
+    }
+
+    /**
      * Saves the data as entities.
      *
      * @param array<int, array<string, mixed>> $data
