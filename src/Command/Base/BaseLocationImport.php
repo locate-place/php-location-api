@@ -39,8 +39,14 @@ use Ixnode\PhpTimezone\Country as IxnodeCountry;
 use LogicException;
 use RegexIterator;
 use SplFileObject;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
 
 /**
  * Class BaseLocationImport
@@ -49,6 +55,8 @@ use Symfony\Component\Console\Input\InputOption;
  * @version 0.1.0 (2023-06-28)
  * @since 0.1.0 (2023-06-28) First version.
  * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
+ * @SuppressWarnings(PHPMD.ExcessiveClassLength)
+ * @SuppressWarnings(PHPMD.TooManyMethods)
  */
 abstract class BaseLocationImport extends Base
 {
@@ -84,6 +92,8 @@ abstract class BaseLocationImport extends Base
 
     /** @var array<string, Country> $countries */
     private array $countries = [];
+
+    protected bool $force = false;
 
     /**
      * @param EntityManagerInterface $entityManager
@@ -979,5 +989,165 @@ abstract class BaseLocationImport extends Base
         ));
 
         $this->importedRows += $rows;
+    }
+
+    /**
+     * Start timer.
+     *
+     * @return void
+     */
+    protected function startTimer(): void
+    {
+        $this->timeStart = microtime(true);
+    }
+
+    /**
+     * Returns the country code from given file.
+     *
+     * @param File $file
+     * @return string
+     */
+    abstract protected function getCountryCode(File $file): string;
+
+    /**
+     * Executes a pre check.
+     *
+     * @param string $countryCode
+     * @param File $file
+     * @return int
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     */
+    protected function executePreCheck(string $countryCode, File $file): int
+    {
+        return Command::SUCCESS;
+    }
+
+    /**
+     * Executes a check.
+     *
+     * @return int
+     */
+    protected function executeCheck(): int
+    {
+        return Command::SUCCESS;
+    }
+
+    /**
+     * Do get export
+     *
+     * @param File $file
+     * @return void
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     */
+    protected function doGetExport(File $file): void
+    {
+    }
+
+    /**
+     * Do after tasks.
+     *
+     * @return void
+     */
+    protected function doAfterTask(): void
+    {
+    }
+
+    /**
+     * Do update import entity tasks.
+     *
+     * @return void
+     */
+    protected function doUpdateImportEntity(): void
+    {
+    }
+
+    /**
+     * Execute the commands.
+     *
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @return int
+     * @throws ClientExceptionInterface
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws Exception
+     */
+    protected function execute(InputInterface $input, OutputInterface $output): int
+    {
+        $this->startTimer();
+
+        $this->output = $output;
+        $this->input = $input;
+
+        $this->force = $input->hasOption(self::OPTION_NAME_FORCE) && (bool) $input->getOption(self::OPTION_NAME_FORCE);
+
+        $file = $this->getCsvFile('file');
+
+        if (is_null($file)) {
+            $this->printAndLog(sprintf('The given CSV file for "%s" does not exist.', $file));
+            return Command::INVALID;
+        }
+
+        $countryCode = $this->getCountryCode($file);
+
+        $preCheck = $this->executePreCheck($countryCode, $file);
+
+        if ($preCheck !== Command::SUCCESS) {
+            return $preCheck;
+        }
+
+        $type = sprintf('%s/csv-import', $countryCode);
+
+        $this->createLogInstanceFromFile($file, $type);
+
+        $check = $this->executeCheck();
+
+        if ($check !== Command::SUCCESS) {
+            return $preCheck;
+        }
+
+        $this->clearTmpFolder($file, $countryCode);
+        $this->setSplitLines(self::DEFAULT_SPLIT_LINES);
+        $this->splitFile(
+            $file,
+            $countryCode,
+            $this->hasFileHasHeader(),
+            $this->getAddHeaderFields(),
+            $this->getAddHeaderSeparator()
+        );
+
+        $this->doGetExport($file);
+
+        /* Get tmp files */
+        $splitFiles = $this->getFilesTmp($file, $countryCode);
+
+        /* Execute all split files */
+        foreach ($splitFiles as $index => $splitFile) {
+            $this->doExecute(new File($splitFile), $index + 1, count($splitFiles));
+        }
+
+        $this->errorFound = false;
+
+        /* Show ignored lines */
+        if ($this->getIgnoredLines() > 0) {
+            $this->printAndLog('---');
+            $this->printAndLog(sprintf('Ignored lines: %d', $this->getIgnoredLines()));
+            foreach ($this->getIgnoredTextLines() as $ignoredLine) {
+                $this->printAndLog(sprintf('- %s', $ignoredLine));
+            }
+            $this->errorFound = true;
+        }
+
+        $this->doAfterTask();
+
+        if (!$this->errorFound) {
+            $this->printAndLog('---');
+            $this->printAndLog('Finish. No error was found.');
+        }
+
+        $this->doUpdateImportEntity();
+
+        /* Command successfully executed. */
+        return Command::SUCCESS;
     }
 }

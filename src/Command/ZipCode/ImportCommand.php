@@ -20,15 +20,8 @@ use App\Entity\AdminCode;
 use App\Entity\Country;
 use App\Entity\ZipCode;
 use DateTimeImmutable;
-use Exception;
 use Ixnode\PhpApiVersionBundle\Utils\TypeCasting\TypeCastingHelper;
 use Ixnode\PhpContainer\File;
-use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
-use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
-use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
 
 /**
  * Class ImportCommand (ZipCode).
@@ -444,78 +437,13 @@ EOT
     }
 
     /**
-     * Execute the commands.
+     * Returns the country code from given file.
      *
-     * @param InputInterface $input
-     * @param OutputInterface $output
-     * @return int
-     * @throws ClientExceptionInterface
-     * @throws RedirectionExceptionInterface
-     * @throws ServerExceptionInterface
-     * @throws Exception
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
-     * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
-     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
-     * @SuppressWarnings(PHPMD.NPathComplexity)
+     * @param File $file
+     * @return string
      */
-    protected function execute(InputInterface $input, OutputInterface $output): int
+    protected function getCountryCode(File $file): string
     {
-        $this->timeStart = microtime(true);
-
-        $this->output = $output;
-        $this->input = $input;
-
-        //$force = $input->hasOption(self::OPTION_NAME_FORCE) && (bool) $input->getOption(self::OPTION_NAME_FORCE);
-
-        $file = $this->getCsvFile('file');
-
-        if (is_null($file)) {
-            $this->printAndLog(sprintf('The given CSV file for "%s" does not exist.', $file));
-            return Command::INVALID;
-        }
-
-        $countryCode = 'ALL';
-
-        $type = sprintf('%s/csv-import', $countryCode);
-
-        $this->createLogInstanceFromFile($file, $type);
-
-        $this->clearTmpFolder($file, $countryCode);
-        $this->setSplitLines(self::DEFAULT_SPLIT_LINES);
-        $this->splitFile(
-            $file,
-            $countryCode,
-            $this->hasFileHasHeader(),
-            $this->getAddHeaderFields(),
-            $this->getAddHeaderSeparator()
-        );
-
-        /* Get tmp files */
-        $splitFiles = $this->getFilesTmp($file, $countryCode);
-
-        /* Execute all split files */
-        foreach ($splitFiles as $index => $splitFile) {
-            $this->doExecute(new File($splitFile), $index + 1, count($splitFiles));
-        }
-
-        $this->errorFound = false;
-
-        /* Show ignored lines */
-        if ($this->getIgnoredLines() > 0) {
-            $this->printAndLog('---');
-            $this->printAndLog(sprintf('Ignored lines: %d', $this->getIgnoredLines()));
-            foreach ($this->getIgnoredTextLines() as $ignoredLine) {
-                $this->printAndLog(sprintf('- %s', $ignoredLine));
-            }
-            $this->errorFound = true;
-        }
-
-        if (!$this->errorFound) {
-            $this->printAndLog('---');
-            $this->printAndLog('Finish. No error was found.');
-        }
-
-        /* Command successfully executed. */
-        return Command::SUCCESS;
+        return 'ALL';
     }
 }
