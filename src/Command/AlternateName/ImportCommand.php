@@ -27,9 +27,6 @@ use Exception;
 use Ixnode\PhpApiVersionBundle\Utils\TypeCasting\TypeCastingHelper;
 use Ixnode\PhpContainer\File;
 use Ixnode\PhpException\ArrayType\ArrayKeyNotFoundException;
-use Ixnode\PhpException\Case\CaseInvalidException;
-use Ixnode\PhpException\File\FileNotFoundException;
-use Ixnode\PhpException\File\FileNotReadableException;
 use Ixnode\PhpException\Type\TypeInvalidException;
 use Ixnode\PhpTimezone\Country as IxnodeCountry;
 use Symfony\Component\Console\Command\Command;
@@ -40,7 +37,7 @@ use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
 
 /**
- * Class ImportCommand
+ * Class ImportCommand (AlternateName).
  *
  * @author Björn Hempel <bjoern@hempel.li>
  * @version 0.1.0 (2023-06-27)
@@ -86,8 +83,6 @@ class ImportCommand extends BaseLocationImport
     protected bool $errorFound = false;
 
     protected float $timeStart;
-
-    protected int $importedRows = 0;
 
     /**
      * @param EntityManagerInterface $entityManager
@@ -387,11 +382,7 @@ EOT
     /**
      * Saves the data as entities.
      *
-     * @param array<int, array<string, mixed>> $data
-     * @param File $file
-     * @return int
-     * @throws TypeInvalidException
-     * @throws Exception
+     * @inheritdoc
      */
     protected function saveEntities(array $data, File $file): int
     {
@@ -435,48 +426,6 @@ EOT
         $this->entityManager->flush();
 
         return $writtenRows;
-    }
-
-    /**
-     * Executes the given split file.
-     *
-     * @param File $file
-     * @param int $numberCurrent
-     * @param int $numberAll
-     * @return void
-     * @throws CaseInvalidException
-     * @throws TypeInvalidException
-     * @throws ArrayKeyNotFoundException
-     * @throws FileNotFoundException
-     * @throws FileNotReadableException
-     * @throws Exception
-     */
-    protected function doExecute(File $file, int $numberCurrent, int $numberAll): void
-    {
-        $this->printAndLog('---');
-        $this->printAndLog(sprintf(self::TEXT_IMPORT_START, $file->getPath(), $numberCurrent, $numberAll));
-
-        /* Reads the given csv files. */
-        $this->printAndLog(sprintf('Start reading CSV file "%s"', $file->getPath()));
-        $timeStart = microtime(true);
-        $data = $this->readDataFromCsv($file, "\t");
-        $timeExecution = (microtime(true) - $timeStart);
-        $this->printAndLog(sprintf('%d rows successfully read: %.2fs (CSV file)', count($data), $timeExecution));
-
-        /* Imports the AlternateName data */
-        $this->printAndLog('Start writing AlternateName entities.');
-        $timeStart = microtime(true);
-        $rows = $this->saveEntities($data, $file);
-        $timeExecution = (microtime(true) - $timeStart);
-        $this->printAndLog(sprintf(
-            self::TEXT_ROWS_WRITTEN,
-            $rows,
-            'location',
-            count($data),
-            $timeExecution
-        ));
-
-        $this->importedRows += $rows;
     }
 
     /**
