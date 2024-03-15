@@ -247,6 +247,56 @@ EOT
     }
 
     /**
+     * Returns if the given import file has a header row.
+     *
+     * @inheritdoc
+     */
+    protected function hasFileHasHeader(): bool
+    {
+        return false;
+    }
+
+    /**
+     * Returns the header to be added to split files.
+     *
+     * @inheritdoc
+     */
+    protected function getAddHeaderFields(): array|null
+    {
+        return [
+            'GeonameId',        /*  0 */
+            'Name',             /*  1 */
+            'AsciiName',        /*  2 */
+            'AlternateNames',   /*  3 */
+            'Latitude',         /*  4 */
+            'Longitude',        /*  5 */
+            'FeatureClass',     /*  6 */
+            'FeatureCode',      /*  7 */
+            'CountryCode',      /*  8 */
+            'Cc2',              /*  9 */
+            'Admin1',           /* 10 */
+            'Admin2',           /* 11 */
+            'Admin3',           /* 12 */
+            'Admin4',           /* 13 */
+            'Population',       /* 14 */
+            'Elevation',        /* 15 */
+            'Dem',              /* 16 */
+            'Timezone',         /* 17 */
+            'ModificationDate', /* 18 */
+        ];
+    }
+
+    /**
+     * Returns the header separator.
+     *
+     * @inheritdoc
+     */
+    protected function getAddHeaderSeparator(): string
+    {
+        return "\t";
+    }
+
+    /**
      * Returns or creates a new FeatureClass entity.
      *
      * @param string $class
@@ -707,29 +757,9 @@ EOT
         $this->splitFile(
             $file,
             $countryCode,
-            false,
-            [
-                'GeonameId',        /*  0 */
-                'Name',             /*  1 */
-                'AsciiName',        /*  2 */
-                'AlternateNames',   /*  3 */
-                'Latitude',         /*  4 */
-                'Longitude',        /*  5 */
-                'FeatureClass',     /*  6 */
-                'FeatureCode',      /*  7 */
-                'CountryCode',      /*  8 */
-                'Cc2',              /*  9 */
-                'Admin1',           /* 10 */
-                'Admin2',           /* 11 */
-                'Admin3',           /* 12 */
-                'Admin4',           /* 13 */
-                'Population',       /* 14 */
-                'Elevation',        /* 15 */
-                'Dem',              /* 16 */
-                'Timezone',         /* 17 */
-                'ModificationDate', /* 18 */
-            ],
-            "\t"
+            $this->hasFileHasHeader(),
+            $this->getAddHeaderFields(),
+            $this->getAddHeaderSeparator()
         );
 
         if (!$this->checkCommandExecution) {
@@ -737,11 +767,11 @@ EOT
         }
 
         /* Get tmp files */
-        $splittedFiles = $this->getFilesTmp($file, $countryCode);
+        $splitFiles = $this->getFilesTmp($file, $countryCode);
 
-        /* Execute all splitted files */
-        foreach ($splittedFiles as $index => $splittedFile) {
-            $this->doExecute(new File($splittedFile), $index + 1, count($splittedFiles));
+        /* Execute all split files */
+        foreach ($splitFiles as $index => $splitFile) {
+            $this->doExecute(new File($splitFile), $index + 1, count($splitFiles));
         }
 
         $this->errorFound = false;

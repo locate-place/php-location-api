@@ -164,6 +164,47 @@ EOT
     }
 
     /**
+     * Returns if the given import file has a header row.
+     *
+     * @inheritdoc
+     */
+    protected function hasFileHasHeader(): bool
+    {
+        return false;
+    }
+
+    /**
+     * Returns the header to be added to split files.
+     *
+     * @inheritdoc
+     */
+    protected function getAddHeaderFields(): array|null
+    {
+        return [
+            'AlternateNameId',  /* 0 */
+            'GeonameId',        /* 1 */
+            'IsoLanguage',      /* 2 */
+            'AlternateName',    /* 3 */
+            'IsPreferredName',  /* 4 */
+            'IsShortName',      /* 5 */
+            'IsColloquial',     /* 6 */
+            'IsHistoric',       /* 7 */
+            'From',             /* 8 */
+            'To',               /* 9 */
+        ];
+    }
+
+    /**
+     * Returns the header separator.
+     *
+     * @inheritdoc
+     */
+    protected function getAddHeaderSeparator(): string
+    {
+        return "\t";
+    }
+
+    /**
      * Returns the Import class.
      *
      * @param File $file
@@ -398,30 +439,19 @@ EOT
         $this->splitFile(
             $file,
             $countryCode,
-            false,
-            [
-                'AlternateNameId',  /* 0 */
-                'GeonameId',        /* 1 */
-                'IsoLanguage',      /* 2 */
-                'AlternateName',    /* 3 */
-                'IsPreferredName',  /* 4 */
-                'IsShortName',      /* 5 */
-                'IsColloquial',     /* 6 */
-                'IsHistoric',       /* 7 */
-                'From',             /* 8 */
-                'To',               /* 9 */
-            ],
-            "\t"
+            $this->hasFileHasHeader(),
+            $this->getAddHeaderFields(),
+            $this->getAddHeaderSeparator()
         );
 
         $this->import = $this->getImport($file);
 
         /* Get tmp files */
-        $splittedFiles = $this->getFilesTmp($file, $countryCode);
+        $splitFiles = $this->getFilesTmp($file, $countryCode);
 
-        /* Execute all splitted files */
-        foreach ($splittedFiles as $index => $splittedFile) {
-            $this->doExecute(new File($splittedFile), $index + 1, count($splittedFiles));
+        /* Execute all split files */
+        foreach ($splitFiles as $index => $splitFile) {
+            $this->doExecute(new File($splitFile), $index + 1, count($splitFiles));
         }
 
         $this->errorFound = false;

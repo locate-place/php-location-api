@@ -146,6 +146,27 @@ abstract class BaseLocationImport extends Base
     abstract protected function translateField(bool|string|int $value, string $indexName): bool|string|int|float|null|DateTimeImmutable|array;
 
     /**
+     * Returns if the given import file has a header row.
+     *
+     * @return bool
+     */
+    abstract protected function hasFileHasHeader(): bool;
+
+    /**
+     * Returns the header to be added to split files.
+     *
+     * @return array<int, string>|null
+     */
+    abstract protected function getAddHeaderFields(): array|null;
+
+    /**
+     * Returns the header separator.
+     *
+     * @return string
+     */
+    abstract protected function getAddHeaderSeparator(): string;
+
+    /**
      * Returns the converted row.
      *
      * @param array<int, string> $row

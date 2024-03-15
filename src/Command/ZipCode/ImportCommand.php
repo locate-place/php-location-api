@@ -171,6 +171,49 @@ EOT
     }
 
     /**
+     * Returns if the given import file has a header row.
+     *
+     * @inheritdoc
+     */
+    protected function hasFileHasHeader(): bool
+    {
+        return false;
+    }
+
+    /**
+     * Returns the header to be added to split files.
+     *
+     * @inheritdoc
+     */
+    protected function getAddHeaderFields(): array|null
+    {
+        return [
+            'CountryCode',  /*  1 */
+            'PostalCode',   /*  2 */
+            'PlaceName',    /*  3 */
+            'AdminName1',   /*  4 */
+            'AdminCode1',   /*  5 */
+            'AdminName2',   /*  6 */
+            'AdminCode2',   /*  7 */
+            'AdminName3',   /*  8 */
+            'AdminCode3',   /*  9 */
+            'Latitude',     /* 10 */
+            'Longitude',    /* 11 */
+            'Accuracy',     /* 12 */
+        ];
+    }
+
+    /**
+     * Returns the header separator.
+     *
+     * @inheritdoc
+     */
+    protected function getAddHeaderSeparator(): string
+    {
+        return "\t";
+    }
+
+    /**
      * Returns an existing AdminCode entity.
      *
      * @param Country $country
@@ -442,30 +485,17 @@ EOT
         $this->splitFile(
             $file,
             $countryCode,
-            false,
-            [
-                'CountryCode',  /*  1 */
-                'PostalCode',   /*  2 */
-                'PlaceName',    /*  3 */
-                'AdminName1',   /*  4 */
-                'AdminCode1',   /*  5 */
-                'AdminName2',   /*  6 */
-                'AdminCode2',   /*  7 */
-                'AdminName3',   /*  8 */
-                'AdminCode3',   /*  9 */
-                'Latitude',     /* 10 */
-                'Longitude',    /* 11 */
-                'Accuracy',     /* 12 */
-            ],
-            "\t"
+            $this->hasFileHasHeader(),
+            $this->getAddHeaderFields(),
+            $this->getAddHeaderSeparator()
         );
 
         /* Get tmp files */
-        $splittedFiles = $this->getFilesTmp($file, $countryCode);
+        $splitFiles = $this->getFilesTmp($file, $countryCode);
 
-        /* Execute all splitted files */
-        foreach ($splittedFiles as $index => $splittedFile) {
-            $this->doExecute(new File($splittedFile), $index + 1, count($splittedFiles));
+        /* Execute all split files */
+        foreach ($splitFiles as $index => $splitFile) {
+            $this->doExecute(new File($splitFile), $index + 1, count($splitFiles));
         }
 
         $this->errorFound = false;
