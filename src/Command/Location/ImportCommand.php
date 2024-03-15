@@ -703,7 +703,7 @@ EOT
         }
 
         $this->clearTmpFolder($file, $countryCode);
-        $this->setSplitLines(10000);
+        $this->setSplitLines(self::DEFAULT_SPLIT_LINES);
         $this->splitFile(
             $file,
             $countryCode,
@@ -845,7 +845,7 @@ EOT
      *
      * @return array<string, array<int, string>>
      */
-    public function getUnknownTimezones(): array
+    private function getUnknownTimezones(): array
     {
         return $this->unknownTimezones;
     }
@@ -858,7 +858,7 @@ EOT
      * @param int $line
      * @return void
      */
-    public function addUnknownTimezones(string $timezone, File $file, int $line): void
+    protected function addUnknownTimezones(string $timezone, File $file, int $line): void
     {
         if (!array_key_exists($timezone, $this->unknownTimezones)) {
             $this->unknownTimezones[$timezone] = [];
@@ -872,7 +872,7 @@ EOT
      *
      * @return array<string, array<int, string>>
      */
-    public function getInvalidTimezones(): array
+    private function getInvalidTimezones(): array
     {
         return $this->invalidTimezones;
     }
@@ -885,7 +885,7 @@ EOT
      * @param int $line
      * @return void
      */
-    public function addInvalidTimezones(string $timezone, File $file, int $line): void
+    protected function addInvalidTimezones(string $timezone, File $file, int $line): void
     {
         if (!array_key_exists($timezone, $this->invalidTimezones)) {
             $this->invalidTimezones[$timezone] = [];
@@ -899,7 +899,7 @@ EOT
      *
      * @return array<int, string>
      */
-    public function getInvalidNameValues(): array
+    private function getInvalidNameValues(): array
     {
         return $this->invalidNameValues;
     }
@@ -913,7 +913,7 @@ EOT
      * @param int $expectedMaxLength
      * @return void
      */
-    public function addInvalidNameValues(string $nameValue, File $file, int $line, int $expectedMaxLength): void
+    protected function addInvalidNameValues(string $nameValue, File $file, int $line, int $expectedMaxLength): void
     {
         $this->invalidNameValues[] = sprintf(
             '"%s" (max length %d, %d given) -> %s:%d',
@@ -930,7 +930,7 @@ EOT
      *
      * @return array<int, string>
      */
-    public function getInvalidAsciiNameValues(): array
+    private function getInvalidAsciiNameValues(): array
     {
         return $this->invalidAsciiNameValues;
     }
@@ -944,7 +944,7 @@ EOT
      * @param int $expectedMaxLength
      * @return void
      */
-    public function addInvalidAsciiNameValues(string $asciiNameValue, File $file, int $line, int $expectedMaxLength): void
+    protected function addInvalidAsciiNameValues(string $asciiNameValue, File $file, int $line, int $expectedMaxLength): void
     {
         $this->invalidAsciiNameValues[] = sprintf(
             '"%s" (max length %d, %d given) -> %s:%d',
@@ -961,7 +961,7 @@ EOT
      *
      * @return array<int, string>
      */
-    public function getInvalidAlternateNamesValues(): array
+    private function getInvalidAlternateNamesValues(): array
     {
         return $this->invalidAlternateNamesValues;
     }
@@ -975,7 +975,7 @@ EOT
      * @param int $expectedMaxLength
      * @return void
      */
-    public function addInvalidAlternateNamesValues(string $alternateNameValue, File $file, int $line, int $expectedMaxLength): void
+    protected function addInvalidAlternateNamesValues(string $alternateNameValue, File $file, int $line, int $expectedMaxLength): void
     {
         $this->invalidAlternateNamesValues[] = sprintf(
             '"%s" (max length %d, %d given) -> %s:%d',
@@ -992,7 +992,7 @@ EOT
      *
      * @return array<int, string>
      */
-    public function getInvalidCc2Values(): array
+    private function getInvalidCc2Values(): array
     {
         return $this->invalidCc2Values;
     }
@@ -1006,7 +1006,7 @@ EOT
      * @param int $expectedMaxLength
      * @return void
      */
-    public function addInvalidCc2Values(string $cc2Value, File $file, int $line, int $expectedMaxLength): void
+    protected function addInvalidCc2Values(string $cc2Value, File $file, int $line, int $expectedMaxLength): void
     {
         $this->invalidCc2Values[] = sprintf(
             '"%s" (max length %d, %d given) -> %s:%d',

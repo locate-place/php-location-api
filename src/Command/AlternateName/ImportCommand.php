@@ -394,7 +394,7 @@ EOT
         $this->createLogInstanceFromFile($file, $type);
 
         $this->clearTmpFolder($file, $countryCode);
-        $this->setSplitLines(10000);
+        $this->setSplitLines(self::DEFAULT_SPLIT_LINES);
         $this->splitFile(
             $file,
             $countryCode,

@@ -52,9 +52,7 @@ use Symfony\Component\Console\Input\InputOption;
  */
 abstract class BaseLocationImport extends Base
 {
-    protected const NAME_ARGUMENT_CSV = 'csv';
-
-    private int $splitLines = 100000;
+    protected int $splitLines = 10000;
 
     private const DATE_TRANSLATE = [
         '00.00.0000' => '01.01.1970',
@@ -68,6 +66,8 @@ abstract class BaseLocationImport extends Base
     protected const TEXT_ROWS_WRITTEN = '%d rows written to table %s (%d checked): %.2fs';
 
     protected const OPTION_NAME_FORCE = 'force';
+
+    protected const DEFAULT_SPLIT_LINES = 10000;
 
     protected Import $import;
 
@@ -643,7 +643,6 @@ abstract class BaseLocationImport extends Base
      * @param string|string[] $path
      * @return void
      * @throws TypeInvalidException
-     * @throws ClassInvalidException
      */
     protected function clearTmpFolder(File $file, string|array $path): void
     {
@@ -685,27 +684,6 @@ abstract class BaseLocationImport extends Base
         }
 
         return $files;
-    }
-
-    /**
-     * Prints invalid row to screen.
-     *
-     * @param array<string, mixed> $dataRow
-     * @param int $line
-     * @param string $message
-     * @return void
-     * @throws TypeInvalidException
-     */
-    protected function printInvalidRow(array $dataRow, int $line, string $message): void
-    {
-        $this->printAndLog('--- Invalid row ---');
-        $this->printAndLog(sprintf('  - line:    %d', $line));
-        $this->printAndLog(sprintf('  - message: %s', $message));
-        $this->printAndLog('  - data:');
-        foreach ($dataRow as $key => $value) {
-            $this->printAndLog(sprintf('    - %-20s%s', $key.':', (new TypeCastingHelper($value))->strval()));
-        }
-        $this->printAndLog('--- Invalid row ---');
     }
 
     /**
