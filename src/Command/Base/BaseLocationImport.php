@@ -28,6 +28,7 @@ use Ixnode\PhpException\Type\TypeInvalidException;
 use RegexIterator;
 use SplFileObject;
 use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputOption;
 
 /**
  * Class BaseLocationImport
@@ -39,8 +40,6 @@ use Symfony\Component\Console\Input\InputArgument;
  */
 abstract class BaseLocationImport extends Base
 {
-    protected const TEXT_ERROR_UNEXPECTED_COUNTS = 'The given number of fields (%d) in row does not match with number of fields (%d) in header.';
-
     protected const NAME_ARGUMENT_CSV = 'csv';
 
     private int $splitLines = 100000;
@@ -50,7 +49,20 @@ abstract class BaseLocationImport extends Base
         '31.12.9999' => '31.12.2099',
     ];
 
+    protected const TEXT_WARNING_IGNORED_LINE = 'Ignored line: %s:%d';
+
+    protected const TEXT_IMPORT_START = 'Start importing "%s" - [%d/%d]. Please wait.';
+
+    protected const TEXT_ROWS_WRITTEN = '%d rows written to table %s (%d checked): %.2fs';
+
+    protected const OPTION_NAME_FORCE = 'force';
+
     protected Import $import;
+
+    protected int $ignoredLines = 0;
+
+    /** @var array<int, string> $ignoredTextLines */
+    protected array $ignoredTextLines = [];
 
     /**
      *
@@ -58,6 +70,21 @@ abstract class BaseLocationImport extends Base
     public function __construct()
     {
         parent::__construct();
+    }
+
+    /**
+     * Configures the command.
+     *
+     * @return void
+     */
+    protected function configure(): void
+    {
+        $this
+            ->setDefinition([
+                new InputArgument('file', InputArgument::REQUIRED, 'The file to be imported.'),
+            ])
+            ->addOption(self::OPTION_NAME_FORCE, 'f', InputOption::VALUE_NONE, 'Forces the import even if an import with the same given country code already exists.')
+        ;
     }
 
     /**
@@ -98,20 +125,9 @@ abstract class BaseLocationImport extends Base
      * @param array<int, string> $row
      * @param array<int, string|null> $header
      * @return array<string, mixed>|null
+     * @throws TypeInvalidException
      */
     abstract protected function getDataRow(array $row, array $header, File $csv, int $line): ?array;
-
-    /**
-     * Configures the command.
-     *
-     * @return void
-     */
-    protected function configure(): void
-    {
-        $this
-            ->addArgument(self::NAME_ARGUMENT_CSV, InputArgument::REQUIRED, 'The path to the CSV file to import.')
-        ;
-    }
 
     /**
      * Replaces the perl encoding to html entity.
@@ -647,7 +663,6 @@ abstract class BaseLocationImport extends Base
      * @param string $addHeaderSeparator
      * @return void
      * @throws CaseInvalidException
-     * @throws ClassInvalidException
      * @throws FileNotWriteableException
      * @throws TypeInvalidException
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
@@ -741,5 +756,43 @@ abstract class BaseLocationImport extends Base
         $this->splitLines = $splitLines;
 
         return $this;
+    }
+
+    /**
+     * Returns the number of ignored lines.
+     *
+     * @return int
+     */
+    protected function getIgnoredLines(): int
+    {
+        return $this->ignoredLines;
+    }
+
+    /**
+     * Returns the ignored text lines.
+     *
+     * @return array<int, string>
+     */
+    protected function getIgnoredTextLines(): array
+    {
+        return $this->ignoredTextLines;
+    }
+
+    /**
+     * Add ignored line to log.
+     *
+     * @param File $csv
+     * @param int $line
+     * @return void
+     */
+    protected function addIgnoredLine(File $csv, int $line): void
+    {
+        $this->ignoredLines++;
+        $this->ignoredTextLines[] = sprintf('%s:%d', $csv->getPath(), $line);
+        $this->printAndLog(sprintf(
+            self::TEXT_WARNING_IGNORED_LINE,
+            $csv->getPath(),
+            $line
+        ));
     }
 }

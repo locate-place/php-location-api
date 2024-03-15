@@ -34,7 +34,6 @@ use Ixnode\PhpContainer\File;
 use Ixnode\PhpException\ArrayType\ArrayKeyNotFoundException;
 use Ixnode\PhpException\Case\CaseInvalidException;
 use Ixnode\PhpException\Case\CaseUnsupportedException;
-use Ixnode\PhpException\Class\ClassInvalidException;
 use Ixnode\PhpException\File\FileNotFoundException;
 use Ixnode\PhpException\File\FileNotReadableException;
 use Ixnode\PhpException\Type\TypeInvalidException;
@@ -42,9 +41,7 @@ use Ixnode\PhpTimezone\Country as IxnodeCountry;
 use Ixnode\PhpTimezone\Timezone as IxnodeTimezone;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\ArrayInput;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
@@ -67,11 +64,6 @@ use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
 class ImportCommand extends BaseLocationImport
 {
     protected static $defaultName = 'location:import';
-
-    private int $ignoredLines = 0;
-
-    /** @var array<int, string> $ignoredLinesText */
-    private array $ignoredLinesText = [];
 
     /** @var array<string, array<int, string>> $unknownTimezones */
     private array $unknownTimezones = [];
@@ -144,14 +136,6 @@ class ImportCommand extends BaseLocationImport
 
     protected const FIELD_MODIFICATION_DATE = 'modification-date';
 
-    protected const TEXT_IMPORT_START = 'Start importing "%s" - [%d/%d]. Please wait.';
-
-    private const TEXT_ROWS_WRITTEN = '%d rows written to table %s (%d checked): %.2fs';
-
-    protected const TEXT_WARNING_IGNORED_LINE = 'Ignored line: %s:%d';
-
-    protected const OPTION_NAME_FORCE = 'force';
-
     protected bool $checkCommandExecution = false;
 
     protected bool $errorFound = false;
@@ -172,16 +156,16 @@ class ImportCommand extends BaseLocationImport
 
     /**
      * Configures the command.
+     *
+     * @inheritdoc
      */
     protected function configure(): void
     {
+        parent::configure();
+
         $this
             ->setName(strval(self::$defaultName))
             ->setDescription('Imports locations from given file.')
-            ->setDefinition([
-                new InputArgument('file', InputArgument::REQUIRED, 'The file to be imported.'),
-            ])
-            ->addOption(self::OPTION_NAME_FORCE, 'f', InputOption::VALUE_NONE, 'Forces the import even if an import with the same given country code already exists.')
             ->setHelp(
                 <<<'EOT'
 
@@ -271,19 +255,11 @@ EOT
      * Returns the converted row.
      *
      * @inheritdoc
-     * @throws TypeInvalidException
-     * @throws ClassInvalidException
      */
     protected function getDataRow(array $row, array $header, File $csv, int $line): ?array
     {
         if (count($row) !== count($header)) {
-            $this->ignoredLines++;
-            $this->ignoredLinesText[] = sprintf('%s:%d', $csv->getPath(), $line);
-            $this->printAndLog(sprintf(
-                self::TEXT_WARNING_IGNORED_LINE,
-                $csv->getPath(),
-                $line
-            ));
+            $this->addIgnoredLine($csv, $line);
             return null;
         }
 
@@ -907,7 +883,7 @@ EOT
         if ($this->getIgnoredLines() > 0) {
             $this->printAndLog('---');
             $this->printAndLog(sprintf('Ignored lines: %d', $this->getIgnoredLines()));
-            foreach ($this->getIgnoredLinesText() as $ignoredLine) {
+            foreach ($this->getIgnoredTextLines() as $ignoredLine) {
                 $this->printAndLog(sprintf('- %s', $ignoredLine));
             }
             $this->errorFound = true;
@@ -995,26 +971,6 @@ EOT
 
         /* Command successfully executed. */
         return Command::SUCCESS;
-    }
-
-    /**
-     * Returns the number of ignored lines.
-     *
-     * @return int
-     */
-    public function getIgnoredLines(): int
-    {
-        return $this->ignoredLines;
-    }
-
-    /**
-     * Returns the ignored lines.
-     *
-     * @return array<int, string>
-     */
-    public function getIgnoredLinesText(): array
-    {
-        return $this->ignoredLinesText;
     }
 
     /**
