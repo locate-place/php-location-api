@@ -156,6 +156,24 @@ abstract class BaseLocationImport extends Base
     }
 
     /**
+     * Trims the given value and convert to string or null if empty.
+     *
+     * @param mixed $value
+     * @return string|null
+     * @throws TypeInvalidException
+     */
+    protected function trimStringNull(mixed $value): string|null
+    {
+        $value = trim((new TypeCastingHelper($value))->strval());
+
+        if (empty($value)) {
+            return null;
+        }
+
+        return $value;
+    }
+
+    /**
      * Trims the given value and convert to integer.
      *
      * @param mixed $value
@@ -165,6 +183,24 @@ abstract class BaseLocationImport extends Base
     protected function trimInteger(mixed $value): int
     {
         return intval(trim((new TypeCastingHelper($value))->strval()));
+    }
+
+    /**
+     * Trims the given value and convert to integer or null if empty.
+     *
+     * @param mixed $value
+     * @return int|null
+     * @throws TypeInvalidException
+     */
+    protected function trimIntegerNull(mixed $value): int|null
+    {
+        $value = trim((new TypeCastingHelper($value))->strval());
+
+        if (empty($value)) {
+            return null;
+        }
+
+        return intval($value);
     }
 
     /**

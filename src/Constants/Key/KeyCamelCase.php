@@ -22,6 +22,8 @@ namespace App\Constants\Key;
  */
 class KeyCamelCase
 {
+    final public const ADMIN_CODE = 'adminCode';
+
     final public const ADMIN_1_CODE = 'admin1Code';
 
     final public const ADMIN_2_CODE = 'admin2Code';
@@ -43,6 +45,10 @@ class KeyCamelCase
     final public const DISTRICT = 'district';
 
     final public const GEONAME_ID = 'geonameId';
+
+    final public const PLACE_NAME = 'placeName';
+
+    final public const POSTAL_CODE = 'postalCode';
 
     final public const TIMEZONE = 'timezone';
 }

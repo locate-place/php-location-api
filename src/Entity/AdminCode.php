@@ -66,12 +66,29 @@ class AdminCode
     #[ORM\JoinColumn(nullable: false)]
     private ?Country $country = null;
 
+    #[ORM\Column(length: 20, nullable: true)]
+    private ?string $admin1Code2 = null;
+
+    #[ORM\Column(length: 100, nullable: true)]
+    private ?string $admin1Name = null;
+
+    #[ORM\Column(length: 100, nullable: true)]
+    private ?string $admin2Name = null;
+
+    #[ORM\Column(length: 100, nullable: true)]
+    private ?string $admin3Name = null;
+
+    /** @var Collection<int, ZipCode> $zipCodes */
+    #[ORM\OneToMany(mappedBy: 'adminCode', targetEntity: ZipCode::class, orphanRemoval: true)]
+    private Collection $zipCodes;
+
     /**
      *
      */
     public function __construct()
     {
         $this->locations = new ArrayCollection();
+        $this->zipCodes = new ArrayCollection();
     }
 
     /**
@@ -211,6 +228,84 @@ class AdminCode
     public function setCountry(?Country $country): static
     {
         $this->country = $country;
+
+        return $this;
+    }
+
+    public function getAdmin1Code2(): ?string
+    {
+        return $this->admin1Code2;
+    }
+
+    public function setAdmin1Code2(?string $admin1Code2): static
+    {
+        $this->admin1Code2 = $admin1Code2;
+
+        return $this;
+    }
+
+    public function getAdmin1Name(): ?string
+    {
+        return $this->admin1Name;
+    }
+
+    public function setAdmin1Name(?string $admin1Name): static
+    {
+        $this->admin1Name = $admin1Name;
+
+        return $this;
+    }
+
+    public function getAdmin2Name(): ?string
+    {
+        return $this->admin2Name;
+    }
+
+    public function setAdmin2Name(?string $admin2Name): static
+    {
+        $this->admin2Name = $admin2Name;
+
+        return $this;
+    }
+
+    public function getAdmin3Name(): ?string
+    {
+        return $this->admin3Name;
+    }
+
+    public function setAdmin3Name(?string $admin3Name): static
+    {
+        $this->admin3Name = $admin3Name;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, ZipCode>
+     */
+    public function getZipCodes(): Collection
+    {
+        return $this->zipCodes;
+    }
+
+    public function addZipCode(ZipCode $zipCode): static
+    {
+        if (!$this->zipCodes->contains($zipCode)) {
+            $this->zipCodes->add($zipCode);
+            $zipCode->setAdminCode($this);
+        }
+
+        return $this;
+    }
+
+    public function removeZipCode(ZipCode $zipCode): static
+    {
+        if ($this->zipCodes->removeElement($zipCode)) {
+            // set the owning side to null (unless already changed)
+            if ($zipCode->getAdminCode() === $this) {
+                $zipCode->setAdminCode(null);
+            }
+        }
 
         return $this;
     }

@@ -18,11 +18,10 @@ use App\Constants\DB\FeatureCode as DbFeatureCode;
 use App\Entity\Country;
 use App\Entity\FeatureCode;
 use App\Entity\Location;
+use App\Repository\Base\BaseCoordinateRepository;
 use App\Service\LocationServiceConfig;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
-use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 use Ixnode\PhpApiVersionBundle\Utils\TypeCasting\TypeCastingHelper;
 use Ixnode\PhpChecker\Checker;
@@ -46,11 +45,10 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
  * @method Location|null findOneBy(array $criteria, array $orderBy = null)
  * @method Location[]    findAll()
  * @method Location[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
- * @extends ServiceEntityRepository<Location>
  * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
  * @SuppressWarnings(PHPMD.TooManyPublicMethods)
  */
-class LocationRepository extends ServiceEntityRepository
+class LocationRepository extends BaseCoordinateRepository
 {
     /**
      * @param ManagerRegistry $registry
@@ -58,12 +56,12 @@ class LocationRepository extends ServiceEntityRepository
      * @param ParameterBagInterface $parameterBag
      */
     public function __construct(
-        protected ManagerRegistry       $registry,
+        protected ManagerRegistry $registry,
         protected LocationServiceConfig $locationCountryService,
         protected ParameterBagInterface $parameterBag
     )
     {
-        parent::__construct($registry, Location::class);
+        parent::__construct($registry, $parameterBag);
     }
 
     /**
@@ -182,10 +180,33 @@ class LocationRepository extends ServiceEntityRepository
      *
      * Query example:
      * --------------
-     * SELECT id, name, ST_Distance(ST_MakePoint(coordinate[0], coordinate[1])::geography, ST_MakePoint(51.3, 13.3)::geography) AS distance
-     * FROM location
-     * ORDER BY distance
-     * LIMIT 50;
+       SELECT
+         id,
+         name,
+         ST_Distance(coordinate, ST_MakePoint(13.741351013208588, 51.06115159751123)::geography) AS distance
+       FROM location
+       WHERE ST_DWithin(coordinate, ST_MakePoint(13.741351013208588, 51.06115159751123)::geography, 100000)
+       ORDER BY distance
+       LIMIT 50;
+     *
+     * Show indices:
+     * -------------
+       SELECT
+         i.relname AS index_name,
+         am.amname AS index_type,
+         idx.indisprimary AS is_primary,
+         idx.indisunique AS is_unique,
+         pg_get_indexdef(idx.indexrelid) AS index_definition
+       FROM
+         pg_index AS idx
+       JOIN
+         pg_class AS i ON i.oid = idx.indexrelid
+       JOIN
+         pg_am AS am ON i.relam = am.oid
+       WHERE
+         idx.indrelid = 'location'::regclass
+       ORDER BY
+         index_name;
      *
      * @param Coordinate|null $coordinate
      * @param int|null $distanceMeter
@@ -267,7 +288,7 @@ class LocationRepository extends ServiceEntityRepository
         }
 
         /* Limit with admin codes. */
-        $this->limitAdminCodes($queryBuilder, $adminCodes);
+        $this->limitAdminCodes($queryBuilder, 'l', $adminCodes);
 
         /* Limit with the given population. */
         if (!is_null($withPopulation)) {
@@ -674,59 +695,6 @@ class LocationRepository extends ServiceEntityRepository
             $value,
             $sortName
         );
-    }
-
-    /**
-     * Limit admin codes.
-     *
-     * @param QueryBuilder $queryBuilder
-     * @param array{a1?: string, a2?: string, a3?: string, a4?: string}|null $adminCodes
-     * @return void
-     * @throws CaseUnsupportedException
-     */
-    private function limitAdminCodes(QueryBuilder $queryBuilder, array|null $adminCodes): void
-    {
-        if (is_null($adminCodes)) {
-            return;
-        }
-
-        $notNull = $this->parameterBag->get('db_not_null');
-        $null = $this->parameterBag->get('db_null');
-
-        $queryBuilder
-            ->leftJoin('l.adminCode', 'a');
-
-        $adminCodesAll = $this->parameterBag->get('admin_codes_all');
-
-        if (!is_array($adminCodesAll)) {
-            throw new CaseUnsupportedException('The given admin_codes_all configuration is not an array.');
-        }
-
-        foreach ($adminCodesAll as $adminCode) {
-            if (array_key_exists($adminCode, $adminCodes)) {
-                $adminName = match ($adminCode) {
-                    'a1' => 'admin1Code',
-                    'a2' => 'admin2Code',
-                    'a3' => 'admin3Code',
-                    'a4' => 'admin4Code',
-                };
-
-                $valueAdminCode = $adminCodes[$adminCode];
-
-                match (true) {
-                    $valueAdminCode === $notNull => $queryBuilder
-                        ->andWhere(sprintf('a.%s IS NOT NULL', $adminName)),
-                    $valueAdminCode === $null => $queryBuilder
-                        ->andWhere(sprintf('a.%s IS NULL', $adminName)),
-                    str_starts_with($valueAdminCode, '?') => $queryBuilder
-                        ->andWhere(sprintf('a.%s = :%s OR a.%s IS NULL', $adminName, $adminCode, $adminName))
-                        ->setParameter($adminCode, substr($valueAdminCode, 1)),
-                    default => $queryBuilder
-                        ->andWhere(sprintf('a.%s = :%s', $adminName, $adminCode))
-                        ->setParameter($adminCode, $valueAdminCode),
-                };
-            }
-        }
     }
 
     /**
