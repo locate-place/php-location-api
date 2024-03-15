@@ -21,14 +21,12 @@ use App\Entity\Import;
 use App\Entity\Location;
 use App\Repository\ImportRepository;
 use DateTimeImmutable;
-use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\NonUniqueResultException;
 use Exception;
 use Ixnode\PhpApiVersionBundle\Utils\TypeCasting\TypeCastingHelper;
 use Ixnode\PhpContainer\File;
 use Ixnode\PhpException\ArrayType\ArrayKeyNotFoundException;
 use Ixnode\PhpException\Type\TypeInvalidException;
-use Ixnode\PhpTimezone\Country as IxnodeCountry;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -57,9 +55,6 @@ class ImportCommand extends BaseLocationImport
     /** @var array<int, Location> $locations */
     private array $locations = [];
 
-    /** @var array<string, Country> $countries */
-    private array $countries = [];
-
     protected const FIELD_ALTERNATE_NAME_ID = 'alternate-name-id';
 
     protected const FIELD_GEONAME_ID = 'geoname-id';
@@ -79,16 +74,6 @@ class ImportCommand extends BaseLocationImport
     protected const FIELD_FROM = 'from';
 
     protected const FIELD_TO = 'to';
-
-    /**
-     * @param EntityManagerInterface $entityManager
-     */
-    public function __construct(
-        protected readonly EntityManagerInterface $entityManager
-    )
-    {
-        parent::__construct();
-    }
 
     /**
      * Configures the command.
@@ -176,68 +161,6 @@ EOT
 
             default => $value,
         };
-    }
-
-    /**
-     * Returns the converted row.
-     *
-     * @inheritdoc
-     */
-    protected function getDataRow(array $row, array $header, File $csv, int $line): ?array
-    {
-        if (count($row) !== count($header)) {
-            $this->addIgnoredLine($csv, $line);
-            return null;
-        }
-
-        $dataRow = [];
-
-        foreach ($row as $index => $value) {
-            $indexName = $header[$index];
-
-            if ($indexName === null) {
-                continue;
-            }
-
-            $dataRow[$indexName] = $this->translateField($value, $indexName);
-        }
-
-        return $dataRow;
-    }
-
-    /**
-     * Returns or creates a new Country entity.
-     *
-     * @param string $code
-     * @return Country
-     * @throws ArrayKeyNotFoundException
-     */
-    protected function getCountry(string $code): Country
-    {
-        $index = $code;
-
-        /* Use cache. */
-        if (array_key_exists($index, $this->countries)) {
-            return $this->countries[$index];
-        }
-
-        $repository = $this->entityManager->getRepository(Country::class);
-
-        $country = $repository->findOneBy([
-            KeyCamelCase::CODE => $code,
-        ]);
-
-        /* Create new entity. */
-        if (!$country instanceof Country) {
-            $country = (new Country())
-                ->setCode($code)
-                ->setName((new IxnodeCountry($code))->getName())
-            ;
-            $this->entityManager->persist($country);
-        }
-
-        $this->countries[$index] = $country;
-        return $country;
     }
 
     /**

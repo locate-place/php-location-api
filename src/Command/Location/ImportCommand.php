@@ -26,7 +26,6 @@ use App\Entity\Timezone;
 use App\Repository\ImportRepository;
 use DateTime;
 use DateTimeImmutable;
-use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\NonUniqueResultException;
 use Exception;
 use Ixnode\PhpApiVersionBundle\Utils\TypeCasting\TypeCastingHelper;
@@ -34,7 +33,6 @@ use Ixnode\PhpContainer\File;
 use Ixnode\PhpException\ArrayType\ArrayKeyNotFoundException;
 use Ixnode\PhpException\Case\CaseUnsupportedException;
 use Ixnode\PhpException\Type\TypeInvalidException;
-use Ixnode\PhpTimezone\Country as IxnodeCountry;
 use Ixnode\PhpTimezone\Timezone as IxnodeTimezone;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\ArrayInput;
@@ -79,9 +77,6 @@ class ImportCommand extends BaseLocationImport
 
     /** @var array<int, string> $invalidCc2Values */
     private array $invalidCc2Values = [];
-
-    /** @var array<string, Country> $countries */
-    private array $countries = [];
 
     /** @var array<string, FeatureClass> $featureClasses */
     private array $featureClasses = [];
@@ -136,16 +131,6 @@ class ImportCommand extends BaseLocationImport
     protected bool $checkCommandExecution = false;
 
     /**
-     * @param EntityManagerInterface $entityManager
-     */
-    public function __construct(
-        protected readonly EntityManagerInterface $entityManager
-    )
-    {
-        parent::__construct();
-    }
-
-    /**
      * Configures the command.
      *
      * @inheritdoc
@@ -170,6 +155,26 @@ EOT
      * Returns the field translations.
      *
      * @inheritdoc
+     *
+     * geonameid         : integer id of record in geonames database
+     * name              : name of geographical point (utf8) varchar(200)
+     * asciiname         : name of geographical point in plain ascii characters, varchar(200)
+     * alternatenames    : alternatenames, comma separated, ascii names automatically transliterated, convenience attribute from alternatename table, varchar(10000)
+     * latitude          : latitude in decimal degrees (wgs84)
+     * longitude         : longitude in decimal degrees (wgs84)
+     * feature class     : see http://www.geonames.org/export/codes.html, char(1)
+     * feature code      : see http://www.geonames.org/export/codes.html, varchar(10)
+     * country code      : ISO-3166 2-letter country code, 2 characters
+     * cc2               : alternate country codes, comma separated, ISO-3166 2-letter country code, 200 characters
+     * admin1 code       : fipscode (subject to change to iso code), see exceptions below, see file admin1Codes.txt for display names of this code; varchar(20)
+     * admin2 code       : code for the second administrative division, a county in the US, see file admin2Codes.txt; varchar(80)
+     * admin3 code       : code for third level administrative division, varchar(20)
+     * admin4 code       : code for fourth level administrative division, varchar(20)
+     * population        : bigint (8 byte int)
+     * elevation         : in meters, integer
+     * dem               : digital elevation model, srtm3 or gtopo30, average elevation of 3''x3'' (ca 90mx90m) or 30''x30'' (ca 900mx900m) area in meters, integer. srtm processed by cgiar/ciat.
+     * timezone          : the iana timezone id (see file timeZone.txt) varchar(40)
+     * modification date : date of last modification in yyyy-MM-dd format
      */
     protected function getFieldTranslation(): array
     {
@@ -239,68 +244,6 @@ EOT
 
             default => $value,
         };
-    }
-
-    /**
-     * Returns the converted row.
-     *
-     * @inheritdoc
-     */
-    protected function getDataRow(array $row, array $header, File $csv, int $line): ?array
-    {
-        if (count($row) !== count($header)) {
-            $this->addIgnoredLine($csv, $line);
-            return null;
-        }
-
-        $dataRow = [];
-
-        foreach ($row as $index => $value) {
-            $indexName = $header[$index];
-
-            if ($indexName === null) {
-                continue;
-            }
-
-            $dataRow[$indexName] = $this->translateField($value, $indexName);
-        }
-
-        return $dataRow;
-    }
-
-    /**
-     * Returns or creates a new Country entity.
-     *
-     * @param string $code
-     * @return Country
-     * @throws ArrayKeyNotFoundException
-     */
-    protected function getCountry(string $code): Country
-    {
-        $index = $code;
-
-        /* Use cache. */
-        if (array_key_exists($index, $this->countries)) {
-            return $this->countries[$index];
-        }
-
-        $repository = $this->entityManager->getRepository(Country::class);
-
-        $country = $repository->findOneBy([
-            KeyCamelCase::CODE => $code,
-        ]);
-
-        /* Create new entity. */
-        if (!$country instanceof Country) {
-            $country = (new Country())
-                ->setCode($code)
-                ->setName((new IxnodeCountry($code))->getName())
-            ;
-            $this->entityManager->persist($country);
-        }
-
-        $this->countries[$index] = $country;
-        return $country;
     }
 
     /**

@@ -17,11 +17,14 @@ use App\Command\AlternateName\ImportCommand as AlternateNameImportCommand;
 use App\Command\Location\ImportCommand as LocationImportCommand;
 use App\Command\ZipCode\ImportCommand as ZipCodeImportCommand;
 use App\Constants\Code\Encoding;
+use App\Constants\Key\KeyCamelCase;
 use App\Entity\AlternateName;
+use App\Entity\Country;
 use App\Entity\Import;
 use App\Entity\Location;
 use App\Entity\ZipCode;
 use DateTimeImmutable;
+use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use Ixnode\PhpApiVersionBundle\Utils\TypeCasting\TypeCastingHelper;
 use Ixnode\PhpContainer\File;
@@ -32,6 +35,7 @@ use Ixnode\PhpException\File\FileNotFoundException;
 use Ixnode\PhpException\File\FileNotReadableException;
 use Ixnode\PhpException\File\FileNotWriteableException;
 use Ixnode\PhpException\Type\TypeInvalidException;
+use Ixnode\PhpTimezone\Country as IxnodeCountry;
 use LogicException;
 use RegexIterator;
 use SplFileObject;
@@ -78,10 +82,15 @@ abstract class BaseLocationImport extends Base
 
     protected float $timeStart;
 
+    /** @var array<string, Country> $countries */
+    private array $countries = [];
+
     /**
-     *
+     * @param EntityManagerInterface $entityManager
      */
-    public function __construct()
+    public function __construct(
+        protected readonly EntityManagerInterface $entityManager
+    )
     {
         parent::__construct();
     }
@@ -144,7 +153,62 @@ abstract class BaseLocationImport extends Base
      * @return array<string, mixed>|null
      * @throws TypeInvalidException
      */
-    abstract protected function getDataRow(array $row, array $header, File $csv, int $line): ?array;
+    protected function getDataRow(array $row, array $header, File $csv, int $line): ?array
+    {
+        if (count($row) !== count($header)) {
+            $this->addIgnoredLine($csv, $line);
+            return null;
+        }
+
+        $dataRow = [];
+
+        foreach ($row as $index => $value) {
+            $indexName = $header[$index];
+
+            if ($indexName === null) {
+                continue;
+            }
+
+            $dataRow[$indexName] = $this->translateField($value, $indexName);
+        }
+
+        return $dataRow;
+    }
+
+    /**
+     * Returns or creates a new Country entity.
+     *
+     * @param string $code
+     * @return Country
+     * @throws ArrayKeyNotFoundException
+     */
+    protected function getCountry(string $code): Country
+    {
+        $index = $code;
+
+        /* Use cache. */
+        if (array_key_exists($index, $this->countries)) {
+            return $this->countries[$index];
+        }
+
+        $repository = $this->entityManager->getRepository(Country::class);
+
+        $country = $repository->findOneBy([
+            KeyCamelCase::CODE => $code,
+        ]);
+
+        /* Create new entity. */
+        if (!$country instanceof Country) {
+            $country = (new Country())
+                ->setCode($code)
+                ->setName((new IxnodeCountry($code))->getName())
+            ;
+            $this->entityManager->persist($country);
+        }
+
+        $this->countries[$index] = $country;
+        return $country;
+    }
 
     /**
      * Saves the data as entities.
