@@ -80,10 +80,6 @@ class ImportCommand extends BaseLocationImport
 
     protected const FIELD_TO = 'to';
 
-    protected bool $errorFound = false;
-
-    protected float $timeStart;
-
     /**
      * @param EntityManagerInterface $entityManager
      */
@@ -116,6 +112,8 @@ EOT
     }
 
     /**
+     * Returns the field translations.
+     *
      * @inheritdoc
      *
      * alternateNameId   : the id of this alternate name, int
@@ -158,10 +156,7 @@ EOT
     /**
      * Translate given value according to given index name.
      *
-     * @param bool|int|string $value
-     * @param string $indexName
-     * @return bool|string|int|float|DateTimeImmutable|null
-     * @throws TypeInvalidException
+     * @inheritdoc
      */
     protected function translateField(bool|int|string $value, string $indexName): bool|string|int|float|null|DateTimeImmutable
     {
@@ -187,7 +182,6 @@ EOT
      * Returns the converted row.
      *
      * @inheritdoc
-     * @throws TypeInvalidException
      */
     protected function getDataRow(array $row, array $header, File $csv, int $line): ?array
     {

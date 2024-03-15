@@ -83,10 +83,6 @@ class ImportCommand extends BaseLocationImport
 
     protected const FIELD_ACCURACY = 'accuracy';
 
-    protected bool $errorFound = false;
-
-    protected float $timeStart;
-
     /**
      * @param EntityManagerInterface $entityManager
      * @param ZipCodeRepository $zipCodeRepository
@@ -121,6 +117,8 @@ EOT
     }
 
     /**
+     * Returns the field translations.
+     *
      * @inheritdoc
      *
      * country code      : iso country code, 2 characters
@@ -167,10 +165,7 @@ EOT
     /**
      * Translate given value according to given index name.
      *
-     * @param bool|int|string $value
-     * @param string $indexName
-     * @return bool|string|int|float|DateTimeImmutable|null
-     * @throws TypeInvalidException
+     * @inheritdoc
      */
     protected function translateField(bool|int|string $value, string $indexName): bool|string|int|float|null|DateTimeImmutable
     {

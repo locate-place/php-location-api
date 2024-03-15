@@ -135,10 +135,6 @@ class ImportCommand extends BaseLocationImport
 
     protected bool $checkCommandExecution = false;
 
-    protected bool $errorFound = false;
-
-    protected float $timeStart;
-
     /**
      * @param EntityManagerInterface $entityManager
      */
@@ -171,6 +167,8 @@ EOT
     }
 
     /**
+     * Returns the field translations.
+     *
      * @inheritdoc
      */
     protected function getFieldTranslation(): array
@@ -211,10 +209,7 @@ EOT
     /**
      * Translate given value according to given index name.
      *
-     * @param bool|int|string $value
-     * @param string $indexName
-     * @return bool|string|int|float|DateTimeImmutable|null
-     * @throws TypeInvalidException
+     * @inheritdoc
      */
     protected function translateField(bool|int|string $value, string $indexName): bool|string|int|float|null|DateTimeImmutable
     {

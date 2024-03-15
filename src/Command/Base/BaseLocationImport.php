@@ -74,6 +74,10 @@ abstract class BaseLocationImport extends Base
 
     protected int $importedRows = 0;
 
+    protected bool $errorFound = false;
+
+    protected float $timeStart;
+
     /**
      *
      */
@@ -109,6 +113,8 @@ abstract class BaseLocationImport extends Base
     }
 
     /**
+     * Returns the field translations.
+     *
      * @return array<string, string|null>
      */
     abstract protected function getFieldTranslation(): array;
@@ -126,6 +132,7 @@ abstract class BaseLocationImport extends Base
      * @param bool|string|int $value
      * @param string $indexName
      * @return bool|string|int|float|DateTimeImmutable|array<int, mixed>|null
+     * @throws TypeInvalidException
      */
     abstract protected function translateField(bool|string|int $value, string $indexName): bool|string|int|float|null|DateTimeImmutable|array;
 
