@@ -13,24 +13,25 @@ declare(strict_types=1);
 
 namespace App\DBAL\GeoLocation\Types\PostgreSQL;
 
-use App\DBAL\GeoLocation\ValueObject\Point;
+use App\DBAL\GeoLocation\Converter\ValueToPolygon;
+use App\DBAL\GeoLocation\ValueObject\Polygon;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Types\Type;
-use Ixnode\PhpException\Case\CaseUnsupportedException;
 use Ixnode\PhpException\Type\TypeInvalidException;
+use LogicException;
 
 /**
- * Class PostGISType
+ * Class PostGISPolygonType
  *
  * @author Björn Hempel <bjoern@hempel.li>
- * @version 0.1.0 (2023-07-31)
- * @since 0.1.0 (2023-07-31) First version.
+ * @version 0.1.0 (2024-03-16)
+ * @since 0.1.0 (2024-03-16) First version.
  */
-abstract class PostGISType extends Type
+abstract class PostGISPolygonType extends Type
 {
-    final public const GEOMETRY = 'geometry';
+    final public const GEOMETRY = 'geometry_polygon';
 
-    final public const GEOGRAPHY = 'geography';
+    final public const GEOGRAPHY = 'geography_polygon';
 
     final public const SRID_ZERO = 0;
 
@@ -94,57 +95,38 @@ abstract class PostGISType extends Type
      *
      * @param mixed $value
      * @param AbstractPlatform $platform
-     * @return Point
+     * @return Polygon
      * @throws TypeInvalidException
-     * @throws CaseUnsupportedException
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
-    public function convertToPHPValue($value, AbstractPlatform $platform): Point
+    public function convertToPHPValue($value, AbstractPlatform $platform): Polygon
     {
         if (!is_string($value)) {
             throw new TypeInvalidException('string', 'string');
         }
 
-        $result = sscanf($value, 'SRID=%f;POINT(%f %f)');
-
-        if (is_null($result)) {
-            throw new CaseUnsupportedException(sprintf('Unable to parse given ST_AsEWKT value: %s', $value));
-        }
-
-        /* Attention: PostgreSQL uses lon/lat not lat/lon: Switch order. */
-        [$srid, $longitude, $latitude, ] = $result;
-
-        if (is_null($srid)) {
-            throw new TypeInvalidException('float', 'null');
-        }
-
-        if (is_null($latitude)) {
-            throw new TypeInvalidException('float', 'null');
-        }
-
-        if (is_null($longitude)) {
-            throw new TypeInvalidException('float', 'null');
-        }
-
-        return new Point((float) $latitude, (float) $longitude, (int) $srid);
+        return (new ValueToPolygon($value))->get();
     }
 
     /**
      * Returns the database value.
      *
-     * @param Point $value
+     * @param Polygon $value
      * @param AbstractPlatform $platform
      * @return string
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     public function convertToDatabaseValue($value, AbstractPlatform $platform): string
     {
+        if (!$value instanceof Polygon) {
+            throw new LogicException(sprintf('Given value is not an instance of %s.', Polygon::class));
+        }
+
         /* Attention: PostgreSQL uses lon/lat not lat/lon: Switch order. */
         return sprintf(
-            'SRID=%d;POINT(%f %f)',
+            'SRID=%d;POLYGON(%s)',
             $value->getSrid(),
-            $value->getLongitude(),
-            $value->getLatitude()
+            $value->getPointString()
         );
     }
 

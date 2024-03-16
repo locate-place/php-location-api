@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
-use App\DBAL\GeoLocation\Types\PostgreSQL\PostGISType;
+use App\DBAL\GeoLocation\Types\PostgreSQL\PostGISPolygonType;
 use App\DBAL\GeoLocation\ValueObject\Polygon;
 use App\Entity\Trait\TimestampsTrait;
 use App\Repository\ZipCodeAreaRepository;
@@ -60,7 +60,7 @@ class ZipCodeArea
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 1, nullable: true)]
     private ?string $populationDensity = null;
 
-    #[ORM\Column(type: PostGISType::GEOGRAPHY, nullable: false, options: ['geometry_type' => 'POLYGON', 'srid' => 4326])]
+    #[ORM\Column(type: PostGISPolygonType::GEOGRAPHY, nullable: false, options: ['geometry_type' => 'POLYGON', 'srid' => 4326])]
     private ?Polygon $coordinates = null;
 
     #[ORM\ManyToOne(inversedBy: 'zipCodeAreas')]

@@ -19,8 +19,11 @@ use App\Constants\DB\FeatureCode;
 use App\Constants\Language\CountryCode;
 use App\Constants\Language\LanguageCode;
 use App\Entity\Location as LocationEntity;
+use App\Entity\ZipCode;
+use App\Entity\ZipCodeArea;
 use App\Repository\AlternateNameRepository;
 use App\Repository\LocationRepository;
+use App\Repository\ZipCodeAreaRepository;
 use App\Repository\ZipCodeRepository;
 use App\Service\Entity\LocationEntityHelper;
 use App\Service\LocationContainer;
@@ -31,6 +34,7 @@ use Ixnode\PhpCoordinate\Coordinate;
 use Ixnode\PhpException\ArrayType\ArrayKeyNotFoundException;
 use Ixnode\PhpException\Case\CaseInvalidException;
 use Ixnode\PhpException\Case\CaseUnsupportedException;
+use Ixnode\PhpException\Class\ClassInvalidException;
 use Ixnode\PhpException\File\FileNotFoundException;
 use Ixnode\PhpException\File\FileNotReadableException;
 use Ixnode\PhpException\Function\FunctionJsonEncodeException;
@@ -112,6 +116,7 @@ abstract class BaseHelperLocationService
      * @param LocationRepository $locationRepository
      * @param AlternateNameRepository $alternateNameRepository
      * @param ZipCodeRepository $zipCodeRepository
+     * @param ZipCodeAreaRepository $zipCodeAreaRepository
      * @param TranslatorInterface $translator
      * @param LocationServiceConfig $locationServiceConfig
      */
@@ -122,6 +127,7 @@ abstract class BaseHelperLocationService
         protected LocationRepository $locationRepository,
         protected AlternateNameRepository $alternateNameRepository,
         protected ZipCodeRepository $zipCodeRepository,
+        protected ZipCodeAreaRepository $zipCodeAreaRepository,
         protected TranslatorInterface $translator,
         protected LocationServiceConfig $locationServiceConfig
     )
@@ -666,5 +672,35 @@ abstract class BaseHelperLocationService
 
         $this->featureClassService->setLocaleByLanguageAndCountry($isoLanguage, $country);
         $this->featureCodeService->setLocaleByLanguageAndCountry($isoLanguage, $country);
+    }
+
+    /**
+     * Returns the ZipCode or ZipCodeArea entity by given Location entity.
+     *
+     * @param LocationEntity $locationEntity
+     * @return ZipCode|ZipCodeArea|null
+     * @throws CaseUnsupportedException
+     * @throws ParserException
+     * @throws TypeInvalidException
+     * @throws ClassInvalidException
+     */
+    protected function getZipCode(LocationEntity $locationEntity): ZipCode|ZipCodeArea|null
+    {
+        $countryCode = $locationEntity->getCountry()?->getCode();
+
+        if ($countryCode === CountryCode::DE) {
+            return $this->zipCodeAreaRepository->findZipCodeByCoordinate(
+                coordinate: $locationEntity->getCoordinateIxnode(),
+                country: $locationEntity->getCountry(),
+                limit: 1
+            );
+        }
+
+        return $this->zipCodeRepository->findZipCodeByCoordinate(
+            coordinate: $locationEntity->getCoordinateIxnode(),
+            distanceMeter: 10000,
+            country: $locationEntity->getCountry(),
+            limit: 1
+        );
     }
 }

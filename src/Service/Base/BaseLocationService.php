@@ -34,6 +34,8 @@ use App\DataTypes\Timezone;
 use App\DBAL\GeoLocation\ValueObject\Point;
 use App\Entity\AlternateName;
 use App\Entity\Location as LocationEntity;
+use App\Entity\ZipCode;
+use App\Entity\ZipCodeArea;
 use App\Service\Base\Helper\BaseHelperLocationService;
 use App\Service\LocationContainer;
 use App\Utils\Wikipedia\Wikipedia;
@@ -954,11 +956,13 @@ abstract class BaseLocationService extends BaseHelperLocationService
         $geonameId = $locationEntity->getGeonameId();
         $name = $this->locationContainer->getAlternateName($locationEntity, $this->getIsoLanguage());
         $updateAt = $locationEntity->getUpdatedAt();
-        $zipCode = $this->zipCodeRepository->findZipCodeByCoordinate(
-            coordinate: $locationEntity->getCoordinateIxnode(),
-            distanceMeter: 10000,
-            limit: 1
-        );
+        $zipCode = $this->getZipCode($locationEntity);
+
+        $zipCodeString = match (true) {
+            $zipCode instanceof ZipCode => $zipCode->getPostalCode(),
+            $zipCode instanceof ZipCodeArea => $zipCode->getZipCode(),
+            default => null,
+        };
 
         $name = match (true) {
             !is_null($name) && array_key_exists($name, Translation::TRANSLATION) => Translation::TRANSLATION[$name],
@@ -980,7 +984,7 @@ abstract class BaseLocationService extends BaseHelperLocationService
             ...(is_int($geonameId) ? [KeyArray::GEONAME_ID => $geonameId] : []),
             ...(is_string($name) ? [KeyArray::NAME => $name] : []),
             ...(is_string($nameFull) ? [KeyArray::NAME_FULL => $nameFull] : []),
-            ...(!is_null($zipCode) ? [KeyArray::ZIP_CODE => $zipCode->getPostalCode()] : []),
+            ...(!is_null($zipCodeString) ? [KeyArray::ZIP_CODE => $zipCodeString] : []),
             ...(!is_null($updateAt) ? [KeyArray::UPDATED_AT => $updateAt] : []),
 
             /* Complex structures. */

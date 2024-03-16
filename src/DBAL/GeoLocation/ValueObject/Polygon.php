@@ -43,6 +43,19 @@ readonly class Polygon
     }
 
     /**
+     * Returns the polygon (points) string of this polygon.
+     *
+     * @return string
+     */
+    public function getPointString(): string
+    {
+        /* Attention: PostgreSQL uses lon/lat not lat/lon: Switch order. */
+        $points = array_map(fn(Point $point) => sprintf('%.12f %.12f', $point->getLongitude(), $point->getLatitude()), $this->getPoints());
+
+        return implode(',', $points);
+    }
+
+    /**
      * Returns the srid value of this point (WSG84).
      *
      * @return int

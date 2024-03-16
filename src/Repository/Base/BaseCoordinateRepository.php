@@ -15,7 +15,9 @@ namespace App\Repository\Base;
 
 use App\Entity\Location;
 use App\Entity\ZipCode;
+use App\Entity\ZipCodeArea;
 use App\Repository\LocationRepository;
+use App\Repository\ZipCodeAreaRepository;
 use App\Repository\ZipCodeRepository;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\QueryBuilder;
@@ -30,7 +32,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
  * @author Björn Hempel <bjoern@hempel.li>
  * @version 0.1.0 (2024-03-15)
  * @since 0.1.0 (2024-03-15) First version.
- * @extends ServiceEntityRepository<Location|ZipCode>
+ * @extends ServiceEntityRepository<Location|ZipCode|ZipCodeArea>
  */
 class BaseCoordinateRepository extends ServiceEntityRepository
 {
@@ -47,13 +49,14 @@ class BaseCoordinateRepository extends ServiceEntityRepository
     }
 
     /**
-     * @return class-string<Location|ZipCode>
+     * @return class-string<Location|ZipCode|ZipCodeArea>
      */
     private function getEntityClassByRepository(): string
     {
         return match (static::class) {
             LocationRepository::class => Location::class,
             ZipCodeRepository::class => ZipCode::class,
+            ZipCodeAreaRepository::class => ZipCodeArea::class,
             default => throw new LogicException(sprintf('Class "%s" is not supported.', static::class)),
         };
     }

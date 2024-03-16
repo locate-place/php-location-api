@@ -115,11 +115,11 @@ class ZipCodeRepository extends BaseCoordinateRepository
             $queryBuilder
                 /* Attention: PostGIS uses lon/lat not lat/lon! */
                 ->andWhere('ST_DWithin(
-                zc.coordinate,
-                ST_MakePoint(:longitude, :latitude),
-                :distance,
-                TRUE
-            ) = TRUE')
+                    zc.coordinate,
+                    ST_MakePoint(:longitude, :latitude),
+                    :distance,
+                    TRUE
+                ) = TRUE')
                 ->setParameter('latitude', $coordinate->getLatitude())
                 ->setParameter('longitude', $coordinate->getLongitude())
                 ->setParameter('distance', $distanceMeter)

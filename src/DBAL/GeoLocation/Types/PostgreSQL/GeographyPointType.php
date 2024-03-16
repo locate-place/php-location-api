@@ -13,15 +13,19 @@ declare(strict_types=1);
 
 namespace App\DBAL\GeoLocation\Types\PostgreSQL;
 
+use Doctrine\DBAL\Platforms\AbstractPlatform;
+
 /**
- * Class GeometryType
+ * Class GeographyPointType
  *
  * @author Björn Hempel <bjoern@hempel.li>
  * @version 0.1.0 (2023-07-31)
  * @since 0.1.0 (2023-07-31) First version.
  */
-class GeometryType extends PostGISType
+class GeographyPointType extends PostGISPointType
 {
+    final public const SRID_WSG84 = 4326;
+
     /**
      * Returns the name of this type.
      *
@@ -29,7 +33,19 @@ class GeometryType extends PostGISType
      */
     public function getName(): string
     {
-        return PostGISType::GEOMETRY;
+        return PostGISPointType::GEOGRAPHY;
+    }
+
+    /**
+     * Converts the PHP value into an SQL statement (custom mapping).
+     *
+     * @param string $sqlExpr
+     * @param AbstractPlatform $platform
+     * @return string
+     */
+    public function convertToDatabaseValueSQL($sqlExpr, AbstractPlatform $platform): string
+    {
+        return sprintf('ST_GeographyFromText(%s)', $sqlExpr);
     }
 
     /**
@@ -40,15 +56,21 @@ class GeometryType extends PostGISType
      */
     public function getNormalizedPostGISColumnOptions(array $options = []): array
     {
-        if (!array_key_exists('geometry_type', $options)) {
-            $options['geometry_type'] = PostGISType::GEOGRAPHY;
+        $srid = (int) ($options['srid'] ?? self::SRID_WSG84);
+
+        if ($srid === self::SRID_ZERO) {
+            $srid = self::SRID_WSG84;
         }
 
-        $geometryType = $options['geometry_type'] ?? PostGISType::GEOGRAPHY;
+        if (!array_key_exists('geometry_type', $options)) {
+            $options['geometry_type'] = PostGISPointType::GEOGRAPHY;
+        }
+
+        $geometryType = $options['geometry_type'] ?? PostGISPointType::GEOGRAPHY;
 
         return [
             'geometry_type' => strtoupper((string) $geometryType),
-            'srid' => (int) ($options['srid'] ?? self::SRID_ZERO),
+            'srid' => $srid,
         ];
     }
 }

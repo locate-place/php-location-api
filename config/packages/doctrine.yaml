@@ -3,11 +3,17 @@ doctrine:
         types:
             point: App\DBAL\GeoLocation\Types\PostgreSQL\PointType
             polygon: App\DBAL\GeoLocation\Types\PostgreSQL\PolygonType
-            geography:
-                class: App\DBAL\GeoLocation\Types\PostgreSQL\GeographyType
+            geography_point:
+                class: App\DBAL\GeoLocation\Types\PostgreSQL\GeographyPointType
                 commented: false
-            geometry:
-                class: App\DBAL\GeoLocation\Types\PostgreSQL\GeometryType
+            geometry_point:
+                class: App\DBAL\GeoLocation\Types\PostgreSQL\GeometryPointType
+                commented: false
+            geography_polygon:
+                class: App\DBAL\GeoLocation\Types\PostgreSQL\GeographyPolygonType
+                commented: false
+            geometry_polygon:
+                class: App\DBAL\GeoLocation\Types\PostgreSQL\GeometryPolygonType
                 commented: false
         default_connection: postgresql
         connections:
@@ -23,8 +29,10 @@ doctrine:
                 mapping_types:
                     point: point
                     polygon: polygon
-                    geography: geography
-                    geometry: geometry
+                    geography_point: geography_point
+                    geometry_point: geometry_point
+                    geography_polygon: geography_polygon
+                    geometry_polygon: geometry_polygon
                 schema_filter: ~^(?!(topology)_)~
             sqlite:
                 driver: "%env(resolve:DOCTRINE_DB_DRIVER_SQLITE)%"
@@ -38,8 +46,10 @@ doctrine:
                 mapping_types:
                     point: point
                     polygon: polygon
-                    geography: geography
-                    geometry: geometry
+                    geography_point: geography_point
+                    geometry_point: geometry_point
+                    geography_polygon: geography_polygon
+                    geometry_polygon: geometry_polygon
 
     orm:
         auto_generate_proxy_classes: true
@@ -56,8 +66,9 @@ doctrine:
                     string_functions:
                         ILIKE: App\DBAL\GeoLocation\Functions\Other\ILike
                         DistanceOperator: App\DBAL\GeoLocation\Functions\PostgreSQL\DistanceOperator
-                        ST_Distance : App\DBAL\GeoLocation\Functions\PostgreSQL\ST_Distance
+                        ST_Distance: App\DBAL\GeoLocation\Functions\PostgreSQL\ST_Distance
                         ST_DWithin: App\DBAL\GeoLocation\Functions\PostgreSQL\ST_DWithin
+                        ST_Intersects: App\DBAL\GeoLocation\Functions\PostgreSQL\ST_Intersects
                         ST_MakePoint: App\DBAL\GeoLocation\Functions\PostgreSQL\ST_MakePoint
                         ST_MakePointPoint: App\DBAL\GeoLocation\Functions\PostgreSQL\ST_MakePointPoint
                 mappings:
