@@ -45,6 +45,7 @@ use Symfony\Component\Serializer\Annotation\SerializedName;
  * @author Björn Hempel <bjoern@hempel.li>
  * @version 0.1.0 (2023-12-30)
  * @since 0.1.0 (2023-12-30) First version.
+ * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
  */
 abstract class LocationBase extends BasePublicResource
 {
@@ -56,6 +57,9 @@ abstract class LocationBase extends BasePublicResource
 
     #[SerializedName('name-full')]
     private string $nameFull;
+
+    #[SerializedName('zip-code')]
+    private string $zipCode;
 
     #[SerializedName('updated-at')]
     private DateTimeImmutable $updatedAt;
@@ -151,6 +155,29 @@ abstract class LocationBase extends BasePublicResource
     public function setNameFull(string $nameFull): self
     {
         $this->nameFull = $nameFull;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getZipCode(): string
+    {
+        return $this->zipCode;
+    }
+
+    /**
+     * @param string|null $zipCode
+     * @return self
+     */
+    public function setZipCode(string|null $zipCode): self
+    {
+        if (is_null($zipCode)) {
+            return $this;
+        }
+
+        $this->zipCode = $zipCode;
 
         return $this;
     }

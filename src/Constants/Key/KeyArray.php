@@ -247,4 +247,6 @@ class KeyArray
     final public const VERSION = 'version';
 
     final public const WIKIPEDIA = 'wikipedia';
+
+    final public const ZIP_CODE = 'zip-code';
 }

@@ -18,6 +18,9 @@
                 "name-full": {
                     "type": "string"
                 },
+                "zip-code": {
+                    "type": "string"
+                },
                 "updated-at": {
                     "$ref": "#/$defs/updatedAt"
                 },
@@ -582,6 +585,9 @@
                     "type": "integer"
                 },
                 "name": {
+                    "type": "string"
+                },
+                "zip-code": {
                     "type": "string"
                 },
                 "updated-at": {

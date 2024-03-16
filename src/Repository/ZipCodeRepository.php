@@ -54,7 +54,7 @@ class ZipCodeRepository extends BaseCoordinateRepository
     }
 
     /**
-     * Finds the locations from given latitude and longitude ordered by distance.
+     * Finds the zip codes from given latitude and longitude ordered by distance.
      *
      * Query example:
      * --------------
@@ -160,5 +160,41 @@ class ZipCodeRepository extends BaseCoordinateRepository
             (new CheckerArray($queryBuilder->getQuery()->getResult()))
                 ->checkClass(ZipCode::class)
         );
+    }
+
+    /**
+     * Returns the first zip code from given latitude and longitude ordered by distance.
+     *
+     * @param Coordinate|null $coordinate
+     * @param int|null $distanceMeter
+     * @param Country|null $country
+     * @param array{a1?: string, a2?: string, a3?: string, a4?: string}|null $adminCodes
+     * @param int|null $limit
+     * @return ZipCode|null
+     * @throws CaseUnsupportedException
+     * @throws ClassInvalidException
+     * @throws TypeInvalidException
+     */
+    public function findZipCodeByCoordinate(
+        Coordinate|null $coordinate = null,
+        int|null $distanceMeter = null,
+        Country|null $country = null,
+        array|null $adminCodes = [],
+        int|null $limit = null
+    ): ZipCode|null
+    {
+        $zipCodes = $this->findZipCodesByCoordinate(
+            coordinate: $coordinate,
+            distanceMeter: $distanceMeter,
+            country: $country,
+            adminCodes: $adminCodes,
+            limit: $limit
+        );
+
+        if (count($zipCodes) <= 0) {
+            return null;
+        }
+
+        return $zipCodes[0];
     }
 }

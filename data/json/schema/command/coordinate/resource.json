@@ -1,22 +1,23 @@
 {
     "$schema": "resource.schema.json",
     "data": {
-        "geoname-id": 6545310,
-        "name": "Mitte",
-        "name-full": "Mitte, Berlin, Berlin, Deutschland",
-        "updated-at": "2023-08-21T19:01:01+00:00",
+        "geoname-id": 6295497,
+        "name": "Zürich (Kreis 3) / Friesenberg",
+        "name-full": "Zürich (Kreis 3) / Friesenberg, Zürich, Zürich, Schweiz",
+        "zip-code": "8055",
+        "updated-at": "2023-08-21T23:08:34+00:00",
         "properties": {
             "population": {
-                "value": 102338,
+                "value": 9909,
                 "unit": "#",
-                "value-formatted": "102.338"
+                "value-formatted": "9.909"
             },
             "elevation": {
-                "value": 48,
+                "value": 465,
                 "unit": "m",
-                "value-formatted": "48 m"
+                "value-formatted": "465 m"
             },
-            "country": "DE"
+            "country": "CH"
         },
         "feature": {
             "code": "PPLX",
@@ -26,81 +27,81 @@
         },
         "coordinate": {
             "latitude": {
-                "decimal": 52.52003,
-                "dms": "52°31′12.108″N"
+                "decimal": 47.36372,
+                "dms": "47°21′49.392″N"
             },
             "longitude": {
-                "decimal": 13.40489,
-                "dms": "13°24′17.604″E"
+                "decimal": 8.50417,
+                "dms": "8°30′15.012″E"
             },
             "srid": 4326,
             "distance": {
                 "meters": {
-                    "value": 337.8,
+                    "value": 454.1,
                     "unit": "m",
-                    "value-formatted": "337,8 m"
+                    "value-formatted": "454,1 m"
                 },
                 "kilometers": {
-                    "value": 0.338,
+                    "value": 0.454,
                     "unit": "km",
-                    "value-formatted": "0,338 km"
+                    "value-formatted": "0,454 km"
                 }
             },
             "direction": {
-                "degree": -97.17,
-                "cardinal-direction": "W",
-                "cardinal-direction-translated": "West"
+                "degree": 125.28,
+                "cardinal-direction": "SE",
+                "cardinal-direction-translated": "South-East"
             }
         },
         "timezone": {
-            "timezone": "Europe/Berlin",
-            "country": "DE",
+            "timezone": "Europe/Zurich",
+            "country": "CH",
             "current-time": {
-                "timezone": "2024-02-22T23:07:34+01:00",
-                "utc": "2024-02-22T22:07:34+00:00"
+                "timezone": "2024-03-16T01:29:32+01:00",
+                "utc": "2024-03-16T00:29:32+00:00"
             },
             "offset": "+01:00",
             "coordinate": {
                 "latitude": {
-                    "decimal": 52.5,
-                    "dms": "52°30′0″N"
+                    "decimal": 47.38333,
+                    "dms": "47°22′59.988″N"
                 },
                 "longitude": {
-                    "decimal": 13.36666,
-                    "dms": "13°21′59.976″E"
+                    "decimal": 8.53333,
+                    "dms": "8°31′59.988″E"
                 },
                 "srid": 4326,
                 "distance": {
                     "meters": {
-                        "value": 3712.8,
+                        "value": 3119.4,
                         "unit": "m",
-                        "value-formatted": "3.712,8 m"
+                        "value-formatted": "3.119,4 m"
                     },
                     "kilometers": {
-                        "value": 3.713,
+                        "value": 3.119,
                         "unit": "km",
-                        "value-formatted": "3,713 km"
+                        "value-formatted": "3,119 km"
                     }
                 },
                 "direction": {
-                    "degree": -115.58,
-                    "cardinal-direction": "SW",
-                    "cardinal-direction-translated": "South-West"
+                    "degree": 63.44,
+                    "cardinal-direction": "NE",
+                    "cardinal-direction-translated": "North-East"
                 }
             }
         },
         "links": {
             "maps": {
-                "google": "https://www.google.de/maps/place/52.520030+13.404890",
-                "openstreetmap": "https://www.openstreetmap.org/?lat=52.520030&lon=13.404890&mlat=52.520030&mlon=13.404890&zoom=14&layers=M"
+                "google": "https://www.google.de/maps/place/47.363720+8.504170",
+                "openstreetmap": "https://www.openstreetmap.org/?lat=47.363720&lon=8.504170&mlat=47.363720&mlon=8.504170&zoom=14&layers=M"
             },
             "wikipedia": {
-                "this": "https://de.wikipedia.org/wiki/Berlin-Mitte",
+                "this": "https://de.wikipedia.org/wiki/Friesenberg",
                 "locations": {
-                    "district-locality": "https://de.wikipedia.org/wiki/Berlin-Mitte",
-                    "city-municipality": "https://de.wikipedia.org/wiki/Berlin",
-                    "state": "https://de.wikipedia.org/wiki/Berlin",
-                    "country": "https://de.wikipedia.org/wiki/Deutschland"
+                    "district-locality": "https://de.wikipedia.org/wiki/Friesenberg",
+                    "city-municipality": "https://de.wikipedia.org/wiki/Zürich",
+                    "state": "https://de.wikipedia.org/wiki/Kanton_Z%C3%BCrich",
+                    "country": "https://de.wikipedia.org/wiki/Schweiz"
                 }
             }
         },
@@ -217,35 +218,36 @@
         },
         "locations": {
             "district-locality": {
-                "geoname-id": 6545310,
-                "name": "Mitte",
-                "updated-at": "2023-08-21T19:01:01+00:00",
+                "geoname-id": 6295497,
+                "name": "Zürich (Kreis 3) / Friesenberg",
+                "zip-code": "8055",
+                "updated-at": "2023-08-21T23:08:34+00:00",
                 "coordinate": {
                     "latitude": {
-                        "decimal": 52.52003,
-                        "dms": "52°31′12.108″N"
+                        "decimal": 47.36372,
+                        "dms": "47°21′49.392″N"
                     },
                     "longitude": {
-                        "decimal": 13.40489,
-                        "dms": "13°24′17.604″E"
+                        "decimal": 8.50417,
+                        "dms": "8°30′15.012″E"
                     },
                     "srid": 4326,
                     "distance": {
                         "meters": {
-                            "value": 337.8,
+                            "value": 454.1,
                             "unit": "m",
-                            "value-formatted": "337,8 m"
+                            "value-formatted": "454,1 m"
                         },
                         "kilometers": {
-                            "value": 0.338,
+                            "value": 0.454,
                             "unit": "km",
-                            "value-formatted": "0,338 km"
+                            "value-formatted": "0,454 km"
                         }
                     },
                     "direction": {
-                        "degree": -97.17,
-                        "cardinal-direction": "W",
-                        "cardinal-direction-translated": "West"
+                        "degree": 125.28,
+                        "cardinal-direction": "SE",
+                        "cardinal-direction-translated": "South-East"
                     }
                 },
                 "feature": {
@@ -256,25 +258,25 @@
                 },
                 "links": {
                     "maps": {
-                        "google": "https://www.google.de/maps/place/52.520030+13.404890",
-                        "openstreetmap": "https://www.openstreetmap.org/?lat=52.520030&lon=13.404890&mlat=52.520030&mlon=13.404890&zoom=14&layers=M"
+                        "google": "https://www.google.de/maps/place/47.363720+8.504170",
+                        "openstreetmap": "https://www.openstreetmap.org/?lat=47.363720&lon=8.504170&mlat=47.363720&mlon=8.504170&zoom=14&layers=M"
                     },
                     "wikipedia": {
-                        "this": "https://de.wikipedia.org/wiki/Berlin-Mitte"
+                        "this": "https://de.wikipedia.org/wiki/Friesenberg"
                     }
                 },
                 "properties": {
                     "population": {
-                        "value": 102338,
+                        "value": 9909,
                         "unit": "#",
-                        "value-formatted": "102.338"
+                        "value-formatted": "9.909"
                     },
                     "elevation": {
-                        "value": 48,
+                        "value": 465,
                         "unit": "m",
-                        "value-formatted": "48 m"
+                        "value-formatted": "465 m"
                     },
-                    "country": "DE"
+                    "country": "CH"
                 },
                 "next-places-config": {
                     "config": {
@@ -389,64 +391,65 @@
                 }
             },
             "city-municipality": {
-                "geoname-id": 2950159,
-                "name": "Berlin",
-                "updated-at": "2023-08-21T19:00:23+00:00",
+                "geoname-id": 2657896,
+                "name": "Zürich",
+                "zip-code": "8017",
+                "updated-at": "2023-08-21T23:08:27+00:00",
                 "coordinate": {
                     "latitude": {
-                        "decimal": 52.52437,
-                        "dms": "52°31′27.732″N"
+                        "decimal": 47.36667,
+                        "dms": "47°22′0.012″N"
                     },
                     "longitude": {
-                        "decimal": 13.41053,
-                        "dms": "13°24′37.908″E"
+                        "decimal": 8.55,
+                        "dms": "8°33′0″E"
                     },
                     "srid": 4326,
                     "distance": {
                         "meters": {
-                            "value": 417.3,
+                            "value": 3765.6,
                             "unit": "m",
-                            "value-formatted": "417,3 m"
+                            "value-formatted": "3.765,6 m"
                         },
                         "kilometers": {
-                            "value": 0.417,
+                            "value": 3.766,
                             "unit": "km",
-                            "value-formatted": "0,417 km"
+                            "value-formatted": "3,766 km"
                         }
                     },
                     "direction": {
-                        "degree": 11.4,
-                        "cardinal-direction": "N",
-                        "cardinal-direction-translated": "North"
+                        "degree": 90,
+                        "cardinal-direction": "E",
+                        "cardinal-direction-translated": "East"
                     }
                 },
                 "feature": {
-                    "code": "PPLC",
-                    "code-name": "Hauptstadt einer politischen Einheit",
+                    "code": "PPLA",
+                    "code-name": "Sitz einer Verwaltungseinheit erster Ordnung",
                     "class": "P",
                     "class-name": "Städte, Dörfer, etc."
                 },
                 "links": {
                     "maps": {
-                        "google": "https://www.google.de/maps/place/52.524370+13.410530",
-                        "openstreetmap": "https://www.openstreetmap.org/?lat=52.524370&lon=13.410530&mlat=52.524370&mlon=13.410530&zoom=14&layers=M"
+                        "google": "https://www.google.de/maps/place/47.366670+8.550000",
+                        "openstreetmap": "https://www.openstreetmap.org/?lat=47.366670&lon=8.550000&mlat=47.366670&mlon=8.550000&zoom=14&layers=M"
                     },
                     "wikipedia": {
-                        "this": "https://de.wikipedia.org/wiki/Berlin"
+                        "this": "https://de.wikipedia.org/wiki/Zürich"
                     }
                 },
                 "properties": {
                     "population": {
-                        "value": 3426354,
+                        "value": 341730,
                         "unit": "#",
-                        "value-formatted": "3.426.354"
+                        "value-formatted": "341.730"
                     },
                     "elevation": {
-                        "value": 43,
+                        "value": 429,
                         "unit": "m",
-                        "value-formatted": "43 m"
+                        "value-formatted": "429 m"
                     },
-                    "country": "DE"
+                    "country": "CH"
                 },
                 "next-places-config": {
                     "config": {
@@ -561,35 +564,36 @@
                 }
             },
             "state": {
-                "geoname-id": 2950157,
-                "name": "Berlin",
-                "updated-at": "2023-08-21T19:00:23+00:00",
+                "geoname-id": 2657895,
+                "name": "Zürich",
+                "zip-code": "8317",
+                "updated-at": "2023-08-21T23:08:27+00:00",
                 "coordinate": {
                     "latitude": {
-                        "decimal": 52.5,
-                        "dms": "52°30′0″N"
+                        "decimal": 47.41667,
+                        "dms": "47°25′0.012″N"
                     },
                     "longitude": {
-                        "decimal": 13.41667,
-                        "dms": "13°25′0.012″E"
+                        "decimal": 8.66667,
+                        "dms": "8°40′0.012″E"
                     },
                     "srid": 4326,
                     "distance": {
                         "meters": {
-                            "value": 2342.5,
+                            "value": 13723.1,
                             "unit": "m",
-                            "value-formatted": "2.342,5 m"
+                            "value-formatted": "13.723,1 m"
                         },
                         "kilometers": {
-                            "value": 2.343,
+                            "value": 13.723,
                             "unit": "km",
-                            "value-formatted": "2,343 km"
+                            "value-formatted": "13,723 km"
                         }
                     },
                     "direction": {
-                        "degree": 161.54,
-                        "cardinal-direction": "S",
-                        "cardinal-direction-translated": "South"
+                        "degree": 73.3,
+                        "cardinal-direction": "E",
+                        "cardinal-direction-translated": "East"
                     }
                 },
                 "feature": {
@@ -600,25 +604,25 @@
                 },
                 "links": {
                     "maps": {
-                        "google": "https://www.google.de/maps/place/52.500000+13.416670",
-                        "openstreetmap": "https://www.openstreetmap.org/?lat=52.500000&lon=13.416670&mlat=52.500000&mlon=13.416670&zoom=14&layers=M"
+                        "google": "https://www.google.de/maps/place/47.416670+8.666670",
+                        "openstreetmap": "https://www.openstreetmap.org/?lat=47.416670&lon=8.666670&mlat=47.416670&mlon=8.666670&zoom=14&layers=M"
                     },
                     "wikipedia": {
-                        "this": "https://de.wikipedia.org/wiki/Berlin"
+                        "this": "https://de.wikipedia.org/wiki/Kanton_Z%C3%BCrich"
                     }
                 },
                 "properties": {
                     "population": {
-                        "value": 3677472,
+                        "value": 1553423,
                         "unit": "#",
-                        "value-formatted": "3.677.472"
+                        "value-formatted": "1.553.423"
                     },
                     "elevation": {
-                        "value": 39,
+                        "value": 526,
                         "unit": "m",
-                        "value-formatted": "39 m"
+                        "value-formatted": "526 m"
                     },
-                    "country": "DE"
+                    "country": "CH"
                 },
                 "next-places-config": {
                     "config": {
@@ -733,35 +737,36 @@
                 }
             },
             "country": {
-                "geoname-id": 2921044,
-                "name": "Deutschland",
-                "updated-at": "2023-08-21T18:59:25+00:00",
+                "geoname-id": 2658434,
+                "name": "Schweiz",
+                "zip-code": "6113",
+                "updated-at": "2023-08-21T23:08:27+00:00",
                 "coordinate": {
                     "latitude": {
-                        "decimal": 51.5,
-                        "dms": "51°30′0″N"
+                        "decimal": 47.00016,
+                        "dms": "47°0′0.576″N"
                     },
                     "longitude": {
-                        "decimal": 10.5,
-                        "dms": "10°30′0″E"
+                        "decimal": 8.01427,
+                        "dms": "8°0′51.372″E"
                     },
                     "srid": 4326,
                     "distance": {
                         "meters": {
-                            "value": 229195.3,
+                            "value": 54848.8,
                             "unit": "m",
-                            "value-formatted": "229.195,3 m"
+                            "value-formatted": "54.848,8 m"
                         },
                         "kilometers": {
-                            "value": 229.195,
+                            "value": 54.849,
                             "unit": "km",
-                            "value-formatted": "229,195 km"
+                            "value-formatted": "54,849 km"
                         }
                     },
                     "direction": {
-                        "degree": -109.33,
-                        "cardinal-direction": "W",
-                        "cardinal-direction-translated": "West"
+                        "degree": -127.04,
+                        "cardinal-direction": "SW",
+                        "cardinal-direction-translated": "South-West"
                     }
                 },
                 "feature": {
@@ -772,28 +777,25 @@
                 },
                 "links": {
                     "maps": {
-                        "google": "https://www.google.de/maps/place/51.500000+10.500000",
-                        "openstreetmap": "https://www.openstreetmap.org/?lat=51.500000&lon=10.500000&mlat=51.500000&mlon=10.500000&zoom=14&layers=M"
+                        "google": "https://www.google.de/maps/place/47.000160+8.014270",
+                        "openstreetmap": "https://www.openstreetmap.org/?lat=47.000160&lon=8.014270&mlat=47.000160&mlon=8.014270&zoom=14&layers=M"
                     },
                     "wikipedia": {
-                        "this": "https://de.wikipedia.org/wiki/Deutschland"
-                    },
-                    "other": [
-                        "http://id.loc.gov/authorities/names/n80125931"
-                    ]
+                        "this": "https://de.wikipedia.org/wiki/Schweiz"
+                    }
                 },
                 "properties": {
                     "population": {
-                        "value": 82927922,
+                        "value": 8516543,
                         "unit": "#",
-                        "value-formatted": "82.927.922"
+                        "value-formatted": "8.516.543"
                     },
                     "elevation": {
-                        "value": 303,
+                        "value": 931,
                         "unit": "m",
-                        "value-formatted": "303 m"
+                        "value-formatted": "931 m"
                     },
-                    "country": "DE"
+                    "country": "CH"
                 },
                 "next-places-config": {
                     "config": {
@@ -911,15 +913,15 @@
     },
     "given": {
         "coordinate": {
-            "raw": "52.520645 13.409779",
+            "raw": "47.36667 8.5",
             "parsed": {
                 "latitude": {
-                    "decimal": 52.520645,
-                    "dms": "52°31′14.322″N"
+                    "decimal": 47.36667,
+                    "dms": "47°22′0.012″N"
                 },
                 "longitude": {
-                    "decimal": 13.409779,
-                    "dms": "13°24′35.2044″E"
+                    "decimal": 8.5,
+                    "dms": "8°30′0″E"
                 }
             }
         },
@@ -930,9 +932,9 @@
             }
         }
     },
-    "time-taken": "137 ms",
-    "memory-taken": "58 MB",
-    "version": "0.1.47",
+    "time-taken": "725 ms",
+    "memory-taken": "57 MB",
+    "version": "0.1.56",
     "data-licence": {
         "full": "Creative Commons Attribution 4.0 License",
         "short": "CC-BY 4.0",

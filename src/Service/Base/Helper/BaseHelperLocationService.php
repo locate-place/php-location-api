@@ -21,6 +21,7 @@ use App\Constants\Language\LanguageCode;
 use App\Entity\Location as LocationEntity;
 use App\Repository\AlternateNameRepository;
 use App\Repository\LocationRepository;
+use App\Repository\ZipCodeRepository;
 use App\Service\Entity\LocationEntityHelper;
 use App\Service\LocationContainer;
 use App\Service\LocationServiceConfig;
@@ -110,6 +111,7 @@ abstract class BaseHelperLocationService
      * @param RequestStack $request
      * @param LocationRepository $locationRepository
      * @param AlternateNameRepository $alternateNameRepository
+     * @param ZipCodeRepository $zipCodeRepository
      * @param TranslatorInterface $translator
      * @param LocationServiceConfig $locationServiceConfig
      */
@@ -119,6 +121,7 @@ abstract class BaseHelperLocationService
         protected RequestStack $request,
         protected LocationRepository $locationRepository,
         protected AlternateNameRepository $alternateNameRepository,
+        protected ZipCodeRepository $zipCodeRepository,
         protected TranslatorInterface $translator,
         protected LocationServiceConfig $locationServiceConfig
     )

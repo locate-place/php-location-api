@@ -15,8 +15,10 @@ namespace App\Utils\Db;
 
 use App\Entity\AlternateName;
 use App\Entity\Location;
+use App\Entity\ZipCode;
 use App\Repository\AlternateNameRepository;
 use App\Repository\LocationRepository;
+use App\Repository\ZipCodeRepository;
 use Ixnode\PhpApiVersionBundle\Entity\Version;
 use Ixnode\PhpApiVersionBundle\Repository\VersionRepository;
 use Ixnode\PhpApiVersionBundle\Utils\Db\Repository as RepositoryIxnode;
@@ -44,6 +46,7 @@ class Repository extends RepositoryIxnode
             $repositoryClassName === AlternateNameRepository::class => AlternateName::class,
             $repositoryClassName === LocationRepository::class => Location::class,
             $repositoryClassName === VersionRepository::class => Version::class,
+            $repositoryClassName === ZipCodeRepository::class => ZipCode::class,
             default => throw new ClassInvalidException($repositoryClassName, VersionRepository::class),
         };
     }
