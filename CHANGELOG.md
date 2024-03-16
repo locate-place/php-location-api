@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Releases
 
+### [0.1.57] - 2024-03-16
+
+* Add zip code to location endpoint
+* Add zip code import command zip-code:import; ZipCode entity and repository
+* Add zip code download command zip-code:download
+* Import refactoring
+
 ### [0.1.56] - 2024-03-10
 
 * Decrease/adopt airport relevance on search
