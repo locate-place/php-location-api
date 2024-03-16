@@ -2,6 +2,7 @@ doctrine:
     dbal:
         types:
             point: App\DBAL\GeoLocation\Types\PostgreSQL\PointType
+            polygon: App\DBAL\GeoLocation\Types\PostgreSQL\PolygonType
             geography:
                 class: App\DBAL\GeoLocation\Types\PostgreSQL\GeographyType
                 commented: false
@@ -21,6 +22,7 @@ doctrine:
                 password: "%env(resolve:DOCTRINE_DB_PASS_POSTGRESQL)%"
                 mapping_types:
                     point: point
+                    polygon: polygon
                     geography: geography
                     geometry: geometry
                 schema_filter: ~^(?!(topology)_)~
@@ -35,6 +37,7 @@ doctrine:
                 password: "%env(resolve:DOCTRINE_DB_PASS_SQLITE)%"
                 mapping_types:
                     point: point
+                    polygon: polygon
                     geography: geography
                     geometry: geometry
 

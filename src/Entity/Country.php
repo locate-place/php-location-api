@@ -67,6 +67,10 @@ class Country
     #[ORM\OneToMany(mappedBy: 'country', targetEntity: ZipCode::class, orphanRemoval: true)]
     private Collection $zipCodes;
 
+    /** @var Collection<int, ZipCodeArea> $zipCodeAreas */
+    #[ORM\OneToMany(mappedBy: 'country', targetEntity: ZipCodeArea::class, orphanRemoval: true)]
+    private Collection $zipCodeAreas;
+
     /**
      *
      */
@@ -77,6 +81,7 @@ class Country
         $this->timezones = new ArrayCollection();
         $this->imports = new ArrayCollection();
         $this->zipCodes = new ArrayCollection();
+        $this->zipCodeAreas = new ArrayCollection();
     }
 
     /**
@@ -293,6 +298,36 @@ class Country
             // set the owning side to null (unless already changed)
             if ($zipCode->getCountry() === $this) {
                 $zipCode->setCountry(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, ZipCodeArea>
+     */
+    public function getZipCodeAreas(): Collection
+    {
+        return $this->zipCodeAreas;
+    }
+
+    public function addZipCodeArea(ZipCodeArea $zipCodeArea): static
+    {
+        if (!$this->zipCodeAreas->contains($zipCodeArea)) {
+            $this->zipCodeAreas->add($zipCodeArea);
+            $zipCodeArea->setCountry($this);
+        }
+
+        return $this;
+    }
+
+    public function removeZipCodeArea(ZipCodeArea $zipCodeArea): static
+    {
+        if ($this->zipCodeAreas->removeElement($zipCodeArea)) {
+            // set the owning side to null (unless already changed)
+            if ($zipCodeArea->getCountry() === $this) {
+                $zipCodeArea->setCountry(null);
             }
         }
 
