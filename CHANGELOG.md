@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Releases
 
+### [0.1.58] - 2024-03-16
+
+* Add GeographyPolygonType and GeometryPolygonType
+* Add PostgreSQL ST_Intersects function
+* Add ZipCodeAreaRepository::findZipCodeByCoordinate and more
+
 ### [0.1.57] - 2024-03-16
 
 * Add zip code to location endpoint
