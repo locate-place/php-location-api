@@ -16,13 +16,13 @@ namespace App\Utils\GeoJson;
 use LogicException;
 
 /**
- * Class GeoJsonConverter
+ * Class GeoJsonZipCodeConverter
  *
  * @author Björn Hempel <bjoern@hempel.li>
  * @version 0.1.0 (2024-03-16)
  * @since 0.1.0 (2023-03-16) First version.
  */
-class GeoJsonConverter
+class GeoJsonZipCodeConverter
 {
     /** @var array<string, mixed> $zipCodeData */
     protected array $zipCodeData;

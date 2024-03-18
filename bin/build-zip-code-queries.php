@@ -11,7 +11,7 @@
 
 declare(strict_types=1);
 
-use App\Utils\GeoJson\GeoJsonConverter;
+use App\Utils\GeoJson\GeoJsonZipCodeConverter;
 
 require 'vendor/autoload.php';
 
@@ -30,7 +30,7 @@ $jsonFilePath = dirname(__FILE__, 2).'/import/zip-code-area/simple-polygon.geojs
 //$jsonFilePath = dirname(__FILE__, 2).'/import/zip-code-area/simple-multi-polygon.geojson';
 //$jsonFilePath = dirname(__FILE__, 2).'/import/zip-code-area/DE.geojson';
 
-$geoJsonConverter = new GeoJsonConverter($jsonFilePath);
+$geoJsonConverter = new GeoJsonZipCodeConverter($jsonFilePath);
 
 $zipCodeFeatures = $geoJsonConverter->getZipCodeFeatures();
 

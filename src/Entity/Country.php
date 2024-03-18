@@ -71,6 +71,10 @@ class Country
     #[ORM\OneToMany(mappedBy: 'country', targetEntity: ZipCodeArea::class, orphanRemoval: true)]
     private Collection $zipCodeAreas;
 
+    /** @var Collection<int, River> $rivers */
+    #[ORM\OneToMany(mappedBy: 'country', targetEntity: River::class, orphanRemoval: true)]
+    private Collection $rivers;
+
     /**
      *
      */
@@ -82,6 +86,7 @@ class Country
         $this->imports = new ArrayCollection();
         $this->zipCodes = new ArrayCollection();
         $this->zipCodeAreas = new ArrayCollection();
+        $this->rivers = new ArrayCollection();
     }
 
     /**
@@ -328,6 +333,36 @@ class Country
             // set the owning side to null (unless already changed)
             if ($zipCodeArea->getCountry() === $this) {
                 $zipCodeArea->setCountry(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, River>
+     */
+    public function getRivers(): Collection
+    {
+        return $this->rivers;
+    }
+
+    public function addRiver(River $river): static
+    {
+        if (!$this->rivers->contains($river)) {
+            $this->rivers->add($river);
+            $river->setCountry($this);
+        }
+
+        return $this;
+    }
+
+    public function removeRiver(River $river): static
+    {
+        if ($this->rivers->removeElement($river)) {
+            // set the owning side to null (unless already changed)
+            if ($river->getCountry() === $this) {
+                $river->setCountry(null);
             }
         }
 

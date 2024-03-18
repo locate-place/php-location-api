@@ -3,6 +3,12 @@ doctrine:
         types:
             point: App\DBAL\GeoLocation\Types\PostgreSQL\PointType
             polygon: App\DBAL\GeoLocation\Types\PostgreSQL\PolygonType
+            geography_linestring:
+                class: App\DBAL\GeoLocation\Types\PostgreSQL\GeographyLinestringType
+                commented: false
+            geometry_linestring:
+                class: App\DBAL\GeoLocation\Types\PostgreSQL\GeometryLinestringType
+                commented: false
             geography_point:
                 class: App\DBAL\GeoLocation\Types\PostgreSQL\GeographyPointType
                 commented: false
@@ -14,6 +20,12 @@ doctrine:
                 commented: false
             geometry_polygon:
                 class: App\DBAL\GeoLocation\Types\PostgreSQL\GeometryPolygonType
+                commented: false
+            geography:
+                class: App\DBAL\GeoLocation\Types\PostgreSQL\GeographyPointType
+                commented: false
+            geometry:
+                class: App\DBAL\GeoLocation\Types\PostgreSQL\GeometryPointType
                 commented: false
         default_connection: postgresql
         connections:
@@ -29,10 +41,14 @@ doctrine:
                 mapping_types:
                     point: point
                     polygon: polygon
+                    geography_linestring: geography_linestring
+                    geometry_linestring: geometry_linestring
                     geography_point: geography_point
                     geometry_point: geometry_point
                     geography_polygon: geography_polygon
                     geometry_polygon: geometry_polygon
+                    geography: geography
+                    geometry: geometry
                 schema_filter: ~^(?!(topology)_)~
             sqlite:
                 driver: "%env(resolve:DOCTRINE_DB_DRIVER_SQLITE)%"
@@ -46,10 +62,14 @@ doctrine:
                 mapping_types:
                     point: point
                     polygon: polygon
+                    geography_linestring: geography_linestring
+                    geometry_linestring: geometry_linestring
                     geography_point: geography_point
                     geometry_point: geometry_point
                     geography_polygon: geography_polygon
                     geometry_polygon: geometry_polygon
+                    geography: geography
+                    geometry: geometry
 
     orm:
         auto_generate_proxy_classes: true
