@@ -16,12 +16,12 @@ namespace App\Entity;
 use App\DBAL\GeoLocation\Types\PostgreSQL\PostGISLinestringType;
 use App\DBAL\GeoLocation\ValueObject\Linestring;
 use App\Entity\Trait\TimestampsTrait;
-use App\Repository\RiverRepository;
+use App\Repository\RiverPartRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * Class River
+ * Class RiverPart
  *
  * @author Björn Hempel <bjoern@hempel.li>
  * @version 0.1.0 (2023-03-16)
@@ -31,12 +31,12 @@ use Doctrine\ORM\Mapping as ORM;
  *
  * @SuppressWarnings(PHPMD.TooManyFields)
  */
-#[ORM\Entity(repositoryClass: RiverRepository::class)]
+#[ORM\Entity(repositoryClass: RiverPartRepository::class)]
 #[ORM\Index(columns: ['coordinates'], flags: ['gist'])]
 #[ORM\Index(columns: ['name'])]
 #[ORM\Index(columns: ['length'])]
 #[ORM\HasLifecycleCallbacks]
-class River
+class RiverPart
 {
     use TimestampsTrait;
 
@@ -61,19 +61,19 @@ class River
     private ?string $continua = null;
 
     #[ORM\Column(length: 1024)]
-    private ?string $euSegCd = null;
+    private ?string $europeanSegmentCode = null;
 
     #[ORM\Column(length: 64)]
     private ?string $flowDirection = null;
 
     #[ORM\Column(length: 4)]
-    private ?string $landCd = null;
+    private ?string $countryStateCode = null;
 
     #[ORM\Column]
-    private ?int $rbdCd = null;
+    private ?int $riverBasinDistrictCode = null;
 
     #[ORM\Column(type: Types::BIGINT)]
-    private ?int $riverCd = null;
+    private ?int $riverCode = null;
 
     #[ORM\Column(length: 1)]
     private ?string $scale = null;
@@ -82,7 +82,7 @@ class River
     private ?string $template = null;
 
     #[ORM\Column]
-    private ?int $waCd = null;
+    private ?int $workAreaCode = null;
 
     #[ORM\Column(length: 1024, nullable: true)]
     private ?string $metadata = null;
@@ -90,7 +90,7 @@ class River
     #[ORM\Column(nullable: true)]
     private ?int $number = null;
 
-    #[ORM\ManyToOne(inversedBy: 'rivers')]
+    #[ORM\ManyToOne(inversedBy: 'riverParts')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Country $country = null;
 
@@ -203,18 +203,18 @@ class River
     /**
      * @return string|null
      */
-    public function getEuSegCd(): ?string
+    public function getEuropeanSegmentCode(): ?string
     {
-        return $this->euSegCd;
+        return $this->europeanSegmentCode;
     }
 
     /**
-     * @param string $euSegCd
+     * @param string $europeanSegmentCode
      * @return $this
      */
-    public function setEuSegCd(string $euSegCd): static
+    public function setEuropeanSegmentCode(string $europeanSegmentCode): static
     {
-        $this->euSegCd = $euSegCd;
+        $this->europeanSegmentCode = $europeanSegmentCode;
 
         return $this;
     }
@@ -241,18 +241,18 @@ class River
     /**
      * @return string|null
      */
-    public function getLandCd(): ?string
+    public function getCountryStateCode(): ?string
     {
-        return $this->landCd;
+        return $this->countryStateCode;
     }
 
     /**
-     * @param string $landCd
+     * @param string $countryStateCode
      * @return $this
      */
-    public function setLandCd(string $landCd): static
+    public function setCountryStateCode(string $countryStateCode): static
     {
-        $this->landCd = $landCd;
+        $this->countryStateCode = $countryStateCode;
 
         return $this;
     }
@@ -260,18 +260,18 @@ class River
     /**
      * @return int|null
      */
-    public function getRbdCd(): ?int
+    public function getRiverBasinDistrictCode(): ?int
     {
-        return $this->rbdCd;
+        return $this->riverBasinDistrictCode;
     }
 
     /**
-     * @param int $rbdCd
+     * @param int $riverBasinDistrictCode
      * @return $this
      */
-    public function setRbdCd(int $rbdCd): static
+    public function setRiverBasinDistrictCode(int $riverBasinDistrictCode): static
     {
-        $this->rbdCd = $rbdCd;
+        $this->riverBasinDistrictCode = $riverBasinDistrictCode;
 
         return $this;
     }
@@ -279,18 +279,18 @@ class River
     /**
      * @return int|null
      */
-    public function getRiverCd(): ?int
+    public function getRiverCode(): ?int
     {
-        return $this->riverCd;
+        return $this->riverCode;
     }
 
     /**
-     * @param int $riverCd
+     * @param int $riverCode
      * @return $this
      */
-    public function setRiverCd(int $riverCd): static
+    public function setRiverCode(int $riverCode): static
     {
-        $this->riverCd = $riverCd;
+        $this->riverCode = $riverCode;
 
         return $this;
     }
@@ -336,18 +336,18 @@ class River
     /**
      * @return int|null
      */
-    public function getWaCd(): ?int
+    public function getWorkAreaCode(): ?int
     {
-        return $this->waCd;
+        return $this->workAreaCode;
     }
 
     /**
-     * @param int $waCd
+     * @param int $workAreaCode
      * @return $this
      */
-    public function setWaCd(int $waCd): static
+    public function setWorkAreaCode(int $workAreaCode): static
     {
-        $this->waCd = $waCd;
+        $this->workAreaCode = $workAreaCode;
 
         return $this;
     }

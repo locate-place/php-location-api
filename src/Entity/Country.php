@@ -71,9 +71,9 @@ class Country
     #[ORM\OneToMany(mappedBy: 'country', targetEntity: ZipCodeArea::class, orphanRemoval: true)]
     private Collection $zipCodeAreas;
 
-    /** @var Collection<int, River> $rivers */
-    #[ORM\OneToMany(mappedBy: 'country', targetEntity: River::class, orphanRemoval: true)]
-    private Collection $rivers;
+    /** @var Collection<int, RiverPart> $riverParts */
+    #[ORM\OneToMany(mappedBy: 'country', targetEntity: RiverPart::class, orphanRemoval: true)]
+    private Collection $riverParts;
 
     /**
      *
@@ -86,7 +86,7 @@ class Country
         $this->imports = new ArrayCollection();
         $this->zipCodes = new ArrayCollection();
         $this->zipCodeAreas = new ArrayCollection();
-        $this->rivers = new ArrayCollection();
+        $this->riverParts = new ArrayCollection();
     }
 
     /**
@@ -340,29 +340,29 @@ class Country
     }
 
     /**
-     * @return Collection<int, River>
+     * @return Collection<int, RiverPart>
      */
-    public function getRivers(): Collection
+    public function getRiverParts(): Collection
     {
-        return $this->rivers;
+        return $this->riverParts;
     }
 
-    public function addRiver(River $river): static
+    public function addRiverPart(RiverPart $riverPart): static
     {
-        if (!$this->rivers->contains($river)) {
-            $this->rivers->add($river);
-            $river->setCountry($this);
+        if (!$this->riverParts->contains($riverPart)) {
+            $this->riverParts->add($riverPart);
+            $riverPart->setCountry($this);
         }
 
         return $this;
     }
 
-    public function removeRiver(River $river): static
+    public function removeRiverPart(RiverPart $riverPart): static
     {
-        if ($this->rivers->removeElement($river)) {
+        if ($this->riverParts->removeElement($riverPart)) {
             // set the owning side to null (unless already changed)
-            if ($river->getCountry() === $this) {
-                $river->setCountry(null);
+            if ($riverPart->getCountry() === $this) {
+                $riverPart->setCountry(null);
             }
         }
 

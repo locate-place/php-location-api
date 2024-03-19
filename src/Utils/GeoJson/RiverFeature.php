@@ -62,7 +62,7 @@ class RiverFeature
     private const NUMBER_OF_COORDINATES = 2;
 
     private const SQL_INSERT_QUERY_BULK = <<<SQL
-INSERT INTO river (id, country_id, type, name, length, number, object_id, continua, eu_seg_cd, flow_direction, land_cd, rbd_cd, river_cd, scale, template, wa_cd, metadata, created_at, updated_at, coordinates)
+INSERT INTO river (id, country_id, type, name, length, number, object_id, continua, european_segment_code, flow_direction, country_state_code, river_basin_district_code, river_code, scale, template, work_area_code, metadata, created_at, updated_at, coordinates)
 VALUES
 %s
 ;
@@ -179,7 +179,7 @@ SQL;
     /**
      * @return string
      */
-    public function getEuSegCd(): string
+    public function getEuropeanSegmentCode(): string
     {
         return $this->euSegCd;
     }
@@ -195,7 +195,7 @@ SQL;
     /**
      * @return string
      */
-    public function getLandCd(): string
+    public function getCountryStateCode(): string
     {
         return $this->landCd;
     }
@@ -203,7 +203,7 @@ SQL;
     /**
      * @return int
      */
-    public function getRbdCd(): int
+    public function getRiverBasinDistrictCode(): int
     {
         return $this->rbdCd;
     }
@@ -211,7 +211,7 @@ SQL;
     /**
      * @return int
      */
-    public function getRiverCd(): int
+    public function getRiverCode(): int
     {
         return $this->riverCd;
     }
@@ -235,7 +235,7 @@ SQL;
     /**
      * @return int
      */
-    public function getWaCd(): int
+    public function getWorkAreaCode(): int
     {
         return $this->waCd;
     }
@@ -814,14 +814,14 @@ SQL;
                 $index + 1,
                 $this->getObjectId(),
                 $this->getContinua(),
-                $this->getEuSegCd(),
+                $this->getEuropeanSegmentCode(),
                 $this->getFlowDirection(),
-                $this->getLandCd(),
-                $this->getRbdCd(),
-                $this->getRiverCd(),
+                $this->getCountryStateCode(),
+                $this->getRiverBasinDistrictCode(),
+                $this->getRiverCode(),
                 $this->getScale(),
                 $this->getTemplate(),
-                $this->getWaCd(),
+                $this->getWorkAreaCode(),
                 str_replace("'", "''", $this->getMetadata()),
                 implode(', ', $points),
             );

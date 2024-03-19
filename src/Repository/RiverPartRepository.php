@@ -2,23 +2,24 @@
 
 namespace App\Repository;
 
-use App\Entity\River;
+use App\Entity\RiverPart;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * @extends ServiceEntityRepository<River>
+ * Class RiverPartRepository
  *
- * @method River|null find($id, $lockMode = null, $lockVersion = null)
- * @method River|null findOneBy(array $criteria, array $orderBy = null)
- * @method River[]    findAll()
- * @method River[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+ * @method RiverPart|null find($id, $lockMode = null, $lockVersion = null)
+ * @method RiverPart|null findOneBy(array $criteria, array $orderBy = null)
+ * @method RiverPart[]    findAll()
+ * @method RiverPart[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+ * @extends ServiceEntityRepository<RiverPart>
  */
-class RiverRepository extends ServiceEntityRepository
+class RiverPartRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, River::class);
+        parent::__construct($registry, RiverPart::class);
     }
 
 //    /**
