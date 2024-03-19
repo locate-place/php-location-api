@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace App\Utils\GeoJson;
 
+use JsonException;
 use LogicException;
 
 /**
@@ -62,14 +63,14 @@ class RiverFeature
     private const NUMBER_OF_COORDINATES = 2;
 
     private const SQL_INSERT_QUERY_BULK = <<<SQL
-INSERT INTO river (id, country_id, type, name, length, number, object_id, continua, european_segment_code, flow_direction, country_state_code, river_basin_district_code, river_code, scale, template, work_area_code, metadata, created_at, updated_at, coordinates)
+INSERT INTO river_part (id, country_id, type, name, length, number, object_id, continua, european_segment_code, flow_direction, country_state_code, river_basin_district_code, river_code, scale, template, work_area_code, metadata, created_at, updated_at, coordinates)
 VALUES
 %s
 ;
 SQL;
 
     private const SQL_INSERT_QUERY = <<<SQL
-(nextval('river_id_seq'), %d, '%s', '%s', %.4f, %d, %d, '%s', '%s', '%s', '%s', %d, %d, '%s', '%s', %d, '%s', NOW(), NOW(), 'SRID=4326;LINESTRING(%s)')
+(nextval('river_part_id_seq'), %d, '%s', '%s', %.4f, %d, %d, '%s', '%s', '%s', '%s', %d, %d, '%s', '%s', %d, '%s', NOW(), NOW(), 'SRID=4326;LINESTRING(%s)')
 SQL;
 
     /* WGS84 */
@@ -773,6 +774,112 @@ SQL;
     }
 
     /**
+     * Replaces double coded utf-8 characters.
+     *
+     * @param string $string
+     * @return string
+     * @throws JsonException
+     */
+    function fixUtf8DoubleCoding(string $string): string
+    {
+        $replacements = [
+            "\u00e1\u00bb\u00a3" => "ợ",
+            "\u00e1\u00bb\u009b" => "ớ",
+            "\u00e1\u00bb\u0085" => "ễ",
+            "\u00c3\u00a0" => "à",
+            "\u00c6\u00a1" => "ơ",
+            "\u00e1\u00bb\u0083" => "ể",
+            "\u00c5\u00a9" => "ũ",
+            "\u00c6\u00b0" => "ư",
+            "\u00c3\u00ba" => "ú",
+            "\u00e1\u00bb\u00a7" => "ủ",
+            "\u00e1\u00ba\u00a7" => "ầ",
+            "\u00e1\u00bb\u008d" => "ọ",
+            "\u00e1\u00ba\u00a1" => "ạ",
+            "\u00e1\u00bb\u0093" => "ồ",
+            "\u00e1\u00ba\u00bf" => "ế",
+            "\u00e1\u00ba\u00a3" => "ả",
+            "\u00c3\u00a2" => "â",
+            "\u00c3\u00aa" => "ê",
+            "\u00c3\u00b9" => "ù",
+            "\u00c3\u00a1" => "á",
+            "\u00c3\u00b4" => "ô",
+            "\u00e1\u00bb\u0091" => "ố",
+            "\u00c4\u0090" => "Đ",
+            "\u00e1\u00ba\u00b7" => "ặ",
+            "\u00e1\u00ba\u00a5" => "ấ",
+            "\u00e1\u00ba\u00ad" => "ậ",
+            "\u00e1\u00bb\u00a9" => "ứ",
+            "\u00e1\u00bb\u00b7" => "ỷ",
+            "\u00e1\u00bb\u00b3" => "ỳ",
+            "\u00e1\u00bb\u0081" => "ề",
+            "\u00c4\u00a9" => "ĩ",
+            "\u00c4\u0083" => "ă",
+            "\u00e1\u00bb\u008b" => "ị",
+            "\u00e1\u00bb\u0087" => "ệ",
+            "\u00e1\u00ba\u00af" => "ắ",
+            "\u00c3\u00ac" => "ì",
+            "\u00e1\u00bb\u009d" => "ờ",
+            "\u00c3\u00b5" => "õ",
+            "\u00e1\u00bb\u00b9" => "ỹ",
+            "\u00c3\u00a3" => "ã",
+            "\u00c3\u00a8" => "è",
+            "\u00e1\u00bb\u00ab" => "ừ",
+            "\u00e1\u00bb\u0097" => "ỗ",
+            "\u00e1\u00bb\u00b1" => "ự",
+            "\u00c3\u00bd" => "ý",
+            "\u00c3\u0082" => "Â"
+        ];
+
+        $replacementKeys = array_keys($replacements);
+        $replacementValues = array_values($replacements);
+
+        $mappingFunction = fn(string $key) => $this->replaceUnicodeEscapeSequences($key);
+
+        $replacementKeysRaw = array_map($mappingFunction, $replacementKeys);
+
+        $replaced = str_replace($replacementKeysRaw, $replacementValues, $string);
+
+        if (!is_string($replaced)) {
+            return $string;
+        }
+
+        return $replaced;
+    }
+
+    /**
+     * Replaces unicode escape sequences.
+     *
+     * @param string $string
+     * @return string
+     * @throws JsonException
+     */
+    function replaceUnicodeEscapeSequences(string $string): string
+    {
+        $replaced = json_decode(sprintf('"%s"', $string), null, 512, JSON_THROW_ON_ERROR);
+
+        if (!is_string($replaced)) {
+            return $string;
+        }
+
+        return $replaced;
+    }
+
+    /**
+     * Fixes the given string.
+     *
+     * @param string $string
+     * @return string
+     * @throws JsonException
+     */
+    function fixString(string $string): string
+    {
+        return $this->replaceUnicodeEscapeSequences(
+            $this->fixUtf8DoubleCoding($string)
+        );
+    }
+
+    /**
      * @param string[] $queries
      * @return string
      */
@@ -788,6 +895,7 @@ SQL;
      * Returns the insert SQL query for the given RiverFeature.
      *
      * @return string
+     * @throws JsonException
      */
     public function getSqlQuery(): string
     {
@@ -809,7 +917,7 @@ SQL;
                 self::SQL_INSERT_QUERY,
                 $countryId,
                 $this->getType(),
-                str_replace("'", "''", $this->getName()),
+                str_replace("'", "''", $this->fixString($this->getName())),
                 $length,
                 $index + 1,
                 $this->getObjectId(),
@@ -822,7 +930,7 @@ SQL;
                 $this->getScale(),
                 $this->getTemplate(),
                 $this->getWorkAreaCode(),
-                str_replace("'", "''", $this->getMetadata()),
+                str_replace("'", "''", $this->fixString($this->getMetadata())),
                 implode(', ', $points),
             );
         }
