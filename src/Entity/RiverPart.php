@@ -15,6 +15,7 @@ namespace App\Entity;
 
 use App\DBAL\GeoLocation\Types\PostgreSQL\PostGISLinestringType;
 use App\DBAL\GeoLocation\ValueObject\Linestring;
+use App\DBAL\GeoLocation\ValueObject\Point;
 use App\Entity\Trait\TimestampsTrait;
 use App\Repository\RiverPartRepository;
 use Doctrine\DBAL\Types\Types;
@@ -96,6 +97,10 @@ class RiverPart
 
     #[ORM\Column(length: 10)]
     private ?string $type = null;
+
+    private ?float $distance = null;
+
+    private ?Point $closestCoordinate = null;
 
     /**
      * @return int|null
@@ -425,6 +430,47 @@ class RiverPart
     {
         $this->type = $type;
 
+        return $this;
+    }
+
+    /**
+     * Returns the distance in kilometers.
+     *
+     * @return float|null
+     */
+    public function getDistance(): ?float
+    {
+        return $this->distance;
+    }
+
+    /**
+     * Sets the distance in kilometers.
+     *
+     * @param float $distance
+     * @return RiverPart
+     */
+    public function setDistance(float $distance): RiverPart
+    {
+        $this->distance = $distance;
+
+        return $this;
+    }
+
+    /**
+     * @return Point|null
+     */
+    public function getClosestCoordinate(): ?Point
+    {
+        return $this->closestCoordinate;
+    }
+
+    /**
+     * @param Point|null $closestCoordinate
+     * @return RiverPart
+     */
+    public function setClosestCoordinate(?Point $closestCoordinate): RiverPart
+    {
+        $this->closestCoordinate = $closestCoordinate;
         return $this;
     }
 }

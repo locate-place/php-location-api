@@ -98,6 +98,7 @@ final class LocationService extends BaseLocationService
      * @throws CaseInvalidException
      * @throws CaseUnsupportedException
      * @throws ClassInvalidException
+     * @throws ClientExceptionInterface
      * @throws FileNotFoundException
      * @throws FileNotReadableException
      * @throws FunctionJsonEncodeException
@@ -105,6 +106,9 @@ final class LocationService extends BaseLocationService
      * @throws JsonException
      * @throws NonUniqueResultException
      * @throws ParserException
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
      * @throws TypeInvalidException
      * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
      */

@@ -13,7 +13,8 @@ declare(strict_types=1);
 
 namespace App\DBAL\GeoLocation\Types\PostgreSQL;
 
-use App\DBAL\GeoLocation\Converter\ValueToPolygon;
+use App\DBAL\GeoLocation\Converter\ValueToLinestring;
+use App\DBAL\GeoLocation\ValueObject\Linestring;
 use App\DBAL\GeoLocation\ValueObject\Polygon;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Types\Type;
@@ -95,17 +96,17 @@ abstract class PostGISLinestringType extends Type
      *
      * @param mixed $value
      * @param AbstractPlatform $platform
-     * @return Polygon
+     * @return Linestring
      * @throws TypeInvalidException
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
-    public function convertToPHPValue($value, AbstractPlatform $platform): Polygon
+    public function convertToPHPValue($value, AbstractPlatform $platform): Linestring
     {
         if (!is_string($value)) {
             throw new TypeInvalidException('string', 'string');
         }
 
-        return (new ValueToPolygon($value))->get();
+        return (new ValueToLinestring($value))->get();
     }
 
     /**

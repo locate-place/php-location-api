@@ -19,10 +19,12 @@ use App\Constants\DB\FeatureCode;
 use App\Constants\Language\CountryCode;
 use App\Constants\Language\LanguageCode;
 use App\Entity\Location as LocationEntity;
+use App\Entity\RiverPart;
 use App\Entity\ZipCode;
 use App\Entity\ZipCodeArea;
 use App\Repository\AlternateNameRepository;
 use App\Repository\LocationRepository;
+use App\Repository\RiverPartRepository;
 use App\Repository\ZipCodeAreaRepository;
 use App\Repository\ZipCodeRepository;
 use App\Service\Entity\LocationEntityHelper;
@@ -117,8 +119,10 @@ abstract class BaseHelperLocationService
      * @param AlternateNameRepository $alternateNameRepository
      * @param ZipCodeRepository $zipCodeRepository
      * @param ZipCodeAreaRepository $zipCodeAreaRepository
+     * @param RiverPartRepository $riverPartRepository
      * @param TranslatorInterface $translator
      * @param LocationServiceConfig $locationServiceConfig
+     * @SuppressWarnings(PHPMD.ExcessiveParameterList)
      */
     public function __construct(
         protected Version $version,
@@ -128,6 +132,7 @@ abstract class BaseHelperLocationService
         protected AlternateNameRepository $alternateNameRepository,
         protected ZipCodeRepository $zipCodeRepository,
         protected ZipCodeAreaRepository $zipCodeAreaRepository,
+        protected RiverPartRepository $riverPartRepository,
         protected TranslatorInterface $translator,
         protected LocationServiceConfig $locationServiceConfig
     )
@@ -701,6 +706,26 @@ abstract class BaseHelperLocationService
             distanceMeter: 10000,
             country: $locationEntity->getCountry(),
             limit: 1
+        );
+    }
+
+    /**
+     * Returns the ZipCode or ZipCodeArea entity by given Location entity.
+     *
+     * @param LocationEntity $locationEntity
+     * @return RiverPart[]
+     * @throws CaseUnsupportedException
+     * @throws FunctionReplaceException
+     * @throws ParserException
+     * @throws TypeInvalidException
+     */
+    protected function getRiverParts(LocationEntity $locationEntity): array
+    {
+        return $this->riverPartRepository->findRiverPartsByCoordinate(
+            coordinate: $locationEntity->getCoordinateIxnode(),
+            distanceMeter: 10000,
+            country: $locationEntity->getCountry(),
+            limit: 10
         );
     }
 }

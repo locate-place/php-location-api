@@ -86,6 +86,8 @@ doctrine:
                     string_functions:
                         ILIKE: App\DBAL\GeoLocation\Functions\Other\ILike
                         DistanceOperator: App\DBAL\GeoLocation\Functions\PostgreSQL\DistanceOperator
+                        ST_AsText: App\DBAL\GeoLocation\Functions\PostgreSQL\ST_AsText
+                        ST_ClosestPoint: App\DBAL\GeoLocation\Functions\PostgreSQL\ST_ClosestPoint
                         ST_Distance: App\DBAL\GeoLocation\Functions\PostgreSQL\ST_Distance
                         ST_DWithin: App\DBAL\GeoLocation\Functions\PostgreSQL\ST_DWithin
                         ST_Intersects: App\DBAL\GeoLocation\Functions\PostgreSQL\ST_Intersects

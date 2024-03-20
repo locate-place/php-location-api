@@ -34,6 +34,7 @@ use App\DataTypes\Timezone;
 use App\DBAL\GeoLocation\ValueObject\Point;
 use App\Entity\AlternateName;
 use App\Entity\Location as LocationEntity;
+use App\Entity\RiverPart;
 use App\Entity\ZipCode;
 use App\Entity\ZipCodeArea;
 use App\Service\Base\Helper\BaseHelperLocationService;
@@ -121,8 +122,10 @@ abstract class BaseLocationService extends BaseHelperLocationService
         $locationBaseInformation = $this->getLocationBaseInformation(
             locationEntity: $locationEntity,
             nameFull: $nameFull,
-            featureDetailed: true
+            featureDetailed: true,
+            moreDetails: true
         );
+
         foreach ($locationBaseInformation as $key => $value) {
             match (true) {
                 /* Single fields */
@@ -131,6 +134,7 @@ abstract class BaseLocationService extends BaseHelperLocationService
                 $key === KeyArray::NAME_FULL => $location->setNameFull(is_string($value) ? $value : ''),
                 $key === KeyArray::ZIP_CODE => $location->setZipCode(is_string($value) ? $value : null),
                 $key === KeyArray::UPDATED_AT => $value instanceof DateTimeImmutable ? $location->setUpdatedAt($value) : null,
+                $key === KeyArray::RIVERS => is_array($value) ? $location->setRivers($value) : null,
 
                 /* Complex structure */
                 $value instanceof Coordinate => $location->setCoordinate($value),
@@ -928,6 +932,7 @@ abstract class BaseLocationService extends BaseHelperLocationService
      * @param CoordinateIxnode|null $searchPosition
      * @param string|null $nameFull
      * @param bool $featureDetailed
+     * @param bool $moreDetails
      * @return array<string, mixed>
      * @throws ArrayKeyNotFoundException
      * @throws CaseInvalidException
@@ -945,24 +950,35 @@ abstract class BaseLocationService extends BaseHelperLocationService
      * @throws TransportExceptionInterface
      * @throws TypeInvalidException
      * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      */
     private function getLocationBaseInformation(
         LocationEntity $locationEntity,
         CoordinateIxnode $searchPosition = null,
         string $nameFull = null,
-        bool $featureDetailed = false
+        bool $featureDetailed = false,
+        bool $moreDetails = false,
     ): array
     {
         $geonameId = $locationEntity->getGeonameId();
         $name = $this->locationContainer->getAlternateName($locationEntity, $this->getIsoLanguage());
         $updateAt = $locationEntity->getUpdatedAt();
-        $zipCode = $this->getZipCode($locationEntity);
 
-        $zipCodeString = match (true) {
+        $zipCode = $this->getZipCode($locationEntity);
+        $zipCodeString = $moreDetails ? match (true) {
             $zipCode instanceof ZipCode => $zipCode->getPostalCode(),
             $zipCode instanceof ZipCodeArea => $zipCode->getZipCode(),
             default => null,
-        };
+        } : null;
+
+        $riverParts = $moreDetails ? array_map(fn(RiverPart $riverPart) => [
+            'name' => $riverPart->getName(),
+            'distance' => $riverPart->getDistance(),
+            'coordinate' => [
+                'latitude' => $riverPart->getClosestCoordinate()?->getLatitude(),
+                'longitude' => $riverPart->getClosestCoordinate()?->getLongitude(),
+            ],
+        ], $this->getRiverParts($locationEntity)) : null;
 
         $name = match (true) {
             !is_null($name) && array_key_exists($name, Translation::TRANSLATION) => Translation::TRANSLATION[$name],
@@ -985,6 +1001,7 @@ abstract class BaseLocationService extends BaseHelperLocationService
             ...(is_string($name) ? [KeyArray::NAME => $name] : []),
             ...(is_string($nameFull) ? [KeyArray::NAME_FULL => $nameFull] : []),
             ...(!is_null($zipCodeString) ? [KeyArray::ZIP_CODE => $zipCodeString] : []),
+            ...(!is_null($riverParts) ? [KeyArray::RIVERS => $riverParts] : []),
             ...(!is_null($updateAt) ? [KeyArray::UPDATED_AT => $updateAt] : []),
 
             /* Complex structures. */

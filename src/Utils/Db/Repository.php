@@ -15,10 +15,12 @@ namespace App\Utils\Db;
 
 use App\Entity\AlternateName;
 use App\Entity\Location;
+use App\Entity\RiverPart;
 use App\Entity\ZipCode;
 use App\Entity\ZipCodeArea;
 use App\Repository\AlternateNameRepository;
 use App\Repository\LocationRepository;
+use App\Repository\RiverPartRepository;
 use App\Repository\ZipCodeAreaRepository;
 use App\Repository\ZipCodeRepository;
 use Ixnode\PhpApiVersionBundle\Entity\Version;
@@ -47,6 +49,7 @@ class Repository extends RepositoryIxnode
         return match (true) {
             $repositoryClassName === AlternateNameRepository::class => AlternateName::class,
             $repositoryClassName === LocationRepository::class => Location::class,
+            $repositoryClassName === RiverPartRepository::class => RiverPart::class,
             $repositoryClassName === VersionRepository::class => Version::class,
             $repositoryClassName === ZipCodeRepository::class => ZipCode::class,
             $repositoryClassName === ZipCodeAreaRepository::class => ZipCodeArea::class,

@@ -19,6 +19,7 @@ use App\Constants\Key\KeyArray;
 use App\Constants\Place\Search;
 use App\Repository\AlternateNameRepository;
 use App\Repository\LocationRepository;
+use App\Repository\RiverPartRepository;
 use App\Repository\ZipCodeAreaRepository;
 use App\Repository\ZipCodeRepository;
 use App\Service\LocationServiceConfig;
@@ -74,6 +75,7 @@ class TestCommandTest extends BaseFunctionalCommandTest
                         $this->repository->getRepository(AlternateNameRepository::class),
                         $this->repository->getRepository(ZipCodeRepository::class),
                         $this->repository->getRepository(ZipCodeAreaRepository::class),
+                        $this->repository->getRepository(RiverPartRepository::class),
                         $this->translator,
                         new LocationServiceConfig($this->parameterBag, $this->translator)
                     ),

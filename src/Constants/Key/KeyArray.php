@@ -208,6 +208,8 @@ class KeyArray
 
     final public const RESULTS = 'results';
 
+    final public const RIVERS = 'rivers';
+
     final public const SEARCH = 'search';
 
     final public const SHORT = 'short';

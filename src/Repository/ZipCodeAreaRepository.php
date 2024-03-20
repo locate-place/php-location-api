@@ -51,6 +51,7 @@ class ZipCodeAreaRepository extends BaseCoordinateRepository
     {
         parent::__construct($registry, $parameterBag);
     }
+
     /**
      * Finds the zip codes from given latitude and longitude ordered by distance.
      *

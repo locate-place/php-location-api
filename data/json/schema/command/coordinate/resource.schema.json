@@ -21,6 +21,9 @@
                 "zip-code": {
                     "type": "string"
                 },
+                "rivers": {
+                    "type": "array"
+                },
                 "updated-at": {
                     "$ref": "#/$defs/updatedAt"
                 },

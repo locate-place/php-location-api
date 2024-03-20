@@ -22,22 +22,26 @@ use Doctrine\ORM\Query\QueryException;
 use Doctrine\ORM\Query\SqlWalker;
 
 /**
- * Class ST_MakePoint
+ * Class ST_AsText
  *
- * ST_MakePoint ::= "ST_MakePoint" "(" ArithmeticPrimary "," ArithmeticPrimary ")"
+ * ST_AsText ::= "ST_AsText" "(" ArithmeticPrimary ")"
  *
- * @example ST_MakePoint(47.473110, 10.813154)::geography
+ * @example WHERE ST_AsText(
+ *   ST_ClosestPoint(
+ *     coordinates::geometry,
+ *     ST_MakePoint(13.741670, 51.058330)::geography::geometry
+ *   )
+ * )
  *
  * @author Björn Hempel <bjoern@hempel.li>
  * @version 0.1.0 (2023-07-02)
  * @since 0.1.0 (2023-07-02) First version.
  * @SuppressWarnings(PHPMD.CamelCaseClassName)
  */
-class ST_MakePoint extends FunctionNode
+class ST_AsText extends FunctionNode
 {
-    public Node|string $latitude;
-
-    public Node|string $longitude;
+    /** @var array<int, object> */
+    protected array $expressions = [];
 
     /**
      * Parses the given DQL string from QueryBuilder, etc.
@@ -48,16 +52,16 @@ class ST_MakePoint extends FunctionNode
      */
     public function parse(Parser $parser): void
     {
-        $parser->match(Lexer::T_IDENTIFIER); // ST_MakePoint
-        $parser->match(Lexer::T_OPEN_PARENTHESIS); // (
-        $this->latitude = $parser->ArithmeticFactor(); // 47.473110 | -1.473110
-        $parser->match(Lexer::T_COMMA); // ,
-        $this->longitude = $parser->ArithmeticFactor(); // 10.813154 | -1.473110
-        $parser->match(Lexer::T_CLOSE_PARENTHESIS); // )
+        $parser->match(Lexer::T_IDENTIFIER);
+        $parser->match(Lexer::T_OPEN_PARENTHESIS);
+
+        $this->expressions[] = $parser->ArithmeticFactor();
+
+        $parser->match(Lexer::T_CLOSE_PARENTHESIS);
     }
 
     /**
-     * Parses the given DQL string from QueryBuilder, etc.
+     * Returns the SQL query.
      *
      * @param SqlWalker $sqlWalker
      * @return string
@@ -65,9 +69,13 @@ class ST_MakePoint extends FunctionNode
      */
     public function getSql(SqlWalker $sqlWalker): string
     {
-        $latitude = is_string($this->latitude) ? $this->latitude : $this->latitude->dispatch($sqlWalker);
-        $longitude = is_string($this->longitude) ? $this->longitude : $this->longitude->dispatch($sqlWalker);
+        $arguments = [];
 
-        return sprintf('ST_MakePoint(%s, %s)::geography', $latitude, $longitude);
+        /** @var Node $expression */
+        foreach ($this->expressions as $expression) {
+            $arguments[] = $expression->dispatch($sqlWalker);
+        }
+
+        return sprintf('ST_AsText(%s)', implode(', ', $arguments));
     }
 }

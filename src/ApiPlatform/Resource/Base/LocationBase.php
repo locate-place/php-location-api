@@ -61,6 +61,10 @@ abstract class LocationBase extends BasePublicResource
     #[SerializedName('zip-code')]
     private string $zipCode;
 
+    /** @var array<int, array<string, mixed>> $rivers */
+    #[SerializedName('rivers')]
+    private array $rivers;
+
     #[SerializedName('updated-at')]
     private DateTimeImmutable $updatedAt;
 
@@ -178,6 +182,25 @@ abstract class LocationBase extends BasePublicResource
         }
 
         $this->zipCode = $zipCode;
+
+        return $this;
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    public function getRivers(): array
+    {
+        return $this->rivers;
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $rivers
+     * @return self
+     */
+    public function setRivers(array $rivers): self
+    {
+        $this->rivers = $rivers;
 
         return $this;
     }

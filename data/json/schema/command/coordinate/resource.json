@@ -5,6 +5,7 @@
         "name": "Zürich (Kreis 3) / Friesenberg",
         "name-full": "Zürich (Kreis 3) / Friesenberg, Zürich, Zürich, Schweiz",
         "zip-code": "8055",
+        "rivers": [],
         "updated-at": "2023-08-21T23:08:34+00:00",
         "properties": {
             "population": {
@@ -57,8 +58,8 @@
             "timezone": "Europe/Zurich",
             "country": "CH",
             "current-time": {
-                "timezone": "2024-03-16T01:29:32+01:00",
-                "utc": "2024-03-16T00:29:32+00:00"
+                "timezone": "2024-03-20T23:53:17+01:00",
+                "utc": "2024-03-20T22:53:17+00:00"
             },
             "offset": "+01:00",
             "coordinate": {
@@ -220,7 +221,6 @@
             "district-locality": {
                 "geoname-id": 6295497,
                 "name": "Zürich (Kreis 3) / Friesenberg",
-                "zip-code": "8055",
                 "updated-at": "2023-08-21T23:08:34+00:00",
                 "coordinate": {
                     "latitude": {
@@ -393,7 +393,6 @@
             "city-municipality": {
                 "geoname-id": 2657896,
                 "name": "Zürich",
-                "zip-code": "8017",
                 "updated-at": "2023-08-21T23:08:27+00:00",
                 "coordinate": {
                     "latitude": {
@@ -566,7 +565,6 @@
             "state": {
                 "geoname-id": 2657895,
                 "name": "Zürich",
-                "zip-code": "8317",
                 "updated-at": "2023-08-21T23:08:27+00:00",
                 "coordinate": {
                     "latitude": {
@@ -739,7 +737,6 @@
             "country": {
                 "geoname-id": 2658434,
                 "name": "Schweiz",
-                "zip-code": "6113",
                 "updated-at": "2023-08-21T23:08:27+00:00",
                 "coordinate": {
                     "latitude": {
@@ -932,9 +929,9 @@
             }
         }
     },
-    "time-taken": "725 ms",
-    "memory-taken": "57 MB",
-    "version": "0.1.56",
+    "time-taken": "422 ms",
+    "memory-taken": "58 MB",
+    "version": "0.1.58",
     "data-licence": {
         "full": "Creative Commons Attribution 4.0 License",
         "short": "CC-BY 4.0",
