@@ -34,8 +34,8 @@ use Doctrine\ORM\Query\SqlWalker;
  * )
  *
  * @author Björn Hempel <bjoern@hempel.li>
- * @version 0.1.0 (2023-07-02)
- * @since 0.1.0 (2023-07-02) First version.
+ * @version 0.1.0 (2024-03-21)
+ * @since 0.1.0 (2024-03-21) First version.
  * @SuppressWarnings(PHPMD.CamelCaseClassName)
  */
 class ST_AsText extends FunctionNode

@@ -24,7 +24,7 @@ use LogicException;
  */
 class RiverPartRepository extends ServiceEntityRepository
 {
-    private const PRELOAD_MULTIPLIER = 10;
+    private const PRELOAD_MULTIPLIER = 100;
 
     /**
      * @param ManagerRegistry $registry

@@ -25,17 +25,16 @@ use LogicException;
 /**
  * Class ST_ClosestPoint
  *
- * ST_ClosestPoint ::= "ST_ClosestPoint" "(" ArithmeticPrimary "," ArithmeticPrimary "," ArithmeticPrimary ")"
+ * ST_ClosestPoint ::= "ST_ClosestPoint" "(" ArithmeticPrimary "," ArithmeticPrimary ")"
  *
- * @example WHERE ST_DWithin(
- *     ST_MakePoint(coordinate(0), coordinate(1))::geography,
- *     ST_MakePoint(47.473110, 10.813154)::geography,
- *     10000
+ * @example WHERE ST_ClosestPoint(
+ *   coordinates::geometry,
+ *   ST_MakePoint(13.741670, 51.058330)::geography::geometry
  * )
  *
  * @author Björn Hempel <bjoern@hempel.li>
- * @version 0.1.0 (2023-07-02)
- * @since 0.1.0 (2023-07-02) First version.
+ * @version 0.1.0 (2024-03-21)
+ * @since 0.1.0 (2024-03-21) First version.
  * @SuppressWarnings(PHPMD.CamelCaseClassName)
  */
 class ST_ClosestPoint extends FunctionNode
