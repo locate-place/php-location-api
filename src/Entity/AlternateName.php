@@ -72,7 +72,7 @@ class AlternateName
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $source = null;
 
-    #[ORM\Column]
+    #[ORM\Column(options: ['default' => false])]
     private ?bool $changed = null;
 
     /**

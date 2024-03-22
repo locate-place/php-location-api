@@ -22,10 +22,10 @@ doctrine:
                 class: App\DBAL\GeoLocation\Types\PostgreSQL\GeometryPolygonType
                 commented: false
             geography:
-                class: App\DBAL\GeoLocation\Types\PostgreSQL\GeographyPointType
+                class: App\DBAL\GeoLocation\Types\PostgreSQL\GeographyType
                 commented: false
             geometry:
-                class: App\DBAL\GeoLocation\Types\PostgreSQL\GeometryPointType
+                class: App\DBAL\GeoLocation\Types\PostgreSQL\GeometryType
                 commented: false
         default_connection: postgresql
         connections:

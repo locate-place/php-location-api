@@ -13,26 +13,21 @@ declare(strict_types=1);
 
 namespace App\DBAL\GeoLocation\Types\PostgreSQL;
 
-use App\DBAL\GeoLocation\Converter\ValueToLinestring;
 use App\DBAL\GeoLocation\Types\PostgreSQL\Base\BasePostGISType;
-use App\DBAL\GeoLocation\ValueObject\Linestring;
-use App\DBAL\GeoLocation\ValueObject\Polygon;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
-use Ixnode\PhpException\Type\TypeInvalidException;
-use LogicException;
 
 /**
- * Class PostGISPolygonType
+ * Class PostGISType
  *
  * @author Björn Hempel <bjoern@hempel.li>
- * @version 0.1.0 (2024-03-16)
- * @since 0.1.0 (2024-03-16) First version.
+ * @version 0.1.0 (2024-03-22)
+ * @since 0.1.0 (2024-03-22) First version.
  */
-abstract class PostGISLinestringType extends BasePostGISType
+abstract class PostGISType extends BasePostGISType
 {
-    final public const GEOMETRY = 'geometry_linestring';
+    final public const GEOMETRY = 'geometry';
 
-    final public const GEOGRAPHY = 'geography_linestring';
+    final public const GEOGRAPHY = 'geography';
 
     final public const SRID_ZERO = 0;
 
@@ -89,46 +84,6 @@ abstract class PostGISLinestringType extends BasePostGISType
     public function convertToDatabaseValueSQL($sqlExpr, AbstractPlatform $platform): string
     {
         return sprintf('ST_GeomFromEWKT(%s)', $sqlExpr);
-    }
-
-    /**
-     * Returns the instantiated Point.
-     *
-     * @param mixed $value
-     * @param AbstractPlatform $platform
-     * @return Linestring
-     * @throws TypeInvalidException
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
-     */
-    public function convertToPHPValue($value, AbstractPlatform $platform): Linestring
-    {
-        if (!is_string($value)) {
-            throw new TypeInvalidException('string', 'string');
-        }
-
-        return (new ValueToLinestring($value))->get();
-    }
-
-    /**
-     * Returns the database value.
-     *
-     * @param Polygon $value
-     * @param AbstractPlatform $platform
-     * @return string
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
-     */
-    public function convertToDatabaseValue($value, AbstractPlatform $platform): string
-    {
-        if (!$value instanceof Polygon) {
-            throw new LogicException(sprintf('Given value is not an instance of %s.', Polygon::class));
-        }
-
-        /* Attention: PostgreSQL uses lon/lat not lat/lon: Switch order. */
-        return sprintf(
-            'SRID=%d;POLYGON(%s)',
-            $value->getSrid(),
-            $value->getPointString()
-        );
     }
 
     /**

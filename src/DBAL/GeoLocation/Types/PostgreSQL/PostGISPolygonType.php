@@ -14,9 +14,9 @@ declare(strict_types=1);
 namespace App\DBAL\GeoLocation\Types\PostgreSQL;
 
 use App\DBAL\GeoLocation\Converter\ValueToPolygon;
+use App\DBAL\GeoLocation\Types\PostgreSQL\Base\BasePostGISType;
 use App\DBAL\GeoLocation\ValueObject\Polygon;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
-use Doctrine\DBAL\Types\Type;
 use Ixnode\PhpException\Type\TypeInvalidException;
 use LogicException;
 
@@ -27,7 +27,7 @@ use LogicException;
  * @version 0.1.0 (2024-03-16)
  * @since 0.1.0 (2024-03-16) First version.
  */
-abstract class PostGISPolygonType extends Type
+abstract class PostGISPolygonType extends BasePostGISType
 {
     final public const GEOMETRY = 'geometry_polygon';
 
@@ -145,7 +145,7 @@ abstract class PostGISPolygonType extends Type
 
         return sprintf(
             '%s(%s, %d)',
-            $this->getName(),
+            $this->getNameShorten(),
             $options['geometry_type'],
             $options['srid']
         );

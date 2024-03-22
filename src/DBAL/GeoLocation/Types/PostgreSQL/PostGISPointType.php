@@ -13,9 +13,9 @@ declare(strict_types=1);
 
 namespace App\DBAL\GeoLocation\Types\PostgreSQL;
 
+use App\DBAL\GeoLocation\Types\PostgreSQL\Base\BasePostGISType;
 use App\DBAL\GeoLocation\ValueObject\Point;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
-use Doctrine\DBAL\Types\Type;
 use Ixnode\PhpException\Case\CaseUnsupportedException;
 use Ixnode\PhpException\Type\TypeInvalidException;
 
@@ -26,7 +26,7 @@ use Ixnode\PhpException\Type\TypeInvalidException;
  * @version 0.1.0 (2023-07-31)
  * @since 0.1.0 (2023-07-31) First version.
  */
-abstract class PostGISPointType extends Type
+abstract class PostGISPointType extends BasePostGISType
 {
     final public const GEOMETRY = 'geometry_point';
 
@@ -163,7 +163,7 @@ abstract class PostGISPointType extends Type
 
         return sprintf(
             '%s(%s, %d)',
-            $this->getName(),
+            $this->getNameShorten(),
             $options['geometry_type'],
             $options['srid']
         );
