@@ -36,6 +36,7 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Index(columns: ['coordinates'], flags: ['gist'])]
 #[ORM\Index(columns: ['name'])]
 #[ORM\Index(columns: ['length'])]
+#[ORM\Index(columns: ['river_code'])]
 #[ORM\HasLifecycleCallbacks]
 class RiverPart
 {
@@ -101,6 +102,9 @@ class RiverPart
     private ?float $distance = null;
 
     private ?Point $closestCoordinate = null;
+
+    #[ORM\ManyToOne(inversedBy: 'riverParts')]
+    private ?River $river = null;
 
     /**
      * @return int|null
@@ -471,6 +475,18 @@ class RiverPart
     public function setClosestCoordinate(?Point $closestCoordinate): RiverPart
     {
         $this->closestCoordinate = $closestCoordinate;
+        return $this;
+    }
+
+    public function getRiver(): ?River
+    {
+        return $this->river;
+    }
+
+    public function setRiver(?River $river): static
+    {
+        $this->river = $river;
+
         return $this;
     }
 }

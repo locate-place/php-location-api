@@ -1,5 +1,16 @@
 <?php
 
+/*
+ * This file is part of the twelvepics-com/php-location-api project.
+ *
+ * (c) Björn Hempel <https://www.hempel.li/>
+ *
+ * For the full copyright and license information, please view the LICENSE.md
+ * file that was distributed with this source code.
+ */
+
+declare(strict_types=1);
+
 namespace App\Repository;
 
 use App\DBAL\GeoLocation\Converter\ValueToPoint;
@@ -278,5 +289,61 @@ class RiverPartRepository extends ServiceEntityRepository
         }
 
         return array_slice($riverParts, 0, $limit);;
+    }
+
+    /**
+     * Returns an array of all river codes from table river_part that does not contain "unknown" within the name.
+     *
+     * @return array<int, string|null>
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+     * @SuppressWarnings(PHPMD.NPathComplexity)
+     */
+    public function getUniqueRiverCodes(): array
+    {
+        $qb = $this->createQueryBuilder('rp')
+            ->select('rp.riverCode, MIN(rp.name) AS name')
+            ->groupBy('rp.riverCode')
+            ->getQuery();
+
+        $results = $qb->getArrayResult();
+
+        $formattedResults = [];
+        foreach ($results as $result) {
+            if (!is_array($result)) {
+                throw new LogicException(sprintf('Result must be an array. "%s" given.', gettype($result)));
+            }
+
+            if (!array_key_exists('riverCode', $result)) {
+                throw new LogicException('Result must contain "riverCode" key.');
+            }
+
+            $riverCode = $result['riverCode'];
+
+            if (!is_string($riverCode) && !is_int($riverCode) && !is_float($riverCode)) {
+                throw new LogicException('Result must contain "riverCode" key with string, integer, float.');
+            }
+
+            $riverCode = (int) $riverCode;
+
+            if (!array_key_exists($riverCode, $formattedResults)) {
+                $formattedResults[$riverCode] = null;
+            }
+
+            if (!array_key_exists('name', $result)) {
+                throw new LogicException('Result must contain "name" key.');
+            }
+
+            $name = $result['name'];
+
+            if (!is_string($name)) {
+                throw new LogicException('$name expected to be a string.');
+            }
+
+            if (is_null($formattedResults[$riverCode]) && $name !== 'unbekannt') {
+                $formattedResults[$riverCode] = $name;
+            }
+        }
+
+        return $formattedResults;
     }
 }

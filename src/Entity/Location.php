@@ -117,6 +117,9 @@ class Location
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $source = null;
 
+    #[ORM\OneToOne(mappedBy: 'location', cascade: ['persist', 'remove'])]
+    private ?River $river = null;
+
     public function __construct()
     {
         $this->imports = new ArrayCollection();
@@ -777,5 +780,27 @@ class Location
         }
 
         return null;
+    }
+
+    public function getRiver(): ?River
+    {
+        return $this->river;
+    }
+
+    public function setRiver(?River $river): static
+    {
+        // unset the owning side of the relation if necessary
+        if ($river === null && $this->river !== null) {
+            $this->river->setLocation(null);
+        }
+
+        // set the owning side of the relation if necessary
+        if ($river !== null && $river->getLocation() !== $this) {
+            $river->setLocation($this);
+        }
+
+        $this->river = $river;
+
+        return $this;
     }
 }
