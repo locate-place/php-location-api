@@ -48,3 +48,9 @@ services:
     App\DataTypes\Base\DataTypeNormalizer:
         tags:
             - { name: 'serializer.normalizer' }
+
+    # Add App\EventSubscriber\MigrationEventSubscriber
+    App\EventSubscriber\MigrationEventSubscriber:
+        class: App\EventSubscriber\MigrationEventSubscriber
+        tags:
+            - { name: doctrine.event_subscriber, connection: postgresql }

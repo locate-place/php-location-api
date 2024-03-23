@@ -56,6 +56,9 @@ class River
     #[ORM\OneToMany(mappedBy: 'river', targetEntity: RiverPart::class)]
     private Collection $riverParts;
 
+    #[ORM\Column(options: ['default' => false])]
+    private ?bool $ignoreMapping = null;
+
     /**
      *
      */
@@ -182,6 +185,25 @@ class River
                 $riverPart->setRiver(null);
             }
         }
+
+        return $this;
+    }
+
+    /**
+     * @return bool|null
+     */
+    public function isIgnoreMapping(): ?bool
+    {
+        return $this->ignoreMapping;
+    }
+
+    /**
+     * @param bool $ignoreMapping
+     * @return $this
+     */
+    public function setIgnoreMapping(bool $ignoreMapping): static
+    {
+        $this->ignoreMapping = $ignoreMapping;
 
         return $this;
     }
