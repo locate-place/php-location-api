@@ -21,7 +21,7 @@ doctrine:
                 mapping_types:
                     geography: geography
                     geometry: geometry
-                schema_filter: ~^(?!(topology)_)~
+                schema_filter: ~^(?!topology\.)~
             sqlite:
                 driver: "%env(resolve:DOCTRINE_DB_DRIVER_SQLITE)%"
                 server_version: "%env(resolve:DOCTRINE_DB_VERSION_SQLITE)%"
