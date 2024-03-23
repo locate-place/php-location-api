@@ -29,6 +29,7 @@ use Doctrine\ORM\Mapping as ORM;
  */
 #[ORM\Entity(repositoryClass: RiverRepository::class)]
 #[ORM\Index(columns: ['name'])]
+#[ORM\Index(columns: ['ignore_mapping'])]
 #[ORM\UniqueConstraint(columns: ['river_code'])]
 #[ORM\HasLifecycleCallbacks]
 class River
