@@ -194,6 +194,8 @@ class KeyArray
 
     final public const POPULATION = 'population';
 
+    final public const POSITION = 'position';
+
     final public const PROPERTIES = 'properties';
 
     final public const REASON = 'reason';
