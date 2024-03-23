@@ -148,9 +148,17 @@ EOT
         $output->writeln(sprintf('Coordinate: %s, %s', $coordinate->getLatitude(), $coordinate->getLongitude()));
         $output->writeln('');
 
+        $output->writeln(sprintf(
+            '%-42s   %-11s   %-10s   %-9s   %s',
+            'Name',
+            'Length',
+            'River Code',
+            'Distance',
+            'Latitude,Longitude',
+        ));
         foreach ($rivers as $river) {
             print sprintf(
-                '%-40s   %8.2f km   %10d   %f km   %s,%s',
+                '%-40s   %8.2f km   %12d   %6.2f km   %s,%s',
                     $this->getMbStrPad($river->getName() ?? '', 40),
                     round((float) $river->getLength(), 2),
                     $river->getRiverCode(),
