@@ -15,6 +15,8 @@ namespace App\Repository;
 
 use App\Constants\DB\FeatureClass as DbFeatureClass;
 use App\Constants\DB\FeatureCode as DbFeatureCode;
+use App\Constants\DB\FeatureCode as FeatureCodeDb;
+use App\Constants\Language\LanguageCode;
 use App\Entity\Country;
 use App\Entity\FeatureCode;
 use App\Entity\Location;
@@ -145,18 +147,18 @@ class LocationRepository extends BaseCoordinateRepository
             $search = [$search];
         }
 
-        $qb = $this->createQueryBuilder('l')
+        $queryBuilder = $this->createQueryBuilder('l')
             ->join('l.alternateNames', 'a')
             ->setMaxResults($limit)
         ;
 
         /* Loop through each search term and add it as an AND condition */
         foreach ($search as $index => $term) {
-            $qb->andWhere('ILIKE(a.alternateName, :name'.$index.') = true')
+            $queryBuilder->andWhere('ILIKE(a.alternateName, :name'.$index.') = true')
                 ->setParameter('name'.$index, '%'.$term.'%');
         }
 
-        $locations = $qb->getQuery()->execute();
+        $locations = $queryBuilder->getQuery()->execute();
 
         if (!is_array($locations)) {
             throw new LogicException('Unsupported query type.');
@@ -805,5 +807,127 @@ class LocationRepository extends BaseCoordinateRepository
         }
 
         return $count;
+    }
+
+    /**
+     * Finds rivers within location table that are not mapped to river table.
+     *
+     * @return array<int, Location>
+     */
+    public function findRiversWithoutMapping(): array
+    {
+        $featureCodes = [FeatureCodeDb::STM];
+
+        $featureCodesIds = $this->translateFeatureCodesToIds($featureCodes);
+
+        $queryBuilder = $this->createQueryBuilder('l');
+
+        $queryBuilder
+            ->join('l.alternateNames', 'a')
+            ->andWhere(
+                $queryBuilder->expr()->orX(
+                    $queryBuilder->expr()->isNull('a.isoLanguage'),
+                    $queryBuilder->expr()->in('a.isoLanguage', ':isoLanguages')
+                )
+            )
+            ->setParameter('isoLanguages', [LanguageCode::DE, LanguageCode::EN])
+        ;
+
+        $queryBuilder
+            ->addSelect(sprintf('string_agg(a.alternateName, \'%s\' ORDER BY a.alternateName) AS alternateNames', Location::NAME_SEPARATOR))
+            ->addGroupBy('l.id')
+        ;
+
+        /* Only find given feature codes. */
+        $queryBuilder
+            ->andWhere('l.featureCode IN (:featureCodes)')
+            ->setParameter('featureCodes', $featureCodesIds)
+        ;
+
+        /* Only find locations that are not mapped to river table. */
+        $queryBuilder
+            ->leftJoin('l.river', 'r')
+            ->andWhere('r.id IS NULL')
+        ;
+
+        /* 127142 = Elbe */
+//        $queryBuilder
+//            ->andWhere('l.id = 127142')
+//        ;
+
+        /* Sets limit. */
+        $queryBuilder->setMaxResults(1);
+
+//        print $queryBuilder->getDQL().PHP_EOL;
+//        exit();
+
+        $time = microtime(true);
+        $result = $queryBuilder->getQuery()->getResult();
+        print sprintf('Time: %s', microtime(true) - $time).PHP_EOL;
+
+        if (!is_array($result)) {
+            throw new LogicException(sprintf('Result must be an array. "%s" given.', gettype($result)));
+        }
+
+        $time = microtime(true);
+        $objects = $this->hydrateObjects($result);
+        print sprintf('Time: %s', microtime(true) - $time).PHP_EOL;
+
+        return $objects;
+    }
+
+    /**
+     * Hydrates the given object.
+     *
+     * @param Location|array<int|string, mixed> $object
+     * @return Location
+     */
+    public function hydrateObject(Location|array $object): Location
+    {
+        /* No hidden fields, etc. were given. */
+        if ($object instanceof Location) {
+            return $object;
+        }
+
+        $location = null;
+
+        foreach ($object as $property => $value) {
+            /* The first result should be a Location entity. */
+            if ($value instanceof Location) {
+                $location = $value;
+                continue;
+            }
+
+            /* The first result should be a Location entity. */
+            if (is_null($location)) {
+                throw new LogicException('Location was not found within db result.');
+            }
+
+            if (!is_string($value)) {
+                throw new LogicException('$value expected to be a string.');
+            }
+
+            match ($property) {
+                'alternateNames' => $location->setNames(explode(Location::NAME_SEPARATOR, $value.Location::NAME_SEPARATOR.$location->getName())),
+                default => throw new LogicException(sprintf('Unknown property "%s".', $property)),
+            };
+        }
+
+        if (is_null($location)) {
+            throw new LogicException('Location was not found within db result.');
+        }
+
+        return $location;
+    }
+
+    /**
+     * Hydrates the given objects.
+     *
+     * @param array<int, Location|array<int|null, mixed>> $objects
+     * @return Location[]
+     */
+    public function hydrateObjects(array $objects): array
+    {
+        return array_map(fn(Location|array $object) => $this->hydrateObject($object), $objects);
     }
 }

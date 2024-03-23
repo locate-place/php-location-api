@@ -48,6 +48,8 @@ use Symfony\Component\Serializer\Annotation\Ignore;
 #[ORM\HasLifecycleCallbacks]
 class Location
 {
+    final public const NAME_SEPARATOR = '<->';
+
     use TimestampsTrait;
 
     #[ORM\Id]
@@ -169,6 +171,36 @@ class Location
     public function setName(string $name): static
     {
         $this->name = $name;
+
+        return $this;
+    }
+
+    /**
+     * @param string[] $names
+     * @return $this
+     */
+    public function setNames(array $names): static
+    {
+        $uniqueNames = [];
+
+        foreach ($names as $name) {
+            $name = trim($name);
+
+            if (empty($name)) {
+                continue;
+            }
+
+            /* Remove some strings. */
+            $name = preg_replace('~ \(fluss\)~i', '', $name);
+
+            $uniqueNames[$name] = null;
+        }
+
+        $names = array_keys($uniqueNames);
+
+        sort($names);
+
+        $this->name = implode(self::NAME_SEPARATOR, $names);
 
         return $this;
     }

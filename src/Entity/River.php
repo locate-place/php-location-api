@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use App\DBAL\GeoLocation\ValueObject\Point;
 use App\Entity\Trait\TimestampsTrait;
 use App\Repository\RiverRepository;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -28,6 +29,7 @@ use Doctrine\ORM\Mapping as ORM;
  * @since 0.1.0 (2024-03-21) First version.
  */
 #[ORM\Entity(repositoryClass: RiverRepository::class)]
+#[ORM\Index(columns: ['location_id'])]
 #[ORM\Index(columns: ['name'])]
 #[ORM\Index(columns: ['ignore_mapping'])]
 #[ORM\UniqueConstraint(columns: ['river_code'])]
@@ -60,6 +62,10 @@ class River
     #[ORM\Column(options: ['default' => false])]
     private ?bool $ignoreMapping = null;
 
+    private ?float $distance = null;
+
+    private ?Point $closestCoordinate = null;
+
     /**
      *
      */
@@ -74,6 +80,17 @@ class River
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    /**
+     * @param int $id
+     * @return $this
+     */
+    public function setId(int $id): static
+    {
+        $this->id = $id;
+
+        return $this;
     }
 
     /**
@@ -205,6 +222,48 @@ class River
     public function setIgnoreMapping(bool $ignoreMapping): static
     {
         $this->ignoreMapping = $ignoreMapping;
+
+        return $this;
+    }
+
+    /**
+     * Returns the distance in kilometers.
+     *
+     * @return float|null
+     */
+    public function getDistance(): ?float
+    {
+        return $this->distance;
+    }
+
+    /**
+     * Sets the distance in kilometers.
+     *
+     * @param float $distance
+     * @return River
+     */
+    public function setDistance(float $distance): River
+    {
+        $this->distance = $distance;
+
+        return $this;
+    }
+
+    /**
+     * @return Point|null
+     */
+    public function getClosestCoordinate(): ?Point
+    {
+        return $this->closestCoordinate;
+    }
+
+    /**
+     * @param Point|null $closestCoordinate
+     * @return River
+     */
+    public function setClosestCoordinate(?Point $closestCoordinate): River
+    {
+        $this->closestCoordinate = $closestCoordinate;
 
         return $this;
     }

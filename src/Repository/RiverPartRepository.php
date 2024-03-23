@@ -106,6 +106,13 @@ class RiverPartRepository extends ServiceEntityRepository
 
         $limitPrediction = $limit;
 
+        /* Limit result by country. */
+        if ($country instanceof Country) {
+            $queryBuilder
+                ->andWhere('rp.country = :country')
+                ->setParameter('country', $country);
+        }
+
         /* Limit result by given distance. */
         if (!is_null($coordinate) && is_int($distanceMeter)) {
             $queryBuilder
@@ -128,13 +135,6 @@ class RiverPartRepository extends ServiceEntityRepository
             ;
 
             $limitPrediction = is_null($limit) ? null : ($limit * self::PRELOAD_MULTIPLIER);
-        }
-
-        /* Limit result by country. */
-        if ($country instanceof Country) {
-            $queryBuilder
-                ->andWhere('rp.country = :country')
-                ->setParameter('country', $country);
         }
 
         /* Order result by distance (uses <-> for performance reasons). */
@@ -288,7 +288,7 @@ class RiverPartRepository extends ServiceEntityRepository
             return $riverParts;
         }
 
-        return array_slice($riverParts, 0, $limit);;
+        return array_slice($riverParts, 0, $limit);
     }
 
     /**

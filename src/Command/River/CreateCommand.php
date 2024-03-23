@@ -24,15 +24,17 @@ use Symfony\Component\Console\Output\OutputInterface;
  * Class CreateCommand.
  *
  * @author Björn Hempel <bjoern@hempel.li>
- * @version 0.1.0 (2023-06-27)
- * @since 0.1.0 (2023-06-27) First version.
+ * @version 0.1.0 (2024-03-23)
+ * @since 0.1.0 (2024-03-23) First version.
+ * @example bin/console river:create
  */
 class CreateCommand extends Command
 {
     protected static $defaultName = 'river:create';
 
     /**
-     *
+     * @param EntityManagerInterface $entityManager
+     * @param RiverPartRepository $riverPartRepository
      */
     public function __construct(
         protected readonly EntityManagerInterface $entityManager,

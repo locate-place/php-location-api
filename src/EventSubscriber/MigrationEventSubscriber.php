@@ -44,20 +44,20 @@ class MigrationEventSubscriber implements EventSubscriber
     /**
      * Ignores creating the schema for the public and topology.
      *
-     * @param GenerateSchemaEventArgs $Args
+     * @param GenerateSchemaEventArgs $args
      * @return void
      * @throws SchemaException
      */
-    public function postGenerateSchema(GenerateSchemaEventArgs $Args): void
+    public function postGenerateSchema(GenerateSchemaEventArgs $args): void
     {
-        $Schema = $Args->getSchema();
+        $schema = $args->getSchema();
 
-        if (! $Schema->hasNamespace(Schema::PUBLIC)) {
-            $Schema->createNamespace(Schema::PUBLIC);
+        if (! $schema->hasNamespace(Schema::PUBLIC)) {
+            $schema->createNamespace(Schema::PUBLIC);
         }
 
-        if (! $Schema->hasNamespace(Schema::TOPOLOGY)) {
-            $Schema->createNamespace(Schema::TOPOLOGY);
+        if (! $schema->hasNamespace(Schema::TOPOLOGY)) {
+            $schema->createNamespace(Schema::TOPOLOGY);
         }
     }
 }

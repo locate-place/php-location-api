@@ -112,8 +112,12 @@ services:
     image: "${IMAGE_POSTGRESQL}"
     container_name: "${NAMESPACE_DEVELOPMENT}.postgresql"
     hostname: "${NAMESPACE_HOSTNAME_DEVELOPMENT}-postgresql"
-    shm_size: 1g
+    shm_size: 2g
     restart: always
+#    command: >
+#      -c work_mem=4MB
+#      -c maintenance_work_mem=64kB
+#      -c max_wal_size=1GB
     environment:
       POSTGRES_USER: "${POSTGRESQL_SERVER_ROOT_USER}"
       POSTGRES_PASSWORD: "${POSTGRESQL_SERVER_ROOT_PASSWORD}"

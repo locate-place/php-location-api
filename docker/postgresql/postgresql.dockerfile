@@ -19,4 +19,5 @@ RUN mkdir -p /docker-entrypoint-initdb.d
 
 # Copy custom scripts
 COPY ./scripts/initdb-postgis.sh /docker-entrypoint-initdb.d/10_postgis.sh
+COPY ./scripts/increase-work-mem.sh /docker-entrypoint-initdb.d/20_increase.sh
 COPY ./scripts/update-postgis.sh /usr/local/bin
