@@ -15,7 +15,7 @@ namespace App\Entity;
 
 use App\Constants\DB\FeatureClass as FeatureClassConstants;
 use App\Constants\DB\FeatureCode as FeatureCodeConstants;
-use App\DBAL\GeoLocation\Types\PostgreSQL\PostGISType;
+use App\DBAL\GeoLocation\Types\PostgreSQL\Base\BasePostGISType;
 use App\DBAL\GeoLocation\ValueObject\Point;
 use App\Entity\Trait\TimestampsTrait;
 use App\Repository\LocationRepository;
@@ -64,7 +64,7 @@ class Location
     #[ORM\Column(length: 1024)]
     private ?string $asciiName = null;
 
-    #[ORM\Column(type: PostGISType::GEOGRAPHY, nullable: false, options: ['geometry_type' => 'Point', 'srid' => 4326, 'comment' => 'Point,4326'])]
+    #[ORM\Column(type: BasePostGISType::GEOGRAPHY, nullable: false, options: ['geometry_type' => 'Point', 'srid' => 4326, 'comment' => 'Point,4326'])]
     private ?Point $coordinate = null;
 
     #[ORM\Column(length: 200)]

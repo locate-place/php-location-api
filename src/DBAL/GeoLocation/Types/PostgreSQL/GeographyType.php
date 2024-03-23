@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace App\DBAL\GeoLocation\Types\PostgreSQL;
 
+use App\DBAL\GeoLocation\Types\PostgreSQL\Base\BasePostGISType;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 
 /**
@@ -22,7 +23,7 @@ use Doctrine\DBAL\Platforms\AbstractPlatform;
  * @version 0.1.0 (2024-03-22)
  * @since 0.1.0 (2024-03-22) First version.
  */
-class GeographyType extends PostGISType
+class GeographyType extends BasePostGISType
 {
     final public const SRID_WSG84 = 4326;
 
@@ -33,7 +34,7 @@ class GeographyType extends PostGISType
      */
     public function getName(): string
     {
-        return PostGISType::GEOGRAPHY;
+        return BasePostGISType::GEOGRAPHY;
     }
 
     /**
@@ -76,10 +77,10 @@ class GeographyType extends PostGISType
         }
 
         if (!array_key_exists('geometry_type', $options)) {
-            $options['geometry_type'] = PostGISType::GEOGRAPHY;
+            $options['geometry_type'] = BasePostGISType::GEOGRAPHY;
         }
 
-        $geometryType = $options['geometry_type'] ?? PostGISType::GEOGRAPHY;
+        $geometryType = $options['geometry_type'] ?? BasePostGISType::GEOGRAPHY;
 
         return [
             'geometry_type' => strtoupper((string) $geometryType),

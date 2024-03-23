@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace App\DBAL\GeoLocation\Types\PostgreSQL;
 
+use App\DBAL\GeoLocation\Types\PostgreSQL\Base\BasePostGISType;
+
 /**
  * Class GeometryType
  *
@@ -20,7 +22,7 @@ namespace App\DBAL\GeoLocation\Types\PostgreSQL;
  * @version 0.1.0 (2024-03-22)
  * @since 0.1.0 (2024-03-22) First version.
  */
-class GeometryType extends PostGISType
+class GeometryType extends BasePostGISType
 {
     /**
      * Returns the name of this type.
@@ -29,7 +31,7 @@ class GeometryType extends PostGISType
      */
     public function getName(): string
     {
-        return PostGISType::GEOMETRY;
+        return BasePostGISType::GEOMETRY;
     }
 
     /**
@@ -41,10 +43,10 @@ class GeometryType extends PostGISType
     public function getNormalizedPostGISColumnOptions(array $options = []): array
     {
         if (!array_key_exists('geometry_type', $options)) {
-            $options['geometry_type'] = PostGISType::GEOGRAPHY;
+            $options['geometry_type'] = BasePostGISType::GEOGRAPHY;
         }
 
-        $geometryType = $options['geometry_type'] ?? PostGISType::GEOGRAPHY;
+        $geometryType = $options['geometry_type'] ?? BasePostGISType::GEOGRAPHY;
 
         return [
             'geometry_type' => strtoupper((string) $geometryType),
