@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
-use App\DBAL\GeoLocation\Types\PostgreSQL\PostGISPointType;
+use App\DBAL\GeoLocation\Types\PostgreSQL\PostGISType;
 use App\DBAL\GeoLocation\ValueObject\Point;
 use App\Entity\Trait\TimestampsTrait;
 use App\Repository\ZipCodeRepository;
@@ -55,7 +55,7 @@ class ZipCode
     #[ORM\Column(length: 20)]
     private ?string $postalCode = null;
 
-    #[ORM\Column(type: PostGISPointType::GEOGRAPHY, nullable: false, options: ['geometry_type' => 'POINT', 'srid' => 4326])]
+    #[ORM\Column(type: PostGISType::GEOGRAPHY, nullable: false, options: ['geometry_type' => 'Point', 'srid' => 4326, 'comment' => 'Point,4326'])]
     private ?Point $coordinate = null;
 
     #[ORM\Column(nullable: true)]

@@ -14,7 +14,13 @@ declare(strict_types=1);
 namespace App\DBAL\GeoLocation\Types\PostgreSQL;
 
 use App\DBAL\GeoLocation\Types\PostgreSQL\Base\BasePostGISType;
+use App\DBAL\GeoLocation\ValueObject\Linestring;
+use App\DBAL\GeoLocation\ValueObject\Point;
+use App\DBAL\GeoLocation\ValueObject\Polygon;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
+use Ixnode\PhpException\Case\CaseUnsupportedException;
+use Ixnode\PhpException\Type\TypeInvalidException;
+use LogicException;
 
 /**
  * Class PostGISType
@@ -84,6 +90,30 @@ abstract class PostGISType extends BasePostGISType
     public function convertToDatabaseValueSQL($sqlExpr, AbstractPlatform $platform): string
     {
         return sprintf('ST_GeomFromEWKT(%s)', $sqlExpr);
+    }
+
+    /**
+     * Returns the instantiated Point.
+     *
+     * @param mixed $value
+     * @param AbstractPlatform $platform
+     * @return Point|Linestring|Polygon
+     * @throws TypeInvalidException
+     * @throws CaseUnsupportedException
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     */
+    public function convertToPHPValue($value, AbstractPlatform $platform): Point|Linestring|Polygon
+    {
+        if (!is_string($value)) {
+            throw new TypeInvalidException('string', 'string');
+        }
+
+        return match (true) {
+            str_contains($value, 'POINT') => $this->convertPointToPHPValue($value),
+            str_contains($value, 'LINESTRING') => $this->convertLinestringToPHPValue($value),
+            str_contains($value, 'POLYGON') => $this->convertPolygonToPHPValue($value),
+            default => throw new LogicException(sprintf('Unsupported geometry/geography type: %s', $value)),
+        };
     }
 
     /**

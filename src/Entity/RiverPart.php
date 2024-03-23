@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
-use App\DBAL\GeoLocation\Types\PostgreSQL\PostGISLinestringType;
+use App\DBAL\GeoLocation\Types\PostgreSQL\PostGISType;
 use App\DBAL\GeoLocation\ValueObject\Linestring;
 use App\DBAL\GeoLocation\ValueObject\Point;
 use App\Entity\Trait\TimestampsTrait;
@@ -53,7 +53,7 @@ class RiverPart
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
     private ?string $length = null;
 
-    #[ORM\Column(type: PostGISLinestringType::GEOGRAPHY, nullable: false, options: ['geometry_type' => 'LINESTRING', 'srid' => 4326])]
+    #[ORM\Column(type: PostGISType::GEOGRAPHY, nullable: false, options: ['geometry_type' => 'LineString', 'srid' => 4326, 'comment' => 'LineString,4326'])]
     private ?Linestring $coordinates = null;
 
     #[ORM\Column]

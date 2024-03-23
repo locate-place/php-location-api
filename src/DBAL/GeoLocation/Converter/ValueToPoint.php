@@ -13,9 +13,10 @@ declare(strict_types=1);
 
 namespace App\DBAL\GeoLocation\Converter;
 
-use App\DBAL\GeoLocation\Types\PostgreSQL\GeographyPolygonType;
+use App\DBAL\GeoLocation\Types\PostgreSQL\GeographyType;
 use App\DBAL\GeoLocation\ValueObject\Point;
 use Ixnode\PhpException\Type\TypeInvalidException;
+use LogicException;
 
 /**
  * Class ValueToPoint
@@ -39,7 +40,9 @@ readonly class ValueToPoint
      */
     public function get(): Point
     {
-        $resultSrid = sscanf($this->value, 'SRID=%d;POINT');
+        $value = trim($this->value);
+
+        $resultSrid = sscanf($value, 'SRID=%d;POINT');
 
         if (is_null($resultSrid)) {
             throw new TypeInvalidException('array', 'null');
@@ -48,10 +51,16 @@ readonly class ValueToPoint
         [$srid] = $resultSrid;
 
         if (!is_int($srid)) {
-            $srid = GeographyPolygonType::SRID_WSG84;
+            $srid = GeographyType::SRID_WSG84;
         }
 
-        $resultPoint = sscanf($this->value, 'POINT(%f %f)');
+        $value = preg_replace('~^SRID=[0-9]+;~', '', $value);
+
+        if (!is_string($value)) {
+            throw new LogicException('Unable to replace SRID');
+        }
+
+        $resultPoint = sscanf($value, 'POINT(%f %f)');
 
         if (is_null($resultPoint)) {
             throw new TypeInvalidException('array', 'null');

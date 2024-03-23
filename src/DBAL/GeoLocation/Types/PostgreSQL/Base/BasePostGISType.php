@@ -13,7 +13,14 @@ declare(strict_types=1);
 
 namespace App\DBAL\GeoLocation\Types\PostgreSQL\Base;
 
+use App\DBAL\GeoLocation\Converter\ValueToLinestring;
+use App\DBAL\GeoLocation\Converter\ValueToPoint;
+use App\DBAL\GeoLocation\Converter\ValueToPolygon;
+use App\DBAL\GeoLocation\ValueObject\Linestring;
+use App\DBAL\GeoLocation\ValueObject\Point;
+use App\DBAL\GeoLocation\ValueObject\Polygon;
 use Doctrine\DBAL\Types\Type;
+use Ixnode\PhpException\Type\TypeInvalidException;
 
 /**
  * Abstract class BasePostGISType
@@ -44,5 +51,41 @@ abstract class BasePostGISType extends Type
         $name = $this->getName();
 
         return explode('_', $name)[0];
+    }
+
+    /**
+     * Returns the instantiated Point.
+     *
+     * @param string $value
+     * @return Point
+     * @throws TypeInvalidException
+     */
+    public function convertPointToPHPValue(string $value): Point
+    {
+        return (new ValueToPoint($value))->get();
+    }
+
+    /**
+     * Returns the instantiated Linestring.
+     *
+     * @param string $value
+     * @return Linestring
+     * @throws TypeInvalidException
+     */
+    public function convertLinestringToPHPValue(string $value): Linestring
+    {
+        return (new ValueToLinestring($value))->get();
+    }
+
+    /**
+     * Returns the instantiated Polygon.
+     *
+     * @param string $value
+     * @return Polygon
+     * @throws TypeInvalidException
+     */
+    public function convertPolygonToPHPValue(string $value): Polygon
+    {
+        return (new ValueToPolygon($value))->get();
     }
 }

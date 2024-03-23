@@ -51,11 +51,24 @@ class GeographyType extends PostGISType
     /**
      * Sets the possible default options for this column type.
      *
-     * @param array{geometry_type?: string|null, srid?: int|string|null} $options
+     * @param array{geometry_type?: string|null, srid?: int|string|null, comment?: string} $options
      * @return array{geometry_type: string, srid: int}
      */
     public function getNormalizedPostGISColumnOptions(array $options = []): array
     {
+        if (array_key_exists('comment', $options)) {
+            $comment = $options['comment'];
+
+            if (!empty($comment)) {
+                $values = explode(',', $comment);
+
+                if (count($values) > 1) {
+                    $options['geometry_type'] = $values[0];
+                    $options['srid'] = $values[1];
+                }
+            }
+        }
+
         $srid = (int) ($options['srid'] ?? self::SRID_WSG84);
 
         if ($srid === self::SRID_ZERO) {

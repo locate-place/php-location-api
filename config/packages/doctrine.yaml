@@ -3,24 +3,6 @@ doctrine:
         types:
             point: App\DBAL\GeoLocation\Types\PostgreSQL\PointType
             polygon: App\DBAL\GeoLocation\Types\PostgreSQL\PolygonType
-            geography_linestring:
-                class: App\DBAL\GeoLocation\Types\PostgreSQL\GeographyLinestringType
-                commented: false
-            geometry_linestring:
-                class: App\DBAL\GeoLocation\Types\PostgreSQL\GeometryLinestringType
-                commented: false
-            geography_point:
-                class: App\DBAL\GeoLocation\Types\PostgreSQL\GeographyPointType
-                commented: false
-            geometry_point:
-                class: App\DBAL\GeoLocation\Types\PostgreSQL\GeometryPointType
-                commented: false
-            geography_polygon:
-                class: App\DBAL\GeoLocation\Types\PostgreSQL\GeographyPolygonType
-                commented: false
-            geometry_polygon:
-                class: App\DBAL\GeoLocation\Types\PostgreSQL\GeometryPolygonType
-                commented: false
             geography:
                 class: App\DBAL\GeoLocation\Types\PostgreSQL\GeographyType
                 commented: false
@@ -41,12 +23,6 @@ doctrine:
                 mapping_types:
                     point: point
                     polygon: polygon
-                    geography_linestring: geography_linestring
-                    geometry_linestring: geometry_linestring
-                    geography_point: geography_point
-                    geometry_point: geometry_point
-                    geography_polygon: geography_polygon
-                    geometry_polygon: geometry_polygon
                     geography: geography
                     geometry: geometry
                 schema_filter: ~^(?!(topology)_)~
@@ -62,12 +38,6 @@ doctrine:
                 mapping_types:
                     point: point
                     polygon: polygon
-                    geography_linestring: geography_linestring
-                    geometry_linestring: geometry_linestring
-                    geography_point: geography_point
-                    geometry_point: geometry_point
-                    geography_polygon: geography_polygon
-                    geometry_polygon: geometry_polygon
                     geography: geography
                     geometry: geometry
 

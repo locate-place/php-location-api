@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace App\DBAL\GeoLocation\Converter;
 
-use App\DBAL\GeoLocation\Types\PostgreSQL\GeographyPolygonType;
+use App\DBAL\GeoLocation\Types\PostgreSQL\GeographyType;
 use App\DBAL\GeoLocation\ValueObject\Point;
 use App\DBAL\GeoLocation\ValueObject\Polygon;
 use Ixnode\PhpException\Type\TypeInvalidException;
@@ -50,7 +50,7 @@ readonly class ValueToPolygon
         [$srid] = $result;
 
         if (!is_int($srid)) {
-            $srid = GeographyPolygonType::SRID_WSG84;
+            $srid = GeographyType::SRID_WSG84;
         }
 
         if (!preg_match('/POLYGON\(\((.*?)\)\)/', $this->value, $matches)) {
