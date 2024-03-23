@@ -13,8 +13,8 @@ declare(strict_types=1);
 
 namespace App\DBAL\GeoLocation\Converter;
 
+use App\DBAL\GeoLocation\Converter\Base\BaseValueToX;
 use App\DBAL\GeoLocation\Types\PostgreSQL\GeographyType;
-use App\DBAL\GeoLocation\ValueObject\Point;
 use App\DBAL\GeoLocation\ValueObject\Polygon;
 use Ixnode\PhpException\Type\TypeInvalidException;
 use LogicException;
@@ -26,15 +26,8 @@ use LogicException;
  * @version 0.1.0 (2024-03-16)
  * @since 0.1.0 (2024-03-16) First version.
  */
-readonly class ValueToPolygon
+class ValueToPolygon extends BaseValueToX
 {
-    /**
-     * @param string $value
-     */
-    public function __construct(private string $value)
-    {
-    }
-
     /**
      * @return Polygon
      * @throws TypeInvalidException
@@ -59,32 +52,7 @@ readonly class ValueToPolygon
 
         $coordinatePairs = explode(',', trim($matches[1]));
 
-        $coordinates = [];
-        foreach ($coordinatePairs as $coordinatePair) {
-            if (!is_string($coordinatePair)) {
-                throw new TypeInvalidException('string', 'string');
-            }
-
-            $coordinatePair = trim($coordinatePair);
-
-            $result = sscanf($coordinatePair, "%f %f");
-
-            if (is_null($result)) {
-                throw new TypeInvalidException('array', 'null');
-            }
-
-            [$longitude, $latitude] = $result;
-
-            if (is_null($latitude)) {
-                throw new TypeInvalidException('float', 'null');
-            }
-
-            if (is_null($longitude)) {
-                throw new TypeInvalidException('float', 'null');
-            }
-
-            $coordinates[] = new Point($latitude, $longitude);
-        }
+        $coordinates = $this->getCoordinates($coordinatePairs);
 
         return new Polygon($coordinates, $srid);
     }

@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace App\DBAL\GeoLocation\Converter;
 
+use App\DBAL\GeoLocation\Converter\Base\BaseValueToX;
 use App\DBAL\GeoLocation\Types\PostgreSQL\GeographyType;
 use App\DBAL\GeoLocation\ValueObject\Point;
 use Ixnode\PhpException\Type\TypeInvalidException;
@@ -25,15 +26,8 @@ use LogicException;
  * @version 0.1.0 (2024-03-20)
  * @since 0.1.0 (2024-03-20) First version.
  */
-readonly class ValueToPoint
+class ValueToPoint extends BaseValueToX
 {
-    /**
-     * @param string $value
-     */
-    public function __construct(private string $value)
-    {
-    }
-
     /**
      * @return Point
      * @throws TypeInvalidException
