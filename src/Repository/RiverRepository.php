@@ -63,6 +63,12 @@ class RiverRepository extends ServiceEntityRepository
             ->join(RiverPart::class, 'rp', 'WITH', 'r.id = rp.river')
         ;
 
+        $queryBuilder->select([
+            'DISTINCT_ON(r.id) AS r_id',
+            'r'
+        ]);
+        $queryBuilder->addOrderBy('r_id');
+
         if (is_int($distanceMeter)) {
             $queryBuilder
                 /* Attention: PostGIS uses lon/lat not lat/lon! */
@@ -105,7 +111,7 @@ class RiverRepository extends ServiceEntityRepository
             throw new LogicException(sprintf('Result must be an array. "%s" given.', gettype($result)));
         }
 
-        return $this->hydrateObjects($result, true);
+        return $this->hydrateObjects($result);
     }
 
     /**

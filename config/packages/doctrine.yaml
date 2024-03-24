@@ -50,6 +50,7 @@ doctrine:
                     string_functions:
                         ILIKE: App\DBAL\GeoLocation\Functions\Other\ILike
                         string_agg: \App\DBAL\General\Functions\PostgreSQL\StringAgg
+                        DISTINCT_ON: \App\DBAL\General\Functions\PostgreSQL\DistinctOn
                         DistanceOperator: App\DBAL\GeoLocation\Functions\PostgreSQL\DistanceOperator
                         ST_AsText: App\DBAL\GeoLocation\Functions\PostgreSQL\ST_AsText
                         ST_ClosestPoint: App\DBAL\GeoLocation\Functions\PostgreSQL\ST_ClosestPoint

@@ -131,13 +131,6 @@ EOT
         $distance = (int) $distance;
         $limit = (int) $limit;
 
-        if ($limit > 0) {
-            $output->writeln('');
-            $output->writeln('Attention: Limit does not correspond to the number of outputs.');
-            $output->writeln('Depending on the DISTINCT and the summary of the data, less data can also be displayed.');
-            $output->writeln('Increase the value if you want to see more.');
-        }
-
         $rivers = $this->riverRepository->findRivers(
             coordinate: $coordinate,
             distanceMeter: $distance,
