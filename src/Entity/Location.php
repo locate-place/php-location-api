@@ -45,6 +45,7 @@ use Symfony\Component\Serializer\Annotation\Ignore;
 #[ORM\Index(columns: ['geoname_id'])]
 #[ORM\Index(columns: ['name'])]
 #[ORM\Index(columns: ['source'])]
+#[ORM\Index(columns: ['mapping_river_ignore'])]
 #[ORM\HasLifecycleCallbacks]
 class Location
 {
@@ -119,14 +120,30 @@ class Location
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $source = null;
 
-    #[ORM\OneToOne(mappedBy: 'location', cascade: ['persist', 'remove'])]
-    private ?River $river = null;
+    #[ORM\Column(options: ['default' => false])]
+    private ?bool $mappingRiverIgnore = null;
 
+    #[ORM\Column(type: Types::DECIMAL, precision: 3, scale: 2, nullable: true)]
+    private ?string $mappingRiverSimilarity = null;
+
+    #[ORM\Column(type: Types::DECIMAL, precision: 7, scale: 4, nullable: true)]
+    private ?string $mappingRiverDistance = null;
+
+    /** @var Collection<int, River> $rivers */
+    #[ORM\ManyToMany(targetEntity: River::class, inversedBy: 'locations')]
+    private Collection $rivers;
+
+    /** @var string[]|null $names */
+    private ?array $names = null;
+
+    /**
+     */
     public function __construct()
     {
         $this->imports = new ArrayCollection();
         $this->alternateNames = new ArrayCollection();
         $this->properties = new ArrayCollection();
+        $this->rivers = new ArrayCollection();
     }
 
     /**
@@ -171,36 +188,6 @@ class Location
     public function setName(string $name): static
     {
         $this->name = $name;
-
-        return $this;
-    }
-
-    /**
-     * @param string[] $names
-     * @return $this
-     */
-    public function setNames(array $names): static
-    {
-        $uniqueNames = [];
-
-        foreach ($names as $name) {
-            $name = trim($name);
-
-            if (empty($name)) {
-                continue;
-            }
-
-            /* Remove some strings. */
-            $name = preg_replace('~ \(fluss\)~i', '', $name);
-
-            $uniqueNames[$name] = null;
-        }
-
-        $names = array_keys($uniqueNames);
-
-        sort($names);
-
-        $this->name = implode(self::NAME_SEPARATOR, $names);
 
         return $this;
     }
@@ -387,8 +374,6 @@ class Location
 
         return $this;
     }
-
-
 
     /**
      * @return DateTimeInterface|null
@@ -662,6 +647,131 @@ class Location
         return $this;
     }
 
+    /**
+     * @return string|null
+     */
+    public function getSource(): ?string
+    {
+        return $this->source;
+    }
+
+    /**
+     * @param string|null $source
+     * @return $this
+     */
+    public function setSource(?string $source): static
+    {
+        $this->source = $source;
+
+        return $this;
+    }
+
+    /**
+     * @return bool|null
+     */
+    public function getMappingRiverIgnore(): ?bool
+    {
+        return $this->mappingRiverIgnore;
+    }
+
+    /**
+     * @param bool|null $mappingRiverIgnore
+     * @return Location
+     */
+    public function setMappingRiverIgnore(?bool $mappingRiverIgnore): Location
+    {
+        $this->mappingRiverIgnore = $mappingRiverIgnore;
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getMappingRiverSimilarity(): ?string
+    {
+        return $this->mappingRiverSimilarity;
+    }
+
+    /**
+     * @param string|null $mappingRiverSimilarity
+     * @return $this
+     */
+    public function setMappingRiverSimilarity(?string $mappingRiverSimilarity): static
+    {
+        $this->mappingRiverSimilarity = $mappingRiverSimilarity;
+
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getMappingRiverDistance(): ?string
+    {
+        return $this->mappingRiverDistance;
+    }
+
+    /**
+     * @param string|null $mappingRiverDistance
+     * @return $this
+     */
+    public function setMappingRiverDistance(?string $mappingRiverDistance): static
+    {
+        $this->mappingRiverDistance = $mappingRiverDistance;
+
+        return $this;
+    }
+
+    /**
+     * @return string[]|null
+     */
+    public function getNames(): ?array
+    {
+        return $this->names;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getNamesAsString(): string|null
+    {
+        if (is_null($this->names)) {
+            return null;
+        }
+
+        return implode(', ', $this->names);
+    }
+
+    /**
+     * @param string[] $names
+     * @return self
+     */
+    public function setNames(array $names): self
+    {
+        $uniqueNames = [];
+
+        foreach ($names as $name) {
+            $name = trim($name);
+
+            if (empty($name)) {
+                continue;
+            }
+
+            /* Remove " (fluss)" from location or alternate_name string. */
+            $name = preg_replace('~ \(fluss\)~i', '', $name);
+
+            $uniqueNames[$name] = null;
+        }
+
+        $names = array_keys($uniqueNames);
+
+        sort($names);
+
+        $this->names = $names;
+
+        return $this;
+    }
+
 
 
     /**
@@ -680,7 +790,6 @@ class Location
             default => null,
         };
     }
-
 
     /**
      * Returns the relevance from given search and coordinate.
@@ -784,20 +893,6 @@ class Location
         return $relevance;
     }
 
-    public function getSource(): ?string
-    {
-        return $this->source;
-    }
-
-    public function setSource(?string $source): static
-    {
-        $this->source = $source;
-
-        return $this;
-    }
-
-
-
     /**
      * @return int|null
      */
@@ -814,24 +909,26 @@ class Location
         return null;
     }
 
-    public function getRiver(): ?River
+    /**
+     * @return Collection<int, River>
+     */
+    public function getRivers(): Collection
     {
-        return $this->river;
+        return $this->rivers;
     }
 
-    public function setRiver(?River $river): static
+    public function addRiver(River $river): static
     {
-        // unset the owning side of the relation if necessary
-        if ($river === null && $this->river !== null) {
-            $this->river->setLocation(null);
+        if (!$this->rivers->contains($river)) {
+            $this->rivers->add($river);
         }
 
-        // set the owning side of the relation if necessary
-        if ($river !== null && $river->getLocation() !== $this) {
-            $river->setLocation($this);
-        }
+        return $this;
+    }
 
-        $this->river = $river;
+    public function removeRiver(River $river): static
+    {
+        $this->rivers->removeElement($river);
 
         return $this;
     }

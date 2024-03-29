@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace App\Command\River;
 
 use App\Constants\Key\KeyArray;
+use App\Entity\Location;
 use App\Repository\LocationRepository;
 use App\Repository\RiverPartRepository;
 use App\Repository\RiverRepository;
@@ -73,6 +74,7 @@ class ShowCommand extends Command
                 new InputOption(KeyArray::POSITION, null, InputOption::VALUE_OPTIONAL, 'The latitude value.', '51.058330,13.741670'),
                 new InputOption(KeyArray::DISTANCE, null, InputOption::VALUE_OPTIONAL, 'The distance value (meters).', 2000),
                 new InputOption(KeyArray::LIMIT, null, InputOption::VALUE_OPTIONAL, 'The limit value.', 100),
+                new InputOption(KeyArray::RIVER_NAME, null, InputOption::VALUE_OPTIONAL, 'The river name value.', null),
             ])
             ->setHelp(
                 <<<'EOT'
@@ -108,12 +110,15 @@ EOT
      * @throws ParserException
      * @throws TypeInvalidException
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+     * @SuppressWarnings(PHPMD.NPathComplexity)
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $position = $input->getOption(KeyArray::POSITION);
         $distance = $input->getOption(KeyArray::DISTANCE);
         $limit = $input->getOption(KeyArray::LIMIT);
+        $riverName = $input->getOption(KeyArray::RIVER_NAME);
 
         if (!is_string($position)) {
             throw new LogicException('The given position is not a string.');
@@ -127,40 +132,50 @@ EOT
             throw new LogicException('The given limit is not a string or an integer.');
         }
 
+        if (!is_null($riverName) && !is_string($riverName)) {
+            throw new LogicException('The given name is not a string.');
+        }
+
         $coordinate = new Coordinate($position);
         $distance = (int) $distance;
         $limit = (int) $limit;
 
+        $time = microtime(true);
         $rivers = $this->riverRepository->findRivers(
             coordinate: $coordinate,
+            riverNames: is_null($riverName) ? null : explode(Location::NAME_SEPARATOR, $riverName),
             distanceMeter: $distance,
             limit: $limit
         );
+        $time = microtime(true) - $time;
 
-        $output->writeln('');
-        $output->writeln(sprintf('Coordinate: %s, %s', $coordinate->getLatitude(), $coordinate->getLongitude()));
-        $output->writeln('');
+        $output->writeln(sprintf('Coordinate: %s, %s (%3.4f seconds)'.PHP_EOL, $coordinate->getLatitude(), $coordinate->getLongitude(), $time));
 
         $output->writeln(sprintf(
-            '%-42s   %-11s   %-10s   %-9s   %s',
+            '%-10s %-42s   %-11s   %-10s   %-9s   %s',
+            'ID',
             'Name',
             'Length',
             'River Code',
             'Distance',
             'Latitude,Longitude',
         ));
+        $output->writeln(str_repeat('-', 120));
         foreach ($rivers as $river) {
             print sprintf(
-                '%-40s   %8.2f km   %12d   %6.2f km   %s,%s',
+                '%10d %-40s   %8.2f km   %12d   %6.2f km   %s,%s (%s)',
+                    $river->getId(),
                     $this->getMbStrPad($river->getName() ?? '', 40),
                     round((float) $river->getLength(), 2),
                     $river->getRiverCode(),
                     $river->getDistance(),
                     $river->getClosestCoordinate()?->getLatitude(),
-                    $river->getClosestCoordinate()?->getLongitude()
+                    $river->getClosestCoordinate()?->getLongitude(),
+                    $coordinate->getDirection(new Coordinate($river->getClosestCoordinate()?->getLatitude(), $river->getClosestCoordinate()?->getLongitude())),
             ).PHP_EOL;
         }
         print PHP_EOL;
+
 
         return Command::SUCCESS;
     }

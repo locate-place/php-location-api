@@ -99,12 +99,16 @@ abstract class BasePostGISType extends Type
      *
      * @param mixed $value
      * @param AbstractPlatform $platform
-     * @return Point|Linestring|Polygon
+     * @return Point|Linestring|Polygon|null
      * @throws TypeInvalidException
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
-    public function convertToPHPValue($value, AbstractPlatform $platform): Point|Linestring|Polygon
+    public function convertToPHPValue($value, AbstractPlatform $platform): Point|Linestring|Polygon|null
     {
+        if (is_null($value)) {
+            return null;
+        }
+
         if (!is_string($value)) {
             throw new TypeInvalidException('string', 'string');
         }

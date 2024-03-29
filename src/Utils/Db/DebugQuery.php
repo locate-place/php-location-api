@@ -64,6 +64,10 @@ readonly class DebugQuery
             throw new LogicException('The values of params must be an array.');
         }
 
+//        print $sql.PHP_EOL;
+//        print print_r($params, true).PHP_EOL;
+//        exit();
+
         return vsprintf(str_replace('?', '%s', $sql), $params);
     }
 }

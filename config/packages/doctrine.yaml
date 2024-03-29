@@ -48,7 +48,7 @@ doctrine:
                 auto_mapping: true
                 dql:
                     string_functions:
-                        ILIKE: App\DBAL\GeoLocation\Functions\Other\ILike
+                        ILIKE: \App\DBAL\General\Functions\PostgreSQL\ILike
                         string_agg: \App\DBAL\General\Functions\PostgreSQL\StringAgg
                         DISTINCT_ON: \App\DBAL\General\Functions\PostgreSQL\DistinctOn
                         DistanceOperator: App\DBAL\GeoLocation\Functions\PostgreSQL\DistanceOperator

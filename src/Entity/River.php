@@ -20,6 +20,9 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Ixnode\PhpCoordinate\Coordinate;
+use Ixnode\PhpException\Case\CaseUnsupportedException;
+use Ixnode\PhpException\Parser\ParserException;
 
 /**
  * Class River
@@ -29,9 +32,7 @@ use Doctrine\ORM\Mapping as ORM;
  * @since 0.1.0 (2024-03-21) First version.
  */
 #[ORM\Entity(repositoryClass: RiverRepository::class)]
-#[ORM\Index(columns: ['location_id'])]
 #[ORM\Index(columns: ['name'])]
-#[ORM\Index(columns: ['ignore_mapping'])]
 #[ORM\UniqueConstraint(columns: ['river_code'])]
 #[ORM\HasLifecycleCallbacks]
 class River
@@ -42,9 +43,6 @@ class River
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
-
-    #[ORM\OneToOne(inversedBy: 'river', cascade: ['persist', 'remove'])]
-    private ?Location $location = null;
 
     #[ORM\Column(type: Types::BIGINT)]
     private ?string $riverCode = null;
@@ -59,8 +57,9 @@ class River
     #[ORM\OneToMany(mappedBy: 'river', targetEntity: RiverPart::class)]
     private Collection $riverParts;
 
-    #[ORM\Column(options: ['default' => false])]
-    private ?bool $ignoreMapping = null;
+    /** @var Collection<int, Location> $locations */
+    #[ORM\ManyToMany(targetEntity: Location::class, mappedBy: 'rivers')]
+    private Collection $locations;
 
     private ?float $distance = null;
 
@@ -72,6 +71,7 @@ class River
     public function __construct()
     {
         $this->riverParts = new ArrayCollection();
+        $this->locations = new ArrayCollection();
     }
 
     /**
@@ -89,25 +89,6 @@ class River
     public function setId(int $id): static
     {
         $this->id = $id;
-
-        return $this;
-    }
-
-    /**
-     * @return Location|null
-     */
-    public function getLocation(): ?Location
-    {
-        return $this->location;
-    }
-
-    /**
-     * @param Location|null $location
-     * @return $this
-     */
-    public function setLocation(?Location $location): static
-    {
-        $this->location = $location;
 
         return $this;
     }
@@ -137,6 +118,18 @@ class River
     public function getName(): ?string
     {
         return $this->name;
+    }
+
+    /**
+     * @return string[]|null
+     */
+    public function getNames(): array|null
+    {
+        if (is_null($this->name)) {
+            return null;
+        }
+
+        return explode('/', $this->name);
     }
 
     /**
@@ -208,23 +201,41 @@ class River
     }
 
     /**
-     * @return bool|null
+     * @return Collection<int, Location>
      */
-    public function isIgnoreMapping(): ?bool
+    public function getLocations(): Collection
     {
-        return $this->ignoreMapping;
+        return $this->locations;
     }
 
     /**
-     * @param bool $ignoreMapping
+     * @param Location $location
      * @return $this
      */
-    public function setIgnoreMapping(bool $ignoreMapping): static
+    public function addLocation(Location $location): static
     {
-        $this->ignoreMapping = $ignoreMapping;
+        if (!$this->locations->contains($location)) {
+            $this->locations->add($location);
+            $location->addRiver($this);
+        }
 
         return $this;
     }
+
+    /**
+     * @param Location $location
+     * @return $this
+     */
+    public function removeLocation(Location $location): static
+    {
+        if ($this->locations->removeElement($location)) {
+            $location->removeRiver($this);
+        }
+
+        return $this;
+    }
+
+
 
     /**
      * Returns the distance in kilometers.
@@ -250,11 +261,32 @@ class River
     }
 
     /**
+     * Get the closest coordinate as Point.
+     *
      * @return Point|null
      */
-    public function getClosestCoordinate(): ?Point
+    public function getClosestCoordinate(): Point|null
     {
         return $this->closestCoordinate;
+    }
+
+    /**
+     * Get the closest coordinate as Coordinate.
+     *
+     * @return Coordinate|null
+     * @throws CaseUnsupportedException
+     * @throws ParserException
+     */
+    public function getClosestCoordinateIxnode(): Coordinate|null
+    {
+        if (is_null($this->closestCoordinate)) {
+            return null;
+        }
+
+        return new Coordinate(
+            $this->closestCoordinate->getLatitude(),
+            $this->closestCoordinate->getLongitude()
+        );
     }
 
     /**

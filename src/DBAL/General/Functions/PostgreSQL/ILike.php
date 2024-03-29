@@ -11,7 +11,7 @@
 
 declare(strict_types=1);
 
-namespace App\DBAL\GeoLocation\Functions\Other;
+namespace App\DBAL\General\Functions\PostgreSQL;
 
 use Doctrine\ORM\Query\AST\ASTException;
 use Doctrine\ORM\Query\AST\Functions\FunctionNode;

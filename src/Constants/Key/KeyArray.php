@@ -56,6 +56,8 @@ class KeyArray
 
     final public const DATA_LICENCE = 'data-licence';
 
+    final public const DEBUG = 'debug';
+
     final public const DEBUG_PAGE = 'debug-page';
 
     final public const DEBUG_SEARCH = 'debug-search';
@@ -209,6 +211,8 @@ class KeyArray
     final public const RELEVANCE_USER = 'relevance-user';
 
     final public const RESULTS = 'results';
+
+    final public const RIVER_NAME = 'river-name';
 
     final public const RIVERS = 'rivers';
 

@@ -22,6 +22,7 @@ use App\Entity\FeatureCode;
 use App\Entity\Location;
 use App\Repository\Base\BaseCoordinateRepository;
 use App\Service\LocationServiceConfig;
+use App\Utils\Db\DebugQuery;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
 use Doctrine\Persistence\ManagerRegistry;
@@ -812,9 +813,14 @@ class LocationRepository extends BaseCoordinateRepository
     /**
      * Finds rivers within location table that are not mapped to river table.
      *
+     * @param int|null $limit
+     * @param Country|null $country
      * @return array<int, Location>
      */
-    public function findRiversWithoutMapping(): array
+    public function findRiversWithoutMapping(
+        int|null $limit = null,
+        Country|null $country = null,
+    ): array
     {
         $featureCodes = [FeatureCodeDb::STM];
 
@@ -844,10 +850,23 @@ class LocationRepository extends BaseCoordinateRepository
             ->setParameter('featureCodes', $featureCodesIds)
         ;
 
+        /* Limit result by country. */
+        if ($country instanceof Country) {
+            $queryBuilder
+                ->andWhere('l.country = :country')
+                ->setParameter('country', $country);
+        }
+
         /* Only find locations that are not mapped to river table. */
         $queryBuilder
-            ->leftJoin('l.river', 'r')
-            ->andWhere('r.id IS NULL')
+            ->leftJoin('l.rivers', 'r')
+            ->andWhere(
+                $queryBuilder->expr()->andX(
+                    'r.id IS NULL',
+                    'l.mappingRiverIgnore = :mappingRiverIgnore'
+                )
+            )
+            ->setParameter('mappingRiverIgnore', false)
         ;
 
         /* 127142 = Elbe */
@@ -856,22 +875,31 @@ class LocationRepository extends BaseCoordinateRepository
 //        ;
 
         /* Sets limit. */
-        $queryBuilder->setMaxResults(1);
+        /* Limit the result by number of entities. */
+        if (is_int($limit)) {
+            $queryBuilder
+                ->setMaxResults($limit)
+            ;
+        }
 
 //        print $queryBuilder->getDQL().PHP_EOL;
 //        exit();
 
-        $time = microtime(true);
+//        $time = microtime(true);
         $result = $queryBuilder->getQuery()->getResult();
-        print sprintf('Time: %s', microtime(true) - $time).PHP_EOL;
+//        print sprintf('Time: %s', microtime(true) - $time).PHP_EOL;
 
         if (!is_array($result)) {
             throw new LogicException(sprintf('Result must be an array. "%s" given.', gettype($result)));
         }
 
-        $time = microtime(true);
+//        $debugQuery = new DebugQuery($queryBuilder);
+//        print $debugQuery->getSqlRaw().PHP_EOL;
+//        exit();
+
+//        $time = microtime(true);
         $objects = $this->hydrateObjects($result);
-        print sprintf('Time: %s', microtime(true) - $time).PHP_EOL;
+//        print sprintf('Time: %s', microtime(true) - $time).PHP_EOL;
 
         return $objects;
     }
