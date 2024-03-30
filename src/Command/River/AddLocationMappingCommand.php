@@ -42,6 +42,17 @@ use Throwable;
  * @author Björn Hempel <bjoern@hempel.li>
  * @version 0.1.0 (2024-03-23)
  * @since 0.1.0 (2024-03-23) First version.
+ * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
+ *
+ * Start mapping rivers with 10 km distance (default: -m 10000):
+ * @example bin/console river:mapping --number=10000 -f
+ *
+ * Add some more rivers with 20 km distance and ignore already ignored rivers:
+ * @example bin/console river:mapping --number=10000 -f -m 20000 -i
+ *
+ * Check rivers:
+ * bin/console river:show --river-name="Burggraben"
+ * bin/console river:show --distance=20000 --limit=30 --position="47.75768 11.11567" --river-name="Zeil"
  */
 class AddLocationMappingCommand extends Command
 {
@@ -70,6 +81,10 @@ class AddLocationMappingCommand extends Command
     private const LENGTH_LINE = 120;
 
     private const SIMILARITY_EQUAL = 1.;
+
+    private const OPTION_NAME_IGNORE_IGNORED = 'ignore-ignored';
+
+    private const OPTION_NAME_DISTANCE_MAX_NEXT_RIVER = 'distance-max-next-river';
 
     protected InputInterface $input;
 
@@ -108,7 +123,10 @@ class AddLocationMappingCommand extends Command
             ->setDefinition([
                 new InputOption(KeyArray::DEBUG, '-d', InputOption::VALUE_NONE, 'Shows debug information.'),
                 new InputOption(KeyArray::FORCE, '-f', InputOption::VALUE_NONE, 'Force import. Simply import without asking.'),
+                new InputOption(self::OPTION_NAME_IGNORE_IGNORED, '-i', InputOption::VALUE_NONE, 'Ignore ignored locations.'),
                 new InputOption(KeyArray::NUMBER, null, InputOption::VALUE_REQUIRED, 'Number of rivers to import.', self::DEFAULT_NUMBER_IMPORT),
+                new InputOption(self::OPTION_NAME_DISTANCE_MAX_NEXT_RIVER, '-m', InputOption::VALUE_REQUIRED, 'Max distance to next river.', self::DISTANCE_MAX_NEXT_RIVER),
+
             ])
             ->setHelp(
                 <<<'EOT'
@@ -391,7 +409,8 @@ EOT
      * - null: Cancel this command.
      *
      * @param Location $location
-     * @param int $number
+     * @param int $distanceMaxNextRiver
+     * @param int $printLocationNumber
      * @param bool $force
      * @param bool $debug
      * @return Location|false|null
@@ -405,18 +424,19 @@ EOT
      */
     private function doLocation(
         Location $location,
-        int $number,
+        int $distanceMaxNextRiver,
+        int $printLocationNumber,
         bool $force,
         bool $debug
     ): Location|false|null
     {
-        $this->printLocationStartHeader($location, $number);
+        $this->printLocationStartHeader($location, $printLocationNumber);
 
         /* Try to find the closest river. */
         $river = $this->riverRepository->findRiver(
             coordinate: $location->getCoordinateIxnode(),
             riverNames: $location->getNames(),
-            distanceMeter: self::DISTANCE_MAX_NEXT_RIVER
+            distanceMeter: $distanceMaxNextRiver
         );
 
         /* Set ignore mapping mode if no river was found. */
@@ -526,14 +546,23 @@ EOT
         $force = (bool) $this->input->getOption(KeyArray::FORCE);
         $debug = (bool) $this->input->getOption(KeyArray::DEBUG);
 
+        $distanceMaxNextRiver = $this->input->getOption(self::OPTION_NAME_DISTANCE_MAX_NEXT_RIVER);
+
+        if (!is_int($distanceMaxNextRiver) && !is_string($distanceMaxNextRiver)) {
+            throw new LogicException(sprintf('Option "%s" must be an integer or string.', self::OPTION_NAME_DISTANCE_MAX_NEXT_RIVER));
+        }
+
+        $distanceMaxNextRiver = (int) $distanceMaxNextRiver;
+
         foreach ($locations as $index => $location) {
 
             /* Process location. */
             $locationDb = $this->doLocation(
-                $location,
-                $index + 1,
-                $force,
-                $debug
+                location: $location,
+                distanceMaxNextRiver: $distanceMaxNextRiver,
+                printLocationNumber: $index + 1,
+                force: $force,
+                debug: $debug
             );
 
             /* Cancel current import. */
@@ -572,6 +601,8 @@ EOT
         $this->input = $input;
         $this->output = $output;
 
+
+        $ignoreIgnored = (bool) $this->input->getOption(self::OPTION_NAME_IGNORE_IGNORED);
         $number = $input->getOption(KeyArray::NUMBER);
 
         if (!is_int($number) && !is_string($number)) {
@@ -588,7 +619,8 @@ EOT
 
         $locations = $this->locationRepository->findRiversWithoutMapping(
             limit: $number,
-            country: $country
+            country: $country,
+            ignoreIgnored: $ignoreIgnored
         );
 
         if (count($locations) <= 0) {

@@ -71,7 +71,7 @@ class ShowCommand extends Command
             ->setName(strval(self::$defaultName))
             ->setDescription('Shows rivers to given location.')
             ->setDefinition([
-                new InputOption(KeyArray::POSITION, null, InputOption::VALUE_OPTIONAL, 'The latitude value.', '51.058330,13.741670'),
+                new InputOption(KeyArray::POSITION, null, InputOption::VALUE_OPTIONAL, 'The latitude value.', null),
                 new InputOption(KeyArray::DISTANCE, null, InputOption::VALUE_OPTIONAL, 'The distance value (meters).', 2000),
                 new InputOption(KeyArray::LIMIT, null, InputOption::VALUE_OPTIONAL, 'The limit value.', 100),
                 new InputOption(KeyArray::RIVER_NAME, null, InputOption::VALUE_OPTIONAL, 'The river name value.', null),
@@ -120,7 +120,7 @@ EOT
         $limit = $input->getOption(KeyArray::LIMIT);
         $riverName = $input->getOption(KeyArray::RIVER_NAME);
 
-        if (!is_string($position)) {
+        if (!is_string($position) && !is_null($position)) {
             throw new LogicException('The given position is not a string.');
         }
 
@@ -136,10 +136,24 @@ EOT
             throw new LogicException('The given name is not a string.');
         }
 
-        $coordinate = new Coordinate($position);
-        $distance = (int) $distance;
+        $coordinate = is_null($position) ? null : new Coordinate($position);
+        $distance = is_null($position) ? null : (int) $distance;
         $limit = (int) $limit;
 
+        /* Print coordinate and distance. */
+        $textCoordinate = 'Coordinate: No coordinate was given.';
+        if (!is_null($coordinate)) {
+            $textCoordinate = sprintf(
+                'Coordinate: %s, %s (%d meters).',
+                $coordinate->getLatitude(),
+                $coordinate->getLongitude(),
+                $distance
+            );
+        }
+        $output->writeln($textCoordinate);
+        $output->writeln('');
+
+        /* Try to find rivers. */
         $time = microtime(true);
         $rivers = $this->riverRepository->findRivers(
             coordinate: $coordinate,
@@ -148,11 +162,11 @@ EOT
             limit: $limit
         );
         $time = microtime(true) - $time;
-
-        $output->writeln(sprintf('Coordinate: %s, %s (%3.4f seconds)'.PHP_EOL, $coordinate->getLatitude(), $coordinate->getLongitude(), $time));
+        $output->writeln(sprintf('Time: %3.4f seconds', $time));
+        $output->writeln('');
 
         $output->writeln(sprintf(
-            '%-10s %-42s   %-11s   %-10s   %-9s   %s',
+            '%-6s %-62s   %-11s   %-10s   %-9s   %s',
             'ID',
             'Name',
             'Length',
@@ -163,15 +177,20 @@ EOT
         $output->writeln(str_repeat('-', 120));
         foreach ($rivers as $river) {
             print sprintf(
-                '%10d %-40s   %8.2f km   %12d   %6.2f km   %s,%s (%s)',
+                '%6d %-60s   %8.2f km   %12d   %6.2f km   %s,%s (%s)',
                     $river->getId(),
-                    $this->getMbStrPad($river->getName() ?? '', 40),
+                    $this->getMbStrPad($river->getName() ?? '', 60),
                     round((float) $river->getLength(), 2),
                     $river->getRiverCode(),
-                    $river->getDistance(),
-                    $river->getClosestCoordinate()?->getLatitude(),
-                    $river->getClosestCoordinate()?->getLongitude(),
-                    $coordinate->getDirection(new Coordinate($river->getClosestCoordinate()?->getLatitude(), $river->getClosestCoordinate()?->getLongitude())),
+                    $river->getDistance() ?? .0,
+                    $river->getClosestCoordinate()?->getLatitude() ?? '--',
+                    $river->getClosestCoordinate()?->getLongitude() ?? '--',
+                    $coordinate?->getDirection(
+                        new Coordinate(
+                            $river->getClosestCoordinate()?->getLatitude(),
+                            $river->getClosestCoordinate()?->getLongitude()
+                        )
+                    ) ?? '--',
             ).PHP_EOL;
         }
         print PHP_EOL;

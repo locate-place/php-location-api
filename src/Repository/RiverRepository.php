@@ -16,6 +16,7 @@ namespace App\Repository;
 use App\DBAL\GeoLocation\Converter\ValueToPoint;
 use App\Entity\River;
 use App\Entity\RiverPart;
+use App\Utils\Db\DebugQuery;
 use DateTimeImmutable;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -50,15 +51,17 @@ class RiverRepository extends ServiceEntityRepository
     /**
      * Finds rivers.
      *
-     * @param Coordinate $coordinate
+     * @param Coordinate|null $coordinate
      * @param string[]|null $riverNames
      * @param int|null $distanceMeter
      * @param int|null $limit
      * @return array<int, River>
      * @throws TypeInvalidException
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+     * @SuppressWarnings(PHPMD.NPathComplexity)
      */
     public function findRivers(
-        Coordinate $coordinate,
+        Coordinate|null $coordinate,
         array|null $riverNames = null,
         int|null $distanceMeter = null,
         int|null $limit = null
@@ -76,7 +79,7 @@ class RiverRepository extends ServiceEntityRepository
         ]);
         $queryBuilder->addOrderBy('r_id');
 
-        if (is_int($distanceMeter)) {
+        if (!is_null($coordinate) && is_int($distanceMeter)) {
             $queryBuilder
                 /* Attention: PostGIS uses lon/lat not lat/lon! */
                 ->andWhere('ST_DWithin(
@@ -96,15 +99,7 @@ class RiverRepository extends ServiceEntityRepository
             ;
         }
 
-        $queryBuilder
-            ->addSelect(sprintf(
-                'DistanceOperator(rp.coordinates, %f, %f) distance',
-                $coordinate->getLatitude(),
-                $coordinate->getLongitude()
-            ))
-            ->addOrderBy('distance', 'ASC')
-        ;
-
+        /*  Filter by river names. */
         if (is_array($riverNames)) {
             $riverNames = $this->getRiverNames($riverNames);
 
@@ -117,12 +112,29 @@ class RiverRepository extends ServiceEntityRepository
             $queryBuilder->andWhere($orX);
         }
 
+        /* Add order by. */
+        match (true) {
+            !is_null($coordinate) => $queryBuilder
+                ->addSelect(sprintf(
+                    'DistanceOperator(rp.coordinates, %f, %f) distance',
+                    $coordinate->getLatitude(),
+                    $coordinate->getLongitude()
+                ))
+                ->addOrderBy('distance', 'ASC'),
+            default => $queryBuilder
+                ->addOrderBy('r.name', 'ASC'),
+        };
+
         /* Limit the result by number of entities: if no distance was given. */
         if (is_null($distanceMeter) && is_int($limit)) {
             $queryBuilder
                 ->setMaxResults($limit * self::LIMIT_PREDICTION)
             ;
         }
+
+//        $debugQuery = new DebugQuery($queryBuilder);
+//        print $debugQuery->getSqlRaw().PHP_EOL;
+//        exit();
 
         $result = $queryBuilder->getQuery()->getScalarResult();
 

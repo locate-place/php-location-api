@@ -815,11 +815,14 @@ class LocationRepository extends BaseCoordinateRepository
      *
      * @param int|null $limit
      * @param Country|null $country
+     * @param bool $ignoreIgnored
      * @return array<int, Location>
+     * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
      */
     public function findRiversWithoutMapping(
         int|null $limit = null,
         Country|null $country = null,
+        bool $ignoreIgnored = false
     ): array
     {
         $featureCodes = [FeatureCodeDb::STM];
@@ -858,16 +861,16 @@ class LocationRepository extends BaseCoordinateRepository
         }
 
         /* Only find locations that are not mapped to river table. */
-        $queryBuilder
-            ->leftJoin('l.rivers', 'r')
-            ->andWhere(
+        $queryBuilder->leftJoin('l.rivers', 'r');
+        match ($ignoreIgnored) {
+            true => $queryBuilder->andWhere('r.id IS NULL'),
+            false => $queryBuilder->andWhere(
                 $queryBuilder->expr()->andX(
                     'r.id IS NULL',
                     'l.mappingRiverIgnore = :mappingRiverIgnore'
                 )
-            )
-            ->setParameter('mappingRiverIgnore', false)
-        ;
+            )->setParameter('mappingRiverIgnore', false),
+        };
 
         /* 127142 = Elbe */
 //        $queryBuilder
