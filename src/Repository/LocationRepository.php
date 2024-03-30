@@ -51,6 +51,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
  * @method Location[]    findAll()
  * @method Location[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
+ * @SuppressWarnings(PHPMD.ExcessiveClassLength)
  * @SuppressWarnings(PHPMD.TooManyPublicMethods)
  */
 class LocationRepository extends BaseCoordinateRepository
@@ -904,6 +905,36 @@ class LocationRepository extends BaseCoordinateRepository
     }
 
     /**
+     * Finds the first location.
+     *
+     * @param Location[] $locations
+     * @param River $river
+     * @return Location
+     * @throws CaseUnsupportedException
+     * @throws ParserException
+     */
+    private function getFirstLocation(
+        array $locations,
+        River $river
+    ): Location
+    {
+        $distances = [];
+        foreach ($locations as $location) {
+            $coordinate = $river->getClosestCoordinateIxnode();
+
+            if (is_null($coordinate)) {
+                throw new LogicException(sprintf('Unable to find closest coordinate for river "%s".', $river->getName()));
+            }
+
+            $distance = $coordinate->getDistance($location->getCoordinateIxnode(), Coordinate::RETURN_KILOMETERS);
+            $distances[$distance] = $location;
+        }
+        ksort($distances);
+
+        return $distances[array_key_first($distances)];
+    }
+
+    /**
      * Find river locations.
      *
      * @param Coordinate|null $coordinate
@@ -911,8 +942,10 @@ class LocationRepository extends BaseCoordinateRepository
      * @param Country|null $country
      * @param int|null $limit
      * @return Location[]
-     * @throws TypeInvalidException
+     * @throws CaseUnsupportedException
      * @throws ORMException
+     * @throws ParserException
+     * @throws TypeInvalidException
      */
     public function findRiversAsLocations(
         Coordinate|null $coordinate,
@@ -939,14 +972,17 @@ class LocationRepository extends BaseCoordinateRepository
             }
 
             /** @var Location[] $locations */
-            $locations = $riverProxy->getLocations();
+            $locations = $riverProxy->getLocations()->toArray();
 
             /* This river does not exist within location table. */
             if (count($locations) <= 0) {
                 continue;
             }
 
-            $location = $locations[0];
+            $location = $this->getFirstLocation(
+                $locations,
+                $river
+            );
 
             $closestCoordinate = $river->getClosestCoordinate();
 

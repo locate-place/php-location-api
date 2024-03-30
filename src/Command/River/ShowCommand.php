@@ -39,6 +39,8 @@ use Symfony\Component\Console\Output\OutputInterface;
  *
  * @example bin/console river:show --position="51.120552, 13.132655" --distance=3000 --limit=4
  * @example bin/console river:show --distance=20000 --limit=10 --position="51.067377, 13.735513"
+ * @example bin/console river:show --distance=20000 --limit=10 --position="51.067377, 13.735513" --search-type=river
+ * @example bin/console river:show --distance=20000 --limit=10 --position="51.067377, 13.735513" --search-type=location
  */
 class ShowCommand extends Command
 {
