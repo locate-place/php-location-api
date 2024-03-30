@@ -126,7 +126,6 @@ class AddLocationMappingCommand extends Command
                 new InputOption(self::OPTION_NAME_IGNORE_IGNORED, '-i', InputOption::VALUE_NONE, 'Ignore ignored locations.'),
                 new InputOption(KeyArray::NUMBER, null, InputOption::VALUE_REQUIRED, 'Number of rivers to import.', self::DEFAULT_NUMBER_IMPORT),
                 new InputOption(self::OPTION_NAME_DISTANCE_MAX_NEXT_RIVER, '-m', InputOption::VALUE_REQUIRED, 'Max distance to next river.', self::DISTANCE_MAX_NEXT_RIVER),
-
             ])
             ->setHelp(
                 <<<'EOT'
@@ -311,7 +310,7 @@ EOT
                     $river->getName(),
                     $river->getId(),
                     $river->getClosestCoordinateIxnode()?->getString() ?? 'No coordinate found.',
-                    $river->getDistance()
+                    $river->getClosestDistance()
                 )
             );
             return;
@@ -469,7 +468,7 @@ EOT
 
         $distance = is_null($river) ?
             self::DEFAULT_DISTANCE_NO_RIVER :
-            ($river->getDistance() ?? self::DEFAULT_DISTANCE_NO_RIVER)
+            ($river->getClosestDistance() ?? self::DEFAULT_DISTANCE_NO_RIVER)
         ;
 
         $ask = $debug || is_null($river) || ($distance > self::DISTANCE_MIN_ASK);
@@ -519,7 +518,7 @@ EOT
 
         $locationDb->setMappingRiverIgnore(false);
         $locationDb->setMappingRiverSimilarity((string) $similarity);
-        $locationDb->setMappingRiverDistance((string) $river->getDistance());
+        $locationDb->setMappingRiverDistance((string) $river->getClosestDistance());
         $locationDb->addRiver($riverDb);
 
         return $locationDb;
@@ -601,14 +600,12 @@ EOT
         $this->input = $input;
         $this->output = $output;
 
-
         $ignoreIgnored = (bool) $this->input->getOption(self::OPTION_NAME_IGNORE_IGNORED);
-        $number = $input->getOption(KeyArray::NUMBER);
 
+        $number = $input->getOption(KeyArray::NUMBER);
         if (!is_int($number) && !is_string($number)) {
             throw new LogicException(sprintf('Option "%s" must be an integer or string.', KeyArray::NUMBER));
         }
-
         $number = (int) $number;
 
         $country = $this->countryRepository->findOneBy(['code' => CountryDb::DE]);

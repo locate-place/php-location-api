@@ -14,11 +14,13 @@ declare(strict_types=1);
 namespace App\Repository;
 
 use App\DBAL\GeoLocation\Converter\ValueToPoint;
+use App\Entity\Country;
 use App\Entity\River;
 use App\Entity\RiverPart;
-use App\Utils\Db\DebugQuery;
 use DateTimeImmutable;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\Laminas\Hydrator\DoctrineObject as DoctrineHydrator;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
 use Ixnode\PhpCoordinate\Coordinate;
 use Ixnode\PhpException\Type\TypeInvalidException;
@@ -42,8 +44,12 @@ class RiverRepository extends ServiceEntityRepository
 
     /**
      * @param ManagerRegistry $registry
+     * @param EntityManagerInterface $entityManager
      */
-    public function __construct(ManagerRegistry $registry)
+    public function __construct(
+        ManagerRegistry $registry,
+        protected readonly EntityManagerInterface $entityManager
+    )
     {
         parent::__construct($registry, River::class);
     }
@@ -54,9 +60,12 @@ class RiverRepository extends ServiceEntityRepository
      * @param Coordinate|null $coordinate
      * @param string[]|null $riverNames
      * @param int|null $distanceMeter
+     * @param Country|null $country
      * @param int|null $limit
+     * @param bool $createRealDoctrineObject
      * @return array<int, River>
      * @throws TypeInvalidException
+     * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      * @SuppressWarnings(PHPMD.NPathComplexity)
      */
@@ -64,7 +73,9 @@ class RiverRepository extends ServiceEntityRepository
         Coordinate|null $coordinate,
         array|null $riverNames = null,
         int|null $distanceMeter = null,
-        int|null $limit = null
+        Country|null $country = null,
+        int|null $limit = null,
+        bool $createRealDoctrineObject = false
     ): array
     {
         $queryBuilder = $this->createQueryBuilder('r');
@@ -72,6 +83,12 @@ class RiverRepository extends ServiceEntityRepository
         $queryBuilder
             ->join(RiverPart::class, 'rp', 'WITH', 'r.id = rp.river')
         ;
+
+        if (!is_null($country)) {
+            $queryBuilder
+                ->andWhere('rp.country = :country')
+                ->setParameter('country', $country);
+        }
 
         $queryBuilder->select([
             'DISTINCT_ON(r.id) AS r_id',
@@ -132,25 +149,23 @@ class RiverRepository extends ServiceEntityRepository
             ;
         }
 
-//        $debugQuery = new DebugQuery($queryBuilder);
-//        print $debugQuery->getSqlRaw().PHP_EOL;
-//        exit();
-
         $result = $queryBuilder->getQuery()->getScalarResult();
 
         if (!is_array($result)) {
             throw new LogicException(sprintf('Result must be an array. "%s" given.', gettype($result)));
         }
 
-        $rivers = $this->hydrateObjects($result);
-
-        usort($rivers, fn(River $riverA, River $riverB) => $riverA->getDistance() <=> $riverB->getDistance());
+        /* Sort result by distance. */
+        usort($result, fn(array $riverA, array $riverB) => $riverA['distance'] <=> $riverB['distance']);
 
         if (is_int($limit)) {
-            $rivers = array_slice($rivers, 0, $limit);
+            $result = array_slice($result, 0, $limit);
         }
 
-        return $rivers;
+        return $this->hydrateObjects(
+            objects: $result,
+            createRealDoctrineObject: $createRealDoctrineObject
+        );
     }
 
     /**
@@ -159,35 +174,24 @@ class RiverRepository extends ServiceEntityRepository
      * @param Coordinate $coordinate
      * @param string[]|null $riverNames
      * @param int|null $distanceMeter
+     * @param Country|null $country
      * @return River|null
      * @throws TypeInvalidException
      */
     public function findRiver(
         Coordinate $coordinate,
         array|null $riverNames = null,
-        int|null $distanceMeter = null
+        int|null $distanceMeter = null,
+        Country|null $country = null
     ): River|null
     {
         $rivers = $this->findRivers(
             coordinate: $coordinate,
             riverNames: $riverNames,
             distanceMeter: $distanceMeter,
+            country: $country,
             limit: 2
         );
-
-//        if (count($rivers) > 1) {
-//            print PHP_EOL;
-//            print sprintf(
-//                    'More than one river found within %d meters ("%s" - %s, %s): %s',
-//                    $distanceMeter,
-//                    implode(Location::NAME_SEPARATOR, $riverNames),
-//                    $coordinate->getLatitude(),
-//                    $coordinate->getLongitude(),
-//                    implode(', ', array_map(fn(River $river) => sprintf('%s (%d - %f)', $river->getName(), $river->getId(), $river->getDistance()), $rivers))
-//            );
-//            print PHP_EOL;
-//            return $rivers[0];
-//        }
 
         /* No river was found. */
         if (count($rivers) <= 0) {
@@ -206,13 +210,101 @@ class RiverRepository extends ServiceEntityRepository
      * @throws TypeInvalidException
      * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
      */
-    public function hydrateObjects(array $objects, bool $distinct = false): array
+    public function hydrateObjects(
+        array $objects,
+        bool $distinct = false,
+        bool $createRealDoctrineObject = false
+    ): array
     {
         $this->riversIds = [];
 
-        $hydratedObjects = array_map(fn(array $object) => $this->hydrateObject($object, $distinct), $objects);
+        $hydratedObjects = array_map(fn(array $object) => $this->hydrateObject($object, $distinct, $createRealDoctrineObject), $objects);
 
         return array_filter($hydratedObjects);
+    }
+
+    /**
+     * Returns the doctrine array from the given db scalar object.
+     *
+     * @param array<int|string, mixed> $object
+     * @return array{id: int, riverCode: string, name: string, length: string, createdAt: DateTimeImmutable, updatedAt: DateTimeImmutable}
+     */
+    private function getDoctrineArray(array $object): array
+    {
+        /* River entity configuration. */
+        $mapping = [
+            'r_id' => ['target' => 'id', 'type' => 'int'],
+            'r_riverCode' => ['target' => 'riverCode', 'type' => 'string'],
+            'r_name' => ['target' => 'name', 'type' => 'string'],
+            'r_length' => ['target' => 'length', 'type' => 'string'],
+            'r_createdAt' => ['target' => 'createdAt', 'type' => DateTimeImmutable::class],
+            'r_updatedAt' => ['target' => 'updatedAt', 'type' => DateTimeImmutable::class],
+        ];
+
+        $data = [];
+        foreach ($object as $property => $value) {
+            /* Ignore properties which are not a component from the River entity. */
+            if (!isset($mapping[$property])) {
+                continue;
+            }
+
+            $expectedType = $mapping[$property]['type'];
+            $targetField = $mapping[$property]['target'];
+
+            /* Check the given value type. */
+            $isValid = match ($expectedType) {
+                'int' => is_int($value),
+                'string' => is_string($value),
+                default => $value instanceof $expectedType,
+            };
+
+            if (!$isValid) {
+                throw new LogicException(sprintf('%s must be a %s.', $property, $expectedType));
+            }
+
+            $data[$targetField] = $value;
+        }
+
+        /** @phpstan-ignore-next-line: All properties are checked with $isValid. */
+        return $data;
+    }
+
+    /**
+     * Hydrates the given data to a River entity.
+     *
+     * Attention: $realDoctrineObject == true produces a real Doctrine entity, but it's slow!
+     *
+     * @param array{id: int, riverCode: string, name: string, length: string, createdAt: DateTimeImmutable, updatedAt: DateTimeImmutable} $data
+     * @param bool $createRealDoctrineObject
+     * @return River
+     * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
+     */
+    private function doHydrate(
+        array $data,
+        bool $createRealDoctrineObject = false
+    ): River
+    {
+        $river = new River();
+
+        if (!$createRealDoctrineObject) {
+            $river->setId($data['id']);
+            $river->setRiverCode($data['riverCode']);
+            $river->setName($data['name']);
+            $river->setLength($data['length']);
+            $river->setCreatedAt($data['createdAt']);
+            $river->setUpdatedAt($data['updatedAt']);
+
+            return $river;
+        }
+
+        $hydrator = new DoctrineHydrator($this->entityManager);
+        $river = $hydrator->hydrate($data, $river);
+
+        if (!$river instanceof River) {
+            throw new LogicException(sprintf('River entity must be an instance of %s.', River::class));
+        }
+
+        return $river;
     }
 
     /**
@@ -220,13 +312,17 @@ class RiverRepository extends ServiceEntityRepository
      *
      * @param array<int|string, mixed> $object
      * @param bool $distinct
+     * @param bool $createRealDoctrineObject
      * @return River|null
      * @throws TypeInvalidException
      * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
-     * @SuppressWarnings(PHPMD.NPathComplexity)
      */
-    public function hydrateObject(array $object, bool $distinct = false): River|null
+    private function hydrateObject(
+        array $object,
+        bool $distinct = false,
+        bool $createRealDoctrineObject = false
+    ): River|null
     {
         $id = $object['r_id'] ?? null;
 
@@ -242,52 +338,13 @@ class RiverRepository extends ServiceEntityRepository
             return null;
         }
 
-        $river = new River();
+        $river = $this->doHydrate(
+            $this->getDoctrineArray($object),
+            $createRealDoctrineObject
+        );
 
         foreach ($object as $property => $value) {
             switch ($property) {
-                case 'r_id':
-                    if (!is_int($value)) {
-                        throw new LogicException('r_id must be an integer.');
-                    }
-                    $river->setId($value);
-                    break;
-
-                case 'r_riverCode':
-                    if (!is_string($value)) {
-                        throw new LogicException('r_riverCode must be a string.');
-                    }
-                    $river->setRiverCode($value);
-                    break;
-
-                case 'r_name':
-                    if (!is_string($value)) {
-                        throw new LogicException('r_name must be a string.');
-                    }
-                    $river->setName($value);
-                    break;
-
-                case 'r_length':
-                    if (!is_string($value)) {
-                        throw new LogicException('r_length must be a string.');
-                    }
-                    $river->setLength($value);
-                    break;
-
-                case 'r_createdAt':
-                    if (!$value instanceof DateTimeImmutable) {
-                        throw new LogicException('r_createdAt must be an instance of DateTimeImmutable.');
-                    }
-                    $river->setCreatedAt($value);
-                    break;
-
-                case 'r_updatedAt':
-                    if (!$value instanceof DateTimeImmutable) {
-                        throw new LogicException('r_updatedAt must be an instance of DateTimeImmutable.');
-                    }
-                    $river->setUpdatedAt($value);
-                    break;
-
                 case 'closest_point':
                     if (!is_string($value)) {
                         throw new LogicException('closest_point must be a string.');
@@ -299,11 +356,8 @@ class RiverRepository extends ServiceEntityRepository
                     if (!is_string($value)) {
                         throw new LogicException('distance must be a string.');
                     }
-                    $river->setDistance((float) sprintf('%.3f', ((float)$value) / 1000));
+                    $river->setClosestDistance((float) sprintf('%.3f', ((float)$value) / 1000));
                     break;
-
-                default:
-                    throw new LogicException(sprintf('Unknown property "%s".', $property));
             }
         }
 

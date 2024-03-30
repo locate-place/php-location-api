@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "3c313c7957dc55d158a47f6ddc43bf23",
+    "content-hash": "fcd9fa2d1fe48aee5b8b0bcb7583c4a0",
     "packages": [
         {
             "name": "adhocore/cli",
@@ -865,6 +865,72 @@
                 }
             ],
             "time": "2023-11-15T20:01:50+00:00"
+        },
+        {
+            "name": "doctrine/doctrine-laminas-hydrator",
+            "version": "3.4.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/doctrine/doctrine-laminas-hydrator.git",
+                "reference": "3026b89388106f1a4404d1be569e81221b568563"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/doctrine/doctrine-laminas-hydrator/zipball/3026b89388106f1a4404d1be569e81221b568563",
+                "reference": "3026b89388106f1a4404d1be569e81221b568563",
+                "shasum": ""
+            },
+            "require": {
+                "doctrine/collections": "^1.8.0 || ^2.0.0",
+                "doctrine/inflector": "^2.0.4",
+                "doctrine/persistence": "^2.5.0 || ^3.0.0",
+                "ext-ctype": "*",
+                "laminas/laminas-hydrator": "^4.13.0",
+                "laminas/laminas-stdlib": "^3.14.0",
+                "php": "~8.0.0 || ~8.1.0 || ~8.2.0 || ~8.3.0"
+            },
+            "require-dev": {
+                "doctrine/coding-standard": "^12.0.0",
+                "phpstan/phpstan": "^1.9.2",
+                "phpunit/phpunit": "^9.5.26",
+                "vimeo/psalm": "^5.15.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Doctrine\\Laminas\\Hydrator\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "Doctrine hydrators for Laminas applications",
+            "keywords": [
+                "doctrine",
+                "hydrator",
+                "laminas"
+            ],
+            "support": {
+                "issues": "https://github.com/doctrine/doctrine-laminas-hydrator/issues",
+                "rss": "https://github.com/doctrine/doctrine-laminas-hydrator/releases.atom",
+                "source": "https://github.com/doctrine/doctrine-laminas-hydrator"
+            },
+            "funding": [
+                {
+                    "url": "https://www.doctrine-project.org/sponsorship.html",
+                    "type": "custom"
+                },
+                {
+                    "url": "https://www.patreon.com/phpdoctrine",
+                    "type": "patreon"
+                },
+                {
+                    "url": "https://tidelift.com/funding/github/packagist/doctrine%2Fdoctrine-laminas-hydrator",
+                    "type": "tidelift"
+                }
+            ],
+            "time": "2023-11-21T16:38:19+00:00"
         },
         {
             "name": "doctrine/doctrine-migrations-bundle",
@@ -2556,6 +2622,142 @@
                 "source": "https://github.com/ixnode/php-web-crawler/tree/0.1.24"
             },
             "time": "2024-02-28T01:18:23+00:00"
+        },
+        {
+            "name": "laminas/laminas-hydrator",
+            "version": "4.15.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/laminas/laminas-hydrator.git",
+                "reference": "43ccca88313fdcceca37865109dffc69ecd2cf8f"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/laminas/laminas-hydrator/zipball/43ccca88313fdcceca37865109dffc69ecd2cf8f",
+                "reference": "43ccca88313fdcceca37865109dffc69ecd2cf8f",
+                "shasum": ""
+            },
+            "require": {
+                "laminas/laminas-stdlib": "^3.3",
+                "php": "~8.1.0 || ~8.2.0 || ~8.3.0",
+                "webmozart/assert": "^1.10"
+            },
+            "conflict": {
+                "laminas/laminas-servicemanager": "<3.14.0",
+                "zendframework/zend-hydrator": "*"
+            },
+            "require-dev": {
+                "laminas/laminas-coding-standard": "~2.5.0",
+                "laminas/laminas-eventmanager": "^3.12",
+                "laminas/laminas-modulemanager": "^2.15.0",
+                "laminas/laminas-serializer": "^2.17.0",
+                "laminas/laminas-servicemanager": "^3.22.1",
+                "phpbench/phpbench": "^1.2.14",
+                "phpunit/phpunit": "^10.4.2",
+                "psalm/plugin-phpunit": "^0.18.4",
+                "vimeo/psalm": "^5.15"
+            },
+            "suggest": {
+                "laminas/laminas-eventmanager": "^3.2, to support aggregate hydrator usage",
+                "laminas/laminas-serializer": "^2.9, to use the SerializableStrategy",
+                "laminas/laminas-servicemanager": "^3.14, to support hydrator plugin manager usage"
+            },
+            "type": "library",
+            "extra": {
+                "laminas": {
+                    "component": "Laminas\\Hydrator",
+                    "config-provider": "Laminas\\Hydrator\\ConfigProvider"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Laminas\\Hydrator\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "BSD-3-Clause"
+            ],
+            "description": "Serialize objects to arrays, and vice versa",
+            "homepage": "https://laminas.dev",
+            "keywords": [
+                "hydrator",
+                "laminas"
+            ],
+            "support": {
+                "chat": "https://laminas.dev/chat",
+                "docs": "https://docs.laminas.dev/laminas-hydrator/",
+                "forum": "https://discourse.laminas.dev",
+                "issues": "https://github.com/laminas/laminas-hydrator/issues",
+                "rss": "https://github.com/laminas/laminas-hydrator/releases.atom",
+                "source": "https://github.com/laminas/laminas-hydrator"
+            },
+            "funding": [
+                {
+                    "url": "https://funding.communitybridge.org/projects/laminas-project",
+                    "type": "community_bridge"
+                }
+            ],
+            "time": "2023-11-08T11:11:45+00:00"
+        },
+        {
+            "name": "laminas/laminas-stdlib",
+            "version": "3.19.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/laminas/laminas-stdlib.git",
+                "reference": "6a192dd0882b514e45506f533b833b623b78fff3"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/laminas/laminas-stdlib/zipball/6a192dd0882b514e45506f533b833b623b78fff3",
+                "reference": "6a192dd0882b514e45506f533b833b623b78fff3",
+                "shasum": ""
+            },
+            "require": {
+                "php": "~8.1.0 || ~8.2.0 || ~8.3.0"
+            },
+            "conflict": {
+                "zendframework/zend-stdlib": "*"
+            },
+            "require-dev": {
+                "laminas/laminas-coding-standard": "^2.5",
+                "phpbench/phpbench": "^1.2.15",
+                "phpunit/phpunit": "^10.5.8",
+                "psalm/plugin-phpunit": "^0.18.4",
+                "vimeo/psalm": "^5.20.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Laminas\\Stdlib\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "BSD-3-Clause"
+            ],
+            "description": "SPL extensions, array utilities, error handlers, and more",
+            "homepage": "https://laminas.dev",
+            "keywords": [
+                "laminas",
+                "stdlib"
+            ],
+            "support": {
+                "chat": "https://laminas.dev/chat",
+                "docs": "https://docs.laminas.dev/laminas-stdlib/",
+                "forum": "https://discourse.laminas.dev",
+                "issues": "https://github.com/laminas/laminas-stdlib/issues",
+                "rss": "https://github.com/laminas/laminas-stdlib/releases.atom",
+                "source": "https://github.com/laminas/laminas-stdlib"
+            },
+            "funding": [
+                {
+                    "url": "https://funding.communitybridge.org/projects/laminas-project",
+                    "type": "community_bridge"
+                }
+            ],
+            "time": "2024-01-19T12:39:49+00:00"
         },
         {
             "name": "monolog/monolog",

@@ -61,7 +61,7 @@ class River
     #[ORM\ManyToMany(targetEntity: Location::class, mappedBy: 'rivers')]
     private Collection $locations;
 
-    private ?float $distance = null;
+    private ?float $closestDistance = null;
 
     private ?Point $closestCoordinate = null;
 
@@ -242,20 +242,20 @@ class River
      *
      * @return float|null
      */
-    public function getDistance(): ?float
+    public function getClosestDistance(): ?float
     {
-        return $this->distance;
+        return $this->closestDistance;
     }
 
     /**
      * Sets the distance in kilometers.
      *
-     * @param float $distance
+     * @param float $closestDistance
      * @return River
      */
-    public function setDistance(float $distance): River
+    public function setClosestDistance(float $closestDistance): River
     {
-        $this->distance = $distance;
+        $this->closestDistance = $closestDistance;
 
         return $this;
     }

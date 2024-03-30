@@ -15,14 +15,16 @@ namespace App\Repository;
 
 use App\Constants\DB\FeatureClass as DbFeatureClass;
 use App\Constants\DB\FeatureCode as DbFeatureCode;
-use App\Constants\DB\FeatureCode as FeatureCodeDb;
 use App\Constants\Language\LanguageCode;
+use App\Entity\AlternateName;
 use App\Entity\Country;
 use App\Entity\FeatureCode;
 use App\Entity\Location;
+use App\Entity\River;
 use App\Repository\Base\BaseCoordinateRepository;
 use App\Service\LocationServiceConfig;
-use App\Utils\Db\DebugQuery;
+use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Exception\ORMException;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
 use Doctrine\Persistence\ManagerRegistry;
@@ -55,13 +57,17 @@ class LocationRepository extends BaseCoordinateRepository
 {
     /**
      * @param ManagerRegistry $registry
+     * @param EntityManagerInterface $entityManager
      * @param LocationServiceConfig $locationCountryService
      * @param ParameterBagInterface $parameterBag
+     * @param RiverRepository $riverRepository
      */
     public function __construct(
         protected ManagerRegistry $registry,
+        protected EntityManagerInterface $entityManager,
         protected LocationServiceConfig $locationCountryService,
-        protected ParameterBagInterface $parameterBag
+        protected ParameterBagInterface $parameterBag,
+        protected RiverRepository $riverRepository,
     )
     {
         parent::__construct($registry, $parameterBag);
@@ -825,19 +831,18 @@ class LocationRepository extends BaseCoordinateRepository
         bool $ignoreIgnored = false
     ): array
     {
-        $featureCodes = [FeatureCodeDb::STM];
+        $featureCodes = [DbFeatureCode::STM];
 
         $featureCodesIds = $this->translateFeatureCodesToIds($featureCodes);
 
         $queryBuilder = $this->createQueryBuilder('l');
 
         $queryBuilder
-            ->join('l.alternateNames', 'a')
-            ->andWhere(
-                $queryBuilder->expr()->orX(
-                    $queryBuilder->expr()->isNull('a.isoLanguage'),
-                    $queryBuilder->expr()->in('a.isoLanguage', ':isoLanguages')
-                )
+            ->leftJoin(
+                AlternateName::class,
+                'a',
+                'WITH',
+                'l.id = a.location AND (a.isoLanguage IS NULL OR a.isoLanguage IN (:isoLanguages))'
             )
             ->setParameter('isoLanguages', [LanguageCode::DE, LanguageCode::EN])
         ;
@@ -872,22 +877,22 @@ class LocationRepository extends BaseCoordinateRepository
             )->setParameter('mappingRiverIgnore', false),
         };
 
-        /* 127142 = Elbe */
+//        /* 127142 = Elbe */
 //        $queryBuilder
 //            ->andWhere('l.id = 127142')
 //        ;
 
-        /* Sets limit. */
+//        /* 48372 = Prießnitz */
+//        $queryBuilder
+//            ->andWhere('l.id = 48372')
+//        ;
+
         /* Limit the result by number of entities. */
         if (is_int($limit)) {
             $queryBuilder
                 ->setMaxResults($limit)
             ;
         }
-
-//        $debugQuery = new DebugQuery($queryBuilder);
-//        print $debugQuery->getSqlRaw().PHP_EOL;
-//        exit();
 
         $result = $queryBuilder->getQuery()->getResult();
 
@@ -896,6 +901,66 @@ class LocationRepository extends BaseCoordinateRepository
         }
 
         return $this->hydrateObjects($result);
+    }
+
+    /**
+     * Find river locations.
+     *
+     * @param Coordinate|null $coordinate
+     * @param int|null $distanceMeter
+     * @param Country|null $country
+     * @param int|null $limit
+     * @return Location[]
+     * @throws TypeInvalidException
+     * @throws ORMException
+     */
+    public function findRiversAsLocations(
+        Coordinate|null $coordinate,
+        int|null $distanceMeter = null,
+        Country|null $country = null,
+        int|null $limit = null
+    ): array
+    {
+        $rivers = $this->riverRepository->findRivers(
+            coordinate: $coordinate,
+            distanceMeter: $distanceMeter,
+            country: $country,
+            limit: $limit
+        );
+
+        $riverLocations = [];
+
+        foreach ($rivers as $river) {
+            /* Use doctrine proxy because findRivers returns "non-persistent" doctrine objects. */
+            $riverProxy = $this->entityManager->getReference(River::class, $river->getId());
+
+            if (is_null($riverProxy)) {
+                throw new LogicException(sprintf('Could not find river with id "%s".', $river->getId()));
+            }
+
+            /** @var Location[] $locations */
+            $locations = $riverProxy->getLocations();
+
+            /* This river does not exist within location table. */
+            if (count($locations) <= 0) {
+                continue;
+            }
+
+            $location = $locations[0];
+
+            $closestCoordinate = $river->getClosestCoordinate();
+
+            if (is_null($closestCoordinate)) {
+                throw new LogicException(sprintf('Could not find closest coordinate for river with id "%s".', $river->getId()));
+            }
+
+            /* Set the new closest coordinate. */
+            $location->setCoordinate($closestCoordinate);
+
+            $riverLocations[] = $location;
+        }
+
+        return $riverLocations;
     }
 
     /**
@@ -925,12 +990,19 @@ class LocationRepository extends BaseCoordinateRepository
                 throw new LogicException('Location was not found within db result.');
             }
 
-            if (!is_string($value)) {
-                throw new LogicException('$value expected to be a string.');
+            if (!is_string($value) && !is_null($value)) {
+                throw new LogicException(sprintf('$value expected to be a string or null. "%s" given.', gettype($value)));
             }
 
             match ($property) {
-                'alternateNames' => $location->setNames(explode(Location::NAME_SEPARATOR, $value.Location::NAME_SEPARATOR.$location->getName())),
+                'alternateNames' => $location->setNames(
+                    explode(
+                        Location::NAME_SEPARATOR,
+                        (
+                            is_null($value) ? '' : $value.Location::NAME_SEPARATOR
+                        ).$location->getName()
+                    )
+                ),
                 default => throw new LogicException(sprintf('Unknown property "%s".', $property)),
             };
         }

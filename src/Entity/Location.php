@@ -433,6 +433,14 @@ class Location
     }
 
     /**
+     * @return bool
+     */
+    public function isRiver(): bool
+    {
+        return $this->getFeatureCode()?->getCode() === FeatureCodeConstants::STM;
+    }
+
+    /**
      * @return Country|null
      */
     public function getCountry(): ?Country
@@ -723,6 +731,38 @@ class Location
     }
 
     /**
+     * @return Collection<int, River>
+     */
+    public function getRivers(): Collection
+    {
+        return $this->rivers;
+    }
+
+    /**
+     * @param River $river
+     * @return $this
+     */
+    public function addRiver(River $river): static
+    {
+        if (!$this->rivers->contains($river)) {
+            $this->rivers->add($river);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param River $river
+     * @return $this
+     */
+    public function removeRiver(River $river): static
+    {
+        $this->rivers->removeElement($river);
+
+        return $this;
+    }
+
+    /**
      * @return string[]|null
      */
     public function getNames(): ?array
@@ -910,26 +950,22 @@ class Location
     }
 
     /**
-     * @return Collection<int, River>
+     * Returns the first river.
+     *
+     * @return River|false|null
      */
-    public function getRivers(): Collection
+    public function getRiver(): River|false|null
     {
-        return $this->rivers;
-    }
-
-    public function addRiver(River $river): static
-    {
-        if (!$this->rivers->contains($river)) {
-            $this->rivers->add($river);
+        if (!$this->isRiver()) {
+            return null;
         }
 
-        return $this;
-    }
+        $rivers = $this->getRivers();
 
-    public function removeRiver(River $river): static
-    {
-        $this->rivers->removeElement($river);
+        if (count($rivers) <= 0) {
+            return false;
+        }
 
-        return $this;
+        return $rivers[0];
     }
 }
