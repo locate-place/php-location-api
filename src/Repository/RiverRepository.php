@@ -14,10 +14,8 @@ declare(strict_types=1);
 namespace App\Repository;
 
 use App\DBAL\GeoLocation\Converter\ValueToPoint;
-use App\Entity\Location;
 use App\Entity\River;
 use App\Entity\RiverPart;
-use App\Utils\Db\DebugQuery;
 use DateTimeImmutable;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -110,18 +108,12 @@ class RiverRepository extends ServiceEntityRepository
         if (is_array($riverNames)) {
             $riverNames = $this->getRiverNames($riverNames);
 
-//            print 'Used river names to search:'.PHP_EOL;
-//            print '---------------------------'.PHP_EOL;
-//            foreach ($riverNames as $name) {
-//                print '- '.$name.PHP_EOL;
-//            }
-//            print PHP_EOL;
-
             $orX = $queryBuilder->expr()->orX();
             foreach ($riverNames as $index => $riverName) {
                 $orX->add($queryBuilder->expr()->like('r.name', ':name'.$index));
                 $queryBuilder->setParameter('name'.$index, '%'.$riverName.'%');
             }
+
             $queryBuilder->andWhere($orX);
         }
 
@@ -131,10 +123,6 @@ class RiverRepository extends ServiceEntityRepository
                 ->setMaxResults($limit * self::LIMIT_PREDICTION)
             ;
         }
-
-//        $debugQuery = new DebugQuery($queryBuilder);
-//        print $debugQuery->getSqlRaw();
-//        exit();
 
         $result = $queryBuilder->getQuery()->getScalarResult();
 

@@ -882,26 +882,17 @@ class LocationRepository extends BaseCoordinateRepository
             ;
         }
 
-//        print $queryBuilder->getDQL().PHP_EOL;
+//        $debugQuery = new DebugQuery($queryBuilder);
+//        print $debugQuery->getSqlRaw().PHP_EOL;
 //        exit();
 
-//        $time = microtime(true);
         $result = $queryBuilder->getQuery()->getResult();
-//        print sprintf('Time: %s', microtime(true) - $time).PHP_EOL;
 
         if (!is_array($result)) {
             throw new LogicException(sprintf('Result must be an array. "%s" given.', gettype($result)));
         }
 
-//        $debugQuery = new DebugQuery($queryBuilder);
-//        print $debugQuery->getSqlRaw().PHP_EOL;
-//        exit();
-
-//        $time = microtime(true);
-        $objects = $this->hydrateObjects($result);
-//        print sprintf('Time: %s', microtime(true) - $time).PHP_EOL;
-
-        return $objects;
+        return $this->hydrateObjects($result);
     }
 
     /**
