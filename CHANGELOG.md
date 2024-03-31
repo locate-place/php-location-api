@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Releases
 
+### [0.1.59] - 2024-03-31
+
+* Add rivers to database and API endpoint
+  * Add river length to properties
+  * Adds a river table
+  * etc.
+* Add location:show command
+* Add river:show command
+* Add DebugQuery class
+* Add river import commands
+  * Add river:mapping command
+  * Adds a river transfer command
+* Add string_agg dbal function
+* Add PostgreSQL optimizations
+* Adds MigrationEventSubscriber to ignore creating the public and topology schema
+* Improve make:migration command
+  * Add topology. to doctrine schema_filter
+* Doctrine dbal refactoring
+* Add River entity and import scripts
+* Change API CORS
+
 ### [0.1.58] - 2024-03-16
 
 * Add GeographyPolygonType and GeometryPolygonType
