@@ -41,8 +41,8 @@ readonly class DebugQuery
 
         try {
             $this->queryBuilder->getQuery()->getScalarResult();
-        } catch (Throwable) {
-
+        } catch (Throwable $e) {
+            print $e->getMessage();
         }
     }
 

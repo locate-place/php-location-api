@@ -136,6 +136,8 @@ class Location
     /** @var string[]|null $names */
     private ?array $names = null;
 
+    private ?float $closestDistance = null;
+
     /**
      */
     public function __construct()
@@ -808,6 +810,29 @@ class Location
         sort($names);
 
         $this->names = $names;
+
+        return $this;
+    }
+
+    /**
+     * Returns the distance in kilometers.
+     *
+     * @return float|null
+     */
+    public function getClosestDistance(): ?float
+    {
+        return $this->closestDistance;
+    }
+
+    /**
+     * Sets the distance in kilometers.
+     *
+     * @param float $closestDistance
+     * @return self
+     */
+    public function setClosestDistance(float $closestDistance): self
+    {
+        $this->closestDistance = $closestDistance;
 
         return $this;
     }

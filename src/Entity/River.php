@@ -251,9 +251,9 @@ class River
      * Sets the distance in kilometers.
      *
      * @param float $closestDistance
-     * @return River
+     * @return self
      */
-    public function setClosestDistance(float $closestDistance): River
+    public function setClosestDistance(float $closestDistance): self
     {
         $this->closestDistance = $closestDistance;
 
@@ -291,9 +291,9 @@ class River
 
     /**
      * @param Point|null $closestCoordinate
-     * @return River
+     * @return self
      */
-    public function setClosestCoordinate(?Point $closestCoordinate): River
+    public function setClosestCoordinate(?Point $closestCoordinate): self
     {
         $this->closestCoordinate = $closestCoordinate;
 

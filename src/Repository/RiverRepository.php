@@ -93,11 +93,13 @@ class RiverRepository extends ServiceEntityRepository
                 ->setParameter('country', $country);
         }
 
-        $queryBuilder->select([
-            'DISTINCT_ON(r.id) AS r_id',
-            'r'
-        ]);
-        $queryBuilder->addOrderBy('r_id');
+        $queryBuilder
+            ->select([
+                'DISTINCT_ON(r.id) AS r_id',
+                'r'
+            ])
+            ->addOrderBy('r_id')
+        ;
 
         if (!is_null($coordinate) && is_int($distanceMeter)) {
             $queryBuilder

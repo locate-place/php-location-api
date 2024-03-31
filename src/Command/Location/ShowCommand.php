@@ -11,17 +11,15 @@
 
 declare(strict_types=1);
 
-namespace App\Command\River;
+namespace App\Command\Location;
 
 use App\Constants\Key\KeyArray;
 use App\Constants\Language\LanguageCode;
-use App\Entity\Location;
 use App\Repository\LocationRepository;
 use App\Repository\RiverPartRepository;
 use App\Repository\RiverRepository;
 use App\Service\LocationContainer;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\Exception\ORMException;
 use Ixnode\PhpCoordinate\Coordinate;
 use Ixnode\PhpException\Case\CaseUnsupportedException;
 use Ixnode\PhpException\Class\ClassInvalidException;
@@ -44,27 +42,19 @@ use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
  * @version 0.1.0 (2024-03-23)
  * @since 0.1.0 (2024-03-23) First version.
  *
- * @example bin/console river:show --position="51.120552, 13.132655" --distance=3000 --limit=4
- * @example bin/console river:show --distance=20000 --limit=10 --position="51.067377, 13.735513"
- * @example bin/console river:show --distance=20000 --limit=10 --position="51.067377, 13.735513" -s river
- * @example bin/console river:show --distance=20000 --limit=10 --position="51.067377, 13.735513" -s location
- * @example bin/console river:show --distance=20000 --limit=10 --position="51.067377, 13.735513" -s location -l en
+ * @example bin/console location:show --position="51.120552, 13.132655" --distance=3000 --limit=4
+ * @example bin/console location:show --distance=20000 --limit=10 --position="51.067377, 13.735513"
+ * @example bin/console location:show --distance=20000 --limit=10 --position="51.067377, 13.735513" -l en
  */
 class ShowCommand extends Command
 {
-    protected static $defaultName = 'river:show';
+    protected static $defaultName = 'location:show';
 
     protected InputInterface $input;
 
     protected OutputInterface $output;
 
-    private const OPTION_NAME_SEARCH_TYPE = 'search-type';
-
     private const OPTION_NAME_ISO_LANGUAGE = 'iso-language';
-
-    private const SEARCH_TYPE_RIVER = 'river';
-
-    private const SEARCH_TYPE_LOCATION = 'location';
 
     private const LENGTH_LINE = 120;
 
@@ -102,14 +92,12 @@ class ShowCommand extends Command
                 new InputOption(KeyArray::POSITION, null, InputOption::VALUE_OPTIONAL, 'The latitude value.', null),
                 new InputOption(KeyArray::DISTANCE, null, InputOption::VALUE_OPTIONAL, 'The distance value (meters).', 2000),
                 new InputOption(KeyArray::LIMIT, null, InputOption::VALUE_OPTIONAL, 'The limit value.', 100),
-                new InputOption(KeyArray::RIVER_NAME, null, InputOption::VALUE_OPTIONAL, 'The river name value.', null),
-                new InputOption(self::OPTION_NAME_SEARCH_TYPE, '-s', InputOption::VALUE_REQUIRED, sprintf('The search type. Possible values: %s', implode(', ', [self::SEARCH_TYPE_RIVER, self::SEARCH_TYPE_LOCATION])), self::SEARCH_TYPE_LOCATION),
                 new InputOption(self::OPTION_NAME_ISO_LANGUAGE, '-l', InputOption::VALUE_REQUIRED, sprintf('The search type. Possible values: %s', implode(', ', [LanguageCode::DE, LanguageCode::EN, 'etc.'])), LanguageCode::DE),
             ])
             ->setHelp(
                 <<<'EOT'
 
-The <info>river:show</info> shows rivers to given location.
+The <info>location:show</info> shows rivers to given location.
 
 EOT
             );
@@ -138,67 +126,13 @@ EOT
     private function printHeader(): void
     {
         $this->output->writeln(sprintf(
-            '%-6s %-62s   %-11s   %-10s   %-9s   %s',
+            '%-6s %-62s   %-9s   %s',
             'ID',
             'Name',
-            'Length',
-            'River Code',
             'Distance',
             'Latitude,Longitude',
         ));
         $this->output->writeln(str_repeat('-', self::LENGTH_LINE));
-    }
-
-    /**
-     * Requests rivers and shows them.
-     *
-     * @param Coordinate|null $coordinate
-     * @param string[]|null $riverNames
-     * @param int|null $distanceMeter
-     * @param int $limit
-     * @return void
-     * @throws CaseUnsupportedException
-     * @throws ParserException
-     * @throws TypeInvalidException
-     */
-    private function showRivers(
-        Coordinate|null $coordinate,
-        array|null $riverNames,
-        int|null $distanceMeter,
-        int $limit
-    ): void
-    {
-        /* Try to find rivers. */
-        $rivers = $this->riverRepository->findRivers(
-            coordinate: $coordinate,
-            riverNames: $riverNames,
-            distanceMeter: $distanceMeter,
-            limit: $limit,
-            onlyMapped: true
-        );
-
-        $this->printHeader();
-
-        foreach ($rivers as $river) {
-            $this->output->writeln(sprintf(
-                '%6d %-60s   %8.2f km   %12d   %6.2f km   %s,%s (%s)',
-                $river->getId(),
-                $this->getMbStrPad($river->getName() ?? '', 60),
-                round((float) $river->getLength(), 2),
-                $river->getRiverCode(),
-                $river->getClosestDistance() ?? .0,
-                $river->getClosestCoordinate()?->getLatitude() ?? '--',
-                $river->getClosestCoordinate()?->getLongitude() ?? '--',
-                $coordinate?->getDirection(
-                    new Coordinate(
-                        $river->getClosestCoordinate()?->getLatitude(),
-                        $river->getClosestCoordinate()?->getLongitude()
-                    )
-                ) ?? '--',
-            ));
-        }
-
-        $this->output->writeln('');
     }
 
     /**
@@ -209,14 +143,13 @@ EOT
      * @param int $limit
      * @return void
      * @throws CaseUnsupportedException
-     * @throws ORMException
-     * @throws ParserException
-     * @throws TypeInvalidException
      * @throws ClassInvalidException
      * @throws ClientExceptionInterface
+     * @throws ParserException
      * @throws RedirectionExceptionInterface
      * @throws ServerExceptionInterface
      * @throws TransportExceptionInterface
+     * @throws TypeInvalidException
      */
     private function showLocations(
         Coordinate|null $coordinate,
@@ -234,28 +167,21 @@ EOT
             coordinate: $coordinate,
             distanceMeter: $distanceMeter,
             limit: $limit,
+            useLocationPart: true
         );
 
         $this->printHeader();
 
         foreach ($locations as $location) {
-            $river = $location->getRiver();
-
-            if (is_null($river) || $river === false) {
-                continue;
-            }
-
             $riverCoordinate = $location->getCoordinateIxnode();
 
             $distanceMeter = is_null($coordinate) ? '--' : $coordinate->getDistance($riverCoordinate, Coordinate::RETURN_KILOMETERS);
             $direction = is_null($coordinate) ? '--' : $coordinate->getDirection($riverCoordinate);
 
             $this->output->writeln(sprintf(
-                '%6d %-60s   %8.2f km   %12d   %6.2f km   %s,%s (%s)',
+                '%6d %-60s   %6.2f km   %s,%s (%s)',
                 $location->getId(),
                 $this->getMbStrPad($this->locationContainer->getAlternateName($location, $isoLanguage) ?? '--', 60),
-                round((float) $river->getLength(), 2),
-                $river->getRiverCode(),
                 $distanceMeter,
                 $riverCoordinate->getLatitude(),
                 $riverCoordinate->getLongitude(),
@@ -273,9 +199,13 @@ EOT
      * @param OutputInterface $output
      * @return int
      * @throws CaseUnsupportedException
+     * @throws ClassInvalidException
+     * @throws ClientExceptionInterface
      * @throws ParserException
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
      * @throws TypeInvalidException
-     * @throws ORMException
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      * @SuppressWarnings(PHPMD.NPathComplexity)
@@ -300,18 +230,7 @@ EOT
             throw new LogicException('The given limit is not a string or an integer.');
         }
 
-        $riverName = $input->getOption(KeyArray::RIVER_NAME);
-        if (!is_null($riverName) && !is_string($riverName)) {
-            throw new LogicException('The given name is not a string.');
-        }
-
-        $searchType = $this->input->getOption(self::OPTION_NAME_SEARCH_TYPE);
-        if (!is_string($searchType) || !in_array($searchType, [self::SEARCH_TYPE_RIVER, self::SEARCH_TYPE_LOCATION])) {
-            throw new LogicException(sprintf('Invalid option "%s". Allowed: %s', self::OPTION_NAME_SEARCH_TYPE, implode(', ', [self::SEARCH_TYPE_RIVER, self::SEARCH_TYPE_LOCATION])));
-        }
-
         $coordinate = is_null($position) ? null : new Coordinate($position);
-        $riverNames = is_null($riverName) ? null : explode(Location::NAME_SEPARATOR, $riverName);
         $distanceMeter = is_null($position) ? null : (int) $distanceMeter;
         $limit = (int) $limit;
 
@@ -329,20 +248,11 @@ EOT
         $output->writeln('');
 
         $time = microtime(true);
-        match ($searchType) {
-            self::SEARCH_TYPE_RIVER => $this->showRivers(
-                coordinate: $coordinate,
-                riverNames: $riverNames,
-                distanceMeter: $distanceMeter,
-                limit: $limit
-            ),
-            self::SEARCH_TYPE_LOCATION => $this->showLocations(
-                coordinate: $coordinate,
-                distanceMeter: $distanceMeter,
-                limit: $limit
-            ),
-            default => throw new LogicException(sprintf('Invalid option "%s". Allowed: %s', self::OPTION_NAME_SEARCH_TYPE, implode(', ', [self::SEARCH_TYPE_RIVER, self::SEARCH_TYPE_LOCATION]))),
-        };
+        $this->showLocations(
+            coordinate: $coordinate,
+            distanceMeter: $distanceMeter,
+            limit: $limit
+        );
         $time = microtime(true) - $time;
         $output->writeln(sprintf('Time: %3.4f seconds', $time));
         $output->writeln('');

@@ -16,11 +16,14 @@ namespace App\Repository;
 use App\Constants\DB\FeatureClass as DbFeatureClass;
 use App\Constants\DB\FeatureCode as DbFeatureCode;
 use App\Constants\Language\LanguageCode;
+use App\DBAL\GeoLocation\Converter\ValueToPoint;
 use App\Entity\AlternateName;
 use App\Entity\Country;
+use App\Entity\FeatureClass;
 use App\Entity\FeatureCode;
 use App\Entity\Location;
 use App\Entity\River;
+use App\Entity\RiverPart;
 use App\Repository\Base\BaseCoordinateRepository;
 use App\Service\LocationServiceConfig;
 use Doctrine\ORM\EntityManagerInterface;
@@ -129,6 +132,29 @@ class LocationRepository extends BaseCoordinateRepository
         }
 
         return $featureCodeIds;
+    }
+
+    /**
+     * Translates the given feature classes to ids.
+     *
+     * @param string[]|string|null $featureClasses
+     * @return int[]
+     */
+    private function translateFeatureClassesToIds(array|string $featureClasses = null): array
+    {
+        $featureClasses = is_string($featureClasses) ? explode(',', $featureClasses) : $featureClasses;
+
+        $repository = $this->getEntityManager()->getRepository(FeatureClass::class);
+
+        $featureClassEntities = $repository->findBy(['class' => $featureClasses]);
+
+        $featureClassIds = [];
+
+        foreach ($featureClassEntities as $featureClassEntity) {
+            $featureClassIds[] = (int) $featureClassEntity->getId();
+        }
+
+        return $featureClassIds;
     }
 
     /**
@@ -360,7 +386,7 @@ class LocationRepository extends BaseCoordinateRepository
             ;
         }
 
-        /* Limit result by number of entities. */
+        /* Limit the result by number of entities. */
         if (is_int($limit)) {
             $queryBuilder
                 ->setMaxResults($limit)
@@ -935,7 +961,219 @@ class LocationRepository extends BaseCoordinateRepository
     }
 
     /**
-     * Find river locations.
+     * Find river and lake locations.
+     *
+     * @param Coordinate|null $coordinate
+     * @param int|null $distanceMeter
+     * @param Country|null $country
+     * @param int|null $limit
+     * @param bool $useRiverPart
+     * @param bool $useLocationPart
+     * @return Location[]
+     * @throws CaseUnsupportedException
+     * @throws ParserException
+     * @throws TypeInvalidException
+     * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
+     */
+    public function findRiversAndLakes(
+        Coordinate|null $coordinate,
+        int|null $distanceMeter = null,
+        Country|null $country = null,
+        int|null $limit = null,
+        bool $useRiverPart = true,
+        bool $useLocationPart = false,
+    ): array
+    {
+        $locations = [];
+
+        if ($useRiverPart) {
+            $locations = [...$locations, ...$this->doFindRiversAndLakesDirect(
+                coordinate: $coordinate,
+                distanceMeter: $distanceMeter,
+                country: $country,
+                limit: $limit,
+            )];
+        }
+
+        if ($useLocationPart) {
+            $locations = [...$locations, ...$this->doFindRiversAndLakesDirect(
+                coordinate: $coordinate,
+                distanceMeter: $distanceMeter,
+                country: $country,
+                limit: $limit,
+                useRiverPart: false,
+                useLocationPart: true
+            )];
+        }
+
+        if (count($locations) === 0) {
+            return $locations;
+        }
+
+        /* Sort locations by distance. */
+        usort($locations, fn(Location $locationA, Location $locationB) =>
+            $locationA->getClosestDistance() <=>
+            $locationB->getClosestDistance()
+        );
+
+        return $locations;
+    }
+
+    /**
+     * Find river and lake locations.
+     *
+     * @param Coordinate|null $coordinate
+     * @param int|null $distanceMeter
+     * @param Country|null $country
+     * @param int|null $limit
+     * @param bool $useRiverPart
+     * @param bool $useLocationPart
+     * @return Location[]
+     * @throws CaseUnsupportedException
+     * @throws ParserException
+     * @throws TypeInvalidException
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+     * @SuppressWarnings(PHPMD.NPathComplexity)
+     * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
+     * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
+     */
+    private function doFindRiversAndLakesDirect(
+        Coordinate|null $coordinate,
+        int|null $distanceMeter = null,
+        Country|null $country = null,
+        int|null $limit = null,
+        bool $useRiverPart = true,
+        bool $useLocationPart = false,
+    ): array
+    {
+        if (!$useRiverPart && !$useLocationPart) {
+            return [];
+        }
+
+        $queryBuilder = $this->createQueryBuilder('l');
+
+        $featureCodes = [DbFeatureCode::STM];
+        $featureClasses = [DbFeatureClass::H];
+
+        $featureCodesIds = $this->translateFeatureCodesToIds($featureCodes);
+        $featureClassesIds = $this->translateFeatureClassesToIds($featureClasses);
+
+        match (true) {
+            $useRiverPart => $queryBuilder
+                ->select([
+                    'DISTINCT_ON(r.id) AS HIDDEN r_id',
+                    'l'
+                ])
+                ->addOrderBy('r_id'),
+
+            $useLocationPart => $queryBuilder
+                ->select([
+                    'DISTINCT_ON(l.id) AS HIDDEN l_id',
+                    'l'
+                ])
+                ->addOrderBy('l_id')
+        };
+
+        if (is_null($coordinate) || is_null($distanceMeter)) {
+            throw new LogicException('Not supported yet.');
+        }
+
+        /* Add left joins to rivers. */
+        $queryBuilder
+            /* Left join to rivers. */
+            ->leftJoin('l.rivers', 'r')
+            /* Left join to river LineString (entity RiverPart). */
+            ->leftJoin(RiverPart::class, 'rp', 'WITH', 'r.id = rp.river')
+        ;
+
+        /* Only find locations that are mapped to river table. */
+        $queryBuilder
+            ->addSelect(sprintf(
+                'ST_AsText(ST_ClosestPoint(rp.coordinates, ST_MakePoint(%f, %f))) AS closest_point',
+                $coordinate->getLongitude(),
+                $coordinate->getLatitude()
+            ))
+            ->addSelect(sprintf(
+                'DistanceOperator(rp.coordinates, %f, %f) AS HIDDEN distance_river',
+                $coordinate->getLatitude(),
+                $coordinate->getLongitude()
+            ))
+            ->addSelect(sprintf(
+                'DistanceOperator(l.coordinate, %f, %f) AS HIDDEN distance_location',
+                $coordinate->getLatitude(),
+                $coordinate->getLongitude()
+            ))
+        ;
+
+        $queryBuilder
+            ->where(
+                $queryBuilder->expr()->orX(
+                    $useRiverPart ? $queryBuilder->expr()->andX(
+                        'r.id IS NOT NULL',
+                        'ST_DWithin(rp.coordinates, ST_MakePoint(:longitude, :latitude), :distance, TRUE) = TRUE',
+                    ) : null,
+                    $useLocationPart ? $queryBuilder->expr()->andX(
+                        'l.featureClass IN (:featureClasses)',
+                        'l.featureCode NOT IN (:featureCodes)',
+                        'r.id IS NULL',
+                        'ST_DWithin(l.coordinate, ST_MakePoint(:longitude, :latitude), :distance, TRUE) = TRUE'
+                    ) : null
+                )
+            )
+
+            ->setParameter('latitude', $coordinate->getLatitude())
+            ->setParameter('longitude', $coordinate->getLongitude())
+            ->setParameter('distance', $distanceMeter)
+
+            ->addOrderBy('distance_river', 'ASC')
+        ;
+
+        if ($useLocationPart) {
+            $queryBuilder
+                ->setParameter('featureClasses', $featureClassesIds)
+                ->setParameter('featureCodes', $featureCodesIds)
+
+                ->addOrderBy('distance_location', 'ASC')
+            ;
+        }
+
+        /* Limit result by country. */
+        if ($country instanceof Country) {
+            $queryBuilder
+                ->andWhere('l.country = :country')
+                ->setParameter('country', $country);
+        }
+
+        /* Limit the result by number of entities. */
+        if (is_int($limit)) {
+            $queryBuilder
+                ->setMaxResults($limit)
+            ;
+        }
+
+        $result = $queryBuilder->getQuery()->getResult();
+
+        if (!is_array($result)) {
+            throw new LogicException(sprintf('Result must be an array. "%s" given.', gettype($result)));
+        }
+
+        $locations = $this->hydrateObjects($result);
+
+        foreach ($locations as $location) {
+            $location->setClosestDistance($location->getCoordinateIxnode()->getDistance($coordinate));
+        }
+
+        /* Sort locations by distance. */
+        usort($locations, fn(Location $locationA, Location $locationB) =>
+            $locationA->getClosestDistance() <=>
+            $locationB->getClosestDistance()
+        );
+
+        return $locations;
+    }
+
+    /**
+     * Find river and lake locations (via rivers).
      *
      * @param Coordinate|null $coordinate
      * @param int|null $distanceMeter
@@ -947,7 +1185,7 @@ class LocationRepository extends BaseCoordinateRepository
      * @throws ParserException
      * @throws TypeInvalidException
      */
-    public function findRiversAsLocations(
+    protected function doFindRiversAndLakesViaRivers(
         Coordinate|null $coordinate,
         int|null $distanceMeter = null,
         Country|null $country = null,
@@ -1005,6 +1243,8 @@ class LocationRepository extends BaseCoordinateRepository
      *
      * @param Location|array<int|string, mixed> $object
      * @return Location
+     * @throws TypeInvalidException
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      */
     public function hydrateObject(Location|array $object): Location
     {
@@ -1027,21 +1267,39 @@ class LocationRepository extends BaseCoordinateRepository
                 throw new LogicException('Location was not found within db result.');
             }
 
-            if (!is_string($value) && !is_null($value)) {
-                throw new LogicException(sprintf('$value expected to be a string or null. "%s" given.', gettype($value)));
-            }
+            switch ($property) {
+                /* Set the alternate names. */
+                case 'alternateNames':
+                    if (!is_string($value) && !is_null($value)) {
+                        throw new LogicException(sprintf('$value expected to be a string or null. "%s" given.', gettype($value)));
+                    }
+                    $location->setNames(
+                        explode(
+                            Location::NAME_SEPARATOR,
+                            (
+                                is_null($value) ? '' : $value.Location::NAME_SEPARATOR
+                            ).$location->getName()
+                        )
+                    );
+                    break;
 
-            match ($property) {
-                'alternateNames' => $location->setNames(
-                    explode(
-                        Location::NAME_SEPARATOR,
-                        (
-                            is_null($value) ? '' : $value.Location::NAME_SEPARATOR
-                        ).$location->getName()
-                    )
-                ),
-                default => throw new LogicException(sprintf('Unknown property "%s".', $property)),
-            };
+                /* Set the closest point. */
+                case 'closest_point':
+                    if (is_null($value)) {
+                        continue 2;
+                    }
+                    if (!is_string($value)) {
+                        throw new LogicException(sprintf('$value expected to be a string or null. "%s" given.', gettype($value)));
+                    }
+                    $location->setCoordinate(
+                        (new ValueToPoint($value))->get()
+                    );
+                    break;
+
+                /* Unknown property. */
+                default:
+                    throw new LogicException(sprintf('Unknown property "%s".', $property));
+            }
         }
 
         if (is_null($location)) {
@@ -1056,6 +1314,7 @@ class LocationRepository extends BaseCoordinateRepository
      *
      * @param array<int, Location|array<int|null, mixed>> $objects
      * @return Location[]
+     * @throws TypeInvalidException
      */
     public function hydrateObjects(array $objects): array
     {
