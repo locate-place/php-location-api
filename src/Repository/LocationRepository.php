@@ -216,33 +216,33 @@ class LocationRepository extends BaseCoordinateRepository
      *
      * Query example:
      * --------------
-       SELECT
-         id,
-         name,
-         ST_Distance(coordinate, ST_MakePoint(13.741351013208588, 51.06115159751123)::geography) AS distance
-       FROM location
-       WHERE ST_DWithin(coordinate, ST_MakePoint(13.741351013208588, 51.06115159751123)::geography, 100000)
-       ORDER BY distance
-       LIMIT 50;
+     * SELECT
+     * id,
+     * name,
+     * ST_Distance(coordinate, ST_MakePoint(13.741351013208588, 51.06115159751123)::geography) AS distance
+     * FROM location
+     * WHERE ST_DWithin(coordinate, ST_MakePoint(13.741351013208588, 51.06115159751123)::geography, 100000)
+     * ORDER BY distance
+     * LIMIT 50;
      *
      * Show indices:
      * -------------
-       SELECT
-         i.relname AS index_name,
-         am.amname AS index_type,
-         idx.indisprimary AS is_primary,
-         idx.indisunique AS is_unique,
-         pg_get_indexdef(idx.indexrelid) AS index_definition
-       FROM
-         pg_index AS idx
-       JOIN
-         pg_class AS i ON i.oid = idx.indexrelid
-       JOIN
-         pg_am AS am ON i.relam = am.oid
-       WHERE
-         idx.indrelid = 'location'::regclass
-       ORDER BY
-         index_name;
+     * SELECT
+     * i.relname AS index_name,
+     * am.amname AS index_type,
+     * idx.indisprimary AS is_primary,
+     * idx.indisunique AS is_unique,
+     * pg_get_indexdef(idx.indexrelid) AS index_definition
+     * FROM
+     * pg_index AS idx
+     * JOIN
+     * pg_class AS i ON i.oid = idx.indexrelid
+     * JOIN
+     * pg_am AS am ON i.relam = am.oid
+     * WHERE
+     * idx.indrelid = 'location'::regclass
+     * ORDER BY
+     * index_name;
      *
      * @param Coordinate|null $coordinate
      * @param int|null $distanceMeter
@@ -258,6 +258,7 @@ class LocationRepository extends BaseCoordinateRepository
      * @return array<int, Location>
      * @throws CaseUnsupportedException
      * @throws ClassInvalidException
+     * @throws ParserException
      * @throws TypeInvalidException
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      * @SuppressWarnings(PHPMD.NPathComplexity)
@@ -280,6 +281,29 @@ class LocationRepository extends BaseCoordinateRepository
         int|null $limit = null
     ): array
     {
+        /* Special search for river and lakes */
+        if (
+            $featureClasses === [DbFeatureClass::H] ||
+            $featureClasses === DbFeatureClass::H
+        ) {
+            return $this->findRiversAndLakes(
+                coordinate: $coordinate,
+                distanceMeter: $distanceMeter,
+                limit: $limit,
+                useLocationPart: true
+            );
+        }
+        if (
+            $featureCodes === [DbFeatureCode::STM] ||
+            $featureCodes === DbFeatureCode::STM
+        ) {
+            return $this->findRiversAndLakes(
+                coordinate: $coordinate,
+                distanceMeter: $distanceMeter,
+                limit: $limit
+            );
+        }
+
         $queryBuilder = $this->createQueryBuilder('l');
 
         /* Limit result by given distance. */
@@ -850,6 +874,7 @@ class LocationRepository extends BaseCoordinateRepository
      * @param Country|null $country
      * @param bool $ignoreIgnored
      * @return array<int, Location>
+     * @throws TypeInvalidException
      * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
      */
     public function findRiversWithoutMapping(
@@ -1015,6 +1040,10 @@ class LocationRepository extends BaseCoordinateRepository
             $locationA->getClosestDistance() <=>
             $locationB->getClosestDistance()
         );
+
+        if (is_int($limit)) {
+            $locations = array_slice($locations, 0, $limit);
+        }
 
         return $locations;
     }
