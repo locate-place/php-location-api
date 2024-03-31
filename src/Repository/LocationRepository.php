@@ -958,7 +958,8 @@ class LocationRepository extends BaseCoordinateRepository
             coordinate: $coordinate,
             distanceMeter: $distanceMeter,
             country: $country,
-            limit: $limit
+            limit: $limit,
+            onlyMapped: true
         );
 
         $riverLocations = [];

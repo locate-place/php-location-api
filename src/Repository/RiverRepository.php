@@ -40,7 +40,7 @@ class RiverRepository extends ServiceEntityRepository
     /** @var int[] $riversIds */
     private array $riversIds = [];
 
-    private const LIMIT_PREDICTION = 100;
+    final public const LIMIT_PREDICTION = 100;
 
     /**
      * @param ManagerRegistry $registry
@@ -63,10 +63,12 @@ class RiverRepository extends ServiceEntityRepository
      * @param Country|null $country
      * @param int|null $limit
      * @param bool $createRealDoctrineObject
+     * @param bool $onlyMapped
      * @return array<int, River>
      * @throws TypeInvalidException
      * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+     * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
      * @SuppressWarnings(PHPMD.NPathComplexity)
      */
     public function findRivers(
@@ -75,7 +77,8 @@ class RiverRepository extends ServiceEntityRepository
         int|null $distanceMeter = null,
         Country|null $country = null,
         int|null $limit = null,
-        bool $createRealDoctrineObject = false
+        bool $createRealDoctrineObject = false,
+        bool $onlyMapped = false
     ): array
     {
         $queryBuilder = $this->createQueryBuilder('r');
@@ -127,6 +130,14 @@ class RiverRepository extends ServiceEntityRepository
             }
 
             $queryBuilder->andWhere($orX);
+        }
+
+        /* Show only rivers that are mapped to locations */
+        if ($onlyMapped) {
+            $queryBuilder
+                ->leftJoin('r.locations', 'l')
+                ->andWhere('l.id IS NOT NULL')
+            ;
         }
 
         /* Add order by. */

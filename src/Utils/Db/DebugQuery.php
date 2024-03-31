@@ -56,7 +56,7 @@ readonly class DebugQuery
         $sql = $this->getSql();
         $params = $this->getParameter();
 
-        return vsprintf(str_replace('?', '%s', $sql), $params);
+        return vsprintf(str_replace('?', '%s', $sql), $params).PHP_EOL;
     }
 
     /**
@@ -95,6 +95,7 @@ readonly class DebugQuery
         $sql = $this->pregReplace('~\sLEFT JOIN\s~', "\nLEFT JOIN\n    ", $sql);
         $sql = $this->pregReplace('~\sWHERE\s~', "\nWHERE\n    ", $sql);
         $sql = $this->pregReplace('~\sGROUP BY\s~', "\nGROUP BY\n    ", $sql);
+        $sql = $this->pregReplace('~\sORDER\s~', "\nORDER\n    ", $sql);
         $sql = $this->pregReplace('~\sLIMIT\s~', "\nLIMIT\n    ", $sql);
 
         /* Handle line breaks for AND within WHERE clauses */

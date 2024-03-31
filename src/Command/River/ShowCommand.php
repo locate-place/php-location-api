@@ -173,7 +173,8 @@ EOT
             coordinate: $coordinate,
             riverNames: $riverNames,
             distanceMeter: $distanceMeter,
-            limit: $limit
+            limit: $limit,
+            onlyMapped: true
         );
 
         $this->printHeader();
