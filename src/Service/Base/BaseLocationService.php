@@ -34,7 +34,6 @@ use App\DataTypes\Timezone;
 use App\DBAL\GeoLocation\ValueObject\Point;
 use App\Entity\AlternateName;
 use App\Entity\Location as LocationEntity;
-use App\Entity\RiverPart;
 use App\Entity\ZipCode;
 use App\Entity\ZipCodeArea;
 use App\Service\Base\Helper\BaseHelperLocationService;
@@ -134,7 +133,6 @@ abstract class BaseLocationService extends BaseHelperLocationService
                 $key === KeyArray::NAME_FULL => $location->setNameFull(is_string($value) ? $value : ''),
                 $key === KeyArray::ZIP_CODE => $location->setZipCode(is_string($value) ? $value : null),
                 $key === KeyArray::UPDATED_AT => $value instanceof DateTimeImmutable ? $location->setUpdatedAt($value) : null,
-                $key === KeyArray::RIVERS => is_array($value) ? $location->setRivers($value) : null,
 
                 /* Complex structure */
                 $value instanceof Coordinate => $location->setCoordinate($value),
@@ -594,7 +592,12 @@ abstract class BaseLocationService extends BaseHelperLocationService
      *
      * @param LocationEntity $locationEntity
      * @return Properties
+     * @throws ClassInvalidException
+     * @throws ClientExceptionInterface
      * @throws FunctionReplaceException
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
      * @throws TypeInvalidException
      */
     private function getDataTypeProperties(LocationEntity $locationEntity): Properties
@@ -639,7 +642,12 @@ abstract class BaseLocationService extends BaseHelperLocationService
      * @param Properties $properties
      * @param LocationEntity $locationEntity
      * @return void
+     * @throws ClassInvalidException
+     * @throws ClientExceptionInterface
      * @throws FunctionReplaceException
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
      * @throws TypeInvalidException
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      * @SuppressWarnings(PHPMD.NPathComplexity)
@@ -649,9 +657,13 @@ abstract class BaseLocationService extends BaseHelperLocationService
         $this->locationEntityHelper->setLocation($locationEntity);
 
         $airportCodes = $this->locationEntityHelper->getAirportCodes();
-
         if (!is_null($airportCodes) && count($airportCodes) > 0) {
             $properties->addValue(KeyArray::AIRPORT_CODES, $airportCodes);
+        }
+
+        $riverLength = $this->locationEntityHelper->getRiverLength();
+        if (!is_null($riverLength)) {
+            $properties->addValue(KeyArray::RIVER_LENGTH, $riverLength);
         }
 
         $propertyValues = [];
@@ -971,15 +983,6 @@ abstract class BaseLocationService extends BaseHelperLocationService
             default => null,
         } : null;
 
-        $riverParts = $moreDetails ? array_map(fn(RiverPart $riverPart) => [
-            'name' => $riverPart->getName(),
-            'distance' => $riverPart->getDistance(),
-            'coordinate' => [
-                'latitude' => $riverPart->getClosestCoordinate()?->getLatitude(),
-                'longitude' => $riverPart->getClosestCoordinate()?->getLongitude(),
-            ],
-        ], $this->getRiverParts($locationEntity)) : null;
-
         $name = match (true) {
             !is_null($name) && array_key_exists($name, Translation::TRANSLATION) => Translation::TRANSLATION[$name],
             default => $name,
@@ -1001,7 +1004,6 @@ abstract class BaseLocationService extends BaseHelperLocationService
             ...(is_string($name) ? [KeyArray::NAME => $name] : []),
             ...(is_string($nameFull) ? [KeyArray::NAME_FULL => $nameFull] : []),
             ...(!is_null($zipCodeString) ? [KeyArray::ZIP_CODE => $zipCodeString] : []),
-            ...(!is_null($riverParts) ? [KeyArray::RIVERS => $riverParts] : []),
             ...(!is_null($updateAt) ? [KeyArray::UPDATED_AT => $updateAt] : []),
 
             /* Complex structures. */

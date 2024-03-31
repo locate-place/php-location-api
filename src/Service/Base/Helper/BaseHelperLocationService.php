@@ -19,7 +19,6 @@ use App\Constants\DB\FeatureCode;
 use App\Constants\Language\CountryCode;
 use App\Constants\Language\LanguageCode;
 use App\Entity\Location as LocationEntity;
-use App\Entity\RiverPart;
 use App\Entity\ZipCode;
 use App\Entity\ZipCodeArea;
 use App\Repository\AlternateNameRepository;
@@ -47,6 +46,10 @@ use JsonException;
 use LogicException;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
@@ -460,6 +463,12 @@ abstract class BaseHelperLocationService
      *
      * @param array<int, LocationEntity> $locationEntities
      * @return void
+     * @throws ClassInvalidException
+     * @throws TypeInvalidException
+     * @throws ClientExceptionInterface
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
      */
     protected function doAfterQueryTasks(array &$locationEntities): void
     {
@@ -706,26 +715,6 @@ abstract class BaseHelperLocationService
             distanceMeter: 10000,
             country: $locationEntity->getCountry(),
             limit: 1
-        );
-    }
-
-    /**
-     * Returns the ZipCode or ZipCodeArea entity by given Location entity.
-     *
-     * @param LocationEntity $locationEntity
-     * @return RiverPart[]
-     * @throws CaseUnsupportedException
-     * @throws FunctionReplaceException
-     * @throws ParserException
-     * @throws TypeInvalidException
-     */
-    protected function getRiverParts(LocationEntity $locationEntity): array
-    {
-        return $this->riverPartRepository->findRiverPartsByCoordinate(
-            coordinate: $locationEntity->getCoordinateIxnode(),
-            distanceMeter: 10000,
-            country: $locationEntity->getCountry(),
-            limit: 10
         );
     }
 }

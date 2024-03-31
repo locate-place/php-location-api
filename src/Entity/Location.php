@@ -977,6 +977,10 @@ class Location
     /**
      * Returns the first river.
      *
+     * - River: River was found
+     * - false: No river was found
+     * - null: No river entity
+     *
      * @return River|false|null
      */
     public function getRiver(): River|false|null

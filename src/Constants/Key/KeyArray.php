@@ -212,6 +212,8 @@ class KeyArray
 
     final public const RESULTS = 'results';
 
+    final public const RIVER_LENGTH = 'river-length';
+
     final public const RIVER_NAME = 'river-name';
 
     final public const RIVERS = 'rivers';
