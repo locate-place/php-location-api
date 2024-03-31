@@ -14,14 +14,17 @@ declare(strict_types=1);
 namespace App\Command\River;
 
 use App\Constants\Key\KeyArray;
+use App\Constants\Language\LanguageCode;
 use App\Entity\Location;
 use App\Repository\LocationRepository;
 use App\Repository\RiverPartRepository;
 use App\Repository\RiverRepository;
+use App\Service\LocationContainer;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Exception\ORMException;
 use Ixnode\PhpCoordinate\Coordinate;
 use Ixnode\PhpException\Case\CaseUnsupportedException;
+use Ixnode\PhpException\Class\ClassInvalidException;
 use Ixnode\PhpException\Parser\ParserException;
 use Ixnode\PhpException\Type\TypeInvalidException;
 use LogicException;
@@ -29,6 +32,10 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 
 /**
  * Class ShowCommand.
@@ -39,8 +46,9 @@ use Symfony\Component\Console\Output\OutputInterface;
  *
  * @example bin/console river:show --position="51.120552, 13.132655" --distance=3000 --limit=4
  * @example bin/console river:show --distance=20000 --limit=10 --position="51.067377, 13.735513"
- * @example bin/console river:show --distance=20000 --limit=10 --position="51.067377, 13.735513" --search-type=river
- * @example bin/console river:show --distance=20000 --limit=10 --position="51.067377, 13.735513" --search-type=location
+ * @example bin/console river:show --distance=20000 --limit=10 --position="51.067377, 13.735513" -s river
+ * @example bin/console river:show --distance=20000 --limit=10 --position="51.067377, 13.735513" -s location
+ * @example bin/console river:show --distance=20000 --limit=10 --position="51.067377, 13.735513" -s location -l en
  */
 class ShowCommand extends Command
 {
@@ -51,6 +59,8 @@ class ShowCommand extends Command
     protected OutputInterface $output;
 
     private const OPTION_NAME_SEARCH_TYPE = 'search-type';
+
+    private const OPTION_NAME_ISO_LANGUAGE = 'iso-language';
 
     private const SEARCH_TYPE_RIVER = 'river';
 
@@ -63,12 +73,14 @@ class ShowCommand extends Command
      * @param LocationRepository $locationRepository
      * @param RiverRepository $riverRepository
      * @param RiverPartRepository $riverPartRepository
+     * @param LocationContainer $locationContainer
      */
     public function __construct(
         protected readonly EntityManagerInterface $entityManager,
         protected readonly LocationRepository $locationRepository,
         protected readonly RiverRepository $riverRepository,
-        protected readonly RiverPartRepository $riverPartRepository
+        protected readonly RiverPartRepository $riverPartRepository,
+        protected readonly LocationContainer $locationContainer
     )
     {
         parent::__construct();
@@ -92,6 +104,7 @@ class ShowCommand extends Command
                 new InputOption(KeyArray::LIMIT, null, InputOption::VALUE_OPTIONAL, 'The limit value.', 100),
                 new InputOption(KeyArray::RIVER_NAME, null, InputOption::VALUE_OPTIONAL, 'The river name value.', null),
                 new InputOption(self::OPTION_NAME_SEARCH_TYPE, '-s', InputOption::VALUE_REQUIRED, sprintf('The search type. Possible values: %s', implode(', ', [self::SEARCH_TYPE_RIVER, self::SEARCH_TYPE_LOCATION])), self::SEARCH_TYPE_LOCATION),
+                new InputOption(self::OPTION_NAME_ISO_LANGUAGE, '-l', InputOption::VALUE_REQUIRED, sprintf('The search type. Possible values: %s', implode(', ', [LanguageCode::DE, LanguageCode::EN, 'etc.'])), LanguageCode::DE),
             ])
             ->setHelp(
                 <<<'EOT'
@@ -198,6 +211,11 @@ EOT
      * @throws ORMException
      * @throws ParserException
      * @throws TypeInvalidException
+     * @throws ClassInvalidException
+     * @throws ClientExceptionInterface
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
      */
     private function showLocations(
         Coordinate|null $coordinate,
@@ -205,6 +223,11 @@ EOT
         int $limit
     ): void
     {
+        $isoLanguage = $this->input->getOption(self::OPTION_NAME_ISO_LANGUAGE);
+        if (!is_string($isoLanguage)) {
+            throw new LogicException('The given ISO language is not a string.');
+        }
+
         /* Try to find (river) locations. */
         $locations = $this->locationRepository->findRiversAsLocations(
             coordinate: $coordinate,
@@ -229,7 +252,7 @@ EOT
             $this->output->writeln(sprintf(
                 '%6d %-60s   %8.2f km   %12d   %6.2f km   %s,%s (%s)',
                 $location->getId(),
-                $this->getMbStrPad($location->getName() ?? '', 60),
+                $this->getMbStrPad($this->locationContainer->getAlternateName($location, $isoLanguage) ?? '--', 60),
                 round((float) $river->getLength(), 2),
                 $river->getRiverCode(),
                 $distanceMeter,
