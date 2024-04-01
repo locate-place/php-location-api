@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Releases
 
+### [0.1.61] - 2024-04-01
+
+* Adds the FeatureContainer
+* Enables correct river feature search
+* Change next place search for rivers and lakes to 20000 meters
+
 ### [0.1.60] - 2024-04-01
 
 * Command: river:show -s river -> how all rivers (also unmapped)
