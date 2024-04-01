@@ -20,7 +20,7 @@ use Symfony\Component\Serializer\NameConverter\NameConverterInterface;
 /**
  * Class CamelCaseToSeparatedConverter
  *
- * @author Björn Hempel <bjoern.hempel@ressourcenmangel.de>
+ * @author Björn Hempel <bjoern@hempel.li>
  * @version 0.1.0 (2023-08-30)
  * @since 0.1.0 (2023-08-30) First version.
  * @description Used for config/packages/api_platform.yaml as name_converter.

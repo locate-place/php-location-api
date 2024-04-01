@@ -1,9 +1,9 @@
 <?php
 
 /*
- * This file is part of the https://gitlab.rsm-support.de/hamburg-energie/ordering-process-api project.
+ * This file is part of the twelvepics-com/php-location-api project.
  *
- * (c) Björn Hempel <bjoern.hempel@ressourcenmangel.de>
+ * (c) Björn Hempel <https://www.hempel.li/>
  *
  * For the full copyright and license information, please view the LICENSE.md
  * file that was distributed with this source code.

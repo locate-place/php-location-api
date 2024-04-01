@@ -19,7 +19,7 @@ use Ixnode\PhpException\Type\TypeInvalidException;
 /**
  * Class SingularPathSegmentNameGenerator
  *
- * @author Björn Hempel <bjoern.hempel@ressourcenmangel.de>
+ * @author Björn Hempel <bjoern@hempel.li>
  * @version 0.1.0 (2023-08-30)
  * @since 0.1.0 (2023-08-30) First version.
  */

@@ -77,8 +77,8 @@ class RiverRepository extends ServiceEntityRepository
         int|null $distanceMeter = null,
         Country|null $country = null,
         int|null $limit = null,
-        bool $createRealDoctrineObject = false,
-        bool $onlyMapped = false
+        bool $onlyMapped = false,
+        bool $createRealDoctrineObject = false
     ): array
     {
         $queryBuilder = $this->createQueryBuilder('r');
@@ -188,14 +188,17 @@ class RiverRepository extends ServiceEntityRepository
      * @param string[]|null $riverNames
      * @param int|null $distanceMeter
      * @param Country|null $country
+     * @param bool $onlyMapped
      * @return River|null
      * @throws TypeInvalidException
+     * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
      */
     public function findRiver(
         Coordinate $coordinate,
         array|null $riverNames = null,
         int|null $distanceMeter = null,
-        Country|null $country = null
+        Country|null $country = null,
+        bool $onlyMapped = false
     ): River|null
     {
         $rivers = $this->findRivers(
@@ -203,7 +206,8 @@ class RiverRepository extends ServiceEntityRepository
             riverNames: $riverNames,
             distanceMeter: $distanceMeter,
             country: $country,
-            limit: 2
+            limit: 2,
+            onlyMapped: $onlyMapped
         );
 
         /* No river was found. */
