@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Releases
 
+### [0.1.62] - 2024-04-01
+
+* Add new examples to example endpoint
+* Fix name search (case-insensitive)
+
 ### [0.1.61] - 2024-04-01
 
 * Adds the FeatureContainer
