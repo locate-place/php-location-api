@@ -28,6 +28,8 @@ class CountryCode
 
     final public const ES = 'ES';
 
+    final public const FR = 'FR';
+
     final public const GB = 'GB';
 
     final public const IT = 'IT';

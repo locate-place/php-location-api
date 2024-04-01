@@ -574,7 +574,8 @@ final class LocationService extends BaseLocationService
             return $this->getEmptyLocation($geonameId);
         }
 
-
+        /* Country fix. */
+        $this->setCountry($location->getCountry()?->getCode() ?? $country);
 
         /* Execute $this->getLocationResourceFull() and log performance. */
         $locationEntity = null;

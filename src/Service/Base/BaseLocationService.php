@@ -1109,6 +1109,7 @@ abstract class BaseLocationService extends BaseHelperLocationService
                 coordinate: $coordinate,
                 featureClasses: $this->locationServiceConfig->getLocationReferenceFeatureClass(),
                 featureCodes: $this->locationServiceConfig->getLocationReferenceFeatureCodes(),
+                country: $locationEntity->getCountry(),
             ),
         };
 

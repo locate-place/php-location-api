@@ -93,6 +93,17 @@ class Search
             ],
             'country' => CountryCode::DE,
         ],
+        'fr-mont-blanc' => [
+            KeyArray::GEONAME_ID => 3_181_986,
+            KeyArray::NAME => 'Mont Blanc',
+            'location' => [
+                'district-locality' => 'Taconnaz',
+                'city-municipality' => 'Les Houches',
+                'state' => 'Auvergne-Rhône-Alpes',
+                'country' => ' Frankreich',
+            ],
+            'country' => CountryCode::FR,
+        ],
         'gb-amesbury-stonehenge' => [
             KeyArray::GEONAME_ID => 2_636_812,
             KeyArray::NAME => 'Amesbury - Stonehenge',
@@ -121,15 +132,6 @@ class Search
             'location' => [
                 'city-municipality' => 'Rom',
                 'state' => 'Latium',
-                'country' => ' Italien',
-            ],
-            'country' => CountryCode::IT,
-        ],
-        'it-mont-blanc' => [
-            KeyArray::GEONAME_ID => 3_181_986,
-            KeyArray::NAME => 'Mont Blanc',
-            'location' => [
-                'state' => 'Aostatal',
                 'country' => ' Italien',
             ],
             'country' => CountryCode::IT,
