@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Releases
 
+### [0.1.60] - 2024-04-01
+
+* Command: river:show -s river -> how all rivers (also unmapped)
+
 ### [0.1.59] - 2024-03-31
 
 * Add rivers to database and API endpoint
