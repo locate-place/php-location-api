@@ -16,7 +16,7 @@ namespace App\Tests\Functional\Command\Location;
 use App\Command\Location\CoordinateCommand;
 use App\Constants\Command\CommandSchema;
 use App\Constants\Key\KeyArray;
-use App\Constants\Place\Search;
+use App\Constants\Place\SearchTest;
 use App\Repository\AlternateNameRepository;
 use App\Repository\LocationRepository;
 use App\Repository\RiverPartRepository;
@@ -108,7 +108,7 @@ class TestCommandTest extends BaseFunctionalCommandTest
     ): void
     {
         /* Arrange */
-        $search = new Json(Search::VALUES[$key]);
+        $search = new Json(SearchTest::VALUES[$key]);
 
         $latitude = $search->getKeyFloat(['coordinate', 'latitude']);
         $longitude = $search->getKeyFloat(['coordinate', 'longitude']);
@@ -142,7 +142,7 @@ class TestCommandTest extends BaseFunctionalCommandTest
 
         $data = [];
 
-        foreach (Search::VALUES as $key => $value) {
+        foreach (SearchTest::VALUES as $key => $value) {
             $data[] = [
                 ++$number,
                 $key,

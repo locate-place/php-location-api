@@ -30,6 +30,8 @@ class CountryCode
 
     final public const GB = 'GB';
 
+    final public const IT = 'IT';
+
     final public const MT = 'MT';
 
     final public const RU = 'RU';

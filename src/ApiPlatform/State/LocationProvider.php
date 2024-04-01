@@ -118,6 +118,7 @@ final class LocationProvider extends BaseProviderCustom
      * @throws CaseInvalidException
      * @throws CaseUnsupportedException
      * @throws ClassInvalidException
+     * @throws ClientExceptionInterface
      * @throws FileNotFoundException
      * @throws FileNotReadableException
      * @throws FunctionJsonEncodeException
@@ -125,6 +126,9 @@ final class LocationProvider extends BaseProviderCustom
      * @throws JsonException
      * @throws NonUniqueResultException
      * @throws ParserException
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
      * @throws TypeInvalidException
      */
     private function doProvideGetCollectionByGeonameIds(array $geonameIds): array

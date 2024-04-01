@@ -593,7 +593,7 @@ abstract class BaseHelperLocationService
      */
     protected function sortLocationsByName(array &$locations): void
     {
-        usort($locations, fn(Location $locationA, Location $locationB) => strcmp($locationA->getName(), $locationB->getName()));
+        usort($locations, fn(Location $locationA, Location $locationB) => strcmp(strtolower($locationA->getName()), strtolower($locationB->getName())));
     }
 
     /**

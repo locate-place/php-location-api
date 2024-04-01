@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace App\Command\Location;
 
 use App\Command\Base\Base;
-use App\Constants\Place\Search;
+use App\Constants\Place\SearchTest;
 use App\Service\LocationServiceDebug;
 use Exception;
 use Ixnode\PhpApiVersionBundle\Utils\TypeCasting\TypeCastingHelper;
@@ -73,7 +73,7 @@ class TestCommand extends Base
                 InputArgument::REQUIRED,
                 'The search valur of the coordinate to test.',
                 null,
-                fn(CompletionInput $input): array => array_keys(Search::VALUES)
+                fn(CompletionInput $input): array => array_keys(SearchTest::VALUES)
             )
             ->addOption(self::OPTION_NAME_FORMAT, 'f', InputOption::VALUE_REQUIRED, 'Sets the output format.', 'json')
             ->addOption(self::OPTION_ISO_LANGUAGE, 'i', InputOption::VALUE_REQUIRED, 'Sets the output language.', 'en')
@@ -109,12 +109,12 @@ EOT
 
         $search = (new TypeCastingHelper($input->getArgument(self::ARGUMENT_NAME_SEARCH)))->strval();
 
-        if (!array_key_exists($search, Search::VALUES)) {
+        if (!array_key_exists($search, SearchTest::VALUES)) {
             $this->output->writeln('<error>The given search value is not supported.</error>');
             return Command::INVALID;
         }
 
-        $search = new Json(Search::VALUES[$search]);
+        $search = new Json(SearchTest::VALUES[$search]);
 
         $latitude = $search->getKeyFloat(['coordinate', 'latitude']);
         $longitude = $search->getKeyFloat(['coordinate', 'longitude']);

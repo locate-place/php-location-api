@@ -16,7 +16,7 @@ namespace App\Controller\Base;
 use App\Constants\Key\KeyArray;
 use App\Constants\Language\CountryCode;
 use App\Constants\Place\Location;
-use App\Constants\Place\Search;
+use App\Constants\Place\SearchTest;
 use App\Service\LocationServiceConfig;
 use Ixnode\PhpContainer\Json;
 use Ixnode\PhpCoordinate\Coordinate;
@@ -104,7 +104,7 @@ abstract class BaseCoordinateController extends AbstractController
      */
     protected function getCoordinates(): array
     {
-        $json = new Json(Search::VALUES);
+        $json = new Json(SearchTest::VALUES);
 
         $coordinates = [];
 
