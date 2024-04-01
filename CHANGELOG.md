@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Releases
 
+### [0.1.63] - 2024-04-01
+
+* Add more examples
+* Use the country of given search to determine the administrative places
+
 ### [0.1.62] - 2024-04-01
 
 * Add new examples to example endpoint
