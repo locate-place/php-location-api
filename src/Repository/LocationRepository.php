@@ -26,6 +26,7 @@ use App\Entity\River;
 use App\Entity\RiverPart;
 use App\Repository\Base\BaseCoordinateRepository;
 use App\Service\LocationServiceConfig;
+use App\Utils\Feature\FeatureContainer;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Exception\ORMException;
 use Doctrine\ORM\NonUniqueResultException;
@@ -281,26 +282,17 @@ class LocationRepository extends BaseCoordinateRepository
         int|null $limit = null
     ): array
     {
-        /* Special search for river and lakes */
-        if (
-            $featureClasses === [DbFeatureClass::H] ||
-            $featureClasses === DbFeatureClass::H
-        ) {
+        $featureContainer = new FeatureContainer($featureClasses, $featureCodes);
+
+        /* Special search for rivers, streams, lakes, etc. */
+        if ($featureContainer->isGroupRiverLake()) {
             return $this->findRiversAndLakes(
                 coordinate: $coordinate,
                 distanceMeter: $distanceMeter,
+                country: $country,
+                featureCodes: $featureCodes,
                 limit: $limit,
-                useLocationPart: true
-            );
-        }
-        if (
-            $featureCodes === [DbFeatureCode::STM] ||
-            $featureCodes === DbFeatureCode::STM
-        ) {
-            return $this->findRiversAndLakes(
-                coordinate: $coordinate,
-                distanceMeter: $distanceMeter,
-                limit: $limit
+                useLocationPart: !$featureContainer->isRiver()
             );
         }
 
@@ -991,6 +983,7 @@ class LocationRepository extends BaseCoordinateRepository
      * @param Coordinate|null $coordinate
      * @param int|null $distanceMeter
      * @param Country|null $country
+     * @param array<int, string>|string|null $featureCodes
      * @param int|null $limit
      * @param bool $useRiverPart
      * @param bool $useLocationPart
@@ -1004,11 +997,21 @@ class LocationRepository extends BaseCoordinateRepository
         Coordinate|null $coordinate,
         int|null $distanceMeter = null,
         Country|null $country = null,
+        array|string|null $featureCodes = null,
         int|null $limit = null,
         bool $useRiverPart = true,
         bool $useLocationPart = false,
     ): array
     {
+        $featureContainer = new FeatureContainer(
+            featureClasses: null,
+            featureCodes: $featureCodes
+        );
+
+        if (!$featureContainer->containsRiver()) {
+            $useRiverPart = false;
+        }
+
         $locations = [];
 
         if ($useRiverPart) {
@@ -1025,6 +1028,7 @@ class LocationRepository extends BaseCoordinateRepository
                 coordinate: $coordinate,
                 distanceMeter: $distanceMeter,
                 country: $country,
+                featureCodes: $featureContainer->getFeatureCodesWithoutRiver(),
                 limit: $limit,
                 useRiverPart: false,
                 useLocationPart: true
@@ -1054,6 +1058,7 @@ class LocationRepository extends BaseCoordinateRepository
      * @param Coordinate|null $coordinate
      * @param int|null $distanceMeter
      * @param Country|null $country
+     * @param array<int, string>|string|null $featureCodes
      * @param int|null $limit
      * @param bool $useRiverPart
      * @param bool $useLocationPart
@@ -1070,6 +1075,7 @@ class LocationRepository extends BaseCoordinateRepository
         Coordinate|null $coordinate,
         int|null $distanceMeter = null,
         Country|null $country = null,
+        array|string|null $featureCodes = null,
         int|null $limit = null,
         bool $useRiverPart = true,
         bool $useLocationPart = false,
@@ -1081,11 +1087,11 @@ class LocationRepository extends BaseCoordinateRepository
 
         $queryBuilder = $this->createQueryBuilder('l');
 
-        $featureCodes = [DbFeatureCode::STM];
-        $featureClasses = [DbFeatureClass::H];
+        $riverFeatureCodes = [DbFeatureCode::STM];
+        $riverFeatureClasses = [DbFeatureClass::H];
 
-        $featureCodesIds = $this->translateFeatureCodesToIds($featureCodes);
-        $featureClassesIds = $this->translateFeatureClassesToIds($featureClasses);
+        $riverFeatureCodesIds = $this->translateFeatureCodesToIds($riverFeatureCodes);
+        $riverFeatureClassesIds = $this->translateFeatureClassesToIds($riverFeatureClasses);
 
         match (true) {
             $useRiverPart => $queryBuilder
@@ -1142,8 +1148,8 @@ class LocationRepository extends BaseCoordinateRepository
                         'ST_DWithin(rp.coordinates, ST_MakePoint(:longitude, :latitude), :distance, TRUE) = TRUE',
                     ) : null,
                     $useLocationPart ? $queryBuilder->expr()->andX(
-                        'l.featureClass IN (:featureClasses)',
-                        'l.featureCode NOT IN (:featureCodes)',
+                        'l.featureClass IN (:riverFeatureClasses)',
+                        'l.featureCode NOT IN (:riverFeatureCodes)',
                         'r.id IS NULL',
                         'ST_DWithin(l.coordinate, ST_MakePoint(:longitude, :latitude), :distance, TRUE) = TRUE'
                     ) : null
@@ -1159,8 +1165,8 @@ class LocationRepository extends BaseCoordinateRepository
 
         if ($useLocationPart) {
             $queryBuilder
-                ->setParameter('featureClasses', $featureClassesIds)
-                ->setParameter('featureCodes', $featureCodesIds)
+                ->setParameter('riverFeatureClasses', $riverFeatureClassesIds)
+                ->setParameter('riverFeatureCodes', $riverFeatureCodesIds)
 
                 ->addOrderBy('distance_location', 'ASC')
             ;
@@ -1171,6 +1177,15 @@ class LocationRepository extends BaseCoordinateRepository
             $queryBuilder
                 ->andWhere('l.country = :country')
                 ->setParameter('country', $country);
+        }
+
+        if (!is_null($featureCodes)) {
+            $featureCodesIds = $this->translateFeatureCodesToIds(is_string($featureCodes) ? [$featureCodes] : $featureCodes);
+
+            $queryBuilder
+                ->andWhere('l.featureCode IN (:featureCodes)')
+                ->setParameter('featureCodes', $featureCodesIds)
+            ;
         }
 
         /* Limit the result by number of entities. */

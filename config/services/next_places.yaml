@@ -122,6 +122,7 @@ parameters:
                     - LK
                     - LKS
                     - STM
+                distance: 20000
             hotels:
                 name: hotels
                 feature_codes:
