@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Releases
 
+### [0.1.64] - 2024-04-03
+
+* Add river length to search relevance
+* Fix river:show command
+
 ### [0.1.63] - 2024-04-01
 
 * Add more examples
