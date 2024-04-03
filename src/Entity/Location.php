@@ -941,6 +941,13 @@ class Location
             $relevance += (int) round($airportPassenger / 1000);
         }
 
+        /* River length */
+        $river = $this->getRiver();
+        if ($river instanceof River) {
+            $relevance += (int) round(floatval($river->getLength()) * 100);
+        }
+
+        /* The next calculations need a given coordinate. */
         if (is_null($coordinate)) {
             return $relevance;
         }

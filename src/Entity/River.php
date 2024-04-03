@@ -144,6 +144,8 @@ class River
     }
 
     /**
+     * Returns the length of the river in kilometers.
+     *
      * @return string|null
      */
     public function getLength(): ?string
