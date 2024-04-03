@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace App\Repository;
 
+use App\Constants\Code\Prediction;
 use App\Constants\DB\FeatureClass as DbFeatureClass;
 use App\Constants\DB\FeatureCode as DbFeatureCode;
 use App\Constants\Language\LanguageCode;
@@ -1003,6 +1004,8 @@ class LocationRepository extends BaseCoordinateRepository
         bool $useLocationPart = false,
     ): array
     {
+        $limitPrediction = is_null($limit) ? null : $limit * Prediction::LIMIT;
+
         $featureContainer = new FeatureContainer(
             featureClasses: null,
             featureCodes: $featureCodes
@@ -1019,7 +1022,7 @@ class LocationRepository extends BaseCoordinateRepository
                 coordinate: $coordinate,
                 distanceMeter: $distanceMeter,
                 country: $country,
-                limit: $limit,
+                limit: $limitPrediction,
             )];
         }
 
@@ -1029,7 +1032,7 @@ class LocationRepository extends BaseCoordinateRepository
                 distanceMeter: $distanceMeter,
                 country: $country,
                 featureCodes: $featureContainer->getFeatureCodesWithoutRiver(),
-                limit: $limit,
+                limit: $limitPrediction,
                 useRiverPart: false,
                 useLocationPart: true
             )];

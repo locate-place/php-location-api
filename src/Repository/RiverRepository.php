@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace App\Repository;
 
+use App\Constants\Code\Prediction;
 use App\DBAL\GeoLocation\Converter\ValueToPoint;
 use App\Entity\Country;
 use App\Entity\River;
@@ -39,8 +40,6 @@ class RiverRepository extends ServiceEntityRepository
 {
     /** @var int[] $riversIds */
     private array $riversIds = [];
-
-    final public const LIMIT_PREDICTION = 100;
 
     /**
      * @param ManagerRegistry $registry
@@ -158,7 +157,7 @@ class RiverRepository extends ServiceEntityRepository
         /* Limit the result by number of entities: if no distance was given. */
         if (is_null($distanceMeter) && is_int($limit)) {
             $queryBuilder
-                ->setMaxResults($limit * self::LIMIT_PREDICTION)
+                ->setMaxResults($limit * Prediction::LIMIT)
             ;
         }
 

@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace App\Command\River;
 
+use App\Constants\DB\FeatureCode;
 use App\Constants\Key\KeyArray;
 use App\Constants\Language\LanguageCode;
 use App\Entity\Location;
@@ -208,14 +209,13 @@ EOT
      * @param int $limit
      * @return void
      * @throws CaseUnsupportedException
-     * @throws ORMException
-     * @throws ParserException
-     * @throws TypeInvalidException
      * @throws ClassInvalidException
      * @throws ClientExceptionInterface
+     * @throws ParserException
      * @throws RedirectionExceptionInterface
      * @throws ServerExceptionInterface
      * @throws TransportExceptionInterface
+     * @throws TypeInvalidException
      */
     private function showLocations(
         Coordinate|null $coordinate,
@@ -232,6 +232,7 @@ EOT
         $locations = $this->locationRepository->findRiversAndLakes(
             coordinate: $coordinate,
             distanceMeter: $distanceMeter,
+            featureCodes: FeatureCode::STM,
             limit: $limit,
         );
 
@@ -272,9 +273,14 @@ EOT
      * @param OutputInterface $output
      * @return int
      * @throws CaseUnsupportedException
-     * @throws ParserException
-     * @throws TypeInvalidException
+     * @throws ClassInvalidException
+     * @throws ClientExceptionInterface
      * @throws ORMException
+     * @throws ParserException
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
+     * @throws TypeInvalidException
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      * @SuppressWarnings(PHPMD.NPathComplexity)

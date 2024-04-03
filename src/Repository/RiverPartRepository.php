@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace App\Repository;
 
+use App\Constants\Code\Prediction;
 use App\DBAL\GeoLocation\Converter\ValueToPoint;
 use App\Entity\Country;
 use App\Entity\RiverPart;
@@ -35,8 +36,6 @@ use LogicException;
  */
 class RiverPartRepository extends ServiceEntityRepository
 {
-    private const PRELOAD_MULTIPLIER = 100;
-
     /**
      * @param ManagerRegistry $registry
      */
@@ -134,7 +133,7 @@ class RiverPartRepository extends ServiceEntityRepository
                 ))
             ;
 
-            $limitPrediction = is_null($limit) ? null : ($limit * self::PRELOAD_MULTIPLIER);
+            $limitPrediction = is_null($limit) ? null : ($limit * Prediction::LIMIT);
         }
 
         /* Order result by distance (uses <-> for performance reasons). */
@@ -148,7 +147,7 @@ class RiverPartRepository extends ServiceEntityRepository
                 ->addOrderBy('distance', 'ASC')
             ;
 
-            $limitPrediction = is_null($limit) ? null : ($limit * self::PRELOAD_MULTIPLIER);
+            $limitPrediction = is_null($limit) ? null : ($limit * Prediction::LIMIT);
         }
 
         /* Limit result by number of entities. */
