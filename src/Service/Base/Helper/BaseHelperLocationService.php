@@ -532,7 +532,7 @@ abstract class BaseHelperLocationService
 
         /* Build distances array. */
         foreach ($locationEntities as $locationEntity) {
-            $distances[$locationEntity->getId()] = $locationEntity->getCoordinateIxnode()->getDistance($coordinate);
+            $distances[$locationEntity->getId()] = $locationEntity->getClosestDistanceOrCalculate($coordinate);
         }
 
         /* Sort by distance. */

@@ -134,8 +134,10 @@ class Location
     private Collection $rivers;
 
     /** @var string[]|null $names */
+    #[Ignore]
     private ?array $names = null;
 
+    #[Ignore]
     private ?float $closestDistance = null;
 
     /**
@@ -313,7 +315,7 @@ class Location
             return null;
         }
 
-        if ($elevation < 0) {
+        if ($elevation <= 0) {
             return null;
         }
 
@@ -359,7 +361,7 @@ class Location
             return null;
         }
 
-        if ($dem < 0) {
+        if ($dem <= 0) {
             return null;
         }
 
@@ -514,71 +516,6 @@ class Location
         $this->imports->removeElement($import);
 
         return $this;
-    }
-
-    /**
-     * Get the distance to a second location.
-     *
-     * @param Location $locationTarget
-     * @return float
-     * @throws CaseUnsupportedException
-     * @throws ParserException
-     */
-    #[Ignore]
-    public function getDistance(Location $locationTarget): float
-    {
-        $pointSource = $this->getCoordinate();
-        $pointTarget = $locationTarget->getCoordinate();
-
-        if (!$pointSource instanceof Point) {
-            throw new CaseUnsupportedException(sprintf('Location "%s" does not have a coordinate.', $this->getName()));
-        }
-
-        if (!$pointTarget instanceof Point) {
-            throw new CaseUnsupportedException(sprintf('Location "%s" does not have a coordinate.', $locationTarget->getName()));
-        }
-
-        $coordinateSource = new Coordinate($pointSource->getLatitude(), $pointSource->getLongitude());
-        $coordinateTarget = new Coordinate($pointTarget->getLatitude(), $pointTarget->getLongitude());
-
-        return $coordinateSource->getDistance($coordinateTarget);
-    }
-
-    /**
-     * Converts the coordinate Point to Coordinate.
-     *
-     * @return Coordinate
-     * @throws CaseUnsupportedException
-     * @throws ParserException
-     */
-    #[Ignore]
-    public function getCoordinateIxnode(): Coordinate
-    {
-        $pointSource = $this->getCoordinate();
-
-        if (!$pointSource instanceof Point) {
-            throw new CaseUnsupportedException(sprintf('Location "%s" does not have a coordinate.', $this->getName()));
-        }
-
-        return new Coordinate($pointSource->getLatitude(), $pointSource->getLongitude());
-    }
-
-    /**
-     * Returns the position of the location.
-     *
-     * @return string
-     * @throws CaseUnsupportedException
-     */
-    #[Ignore]
-    public function getPosition(): string
-    {
-        $pointSource = $this->getCoordinate();
-
-        if (!$pointSource instanceof Point) {
-            throw new CaseUnsupportedException(sprintf('Location "%s" does not have a coordinate.', $this->getName()));
-        }
-
-        return sprintf('%s, %s', $pointSource->getLatitude(), $pointSource->getLongitude());
     }
 
     /**
@@ -764,9 +701,12 @@ class Location
         return $this;
     }
 
+
+
     /**
      * @return string[]|null
      */
+    #[Ignore]
     public function getNames(): ?array
     {
         return $this->names;
@@ -775,6 +715,7 @@ class Location
     /**
      * @return string|null
      */
+    #[Ignore]
     public function getNamesAsString(): string|null
     {
         if (is_null($this->names)) {
@@ -788,6 +729,7 @@ class Location
      * @param string[] $names
      * @return self
      */
+    #[Ignore]
     public function setNames(array $names): self
     {
         $uniqueNames = [];
@@ -815,10 +757,48 @@ class Location
     }
 
     /**
+     * Converts the coordinate Point to Coordinate.
+     *
+     * @return Coordinate
+     * @throws CaseUnsupportedException
+     * @throws ParserException
+     */
+    #[Ignore]
+    public function getCoordinateIxnode(): Coordinate
+    {
+        $pointSource = $this->getCoordinate();
+
+        if (!$pointSource instanceof Point) {
+            throw new CaseUnsupportedException(sprintf('Location "%s" does not have a coordinate.', $this->getName()));
+        }
+
+        return new Coordinate($pointSource->getLatitude(), $pointSource->getLongitude());
+    }
+
+    /**
+     * Returns the position of the location.
+     *
+     * @return string
+     * @throws CaseUnsupportedException
+     */
+    #[Ignore]
+    public function getPosition(): string
+    {
+        $pointSource = $this->getCoordinate();
+
+        if (!$pointSource instanceof Point) {
+            throw new CaseUnsupportedException(sprintf('Location "%s" does not have a coordinate.', $this->getName()));
+        }
+
+        return sprintf('%s, %s', $pointSource->getLatitude(), $pointSource->getLongitude());
+    }
+
+    /**
      * Returns the distance in kilometers.
      *
      * @return float|null
      */
+    #[Ignore]
     public function getClosestDistance(): ?float
     {
         return $this->closestDistance;
@@ -830,6 +810,7 @@ class Location
      * @param float $closestDistance
      * @return self
      */
+    #[Ignore]
     public function setClosestDistance(float $closestDistance): self
     {
         $this->closestDistance = $closestDistance;
@@ -837,13 +818,12 @@ class Location
         return $this;
     }
 
-
-
     /**
      * Returns the first valid elevation value from dem or elevation.
      *
      * @return int|null
      */
+    #[Ignore]
     public function getElevationOverall(): ?int
     {
         $elevation = $this->getElevationCompiled();
@@ -867,6 +847,7 @@ class Location
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      * @SuppressWarnings(PHPMD.NPathComplexity)
      */
+    #[Ignore]
     public function getRelevance(string|array $search, Coordinate|null $coordinate = null): int
     {
         if (is_array($search)) {
@@ -952,7 +933,7 @@ class Location
             return $relevance;
         }
 
-        $distanceMeter = $this->getCoordinateIxnode()->getDistance($coordinate);
+        $distanceMeter = $this->getClosestDistanceOrCalculate($coordinate);
 
         /* Remove relevance:
          * 1 km:     -10
@@ -966,8 +947,65 @@ class Location
     }
 
     /**
+     * Returns the distance in meters of this location to given coordinate.
+     *
+     * @param Coordinate $coordinate
+     * @return float|null
+     * @throws CaseUnsupportedException
+     * @throws ParserException
+     */
+    #[Ignore]
+    public function getClosestDistanceOrCalculate(Coordinate $coordinate): float|null
+    {
+        if (!is_null($this->closestDistance)) {
+            return $this->closestDistance;
+        }
+
+        $river = $this->getRiver();
+
+        /* Calculate location distance. */
+        if (!$river instanceof River) {
+            return $this->getCoordinateIxnode()->getDistance($coordinate);
+        }
+
+        $closestDistance = 999_999_999.;
+
+        /** @var float|null $latitude */
+        $latitude = null;
+        /** @var float|null $longitude */
+        $longitude = null;
+
+        foreach ($river->getRiverParts() as $riverPart) {
+            $coordinates = $riverPart->getCoordinates();
+
+            if (is_null($coordinates)) {
+                continue;
+            }
+
+            foreach ($coordinates->getPoints() as $point) {
+                $distance = $coordinate->getDistance(new Coordinate($point->getLatitude(), $point->getLongitude()));
+
+                if ($distance < $closestDistance) {
+                    $closestDistance = $distance;
+                    $latitude = $point->getLatitude();
+                    $longitude = $point->getLongitude();
+                }
+            }
+        }
+
+        if (!is_null($latitude) && !is_null($longitude)) {
+            $this->setCoordinate(new Point($latitude, $longitude));
+        }
+
+        $this->closestDistance = $closestDistance;
+
+        return $closestDistance;
+    }
+
+    /**
      * @return int|null
      */
+    #[Ignore]
     public function getAirportPassenger(): ?int
     {
         $properties = $this->getProperties();
@@ -990,6 +1028,7 @@ class Location
      *
      * @return River|false|null
      */
+    #[Ignore]
     public function getRiver(): River|false|null
     {
         if (!$this->isRiver()) {

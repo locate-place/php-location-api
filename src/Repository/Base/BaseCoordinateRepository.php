@@ -19,10 +19,13 @@ use App\Entity\ZipCodeArea;
 use App\Repository\LocationRepository;
 use App\Repository\ZipCodeAreaRepository;
 use App\Repository\ZipCodeRepository;
+use App\Utils\Db\DebugQuery;
+use App\Utils\Doctrine\QueryBuilder as UtilQueryBuilder;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 use Ixnode\PhpException\Case\CaseUnsupportedException;
+use JetBrains\PhpStorm\NoReturn;
 use LogicException;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
@@ -36,6 +39,8 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
  */
 class BaseCoordinateRepository extends ServiceEntityRepository
 {
+    protected UtilQueryBuilder $queryBuilder;
+
     /**
      * @inheritdoc
      * @param ParameterBagInterface $parameterBag
@@ -46,6 +51,8 @@ class BaseCoordinateRepository extends ServiceEntityRepository
     )
     {
         parent::__construct($registry, $this->getEntityClassByRepository());
+
+        $this->queryBuilder = new UtilQueryBuilder($this->getEntityManager());
     }
 
     /**
@@ -117,5 +124,20 @@ class BaseCoordinateRepository extends ServiceEntityRepository
                 };
             }
         }
+    }
+
+    /**
+     * Prints the raw query from given query builder.
+     *
+     * @param QueryBuilder $queryBuilder
+     * @return void
+     * @SuppressWarnings(PHPMD.ExitExpression)
+     */
+    #[NoReturn]
+    protected function debugQuery(QueryBuilder $queryBuilder): void
+    {
+        $debugQuery = new DebugQuery($queryBuilder);
+        print $debugQuery->getSqlRaw();
+        exit();
     }
 }

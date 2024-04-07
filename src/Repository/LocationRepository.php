@@ -16,8 +16,8 @@ namespace App\Repository;
 use App\Constants\Code\Prediction;
 use App\Constants\DB\FeatureClass as DbFeatureClass;
 use App\Constants\DB\FeatureCode as DbFeatureCode;
+use App\Constants\DB\Limit;
 use App\Constants\Language\LanguageCode;
-use App\DBAL\GeoLocation\Converter\ValueToPoint;
 use App\Entity\AlternateName;
 use App\Entity\Country;
 use App\Entity\FeatureClass;
@@ -26,7 +26,10 @@ use App\Entity\Location;
 use App\Entity\River;
 use App\Entity\RiverPart;
 use App\Repository\Base\BaseCoordinateRepository;
+use App\Service\LocationService;
 use App\Service\LocationServiceConfig;
+use App\Utils\Doctrine\EntityProcessor;
+use App\Utils\Doctrine\ResultProcessor;
 use App\Utils\Feature\FeatureContainer;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Exception\ORMException;
@@ -67,6 +70,8 @@ class LocationRepository extends BaseCoordinateRepository
      * @param LocationServiceConfig $locationCountryService
      * @param ParameterBagInterface $parameterBag
      * @param RiverRepository $riverRepository
+     * @param EntityProcessor $entityProcessor
+     * @param ResultProcessor $resultProcessor
      */
     public function __construct(
         protected ManagerRegistry $registry,
@@ -74,6 +79,8 @@ class LocationRepository extends BaseCoordinateRepository
         protected LocationServiceConfig $locationCountryService,
         protected ParameterBagInterface $parameterBag,
         protected RiverRepository $riverRepository,
+        protected EntityProcessor $entityProcessor,
+        protected ResultProcessor $resultProcessor
     )
     {
         parent::__construct($registry, $parameterBag);
@@ -174,43 +181,111 @@ class LocationRepository extends BaseCoordinateRepository
      * Finds the locations from given search string.
      *
      * @param string|string[] $search
+     * @param array<int, string>|string|null $featureClass
+     * @param array<int, string>|string|null $featureCode
      * @param int|null $limit
+     * @param int $page
+     * @param Coordinate|null $coordinate
+     * @param string $sortBy
      * @return array<int, Location>
+     * @throws ORMException
+     * @throws TypeInvalidException
      */
-    public function findBySearch(string|array $search, int|null $limit = null): array
+    public function findBySearch(
+        /* Search */
+        string|array $search,
+
+        /* Search filter */
+        array|string|null $featureClass = null,
+        array|string|null $featureCode = null,
+        int|null $limit = Limit::LIMIT_10,
+        int $page = LocationService::PAGE_FIRST,
+
+        /* Configuration */
+        Coordinate|null $coordinate = null,
+
+        /* Sort configuration */
+        string $sortBy = LocationService::SORT_BY_RELEVANCE,
+    ): array
     {
-        if (is_string($search)) {
-            $search = [$search];
+        $query = match(true) {
+            $coordinate instanceof Coordinate => $this->queryBuilder->getQueryLocationSearch(
+                search: $search,
+                featureClass: $featureClass,
+                featureCode: $featureCode,
+                limit: $limit,
+                page: $page,
+                coordinate: $coordinate,
+                sortBy: $sortBy,
+            ),
+            default => $this->queryBuilder->getQueryLocationSearch(
+                search: $search,
+                featureClass: $featureClass,
+                featureCode: $featureCode,
+                limit: $limit,
+                page: $page,
+                sortBy: $sortBy,
+            )
+        };
+
+        /* @var array<int, Location|array<int, mixed>> $results */
+        $results = $query->getResult();
+
+        /* @phpstan-ignore-next-line -> getResult will give array<int, Location|array<int, mixed>> */
+        $locations = $this->resultProcessor->hydrateObjects($results);
+
+        return $this->entityProcessor->reloadLocations($locations);
+    }
+
+    /**
+     * Finds the locations from given search string.
+     *
+     * @param string|string[] $search
+     * @param array<int, string>|string|null $featureClass
+     * @param array<int, string>|string|null $featureCode
+     * @param Coordinate|null $coordinate
+     * @return int
+     */
+    public function countBySearch(
+        /* Search */
+        string|array $search,
+
+        /* Search filter */
+        array|string|null $featureClass = null,
+        array|string|null $featureCode = null,
+
+        /* Configuration */
+        Coordinate|null $coordinate = null
+    ): int
+    {
+        $query = match(true) {
+            $coordinate instanceof Coordinate => $this->queryBuilder->getQueryCountLocationSearch(
+                search: $search,
+                featureClass: $featureClass,
+                featureCode: $featureCode,
+                coordinate: $coordinate,
+            ),
+            default => $this->queryBuilder->getQueryCountLocationSearch(
+                search: $search,
+                featureClass: $featureClass,
+                featureCode: $featureCode,
+            )
+        };
+
+        /* @var array<int, Location|array<int, mixed>> $results */
+        $results = $query->getResult();
+
+        if (!is_array($results)) {
+            throw new LogicException('Unexpected result type.');
         }
 
-        $queryBuilder = $this->createQueryBuilder('l')
-            ->join('l.alternateNames', 'a')
-            ->setMaxResults($limit)
-        ;
+        $firstResult = $results[0] ?? [];
 
-        /* Loop through each search term and add it as an AND condition */
-        foreach ($search as $index => $term) {
-            $queryBuilder->andWhere('ILIKE(a.alternateName, :name'.$index.') = true')
-                ->setParameter('name'.$index, '%'.$term.'%');
+        if (!is_array($firstResult)) {
+            throw new LogicException('Unexpected result type.');
         }
 
-        $locations = $queryBuilder->getQuery()->execute();
-
-        if (!is_array($locations)) {
-            throw new LogicException('Unsupported query type.');
-        }
-
-        $locationsResult = [];
-
-        foreach ($locations as $location) {
-            if (!$location instanceof Location) {
-                continue;
-            }
-
-            $locationsResult[] = $location;
-        }
-
-        return $locationsResult;
+        return $firstResult['count'] ?? 0;
     }
 
     /**
@@ -945,7 +1020,7 @@ class LocationRepository extends BaseCoordinateRepository
             throw new LogicException(sprintf('Result must be an array. "%s" given.', gettype($result)));
         }
 
-        return $this->hydrateObjects($result);
+        return $this->resultProcessor->hydrateObjects($result);
     }
 
     /**
@@ -1204,7 +1279,7 @@ class LocationRepository extends BaseCoordinateRepository
             throw new LogicException(sprintf('Result must be an array. "%s" given.', gettype($result)));
         }
 
-        $locations = $this->hydrateObjects($result);
+        $locations = $this->resultProcessor->hydrateObjects($result);
 
         foreach ($locations as $location) {
             $location->setClosestDistance($location->getCoordinateIxnode()->getDistance($coordinate));
@@ -1283,88 +1358,5 @@ class LocationRepository extends BaseCoordinateRepository
         }
 
         return $riverLocations;
-    }
-
-    /**
-     * Hydrates the given object.
-     *
-     * @param Location|array<int|string, mixed> $object
-     * @return Location
-     * @throws TypeInvalidException
-     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
-     */
-    public function hydrateObject(Location|array $object): Location
-    {
-        /* No hidden fields, etc. were given. */
-        if ($object instanceof Location) {
-            return $object;
-        }
-
-        $location = null;
-
-        foreach ($object as $property => $value) {
-            /* The first result should be a Location entity. */
-            if ($value instanceof Location) {
-                $location = $value;
-                continue;
-            }
-
-            /* The first result should be a Location entity. */
-            if (is_null($location)) {
-                throw new LogicException('Location was not found within db result.');
-            }
-
-            switch ($property) {
-                /* Set the alternate names. */
-                case 'alternateNames':
-                    if (!is_string($value) && !is_null($value)) {
-                        throw new LogicException(sprintf('$value expected to be a string or null. "%s" given.', gettype($value)));
-                    }
-                    $location->setNames(
-                        explode(
-                            Location::NAME_SEPARATOR,
-                            (
-                                is_null($value) ? '' : $value.Location::NAME_SEPARATOR
-                            ).$location->getName()
-                        )
-                    );
-                    break;
-
-                /* Set the closest point. */
-                case 'closest_point':
-                    if (is_null($value)) {
-                        continue 2;
-                    }
-                    if (!is_string($value)) {
-                        throw new LogicException(sprintf('$value expected to be a string or null. "%s" given.', gettype($value)));
-                    }
-                    $location->setCoordinate(
-                        (new ValueToPoint($value))->get()
-                    );
-                    break;
-
-                /* Unknown property. */
-                default:
-                    throw new LogicException(sprintf('Unknown property "%s".', $property));
-            }
-        }
-
-        if (is_null($location)) {
-            throw new LogicException('Location was not found within db result.');
-        }
-
-        return $location;
-    }
-
-    /**
-     * Hydrates the given objects.
-     *
-     * @param array<int, Location|array<int|null, mixed>> $objects
-     * @return Location[]
-     * @throws TypeInvalidException
-     */
-    public function hydrateObjects(array $objects): array
-    {
-        return array_map(fn(Location|array $object) => $this->hydrateObject($object), $objects);
     }
 }
