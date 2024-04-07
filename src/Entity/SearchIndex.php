@@ -15,6 +15,7 @@ namespace App\Entity;
 
 use App\DBAL\GeoLocation\Types\PostgreSQL\TsVectorType;
 use App\DBAL\GeoLocation\ValueObject\TsVector;
+use App\Entity\Trait\TimestampsTrait;
 use App\Repository\SearchIndexRepository;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -30,9 +31,12 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Index(columns: ['search_text_de'], flags: ['gin'])]
 #[ORM\Index(columns: ['search_text_en'], flags: ['gin'])]
 #[ORM\Index(columns: ['search_text_es'], flags: ['gin'])]
+#[ORM\Index(columns: ['relevance_score'])]
 #[ORM\HasLifecycleCallbacks]
 class SearchIndex
 {
+    use TimestampsTrait;
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
