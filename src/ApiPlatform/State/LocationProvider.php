@@ -26,6 +26,7 @@ use App\Service\LocationServiceConfig;
 use App\Utils\Query\Query;
 use App\Utils\Query\QueryParser;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Exception\ORMException;
 use Doctrine\ORM\NonUniqueResultException;
 use Ixnode\PhpApiVersionBundle\ApiPlatform\Resource\Base\BasePublicResource;
 use Ixnode\PhpApiVersionBundle\ApiPlatform\State\Base\Wrapper\BaseResourceWrapperProvider;
@@ -198,6 +199,7 @@ final class LocationProvider extends BaseProviderCustom
      * @throws ServerExceptionInterface
      * @throws TransportExceptionInterface
      * @throws TypeInvalidException
+     * @throws ORMException
      */
     private function doProvideGetCollectionBySearch(QueryParser $queryParser): array
     {
@@ -269,6 +271,7 @@ final class LocationProvider extends BaseProviderCustom
      * @throws CaseInvalidException
      * @throws CaseUnsupportedException
      * @throws ClassInvalidException
+     * @throws ClientExceptionInterface
      * @throws FileNotFoundException
      * @throws FileNotReadableException
      * @throws FunctionJsonEncodeException
@@ -276,6 +279,9 @@ final class LocationProvider extends BaseProviderCustom
      * @throws JsonException
      * @throws NonUniqueResultException
      * @throws ParserException
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
      * @throws TypeInvalidException
      */
     private function doProvideGetCollectionByCoordinate(QueryParser $queryParser): array
@@ -441,6 +447,7 @@ final class LocationProvider extends BaseProviderCustom
      * @throws CaseInvalidException
      * @throws CaseUnsupportedException
      * @throws ClassInvalidException
+     * @throws ClientExceptionInterface
      * @throws FileNotFoundException
      * @throws FileNotReadableException
      * @throws FunctionJsonEncodeException
@@ -448,6 +455,9 @@ final class LocationProvider extends BaseProviderCustom
      * @throws JsonException
      * @throws NonUniqueResultException
      * @throws ParserException
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
      * @throws TypeInvalidException
      */
     private function doProvideGetWithCoordinate(QueryParser $queryParser): BasePublicResource
@@ -542,6 +552,7 @@ final class LocationProvider extends BaseProviderCustom
      * @throws FunctionReplaceException
      * @throws JsonException
      * @throws NonUniqueResultException
+     * @throws ORMException
      * @throws ParserException
      * @throws RedirectionExceptionInterface
      * @throws ServerExceptionInterface

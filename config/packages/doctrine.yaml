@@ -7,6 +7,9 @@ doctrine:
             geometry:
                 class: App\DBAL\GeoLocation\Types\PostgreSQL\GeometryType
                 commented: false
+            tsvector:
+                class: App\DBAL\GeoLocation\Types\PostgreSQL\TsVectorType
+                commented: false
         default_connection: postgresql
         connections:
             postgresql:
@@ -21,6 +24,7 @@ doctrine:
                 mapping_types:
                     geography: geography
                     geometry: geometry
+                    tsvector: tsvector
                 schema_filter: ~^(?!topology\.)~
             sqlite:
                 driver: "%env(resolve:DOCTRINE_DB_DRIVER_SQLITE)%"
@@ -34,6 +38,7 @@ doctrine:
                 mapping_types:
                     geography: geography
                     geometry: geometry
+                    tsvector: tsvector
 
     orm:
         auto_generate_proxy_classes: true

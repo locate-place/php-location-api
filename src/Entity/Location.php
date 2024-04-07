@@ -39,6 +39,7 @@ use Symfony\Component\Serializer\Annotation\Ignore;
  * @SuppressWarnings(PHPMD.TooManyFields)
  * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
  * @SuppressWarnings(PHPMD.ExcessivePublicCount)
+ * @SuppressWarnings(PHPMD.ExcessiveClassLength)
  */
 #[ORM\Entity(repositoryClass: LocationRepository::class)]
 #[ORM\Index(columns: ['coordinate'], flags: ['gist'])]
@@ -117,6 +118,10 @@ class Location
     #[ORM\OneToMany(mappedBy: 'location', targetEntity: Property::class, orphanRemoval: true)]
     private Collection $properties;
 
+    /** @var Collection<int, SearchIndex> $searchIndices */
+    #[ORM\OneToMany(mappedBy: 'location', targetEntity: SearchIndex::class, orphanRemoval: true)]
+    private Collection $searchIndices;
+
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $source = null;
 
@@ -147,6 +152,7 @@ class Location
         $this->imports = new ArrayCollection();
         $this->alternateNames = new ArrayCollection();
         $this->properties = new ArrayCollection();
+        $this->searchIndices = new ArrayCollection();
         $this->rivers = new ArrayCollection();
     }
 
@@ -588,6 +594,44 @@ class Location
             // set the owning side to null (unless already changed)
             if ($property->getLocation() === $this) {
                 $property->setLocation(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, SearchIndex>
+     */
+    public function getSearchIndices(): Collection
+    {
+        return $this->searchIndices;
+    }
+
+    /**
+     * @param SearchIndex $searchIndex
+     * @return $this
+     */
+    public function addIndex(SearchIndex $searchIndex): static
+    {
+        if (!$this->searchIndices->contains($searchIndex)) {
+            $this->searchIndices->add($searchIndex);
+            $searchIndex->setLocation($this);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param SearchIndex $searchIndex
+     * @return $this
+     */
+    public function removeIndex(SearchIndex $searchIndex): static
+    {
+        if ($this->searchIndices->removeElement($searchIndex)) {
+            // set the owning side to null (unless already changed)
+            if ($searchIndex->getLocation() === $this) {
+                $searchIndex->setLocation(null);
             }
         }
 
