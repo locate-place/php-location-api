@@ -37,10 +37,17 @@ class Query
         %(feature_code)s
         %(feature_class)s
         WHERE
-            (
-                si.search_text_simple @@ to_tsquery('simple', :search) OR
-                si.search_text_de @@ to_tsquery('german', :search)
-            )
+            CASE
+                WHEN
+                    :search = ''
+                THEN
+                    si.id IS NOT NULL
+                ELSE
+                    (
+                        si.search_text_simple @@ to_tsquery('simple', :search) OR
+                        si.search_text_de @@ to_tsquery('german', :search)
+                    )
+            END
         ORDER BY
             %(sort_by)s
         %(limit)s;
@@ -55,10 +62,17 @@ SQL;
         %(feature_code)s
         %(feature_class)s
         WHERE
-            (
-                si.search_text_simple @@ to_tsquery('simple', :search) OR
-                si.search_text_de @@ to_tsquery('german', :search)
-            )
+            CASE
+                WHEN
+                    :search = ''
+                THEN
+                    si.id IS NOT NULL
+                ELSE
+                    (
+                        si.search_text_simple @@ to_tsquery('simple', :search) OR
+                        si.search_text_de @@ to_tsquery('german', :search)
+                    )
+            END
         ;
 SQL;
 
@@ -104,10 +118,17 @@ SQL;
             LIMIT 1
         ) rp ON TRUE
         WHERE
-            (
-                si.search_text_simple @@ to_tsquery('simple', :search) OR
-                si.search_text_de @@ to_tsquery('german', :search)
-            )
+            CASE
+                WHEN
+                    :search = ''
+                THEN
+                    si.id IS NOT NULL
+                ELSE
+                    (
+                        si.search_text_simple @@ to_tsquery('simple', :search) OR
+                        si.search_text_de @@ to_tsquery('german', :search)
+                    )
+            END
         ORDER BY
             %(sort_by)s
         %(limit)s;
@@ -143,10 +164,17 @@ SQL;
             LIMIT 1
         ) rp ON TRUE
         WHERE
-            (
-                si.search_text_simple @@ to_tsquery('simple', :search) OR
-                si.search_text_de @@ to_tsquery('german', :search)
-            )
+            CASE
+                WHEN
+                    :search = ''
+                THEN
+                    si.id IS NOT NULL
+                ELSE
+                    (
+                        si.search_text_simple @@ to_tsquery('simple', :search) OR
+                        si.search_text_de @@ to_tsquery('german', :search)
+                    )
+            END
         ;
 SQL;
 
@@ -196,10 +224,17 @@ SQL;
             LIMIT 1
         ) rp ON TRUE
         WHERE
-            (
-                si.search_text_simple @@ to_tsquery('simple', :search) OR
-                si.search_text_de @@ to_tsquery('german', :search)
-            ) AND
+            CASE
+                WHEN
+                    :search = ''
+                THEN
+                    si.id IS NOT NULL
+                ELSE
+                    (
+                        si.search_text_simple @@ to_tsquery('simple', :search) OR
+                        si.search_text_de @@ to_tsquery('german', :search)
+                    )
+            END AND
             ST_DWithin(
                 CASE
                     WHEN coordinates_river IS NOT NULL THEN ST_EndPoint(ST_ShortestLine(
@@ -250,10 +285,17 @@ SQL;
             LIMIT 1
         ) rp ON TRUE
         WHERE
-            (
-                si.search_text_simple @@ to_tsquery('simple', :search) OR
-                si.search_text_de @@ to_tsquery('german', :search)
-            ) AND
+            CASE
+                WHEN
+                    :search = ''
+                THEN
+                    si.id IS NOT NULL
+                ELSE
+                    (
+                        si.search_text_simple @@ to_tsquery('simple', :search) OR
+                        si.search_text_de @@ to_tsquery('german', :search)
+                    )
+            END AND
             ST_DWithin(
                 CASE
                     WHEN coordinates_river IS NOT NULL THEN ST_EndPoint(ST_ShortestLine(

@@ -193,7 +193,7 @@ class LocationRepository extends BaseCoordinateRepository
      */
     public function findBySearch(
         /* Search */
-        string|array $search,
+        string|array|null $search,
 
         /* Search filter */
         array|string|null $featureClass = null,
@@ -248,7 +248,7 @@ class LocationRepository extends BaseCoordinateRepository
      */
     public function countBySearch(
         /* Search */
-        string|array $search,
+        string|array|null $search,
 
         /* Search filter */
         array|string|null $featureClass = null,

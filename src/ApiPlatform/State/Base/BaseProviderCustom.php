@@ -27,6 +27,7 @@ use App\Repository\LocationRepository;
 use App\Service\LocationService;
 use App\Utils\Performance\PerformanceLogger;
 use App\Utils\Query\Query;
+use App\Utils\Query\QueryParser;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\NonUniqueResultException;
 use Exception;
@@ -60,6 +61,7 @@ use Symfony\Contracts\Translation\TranslatorInterface;
  * @version 0.1.0 (2023-07-04)
  * @since 0.1.0 (2023-07-04) First version.
  * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
+ * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  */
 class BaseProviderCustom extends BaseResourceWrapperProvider
 {
@@ -668,6 +670,27 @@ class BaseProviderCustom extends BaseResourceWrapperProvider
      */
     private function isLocationRequest(): bool
     {
-        return str_contains($this->request->getCurrentRequest()?->getPathInfo() ?? '', 'location.json');
+        return str_contains($this->request->getCurrentRequest()?->getPathInfo() ?? '', '/location');
+    }
+
+    /**
+     * Tries to get the coordinate from the given query.
+     *
+     * @param QueryParser $queryParser
+     * @param LocationRepository $locationRepository
+     * @return Coordinate|null
+     * @throws CaseUnsupportedException
+     * @throws ParserException
+     */
+    protected function getCoordinateByQueryParser(QueryParser $queryParser, LocationRepository $locationRepository): Coordinate|null
+    {
+        $coordinate = $queryParser->getCoordinate();
+        $geonameId = $queryParser->getGeonameId();
+
+        return match (true) {
+            $coordinate instanceof Coordinate => $coordinate,
+            !is_null($geonameId) => $locationRepository->findOneBy(['geonameId' => $geonameId])?->getCoordinateIxnode(),
+            default => null,
+        };
     }
 }

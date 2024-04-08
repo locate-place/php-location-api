@@ -32,6 +32,7 @@ use Ixnode\PhpApiVersionBundle\ApiPlatform\Resource\Base\BasePublicResource;
 use Ixnode\PhpApiVersionBundle\ApiPlatform\State\Base\Wrapper\BaseResourceWrapperProvider;
 use Ixnode\PhpApiVersionBundle\Utils\Version\Version;
 use Ixnode\PhpContainer\File;
+use Ixnode\PhpCoordinate\Coordinate;
 use Ixnode\PhpException\ArrayType\ArrayKeyNotFoundException;
 use Ixnode\PhpException\Case\CaseInvalidException;
 use Ixnode\PhpException\Case\CaseUnsupportedException;
@@ -200,6 +201,7 @@ final class LocationProvider extends BaseProviderCustom
      * @throws TransportExceptionInterface
      * @throws TypeInvalidException
      * @throws ORMException
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      */
     private function doProvideGetCollectionBySearch(QueryParser $queryParser): array
     {
@@ -213,16 +215,20 @@ final class LocationProvider extends BaseProviderCustom
         }
 
         $search = $queryParser->getSearch();
+        $featureClasses = $queryParser->getFeatureClasses();
+        $featureCodes = $queryParser->getFeatureCodes();
 
-        if (is_null($search)) {
+        if (is_null($search) && is_null($featureClasses) && is_null($featureCodes)) {
             $this->setError('Unable to get search string.');
             return [];
         }
 
-        foreach ($search as $searchPart) {
-            if (mb_strlen($searchPart) < self::SEARCH_MINIMUM_LENGTH) {
-                $this->setError(sprintf('At least %s characters are required to search ("%s").', self::SEARCH_MINIMUM_LENGTH, $searchPart));
-                return [];
+        if (!is_null($search)) {
+            foreach ($search as $searchPart) {
+                if (mb_strlen($searchPart) < self::SEARCH_MINIMUM_LENGTH) {
+                    $this->setError(sprintf('At least %s characters are required to search ("%s").', self::SEARCH_MINIMUM_LENGTH, $searchPart));
+                    return [];
+                }
             }
         }
 
@@ -233,8 +239,8 @@ final class LocationProvider extends BaseProviderCustom
             search: $search,
 
             /* Search filter */
-            featureClass: $queryParser->getFeatureClasses(),
-            featureCode: $queryParser->getFeatureCodes(),
+            featureClass: $featureClasses,
+            featureCode: $featureCodes,
             limit: $this->hasFilter(Name::LIMIT) ? $this->getFilterInteger(Name::LIMIT) : Limit::LIMIT_10,
             page: $this->query->getPage(),
 
@@ -295,10 +301,10 @@ final class LocationProvider extends BaseProviderCustom
             return [];
         }
 
-        $coordinate = $queryParser->getCoordinate();
+        $coordinate = $this->getCoordinateByQueryParser($queryParser, $this->locationRepository);
 
         if (is_null($coordinate)) {
-            $this->setError('Unable to get coordinate from given data.');
+            //$this->setError('Unable to get coordinate from given data.');
             return [];
         }
 
@@ -471,10 +477,10 @@ final class LocationProvider extends BaseProviderCustom
             return (new LocationResource())->setGeonameId(0);
         }
 
-        $coordinate = $queryParser->getCoordinate();
+        $coordinate = $this->getCoordinateByQueryParser($queryParser, $this->locationRepository);
 
         if (is_null($coordinate)) {
-            $this->setError('Unable to get coordinate from given data.');
+            //$this->setError('Unable to get coordinate from given data.');
             return (new LocationResource())->setGeonameId(0);
         }
 
@@ -638,6 +644,12 @@ final class LocationProvider extends BaseProviderCustom
              * - https://www.location-api.localhost/api/v1/location.json?q=Eiffel%20Tower&limit=10&language=de&country=DE
              */
             case $this->getRequestMethod() === BaseResourceWrapperProvider::METHOD_GET_COLLECTION && $queryParser->isType(QueryParser::TYPE_SEARCH_LIST_GENERAL):
+            /* - https://www.location-api.localhost/api/v1/location.json?q=AIRP&limit=10
+             */
+            case $this->getRequestMethod() === BaseResourceWrapperProvider::METHOD_GET_COLLECTION && $queryParser->isType(QueryParser::TYPE_SEARCH_LIST_WITH_FEATURES):
+            /* - https://www.location-api.localhost/api/v1/location.json?q=AIRP%20Dresden&limit=10
+             */
+            case $this->getRequestMethod() === BaseResourceWrapperProvider::METHOD_GET_COLLECTION && $queryParser->isType(QueryParser::TYPE_SEARCH_LIST_WITH_FEATURES_AND_SEARCH):
                 return $this->doProvideGetCollectionBySearch($queryParser);
 
             /* A-5) Next places search (list search, all, DEPRECATED!!!):
@@ -654,7 +666,8 @@ final class LocationProvider extends BaseProviderCustom
              * - https://www.location-api.localhost/api/v1/location.json?q=AIRP%2051.05811,13.74133&distance=150000&limit=10
              * - https://www.location-api.localhost/api/v1/location.json?q=AIRP%2051.05811,13.74133&distance=150000&limit=10&language=de&country=DE
              */
-            case $this->getRequestMethod() === BaseResourceWrapperProvider::METHOD_GET_COLLECTION && $queryParser->isType(QueryParser::TYPE_SEARCH_LIST_WITH_FEATURES):
+            case $this->getRequestMethod() === BaseResourceWrapperProvider::METHOD_GET_COLLECTION && $queryParser->isType(QueryParser::TYPE_SEARCH_LIST_WITH_FEATURES_AND_COORDINATE):
+            case $this->getRequestMethod() === BaseResourceWrapperProvider::METHOD_GET_COLLECTION && $queryParser->isType(QueryParser::TYPE_SEARCH_LIST_WITH_FEATURES_AND_GEONAME_ID):
                 return $this->doProvideGetCollectionByCoordinate($queryParser);
 
             /* A-7) Geoname ID search (list search):
@@ -707,7 +720,7 @@ final class LocationProvider extends BaseProviderCustom
              * ----------------------
              */
             default:
-                $this->setError('Unsupported query type.');
+                $this->setError(sprintf('Unsupported query type (request method: "%s"; query type: "%s")', $this->getRequestMethod(), $queryParser->getType()));
                 return [];
         }
     }

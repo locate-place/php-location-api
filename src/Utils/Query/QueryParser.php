@@ -43,6 +43,12 @@ class QueryParser
 
     final public const TYPE_SEARCH_LIST_WITH_FEATURES = 'search-list-with-features';
 
+    final public const TYPE_SEARCH_LIST_WITH_FEATURES_AND_COORDINATE = 'search-list-with-features-and-coordinate';
+
+    final public const TYPE_SEARCH_LIST_WITH_FEATURES_AND_GEONAME_ID = 'search-list-with-features-and-geoname-id';
+
+    final public const TYPE_SEARCH_LIST_WITH_FEATURES_AND_SEARCH = 'search-list-with-features-and-search';
+
     private const SEPARATOR_FEATURE_CODES = '|';
 
     private const LENGTH_FEATURE_CLASS = 1;
@@ -55,13 +61,15 @@ class QueryParser
 
     private const EREG_WRAPPER_COORDINATE_WITH_FEATURES = '^%s[ :] *%s *[,/| ]+ *%s$';
 
+    private const EREG_WRAPPER_LIST_SEARCH_WITH_FEATURES = '^%s(?:[ :][ ]*)?*%s$';
+
     private const FORMAT_ID = '([0-9]+)';
 
     private const FORMAT_FEATURES_SINGLE = '(?:[A-Z]{1,3}[A-Z0-9]{1,2}|[AHLPRSTUV])';
 
     private const FORMAT_FEATURES = '('.self::FORMAT_FEATURES_SINGLE.'(?:\\'.self::SEPARATOR_FEATURE_CODES.self::FORMAT_FEATURES_SINGLE.')*)';
 
-    private const FORMAT_DECIMAL = '([-+]?[0-9]+\.[0-9]+)°?';
+    private const FORMAT_DECIMAL = '([-+]?[0-9]+[\.,][0-9]+)°?';
 
     private const FORMAT_DMS = '[0-9]+°[0-9]+′[0-9]+\.[0-9]+″';
 
@@ -85,7 +93,8 @@ class QueryParser
      *      feature-classes: string[]|null,
      *      feature-codes: string[]|null,
      *      search: string|null,
-     *  } $data */
+     *      distance: int|null
+     * } $data */
     private array $data;
 
     /** @var string[] $matches */
@@ -130,14 +139,15 @@ class QueryParser
      * Returns the query data (cached).
      *
      * @return array{
-     *      type: string,
-     *      geoname-id: int|null,
-     *      latitude: float|null,
-     *      longitude: float|null,
-     *      feature-classes: string[]|null,
-     *      feature-codes: string[]|null,
-     *      search: string|null,
-     *  }
+     *     type: string,
+     *     geoname-id: int|null,
+     *     latitude: float|null,
+     *     longitude: float|null,
+     *     feature-classes: string[]|null,
+     *     feature-codes: string[]|null,
+     *     search: string|null,
+     *     distance: int|null
+     * }
      *
      * @throws CaseUnsupportedException
      * @throws ParserException
@@ -312,6 +322,20 @@ class QueryParser
     }
 
     /**
+     * Returns the distance.
+     *
+     * @return int|null
+     * @throws CaseUnsupportedException
+     * @throws ParserException
+     */
+    public function getDistance(): int|null
+    {
+        $data = $this->getData();
+
+        return $data[KeyArray::DISTANCE];
+    }
+
+    /**
      * Returns a Coordinate class from given data.
      *
      * @return Coordinate|null
@@ -342,6 +366,7 @@ class QueryParser
      * @param string[]|null $featureClasses
      * @param string[]|null $featureCodes
      * @param string|null $search
+     * @param int|null $distance
      * @return array{
      *     type: string,
      *     geoname-id: int|null,
@@ -350,6 +375,7 @@ class QueryParser
      *     feature-classes: string[]|null,
      *     feature-codes: string[]|null,
      *     search: string|null,
+     *     distance: int|null
      * }
      */
     public static function getDataContainer(
@@ -359,7 +385,8 @@ class QueryParser
         float|null $longitude = null,
         array|null $featureClasses = null,
         array|null $featureCodes = null,
-        string|null $search = null
+        string|null $search = null,
+        int|null $distance = null
     ): array
     {
         if (!is_null($latitude) && is_null($longitude)) {
@@ -377,7 +404,30 @@ class QueryParser
             KeyArray::FEATURE_CLASSES => $featureClasses,
             KeyArray::FEATURE_CODES => $featureCodes,
             KeyArray::SEARCH => $search,
+            KeyArray::DISTANCE => $distance,
         ];
+    }
+
+    /**
+     * Returns the query type (type: search-list-with-features-X).
+     *
+     * @param string|false $query
+     * @return string
+     */
+    private function getTypeSearchListWithFeatures(string|false $query): string
+    {
+        /* Only features were given. */
+        if (empty($query)) {
+            return self::TYPE_SEARCH_LIST_WITH_FEATURES;
+        }
+
+        /* Features with geoname id were given. */
+        if (mb_ereg(sprintf(self::EREG_WRAPPER_SINGLE, self::FORMAT_ID), $query)) {
+            return self::TYPE_SEARCH_LIST_WITH_FEATURES_AND_GEONAME_ID;
+        }
+
+        /* Features with search term were given. */
+        return self::TYPE_SEARCH_LIST_WITH_FEATURES_AND_SEARCH;
     }
 
     /**
@@ -433,9 +483,19 @@ class QueryParser
         foreach (self::FORMAT_LATITUDES as $formatLatitude) {
             foreach (self::FORMAT_LONGITUDES as $formatLongitude) {
                 if (mb_ereg(sprintf(self::EREG_WRAPPER_COORDINATE_WITH_FEATURES, self::FORMAT_FEATURES, $formatLatitude, $formatLongitude), $this->query, $this->matches)) {
-                    return self::TYPE_SEARCH_LIST_WITH_FEATURES;
+                    return self::TYPE_SEARCH_LIST_WITH_FEATURES_AND_COORDINATE;
                 }
             }
+        }
+
+        /* Feature class/code was given -> Use search list query with features:
+         * - AIRP
+         * - AIRP|AIRT
+         * - AIRP|AIRT Dresden
+         * - etc.
+         */
+        if (mb_ereg(sprintf(self::EREG_WRAPPER_LIST_SEARCH_WITH_FEATURES, self::FORMAT_FEATURES, '(.*)'), $this->query, $this->matches)) {
+            return $this->getTypeSearchListWithFeatures($this->matches[2]);
         }
 
         /* Use the query as a search list query:
@@ -448,16 +508,7 @@ class QueryParser
     /**
      * Returns the query data.
      *
-     * @return array{
-     *      type: string,
-     *      geoname-id: int|null,
-     *      latitude: float|null,
-     *      longitude: float|null,
-     *      feature-classes: string[]|null,
-     *      feature-codes: string[]|null,
-     *      search: string|null,
-     *  }
-     *
+     * @return array{type: string, geoname-id: int|null, latitude: float|null, longitude: float|null, feature-classes: string[]|null, feature-codes: string[]|null, search: string|null, distance: int|null}
      * @throws CaseUnsupportedException
      * @throws ParserException
      */
@@ -466,24 +517,53 @@ class QueryParser
         $type = $this->getType();
 
         return match ($type) {
+            /* Geoname search. */
             self::TYPE_SEARCH_GEONAME_ID => $this->getDataContainerParsed(
-                $type,
+                type: $type,
                 geonameId: (int) $this->matches[1]
             ),
+
+            /* Coordinate search. */
             self::TYPE_SEARCH_COORDINATE => $this->getDataContainerParsed(
-                $type, latitude: $this->matches[1],
+                type: $type,
+                latitude: $this->matches[1],
                 longitude: $this->matches[2]
             ),
+
+            /* Feature list search. */
             self::TYPE_SEARCH_LIST_WITH_FEATURES => $this->getDataContainerParsed(
-                $type,
+                type: $type,
+                features: $this->matches[1]
+            ),
+
+            /* Feature list search with coordinate. */
+            self::TYPE_SEARCH_LIST_WITH_FEATURES_AND_COORDINATE => $this->getDataContainerParsed(
+                type: $type,
                 latitude: $this->matches[2],
                 longitude: $this->matches[3],
                 features: $this->matches[1]
             ),
+
+            /* Feature list search with coordinate. */
+            self::TYPE_SEARCH_LIST_WITH_FEATURES_AND_GEONAME_ID => $this->getDataContainerParsed(
+                type: $type,
+                geonameId: (int) $this->matches[2],
+                features: $this->matches[1]
+            ),
+
+            /* Feature list search with search string. */
+            self::TYPE_SEARCH_LIST_WITH_FEATURES_AND_SEARCH => $this->getDataContainerParsed(
+                type: $type,
+                features: $this->matches[1],
+                search: $this->matches[2]
+            ),
+
+            /* General search. */
             self::TYPE_SEARCH_LIST_GENERAL => $this->getDataContainerParsed(
-                $type,
+                type: $type,
                 search: $this->matches[1]
             ),
+
             default => throw new LogicException(sprintf('Unknown query type "%s".', $type)),
         };
     }
@@ -505,6 +585,7 @@ class QueryParser
      *     feature-classes: string[]|null,
      *     feature-codes: string[]|null,
      *     search: string|null,
+     *     distance: int|null
      * }
      * @throws CaseUnsupportedException
      * @throws ParserException

@@ -38,8 +38,29 @@ final class ParserTest extends TestCase
      * @param int $number
      * @param string $query
      * @param string $expectedType
+     * @param string[]|null $expectedSearch
+     * @param string[]|null $expectedFeatureClasses
+     * @param string[]|null $expectedFeatureCodes
+     * @param int|null $expectedGeonameId
+     * @param float|null $expectedLatitude
+     * @param float|null $expectedLongitude
+     * @param int|null $expectedDistance
+     * @throws CaseUnsupportedException
+     * @throws ParserException
+     * @SuppressWarnings(PHPMD.ExcessiveParameterList)
      */
-    public function wrapperType(int $number, string $query, string $expectedType): void
+    public function wrapperType(
+        int $number,
+        string $query,
+        string $expectedType,
+        array|null $expectedSearch,
+        array|null $expectedFeatureClasses,
+        array|null $expectedFeatureCodes,
+        int|null $expectedGeonameId,
+        float|null $expectedLatitude,
+        float|null $expectedLongitude,
+        int|null $expectedDistance,
+    ): void
     {
         /* Arrange */
 
@@ -49,6 +70,13 @@ final class ParserTest extends TestCase
         /* Assert */
         $this->assertIsNumeric($number); // To avoid phpmd warning.
         $this->assertSame($expectedType, $parser->getType());
+        $this->assertSame($expectedSearch, $parser->getSearch());
+        $this->assertSame($expectedFeatureClasses, $parser->getFeatureClasses());
+        $this->assertSame($expectedFeatureCodes, $parser->getFeatureCodes());
+        $this->assertSame($expectedGeonameId, $parser->getGeonameId());
+        $this->assertSame($expectedLatitude, $parser->getLatitude());
+        $this->assertSame($expectedLongitude, $parser->getLongitude());
+        $this->assertSame($expectedDistance, $parser->getDistance());
     }
 
     /**
@@ -61,73 +89,94 @@ final class ParserTest extends TestCase
         $number = 0;
 
         return [
+            /* Number,  Search string,                                 Search type,                                                 Search parts,                  Feature Classes,  Feature Codes,                 Geoname ID,  Latitude,    Longitude,     Distance   Description                                           */
+            /* -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- */
+
             /* Typical examples */
-            [++$number, '197877', QueryParser::TYPE_SEARCH_GEONAME_ID], /* Der goldene Reiter */
-            [++$number, '51.05811,13.74133', QueryParser::TYPE_SEARCH_COORDINATE], /* Der goldene Reiter */
-            [++$number, '51.05811°,13.74133°', QueryParser::TYPE_SEARCH_COORDINATE], /* Der goldene Reiter */
-            [++$number, '51°3′29.196″N,13°44′28.788″E', QueryParser::TYPE_SEARCH_COORDINATE], /* Der goldene Reiter */
-            [++$number, '52°31′12.108″N,13°24′17.604″E', QueryParser::TYPE_SEARCH_COORDINATE], /* Berlin Mitte */
-            [++$number, '52°31′12.108″N/13°24′17.604″E', QueryParser::TYPE_SEARCH_COORDINATE], /* Berlin Mitte */
-            [++$number, '52°31′12.108″N|13°24′17.604″E', QueryParser::TYPE_SEARCH_COORDINATE], /* Berlin Mitte */
-            [++$number, 'AIRP 52°31′12.108″N,13°24′17.604″E', QueryParser::TYPE_SEARCH_LIST_WITH_FEATURES], /* Berlin Mitte */
-            [++$number, 'AIRP: 52°31′12.108″N,13°24′17.604″E', QueryParser::TYPE_SEARCH_LIST_WITH_FEATURES], /* Berlin Mitte */
-            [++$number, 'AIRP:52°31′12.108″N,13°24′17.604″E', QueryParser::TYPE_SEARCH_LIST_WITH_FEATURES], /* Berlin Mitte */
-            [++$number, 'AIRP|AIRT 52°31′12.108″N,13°24′17.604″E', QueryParser::TYPE_SEARCH_LIST_WITH_FEATURES], /* Berlin Mitte */
-            [++$number, 'AIRP|AIRT: 52°31′12.108″N,13°24′17.604″E', QueryParser::TYPE_SEARCH_LIST_WITH_FEATURES], /* Berlin Mitte */
-            [++$number, 'AIRP|AIRT:52°31′12.108″N,13°24′17.604″E', QueryParser::TYPE_SEARCH_LIST_WITH_FEATURES], /* Berlin Mitte */
-            [++$number, 'Berlin Mitte', QueryParser::TYPE_SEARCH_LIST_GENERAL],
-            [++$number, 'Der goldene Reiter', QueryParser::TYPE_SEARCH_LIST_GENERAL],
+            [++$number, '6698681',                                     QueryParser::TYPE_SEARCH_GEONAME_ID,                         null,                          null,             null,                          6_698_681,   null,        null,          null],     /* Der goldene Reiter */
+            [++$number, '51.05811,13.74133',                           QueryParser::TYPE_SEARCH_COORDINATE,                         null,                          null,             null,                          null,        51.05811,    13.74133,      null],     /* Der goldene Reiter */
+            [++$number, '51,05811,13,74133',                           QueryParser::TYPE_SEARCH_COORDINATE,                         null,                          null,             null,                          null,        51.05811,    13.74133,      null],     /* Der goldene Reiter */
+            [++$number, '51.05811°,13.74133°',                         QueryParser::TYPE_SEARCH_COORDINATE,                         null,                          null,             null,                          null,        51.05811,    13.74133,      null],     /* Der goldene Reiter */
+            [++$number, '51°3′29.196″N,13°44′28.788″E',                QueryParser::TYPE_SEARCH_COORDINATE,                         null,                          null,             null,                          null,        51.05811,    13.74133,      null],     /* Der goldene Reiter */
+            [++$number, '52°31′12.108″N,13°24′17.604″E',               QueryParser::TYPE_SEARCH_COORDINATE,                         null,                          null,             null,                          null,        52.52003,    13.40489,      null],     /* Berlin Mitte */
+            [++$number, '52°31′12.108″N/13°24′17.604″E',               QueryParser::TYPE_SEARCH_COORDINATE,                         null,                          null,             null,                          null,        52.52003,    13.40489,      null],     /* Berlin Mitte */
+            [++$number, '52°31′12.108″N|13°24′17.604″E',               QueryParser::TYPE_SEARCH_COORDINATE,                         null,                          null,             null,                          null,        52.52003,    13.40489,      null],     /* Berlin Mitte */
+            [++$number, 'AIRP 52°31′12.108″N,13°24′17.604″E',          QueryParser::TYPE_SEARCH_LIST_WITH_FEATURES_AND_COORDINATE,  null,                          null,             ['AIRP'],                      null,        52.52003,    13.40489,      null],     /* Berlin Mitte */
+            [++$number, 'AIRP: 52°31′12.108″N,13°24′17.604″E',         QueryParser::TYPE_SEARCH_LIST_WITH_FEATURES_AND_COORDINATE,  null,                          null,             ['AIRP'],                      null,        52.52003,    13.40489,      null],     /* Berlin Mitte */
+            [++$number, 'AIRP:52°31′12.108″N,13°24′17.604″E',          QueryParser::TYPE_SEARCH_LIST_WITH_FEATURES_AND_COORDINATE,  null,                          null,             ['AIRP'],                      null,        52.52003,    13.40489,      null],     /* Berlin Mitte */
+            [++$number, 'AIRP|AIRT 52°31′12.108″N,13°24′17.604″E',     QueryParser::TYPE_SEARCH_LIST_WITH_FEATURES_AND_COORDINATE,  null,                          null,             ['AIRP', 'AIRT'],              null,        52.52003,    13.40489,      null],     /* Berlin Mitte */
+            [++$number, 'AIRP|AIRT: 52°31′12.108″N,13°24′17.604″E',    QueryParser::TYPE_SEARCH_LIST_WITH_FEATURES_AND_COORDINATE,  null,                          null,             ['AIRP', 'AIRT'],              null,        52.52003,    13.40489,      null],     /* Berlin Mitte */
+            [++$number, 'AIRP|AIRT:52°31′12.108″N,13°24′17.604″E',     QueryParser::TYPE_SEARCH_LIST_WITH_FEATURES_AND_COORDINATE,  null,                          null,             ['AIRP', 'AIRT'],              null,        52.52003,    13.40489,      null],     /* Berlin Mitte */
+            [++$number, 'Berlin Mitte',                                QueryParser::TYPE_SEARCH_LIST_GENERAL,                       ['Berlin', 'Mitte'],           null,             null,                          null,        null,        null,          null],     /* Berlin Mitte */
+            [++$number, 'Der goldene Reiter',                          QueryParser::TYPE_SEARCH_LIST_GENERAL,                       ['Der', 'goldene', 'Reiter'],  null,             null,                          null,        null,        null,          null],     /* Der goldene Reiter */
+            [++$number, 'AIRP|AIRT',                                   QueryParser::TYPE_SEARCH_LIST_WITH_FEATURES,                 null,                          null,             ['AIRP', 'AIRT'],              null,        null,        null,          null],     /* Only airports */
+            [++$number, 'AIRP|AIRT Dresden',                           QueryParser::TYPE_SEARCH_LIST_WITH_FEATURES_AND_SEARCH,      ['Dresden'],                   null,             ['AIRP', 'AIRT'],              null,        null,        null,          null],     /* Only airports with search string "Dresden" */
+            [++$number, 'AIRP|AIRT:Dresden',                           QueryParser::TYPE_SEARCH_LIST_WITH_FEATURES_AND_SEARCH,      ['Dresden'],                   null,             ['AIRP', 'AIRT'],              null,        null,        null,          null],     /* Only airports with search string "Dresden" */
+            [++$number, 'AIRP|AIRT: Dresden',                          QueryParser::TYPE_SEARCH_LIST_WITH_FEATURES_AND_SEARCH,      ['Dresden'],                   null,             ['AIRP', 'AIRT'],              null,        null,        null,          null],     /* Only airports with search string "Dresden" */
+            [++$number, 'AIRP|AIRT: Berlin Mitte',                     QueryParser::TYPE_SEARCH_LIST_WITH_FEATURES_AND_SEARCH,      ['Berlin', 'Mitte'],           null,             ['AIRP', 'AIRT'],              null,        null,        null,          null],     /* Only airports with search string "Dresden" */
+            [++$number, 'AIRP|AIRT: 6698681',                          QueryParser::TYPE_SEARCH_LIST_WITH_FEATURES_AND_GEONAME_ID,  null,                          null,             ['AIRP', 'AIRT'],              6_698_681,   null,        null,          null],     /* Only airports around the given geoname id "197877" */
+            [++$number, 'AIRP|AIRT: Test 197877',                      QueryParser::TYPE_SEARCH_LIST_WITH_FEATURES_AND_SEARCH,      ['Test', '197877'],            null,             ['AIRP', 'AIRT'],              null,        null,        null,          null],     /* Only airports around the given geoname id "197877" */
 
 
+
+            /* Number,  Search string,                                 Search type,                                                 Search parts,                  Feature Classes,  Feature Codes,                 Geoname ID,  Latitude,    Longitude,     Distance   Description                                           */
+            /* -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- */
 
             /* Geoname search */
-            [++$number, '12345678', QueryParser::TYPE_SEARCH_GEONAME_ID],
-            [++$number, ' 12345678', QueryParser::TYPE_SEARCH_GEONAME_ID],
-            [++$number, '       12345678', QueryParser::TYPE_SEARCH_GEONAME_ID],
-            [++$number, '12345678    ', QueryParser::TYPE_SEARCH_GEONAME_ID],
-            [++$number, '     12345678      ', QueryParser::TYPE_SEARCH_GEONAME_ID],
+            [++$number, '12345678',                                    QueryParser::TYPE_SEARCH_GEONAME_ID,                         null,                          null,             null,                          12_345_678,  null,        null,          null],
+            [++$number, ' 12345678',                                   QueryParser::TYPE_SEARCH_GEONAME_ID,                         null,                          null,             null,                          12_345_678,  null,        null,          null],
+            [++$number, '       12345678',                             QueryParser::TYPE_SEARCH_GEONAME_ID,                         null,                          null,             null,                          12_345_678,  null,        null,          null],
+            [++$number, '12345678    ',                                QueryParser::TYPE_SEARCH_GEONAME_ID,                         null,                          null,             null,                          12_345_678,  null,        null,          null],
+            [++$number, '     12345678      ',                         QueryParser::TYPE_SEARCH_GEONAME_ID,                         null,                          null,             null,                          12_345_678,  null,        null,          null],
 
 
+
+            /* Number,  Search string,                                 Search type,                                                 Search parts,                  Feature Classes,  Feature Codes,                 Geoname ID,  Latitude,    Longitude,     Distance   Description                                           */
+            /* -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- */
 
             /* Coordinate search (decimal) */
-            [++$number, '52.524889,13.3692797', QueryParser::TYPE_SEARCH_COORDINATE],
-            [++$number, '47.35858,8.530299', QueryParser::TYPE_SEARCH_COORDINATE],
-            [++$number, '28.137008,-15.438614', QueryParser::TYPE_SEARCH_COORDINATE],
-            [++$number, '52.524889, 13.3692797', QueryParser::TYPE_SEARCH_COORDINATE],
-            [++$number, '47.35858, 8.530299', QueryParser::TYPE_SEARCH_COORDINATE],
-            [++$number, '28.137008, -15.438614', QueryParser::TYPE_SEARCH_COORDINATE],
-            [++$number, '     52.524889, 13.3692797', QueryParser::TYPE_SEARCH_COORDINATE],
-            [++$number, '47.35858, 8.530299     ', QueryParser::TYPE_SEARCH_COORDINATE],
-            [++$number, '     28.137008,    -15.438614   ', QueryParser::TYPE_SEARCH_COORDINATE],
-            [++$number, '     -12.073136,   -77.167578   ', QueryParser::TYPE_SEARCH_COORDINATE],
-            [++$number, '52.524889 13.3692797', QueryParser::TYPE_SEARCH_COORDINATE],
-            [++$number, '47.35858 8.530299', QueryParser::TYPE_SEARCH_COORDINATE],
-            [++$number, '  28.137008    -15.438614 ', QueryParser::TYPE_SEARCH_COORDINATE],
-            [++$number, '52.524889|13.3692797', QueryParser::TYPE_SEARCH_COORDINATE],
-            [++$number, '47.35858|8.530299', QueryParser::TYPE_SEARCH_COORDINATE],
-            [++$number, '  28.137008  |  -15.438614 ', QueryParser::TYPE_SEARCH_COORDINATE],
-            [++$number, '  28.137008  /  -15.438614 ', QueryParser::TYPE_SEARCH_COORDINATE],
+            [++$number, '52.524889,13.3692797',                        QueryParser::TYPE_SEARCH_COORDINATE,                         null,                          null,             null,                          null,        52.524889,     13.36928,    null],
+            [++$number, '52,524889,13,3692797',                        QueryParser::TYPE_SEARCH_COORDINATE,                         null,                          null,             null,                          null,        52.524889,     13.36928,    null],
+            [++$number, '47.35858,8.530299',                           QueryParser::TYPE_SEARCH_COORDINATE,                         null,                          null,             null,                          null,        47.35858,      8.530299,    null],
+            [++$number, '28.137008,-15.438614',                        QueryParser::TYPE_SEARCH_COORDINATE,                         null,                          null,             null,                          null,        28.137008,   -15.438614,    null],
+            [++$number, '52.524889, 13.3692797',                       QueryParser::TYPE_SEARCH_COORDINATE,                         null,                          null,             null,                          null,        52.524889,    13.369280,    null],
+            [++$number, '47.35858, 8.530299',                          QueryParser::TYPE_SEARCH_COORDINATE,                         null,                          null,             null,                          null,        47.35858,      8.530299,    null],
+            [++$number, '28.137008, -15.438614',                       QueryParser::TYPE_SEARCH_COORDINATE,                         null,                          null,             null,                          null,        28.137008,   -15.438614,    null],
+            [++$number, '     52.524889, 13.3692797',                  QueryParser::TYPE_SEARCH_COORDINATE,                         null,                          null,             null,                          null,        52.524889,    13.369280,    null],
+            [++$number, '47.35858, 8.530299     ',                     QueryParser::TYPE_SEARCH_COORDINATE,                         null,                          null,             null,                          null,        47.35858,      8.530299,    null],
+            [++$number, '     28.137008,    -15.438614   ',            QueryParser::TYPE_SEARCH_COORDINATE,                         null,                          null,             null,                          null,        28.137008,   -15.438614,    null],
+            [++$number, '     -12.073136,   -77.167578   ',            QueryParser::TYPE_SEARCH_COORDINATE,                         null,                          null,             null,                          null,        -12.073136,  -77.167578,    null],
+            [++$number, '52.524889 13.3692797',                        QueryParser::TYPE_SEARCH_COORDINATE,                         null,                          null,             null,                          null,        52.524889,    13.369280,    null],
+            [++$number, '47.35858 8.530299',                           QueryParser::TYPE_SEARCH_COORDINATE,                         null,                          null,             null,                          null,        47.35858,      8.530299,    null],
+            [++$number, '  28.137008    -15.438614 ',                  QueryParser::TYPE_SEARCH_COORDINATE,                         null,                          null,             null,                          null,        28.137008,   -15.438614,    null],
+            [++$number, '52.524889|13.3692797',                        QueryParser::TYPE_SEARCH_COORDINATE,                         null,                          null,             null,                          null,        52.524889,    13.369280,    null],
+            [++$number, '47.35858|8.530299',                           QueryParser::TYPE_SEARCH_COORDINATE,                         null,                          null,             null,                          null,        47.35858,      8.530299,    null],
+            [++$number, '  28.137008  |  -15.438614 ',                 QueryParser::TYPE_SEARCH_COORDINATE,                         null,                          null,             null,                          null,        28.137008,   -15.438614,    null],
+            [++$number, '  28.137008  /  -15.438614 ',                 QueryParser::TYPE_SEARCH_COORDINATE,                         null,                          null,             null,                          null,        28.137008,   -15.438614,    null],
 
             /* Coordinate search (dms) */
-            [++$number, '52°31′12.108″N,13°24′17.604″E', QueryParser::TYPE_SEARCH_COORDINATE],
-            [++$number, '   52°31′12.108″N,13°24′17.604″E    ', QueryParser::TYPE_SEARCH_COORDINATE],
-            [++$number, '   52°31′12.108″N   ,    13°24′17.604″E    ', QueryParser::TYPE_SEARCH_COORDINATE],
-            [++$number, '   52°31′12.108″N       13°24′17.604″E    ', QueryParser::TYPE_SEARCH_COORDINATE],
-            [++$number, '   52°31′12.108″N   |    13°24′17.604″E    ', QueryParser::TYPE_SEARCH_COORDINATE],
-            [++$number, '   52°31′12.108″N   /    13°24′17.604″E    ', QueryParser::TYPE_SEARCH_COORDINATE],
+            [++$number, '52°31′12.108″N,13°24′17.604″E',               QueryParser::TYPE_SEARCH_COORDINATE,                         null,                          null,             null,                          null,        52.52003,     13.404890,    null],
+            [++$number, '   52°31′12.108″N,13°24′17.604″E    ',        QueryParser::TYPE_SEARCH_COORDINATE,                         null,                          null,             null,                          null,        52.52003,     13.404890,    null],
+            [++$number, '   52°31′12.108″N   ,    13°24′17.604″E    ', QueryParser::TYPE_SEARCH_COORDINATE,                         null,                          null,             null,                          null,        52.52003,     13.404890,    null],
+            [++$number, '   52°31′12.108″N       13°24′17.604″E    ',  QueryParser::TYPE_SEARCH_COORDINATE,                         null,                          null,             null,                          null,        52.52003,     13.404890,    null],
+            [++$number, '   52°31′12.108″N   |    13°24′17.604″E    ', QueryParser::TYPE_SEARCH_COORDINATE,                         null,                          null,             null,                          null,        52.52003,     13.404890,    null],
+            [++$number, '   52°31′12.108″N   /    13°24′17.604″E    ', QueryParser::TYPE_SEARCH_COORDINATE,                         null,                          null,             null,                          null,        52.52003,     13.404890,    null],
 
             /* Coordinate search (mixed) */
-            [++$number, '   28.137008       13°24′17.604″E    ', QueryParser::TYPE_SEARCH_COORDINATE],
-            [++$number, '   52°31′12.108″N       -15.438614    ', QueryParser::TYPE_SEARCH_COORDINATE],
-            [++$number, '   52°31′12.108″N   ,    -15.438614    ', QueryParser::TYPE_SEARCH_COORDINATE],
-            [++$number, '   52°31′12.108″N   |    -15.438614    ', QueryParser::TYPE_SEARCH_COORDINATE],
-            [++$number, '   52°31′12.108″N   /    -15.438614    ', QueryParser::TYPE_SEARCH_COORDINATE],
+            [++$number, '   28.137008       13°24′17.604″E    ',       QueryParser::TYPE_SEARCH_COORDINATE,                         null,                          null,             null,                          null,        28.137008,    13.404890,    null],
+            [++$number, '   52°31′12.108″N       -15.438614    ',      QueryParser::TYPE_SEARCH_COORDINATE,                         null,                          null,             null,                          null,        52.52003,    -15.438614,    null],
+            [++$number, '   52°31′12.108″N   ,    -15.438614    ',     QueryParser::TYPE_SEARCH_COORDINATE,                         null,                          null,             null,                          null,        52.52003,    -15.438614,    null],
+            [++$number, '   52°31′12.108″N   |    -15.438614    ',     QueryParser::TYPE_SEARCH_COORDINATE,                         null,                          null,             null,                          null,        52.52003,    -15.438614,    null],
+            [++$number, '   52°31′12.108″N   /    -15.438614    ',     QueryParser::TYPE_SEARCH_COORDINATE,                         null,                          null,             null,                          null,        52.52003,    -15.438614,    null],
 
 
+
+            /* Number,  Search string,                                 Search type,                                                 Search parts,                  Feature Classes,  Feature Codes,                 Geoname ID,  Latitude,    Longitude,     Distance   Description                                           */
+            /* -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- */
 
             /* List search */
-            [++$number, 'Dresden', QueryParser::TYPE_SEARCH_LIST_GENERAL],
-            [++$number, 'Dresden Flughafen', QueryParser::TYPE_SEARCH_LIST_GENERAL],
+            [++$number, 'Dresden',                                     QueryParser::TYPE_SEARCH_LIST_GENERAL,                       ['Dresden'],                   null,             null,                          null,        null,       null,           null],
+            [++$number, 'Dresden Flughafen',                           QueryParser::TYPE_SEARCH_LIST_GENERAL,                       ['Dresden', 'Flughafen'],      null,             null,                          null,        null,       null,           null],
 
         ];
     }
@@ -212,49 +261,49 @@ final class ParserTest extends TestCase
             )], /* Berlin-Mitte */
 
             [++$number, 'AIRP 52°31′12.108″N,13°24′17.604″E', QueryParser::getDataContainer(
-                QueryParser::TYPE_SEARCH_LIST_WITH_FEATURES,
+                QueryParser::TYPE_SEARCH_LIST_WITH_FEATURES_AND_COORDINATE,
                 latitude: 52.52003,
                 longitude: 13.40489,
                 featureCodes: ['AIRP'],
             )], /* Berlin-Mitte */
 
             [++$number, 'AIRP: 52°31′12.108″N,13°24′17.604″E', QueryParser::getDataContainer(
-                QueryParser::TYPE_SEARCH_LIST_WITH_FEATURES,
+                QueryParser::TYPE_SEARCH_LIST_WITH_FEATURES_AND_COORDINATE,
                 latitude: 52.52003,
                 longitude: 13.40489,
                 featureCodes: ['AIRP'],
             )], /* Berlin-Mitte */
 
             [++$number, 'AIRP:52°31′12.108″N,13°24′17.604″E', QueryParser::getDataContainer(
-                QueryParser::TYPE_SEARCH_LIST_WITH_FEATURES,
+                QueryParser::TYPE_SEARCH_LIST_WITH_FEATURES_AND_COORDINATE,
                 latitude: 52.52003,
                 longitude: 13.40489,
                 featureCodes: ['AIRP'],
             )], /* Berlin-Mitte */
 
             [++$number, 'AIRP|AIRT 52°31′12.108″N,13°24′17.604″E', QueryParser::getDataContainer(
-                QueryParser::TYPE_SEARCH_LIST_WITH_FEATURES,
+                QueryParser::TYPE_SEARCH_LIST_WITH_FEATURES_AND_COORDINATE,
                 latitude: 52.52003,
                 longitude: 13.40489,
                 featureCodes: ['AIRP', 'AIRT'],
             )], /* Berlin-Mitte */
 
             [++$number, 'AIRP|AIRT: 52°31′12.108″N,13°24′17.604″E', QueryParser::getDataContainer(
-                QueryParser::TYPE_SEARCH_LIST_WITH_FEATURES,
+                QueryParser::TYPE_SEARCH_LIST_WITH_FEATURES_AND_COORDINATE,
                 latitude: 52.52003,
                 longitude: 13.40489,
                 featureCodes: ['AIRP', 'AIRT'],
             )], /* Berlin-Mitte */
 
             [++$number, 'AIRP|AIRT:52°31′12.108″N,13°24′17.604″E', QueryParser::getDataContainer(
-                QueryParser::TYPE_SEARCH_LIST_WITH_FEATURES,
+                QueryParser::TYPE_SEARCH_LIST_WITH_FEATURES_AND_COORDINATE,
                 latitude: 52.52003,
                 longitude: 13.40489,
                 featureCodes: ['AIRP', 'AIRT'],
             )], /* Berlin-Mitte */
 
             [++$number, 'S:52°31′12.108″N,13°24′17.604″E', QueryParser::getDataContainer(
-                QueryParser::TYPE_SEARCH_LIST_WITH_FEATURES,
+                QueryParser::TYPE_SEARCH_LIST_WITH_FEATURES_AND_COORDINATE,
                 latitude: 52.52003,
                 longitude: 13.40489,
                 featureClasses: ['S'],

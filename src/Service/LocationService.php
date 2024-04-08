@@ -248,7 +248,7 @@ final class LocationService extends BaseLocationService
      */
     public function getLocationsBySearch(
         /* Search */
-        string|array $search,
+        string|array|null $search,
 
         /* Search filter */
         array|string|null $featureClass = null,
@@ -280,8 +280,6 @@ final class LocationService extends BaseLocationService
 
         $performanceLogger = PerformanceLogger::getInstance();
         $performanceGroupName = $performanceLogger->getGroupNameFromFileName(__FILE__);
-
-
 
         /* Save filter parameter and query locations */
         $performanceLogger->logPerformance(function () use (

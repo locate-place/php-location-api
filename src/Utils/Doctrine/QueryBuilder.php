@@ -56,7 +56,7 @@ readonly class QueryBuilder
      */
     public function getQueryLocationSearch(
         /* Search */
-        string|array $search,
+        string|array|null $search,
 
         /* Search filter */
         array|string|null $featureClass = null,
@@ -76,7 +76,10 @@ readonly class QueryBuilder
             $search = [$search];
         }
 
-        $search = implode(Query::SEARCH_AND, array_map(fn($term) => $term.Query::SEARCH_RIGHT_WILDCARD, $search));
+        $search = match (true) {
+            is_null($search) => '',
+            default => implode(Query::SEARCH_AND, array_map(fn($term) => $term.Query::SEARCH_RIGHT_WILDCARD, $search))
+        };
 
         $longitude = is_null($coordinate) ? null : $coordinate->getLongitude();
         $latitude = is_null($coordinate) ? null : $coordinate->getLatitude();
@@ -161,7 +164,7 @@ readonly class QueryBuilder
      */
     public function getQueryCountLocationSearch(
         /* Search */
-        string|array $search,
+        string|array|null $search,
 
         /* Search filter */
         array|string|null $featureClass = null,
@@ -176,7 +179,10 @@ readonly class QueryBuilder
             $search = [$search];
         }
 
-        $search = implode(Query::SEARCH_AND, array_map(fn($term) => $term.Query::SEARCH_RIGHT_WILDCARD, $search));
+        $search = match (true) {
+            is_null($search) => '',
+            default => implode(Query::SEARCH_AND, array_map(fn($term) => $term.Query::SEARCH_RIGHT_WILDCARD, $search))
+        };
 
         $longitude = is_null($coordinate) ? null : $coordinate->getLongitude();
         $latitude = is_null($coordinate) ? null : $coordinate->getLatitude();
