@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Releases
 
+### [0.1.66] - 2024-04-08
+
+* Add extended query parser
+  * single feature codes
+  * feature codes with search term
+  * feature codes with geoname id
+  * etc.
+
 ### [0.1.65] - 2024-04-08
 
 * Search refactoring; Search with relevance; Distance from location or river (closest point to river)
