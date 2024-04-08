@@ -224,11 +224,10 @@ final class LocationProvider extends BaseProviderCustom
         }
 
         if (!is_null($search)) {
-            foreach ($search as $searchPart) {
-                if (mb_strlen($searchPart) < self::SEARCH_MINIMUM_LENGTH) {
-                    $this->setError(sprintf('At least %s characters are required to search ("%s").', self::SEARCH_MINIMUM_LENGTH, $searchPart));
-                    return [];
-                }
+            $searchString = implode(' ', $search);
+            if (mb_strlen($searchString) < self::SEARCH_MINIMUM_LENGTH) {
+                $this->setError(sprintf('At least %s characters are required to search ("%s").', self::SEARCH_MINIMUM_LENGTH, $searchString));
+                return [];
             }
         }
 

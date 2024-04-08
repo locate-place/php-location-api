@@ -434,6 +434,7 @@ class QueryParser
      * Returns the query type.
      *
      * @return string
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      */
     private function doGetType(): string
     {
@@ -494,8 +495,11 @@ class QueryParser
          * - AIRP|AIRT Dresden
          * - etc.
          */
-        if (mb_ereg(sprintf(self::EREG_WRAPPER_LIST_SEARCH_WITH_FEATURES, self::FORMAT_FEATURES, '(.*)'), $this->query, $this->matches)) {
+        if (mb_ereg(sprintf(self::EREG_WRAPPER_LIST_SEARCH_WITH_FEATURES, self::FORMAT_FEATURES, '[ ]+(.*)'), $this->query, $this->matches)) {
             return $this->getTypeSearchListWithFeatures($this->matches[2]);
+        }
+        if (mb_ereg(sprintf(self::EREG_WRAPPER_LIST_SEARCH_WITH_FEATURES, self::FORMAT_FEATURES, ''), $this->query, $this->matches)) {
+            return $this->getTypeSearchListWithFeatures(false);
         }
 
         /* Use the query as a search list query:

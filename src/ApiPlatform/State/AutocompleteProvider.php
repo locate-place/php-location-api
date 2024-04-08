@@ -94,7 +94,8 @@ final class AutocompleteProvider extends BaseProviderCustom
      * @return array<int, array{
      *     id: int,
      *     name: string,
-     *     relevance: int
+     *     relevance: int,
+     *     country: string|null
      * }>
      * @throws ClassInvalidException
      * @throws ClientExceptionInterface
@@ -124,17 +125,20 @@ final class AutocompleteProvider extends BaseProviderCustom
             }
 
             $country = $location->getCountry();
-            if ($country instanceof Country) {
-                $alternateName = sprintf('%s, %s', $alternateName, $country->getCode());
-            }
 
-            if (array_key_exists($alternateName, $locationMatches)) {
+            $alternateNameWithCountry = match (true) {
+                $country instanceof Country => sprintf('%s, %s', $alternateName, $country->getCode()),
+                default => $alternateName,
+            };
+
+            if (array_key_exists($alternateNameWithCountry, $locationMatches)) {
                 continue;
             }
 
-            $locationMatches[$alternateName] = [
+            $locationMatches[$alternateNameWithCountry] = [
                 KeyArray::ID => $location->getGeonameId() ?? 0,
                 KeyArray::NAME => $alternateName,
+                KeyArray::COUNTRY => $country?->getCode() ?? null,
                 KeyArray::RELEVANCE => 9_999_999_999 - $location->getRelevanceScore(),
             ];
         }
@@ -207,8 +211,8 @@ final class AutocompleteProvider extends BaseProviderCustom
                 $relevanceA = strtolower(sprintf('%010d', $valueA[KeyArray::RELEVANCE]));
                 $relevanceB = strtolower(sprintf('%010d', $valueB[KeyArray::RELEVANCE]));
 
-                $startsWithSearchA = str_starts_with($nameA, $search[0]) ? '0' : '1';
-                $startsWithSearchB = str_starts_with($nameB, $search[0]) ? '0' : '1';
+                $startsWithSearchA = str_starts_with($nameA, strtolower($search[0])) ? '0' : '1';
+                $startsWithSearchB = str_starts_with($nameB, strtolower($search[0])) ? '0' : '1';
 
                 return $startsWithSearchA.$relevanceA.$nameA <=> $startsWithSearchB.$relevanceB.$nameB;
             }
@@ -267,7 +271,8 @@ final class AutocompleteProvider extends BaseProviderCustom
      * @param string $isoLanguage
      * @return array<int, array{
      *     id: int|string,
-     *     name: string
+     *     name: string,
+     *     country?: string|null
      * }>
      * @throws CaseUnsupportedException
      * @throws ClassInvalidException
