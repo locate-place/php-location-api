@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Releases
 
+### [0.1.65] - 2024-04-08
+
+* Search refactoring; Search with relevance; Distance from location or river (closest point to river)
+* Add SearchIndex entity; Add TsVector object and PostgreSQL TsVector DBAL type
+* Add created_at and updated_at to table search_index
+* Add autocomplete endpoint with location, feature class and feature code search
+
 ### [0.1.64] - 2024-04-03
 
 * Add river length to search relevance
