@@ -1486,14 +1486,13 @@ class FeatureCode extends BaseFeature
      *
      * @param string $featureClass
      * @param string|null $locale
-     * @return array<int, array{
-     *     code: string,
-     *     translated: string,
-     *     distance: int,
-     *     limit: int
-     * }>
+     * @return array<int, array<string, string|int>>
+     * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
      */
-    public function getFeatureCodes(string $featureClass, string $locale = null): array
+    public function getFeatureCodes(
+        string $featureClass,
+        string $locale = null,
+    ): array
     {
         if (!array_key_exists($featureClass, self::ALL)) {
             throw new LogicException(sprintf('Given feature class "%s" does not exist.', $featureClass));
@@ -1502,9 +1501,11 @@ class FeatureCode extends BaseFeature
         $featureCodes = [];
 
         foreach (self::ALL[$featureClass] as $featureCode) {
+            $translated = $this->translate($featureCode, $locale);
+
             $featureCodes[] = [
                 KeyArray::CODE => $featureCode,
-                KeyArray::TRANSLATED => $this->translate($featureCode, $locale),
+                KeyArray::TRANSLATED => $translated,
                 KeyArray::DISTANCE => 150000,
                 KeyArray::LIMIT => 10,
             ];
@@ -1519,16 +1520,7 @@ class FeatureCode extends BaseFeature
      * Returns the feature codes for all feature classes.
      *
      * @param string|null $locale
-     * @return array<string, array{
-     *     code: string,
-     *     translated: string,
-     *     data: array<int, array{
-     *         code: string,
-     *         translated: string,
-     *         distance: int,
-     *         limit: int
-     *     }>
-     * }>
+     * @return array<string, array<string, array<int, array<string, int|string>>|string>>
      */
     public function getAll(string $locale = null): array
     {
@@ -1543,6 +1535,84 @@ class FeatureCode extends BaseFeature
                 KeyArray::CODE => $featureClass,
                 KeyArray::TRANSLATED => $featureClassService->translate($featureClass),
                 KeyArray::DATA => $this->getFeatureCodes($featureClass, $locale),
+            ];
+        }
+
+        return $featureClasses;
+    }
+
+    /**
+     * Returns the feature codes for the given feature class.
+     *
+     * @param string $featureClass
+     * @param string|null $locale
+     * @param string|null $filter
+     * @return array<int, array{
+     *     id: string,
+     *     name: string,
+     *     relevance: int,
+     * }>
+     */
+    public function getFeatureCodesAutoCompletion(
+        string $featureClass,
+        string $locale = null,
+        string $filter = null
+    ): array
+    {
+        if (!array_key_exists($featureClass, self::ALL)) {
+            throw new LogicException(sprintf('Given feature class "%s" does not exist.', $featureClass));
+        }
+
+        $featureCodes = [];
+
+        foreach (self::ALL[$featureClass] as $featureCode) {
+            $translated = $this->translate($featureCode, $locale);
+
+            if (
+                !is_null($filter) &&
+                !str_contains(strtolower($translated), strtolower($filter)) &&
+                !str_contains(strtolower($featureCode), strtolower($filter))
+            ) {
+                continue;
+            }
+
+            $featureCodes[] = [
+                KeyArray::ID => $featureCode,
+                KeyArray::NAME => $translated,
+                KeyArray::RELEVANCE => 0,
+            ];
+        }
+
+        uasort($featureCodes, fn($first, $second) => strcmp((string) $first[KeyArray::NAME], (string) $second[KeyArray::NAME]));
+
+        return $featureCodes;
+    }
+
+    /**
+     * Returns all feature codes filtered for auto-completion.
+     *
+     * @param string $queryString
+     * @param string|null $locale
+     * @return array<int, array{
+     *     id: string,
+     *     name: string,
+     *     relevance: int,
+     * }>
+     */
+    public function getAllAutoCompletion(string $queryString, string $locale = null): array
+    {
+        $locale ??= $this->locale;
+
+        $featureClasses = [];
+
+        foreach (FeatureClass::ALL as $featureClass) {
+            $featureClasses = [
+                ...$featureClasses,
+                ...$this->getFeatureCodesAutoCompletion(
+                    featureClass: $featureClass,
+                    locale: $locale,
+                    filter: $queryString
+                ),
             ];
         }
 

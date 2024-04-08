@@ -212,7 +212,7 @@ class BaseProviderCustom extends BaseResourceWrapperProvider
         $uriVariablesOutput = parent::getUriVariablesOutput();
 
         /* Add query information */
-        if (array_key_exists(KeyArray::QUERY, $uriVariablesOutput)) {
+        if ($this->isLocationRequest() && array_key_exists(KeyArray::QUERY, $uriVariablesOutput)) {
             $givenQueryArray = $this->getGivenQueryArray();
 
             switch (true) {
@@ -258,7 +258,7 @@ class BaseProviderCustom extends BaseResourceWrapperProvider
             ];
         }
 
-        if (!array_key_exists(KeyArray::NEXT_PLACES, $uriVariablesOutput)) {
+        if ($this->isLocationRequest() && !array_key_exists(KeyArray::NEXT_PLACES, $uriVariablesOutput)) {
             $uriVariablesOutput[KeyArray::NEXT_PLACES] = false;
         }
 
@@ -659,5 +659,15 @@ class BaseProviderCustom extends BaseResourceWrapperProvider
             KeyArray::RESULTS => count($locations),
             KeyArray::PAGE => $this->query->getPage(),
         ]);
+    }
+
+    /**
+     * Returns whether the request is a location request.
+     *
+     * @return bool
+     */
+    private function isLocationRequest(): bool
+    {
+        return str_contains($this->request->getCurrentRequest()?->getPathInfo() ?? '', 'location.json');
     }
 }

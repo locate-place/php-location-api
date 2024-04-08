@@ -102,6 +102,21 @@ readonly class ResultProcessor
                     $location->setClosestDistance($value);
                     break;
 
+                /* Set the closest distance. */
+                case 'relevance_score':
+                case 'relevanceScore':
+                    if (is_null($value)) {
+                        continue 2;
+                    }
+                    if (is_string($value)) {
+                        $value = (int) $value;
+                    }
+                    if (!is_int($value)) {
+                        throw new LogicException(sprintf('$value expected to be a int or null. "%s" given.', gettype($value)));
+                    }
+                    $location->setRelevanceScore($value);
+                    break;
+
                 /* Unknown property. */
                 default:
                     throw new LogicException(sprintf('Unknown property "%s".', $property));

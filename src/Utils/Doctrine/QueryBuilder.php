@@ -125,6 +125,11 @@ readonly class QueryBuilder
             ;
         }
 
+        $rsm
+            ->addScalarResult('relevance_score', 'relevanceScore')
+        ;
+
+
         $sql = match (true) {
             $coordinate instanceof Coordinate && !is_null($distance) => Query::SEARCH_COORDINATE_DISTANCE,
             $coordinate instanceof Coordinate => Query::SEARCH_COORDINATE,

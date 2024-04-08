@@ -145,6 +145,9 @@ class Location
     #[Ignore]
     private ?float $closestDistance = null;
 
+    #[Ignore]
+    private ?int $relevanceScore = null;
+
     /**
      */
     public function __construct()
@@ -863,6 +866,31 @@ class Location
     }
 
     /**
+     * Returns the relevance.
+     *
+     * @return int|null
+     */
+    #[Ignore]
+    public function getRelevanceScore(): ?int
+    {
+        return $this->relevanceScore;
+    }
+
+    /**
+     * Sets the relevance.
+     *
+     * @param int $relevanceScore
+     * @return self
+     */
+    #[Ignore]
+    public function setRelevanceScore(int $relevanceScore): self
+    {
+        $this->relevanceScore = $relevanceScore;
+
+        return $this;
+    }
+
+    /**
      * Returns the first valid elevation value from dem or elevation.
      *
      * @return int|null
@@ -892,7 +920,7 @@ class Location
      * @SuppressWarnings(PHPMD.NPathComplexity)
      */
     #[Ignore]
-    public function getRelevance(string|array $search, Coordinate|null $coordinate = null): int
+    public function calculateRelevance(string|array $search, Coordinate|null $coordinate = null): int
     {
         if (is_array($search)) {
             $search = implode(' ', $search);

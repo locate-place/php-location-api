@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace App\Constants\DB;
 
 use App\Constants\DB\Base\BaseFeature;
+use App\Constants\Key\KeyArray;
 use App\Constants\Language\Domain;
 
 /**
@@ -64,6 +65,69 @@ class FeatureClass extends BaseFeature
             $feature,
             domain: Domain::FEATURE_CLASSES,
             locale: $locale,
+        );
+    }
+
+    /**
+     * Returns the feature classes.
+     *
+     * @param string|null $locale
+     * @param string|null $filter
+     * @return array<int, array{
+     *     id: string,
+     *     name: string,
+     *     relevance: int
+     * }>
+     */
+    public function getFeatureClassesAutoCompletion(
+        string $locale = null,
+        string $filter = null
+    ): array
+    {
+
+        $featureClasses = [];
+
+        foreach (self::ALL as $featureClass) {
+            $name = $this->translate($featureClass, $locale);
+
+            if (
+                !is_null($filter) &&
+                !str_contains(strtolower($name), strtolower($filter)) &&
+                !str_contains(strtolower($featureClass), strtolower($filter))
+            ) {
+                continue;
+            }
+
+            $featureClasses[] = [
+                KeyArray::ID => $featureClass,
+                KeyArray::NAME => $name,
+                KeyArray::RELEVANCE => 0,
+            ];
+        }
+
+        uasort($featureClasses, fn($first, $second) => strcmp((string) $first[KeyArray::NAME], (string) $second[KeyArray::NAME]));
+
+        return array_values($featureClasses);
+    }
+
+    /**
+     * Returns all feature classes filtered for auto-completion.
+     *
+     * @param string $queryString
+     * @param string|null $locale
+     * @return array<int, array{
+     *      id: string,
+     *      name: string,
+     *      relevance: int
+     *  }>
+     */
+    public function getAllAutoCompletion(string $queryString, string $locale = null): array
+    {
+        $locale ??= $this->locale;
+
+        return $this->getFeatureClassesAutoCompletion(
+            locale: $locale,
+            filter: $queryString
         );
     }
 }

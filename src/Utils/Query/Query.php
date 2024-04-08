@@ -298,6 +298,22 @@ class Query
     }
 
     /**
+     * Returns the query parameter.
+     *
+     * @return string|null
+     */
+    public function getQuery(): string|null
+    {
+        $key = self::FILTER_QUERY;
+
+        if (!$this->hasFilter($key)) {
+            return null;
+        }
+
+        return $this->getFilterAsString($key);
+    }
+
+    /**
      * Returns the own coordinate (own position) parameter as Coordinate.
      *
      * @return Coordinate|null
@@ -382,14 +398,15 @@ class Query
     /**
      * Returns the language parameter.
      *
+     * @param string|null $default
      * @return string|null
      */
-    public function getLanguage(): string|null
+    public function getLanguage(string $default = null): string|null
     {
         $key = self::FILTER_LANGUAGE;
 
         if (!$this->hasFilter($key)) {
-            return null;
+            return !is_null($default) ? $default : null;
         }
 
         return $this->getFilterAsString($key);

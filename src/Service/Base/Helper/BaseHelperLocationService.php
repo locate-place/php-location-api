@@ -555,7 +555,7 @@ abstract class BaseHelperLocationService
 
         /* Build distances array. */
         foreach ($locationEntities as $locationEntity) {
-            $relevances[$locationEntity->getId()] = $locationEntity->getRelevance($search, $coordinate);
+            $relevances[$locationEntity->getId()] = $locationEntity->calculateRelevance($search, $coordinate);
         }
 
         /* Sort by relevances. */

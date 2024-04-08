@@ -116,6 +116,8 @@ class KeyArray
 
     final public const ICAO = 'icao';
 
+    final public const ID = 'id';
+
     final public const ISO_LANGUAGE = 'iso-language';
 
     final public const IATA = 'iata';
