@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Releases
 
+### [0.1.68] - 2024-04-12
+
+* Remove non-evaluable SQL characters
+* Add feature code and classes to autocomplete searches
+
 ### [0.1.67] - 2024-04-08
 
 * Autocomplete endpoint: Separate country from name
