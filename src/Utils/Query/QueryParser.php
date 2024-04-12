@@ -318,6 +318,12 @@ class QueryParser
             return null;
         }
 
+        $searchString = preg_replace('~[():";!\'?]~', '', $searchString);
+
+        if (!is_string($searchString)) {
+            throw new LogicException('Unable to replace values from $searchString');
+        }
+
         return array_filter(explode(" ", $searchString), fn($word) => !empty($word));
     }
 

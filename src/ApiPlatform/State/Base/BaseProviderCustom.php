@@ -219,13 +219,16 @@ class BaseProviderCustom extends BaseResourceWrapperProvider
 
             switch (true) {
                 case !is_null($givenQueryArray):
-                    $uriVariablesOutput[KeyArray::QUERY] = $this->getGivenQueryArray();
+                    $uriVariablesOutput[KeyArray::QUERY] = $givenQueryArray;
                     break;
 
                 default:
                     unset($uriVariablesOutput[KeyArray::QUERY]);
                     break;
             }
+        }
+        if ($this->isAutocompleteRequest() && array_key_exists(KeyArray::QUERY, $uriVariablesOutput)) {
+            $uriVariablesOutput[KeyArray::QUERY] = $this->getGivenQueryArray();
         }
 
         /* Add coordinate information. */
@@ -671,6 +674,16 @@ class BaseProviderCustom extends BaseResourceWrapperProvider
     private function isLocationRequest(): bool
     {
         return str_contains($this->request->getCurrentRequest()?->getPathInfo() ?? '', '/location');
+    }
+
+    /**
+     * Returns whether the request is a autocomplete request.
+     *
+     * @return bool
+     */
+    private function isAutocompleteRequest(): bool
+    {
+        return str_contains($this->request->getCurrentRequest()?->getPathInfo() ?? '', '/autocomplete');
     }
 
     /**

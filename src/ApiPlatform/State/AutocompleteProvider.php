@@ -89,7 +89,9 @@ final class AutocompleteProvider extends BaseProviderCustom
     /**
      * Retrieves locations from db.
      *
-     * @param string[] $search
+     * @param string|string[]|null $search
+     * @param array<int, string>|string|null $featureClass
+     * @param array<int, string>|string|null $featureCode
      * @param string $isoLanguage
      * @return array<int, array{
      *     id: int,
@@ -106,12 +108,21 @@ final class AutocompleteProvider extends BaseProviderCustom
      * @throws TypeInvalidException
      */
     private function doGetLocationsFromDB(
-        array $search,
+        /* Search */
+        string|array|null $search,
+
+        /* Search filter */
+        array|string|null $featureClass = null,
+        array|string|null $featureCode = null,
+
+        /* Configuration */
         string $isoLanguage = LanguageCode::DE
     ): array
     {
         $locations = $this->locationRepository->findBySearch(
             search: $search,
+            featureClass: $featureClass,
+            featureCode: $featureCode,
             limit: 30
         );
 
@@ -165,10 +176,14 @@ final class AutocompleteProvider extends BaseProviderCustom
     ): array
     {
         $replacements = [
-            'ä' => 'ae',
-            'ö' => 'oe',
-            'ü' => 'ue',
-            'ß' => 'ss',
+            'ä' => 'a',
+            'ae' => 'a',
+            'ö' => 'o',
+            'oe' => 'o',
+            'ü' => 'u',
+            'ue' => 'u',
+            'ß' => 's',
+            'ss' => 's',
         ];
 
         return array_filter(
@@ -189,30 +204,33 @@ final class AutocompleteProvider extends BaseProviderCustom
      *      name: string,
      *      relevance: int
      *  }> $array
+     * @param bool $useRelevance
      * @return array<int, array{
      *      id: int|string,
      *      name: string,
      *      relevance: int
      *  }>
+     * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
      */
     private function sortRelevance(
         array $array,
         array $search,
+        bool $useRelevance = false,
     ): array
     {
         usort(
             $array,
             /** @var array{id: int, name: string, relevance: int} $valueA */
             /** @var array{id: int, name: string, relevance: int} $valueB */
-            function (array $valueA, array $valueB) use ($search): int {
+            function (array $valueA, array $valueB) use ($search, $useRelevance): int {
                 $nameA = strtolower($valueA[KeyArray::NAME]);
                 $nameB = strtolower($valueB[KeyArray::NAME]);
 
                 $relevanceA = strtolower(sprintf('%010d', $valueA[KeyArray::RELEVANCE]));
                 $relevanceB = strtolower(sprintf('%010d', $valueB[KeyArray::RELEVANCE]));
 
-                $startsWithSearchA = str_starts_with($nameA, strtolower($search[0])) ? '0' : '1';
-                $startsWithSearchB = str_starts_with($nameB, strtolower($search[0])) ? '0' : '1';
+                $startsWithSearchA = $useRelevance && str_starts_with($nameA, strtolower($search[0])) ? '0' : '1';
+                $startsWithSearchB = $useRelevance && str_starts_with($nameB, strtolower($search[0])) ? '0' : '1';
 
                 return $startsWithSearchA.$relevanceA.$nameA <=> $startsWithSearchB.$relevanceB.$nameB;
             }
@@ -243,24 +261,27 @@ final class AutocompleteProvider extends BaseProviderCustom
     }
 
     /**
-     * @param string[] $search
      * @param array<int, array{
      *      id: int|string,
      *      name: string,
      *      relevance: int
      *  }> $array
+     * @param string[] $search
+     * @param bool $useRelevance
      * @return array<int, array{
      *      id: int|string,
      *      name: string
      *  }>
+     * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
      */
     private function prepareArray(
         array $array,
         array $search,
+        bool $useRelevance = false,
     ): array
     {
         $array = $this->filterFirstSearch($array, $search);
-        $array = $this->sortRelevance($array, $search);
+        $array = $this->sortRelevance($array, $search, $useRelevance);
         return $this->removeRelevance($array);
     }
 
@@ -296,9 +317,18 @@ final class AutocompleteProvider extends BaseProviderCustom
             return [];
         }
 
+        $featureClass = $query->getQueryParser()?->getFeatureClasses() ?? null;
+        $featureCode = $query->getQueryParser()?->getFeatureCodes() ?? null;
+
         return $this->prepareArray(
-            $this->doGetLocationsFromDB($search, $isoLanguage),
+            $this->doGetLocationsFromDB(
+                search: $search,
+                featureClass: $featureClass,
+                featureCode: $featureCode,
+                isoLanguage: $isoLanguage
+            ),
             $search,
+            is_null($featureClass) && is_null($featureCode)
         );
     }
 
