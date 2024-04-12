@@ -23,6 +23,7 @@ use Ixnode\PhpException\Case\CaseUnsupportedException;
 use Ixnode\PhpException\Parser\ParserException;
 use LogicException;
 use Symfony\Contracts\Translation\TranslatorInterface;
+use Throwable;
 
 /**
  * Class QueryParser
@@ -691,6 +692,7 @@ class QueryParser
      * @return array<string, mixed>
      * @throws CaseUnsupportedException
      * @throws ParserException
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      */
     public function get(
         TranslatorInterface $translator = null,
@@ -700,14 +702,23 @@ class QueryParser
         $search = $this->getSearch();
         $coordinate = $this->getConfigCoordinate();
 
-        $featureClasses = is_null($translator) ?
-            $this->getFeatureClasses() :
-            $this->getFeatureClassesTranslated($translator, $locale)
-        ;
-        $featureCodes = is_null($translator) ?
-            $this->getFeatureCodes() :
-            $this->getFeatureCodesTranslated($translator, $locale)
-        ;
+        try {
+            $featureClasses = is_null($translator) ?
+                $this->getFeatureClasses() :
+                $this->getFeatureClassesTranslated($translator, $locale)
+            ;
+        } catch (Throwable) {
+            $featureClasses = null;
+        }
+
+        try {
+            $featureCodes = is_null($translator) ?
+                $this->getFeatureCodes() :
+                $this->getFeatureCodesTranslated($translator, $locale)
+            ;
+        } catch (Throwable) {
+            $featureCodes = null;
+        }
 
         $geonameId = $this->getGeonameId();
 
