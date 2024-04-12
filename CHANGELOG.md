@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Releases
 
+### [0.1.69] - 2024-04-13
+
+* Ignore invalid feature codes
+
 ### [0.1.68] - 2024-04-12
 
 * Remove non-evaluable SQL characters
