@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Releases
 
+### [0.1.70] - 2024-04-16
+
+* Remove A locations from the search
+* Pager refactoring
+* Parameter query refactoring
+
 ### [0.1.69] - 2024-04-13
 
 * Ignore invalid feature codes
