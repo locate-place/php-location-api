@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace App\Utils\Query;
 
+use App\Constants\DB\Limit;
 use Ixnode\PhpCoordinate\Coordinate;
 use Ixnode\PhpException\Case\CaseUnsupportedException;
 use Ixnode\PhpException\Parser\ParserException;
@@ -358,6 +359,23 @@ class Query
 
         if (!$this->hasFilter($key)) {
             return null;
+        }
+
+        return $this->getFilterAsInt($key);
+    }
+
+    /**
+     * Returns the limit parameter.
+     *
+     * @param int $defaultLimit
+     * @return int
+     */
+    public function getLimitDefault(int $defaultLimit = Limit::LIMIT_10): int
+    {
+        $key = self::FILTER_LIMIT;
+
+        if (!$this->hasFilter($key)) {
+            return $defaultLimit;
         }
 
         return $this->getFilterAsInt($key);

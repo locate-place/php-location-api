@@ -240,7 +240,7 @@ final class LocationProvider extends BaseProviderCustom
             /* Search filter */
             featureClass: $featureClasses,
             featureCode: $featureCodes,
-            limit: $this->hasFilter(Name::LIMIT) ? $this->getFilterInteger(Name::LIMIT) : Limit::LIMIT_10,
+            limit: $this->query->getLimitDefault(),
             page: $this->query->getPage(),
 
             /* Configuration */

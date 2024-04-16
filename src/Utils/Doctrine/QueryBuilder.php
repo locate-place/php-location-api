@@ -258,7 +258,7 @@ readonly class QueryBuilder
         }
 
         return sprintf(
-            'RIGHT JOIN feature_code fco ON fco.id = l.feature_code_id AND fco.code in (\'%s\')',
+            'RIGHT JOIN feature_code fco ON fco.id = l.feature_code_id AND fco.code IN (\'%s\')',
             implode('\', \'', $featureCode)
         );
     }
@@ -273,7 +273,7 @@ readonly class QueryBuilder
         array|string|null $featureClass = null,
     ): string
     {
-        $defaultLeftJoin = '';
+        $defaultLeftJoin = 'RIGHT JOIN feature_class fcl ON fcl.id = l.feature_class_id AND fcl.class NOT IN (\'\', \'A\')';
 
         if (is_null($featureClass)) {
             return $defaultLeftJoin;
@@ -288,7 +288,7 @@ readonly class QueryBuilder
         }
 
         return sprintf(
-            'RIGHT JOIN feature_class fcl ON fcl.id = l.feature_class_id AND fcl.class in (\'%s\')',
+            'RIGHT JOIN feature_class fcl ON fcl.id = l.feature_class_id AND fcl.class IN (\'%s\')',
             implode('\', \'', $featureClass)
         );
     }

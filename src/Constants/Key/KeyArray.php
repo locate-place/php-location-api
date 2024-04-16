@@ -190,6 +190,10 @@ class KeyArray
 
     final public const PAGE = 'page';
 
+    final public const PAGE_CURRENT = 'page-current';
+
+    final public const PAGE_SIZE = 'page-size';
+
     final public const PARSED = 'parsed';
 
     final public const PLACES = 'places';
@@ -213,6 +217,12 @@ class KeyArray
     final public const RELEVANCE_USER = 'relevance-user';
 
     final public const RESULTS = 'results';
+
+    final public const RESULTS_CURRENT = 'results-current';
+
+    final public const RESULTS_TOTAL = 'results-total';
+
+    final public const RESULTS_PER_PAGE = 'results-per-page';
 
     final public const RIVER_LENGTH = 'river-length';
 
