@@ -13,9 +13,11 @@ declare(strict_types=1);
 
 namespace App\Utils\Query;
 
+use App\Constants\DB\Country;
 use App\Constants\DB\FeatureClass;
 use App\Constants\DB\FeatureCode;
 use App\Constants\Key\KeyArray;
+use App\Constants\Language\CountryCode;
 use App\Constants\Language\LanguageCode;
 use App\Exception\QueryParserException;
 use App\Tests\Unit\Utils\Query\ParserTest;
@@ -539,7 +541,7 @@ class QueryParser
      * @param string $query
      * @return array{
      *     search: string,
-     *     country?: string,
+     *     country?: string|null,
      *     feature-codes?: string[],
      *     feature-classes?: string[],
      *     limit?: int,
@@ -550,7 +552,7 @@ class QueryParser
     {
         /** @var array{
          *     search: string,
-         *     country?: string,
+         *     country?: string|null,
          *     feature-codes?: string[],
          *     feature-classes?: string[],
          *     limit?: int,
@@ -578,7 +580,7 @@ class QueryParser
 
             match ($key) {
                 /* String values. */
-                KeyArray::COUNTRY => $params[$key] = $value,
+                KeyArray::COUNTRY => $params[$key] = $this->getCountryCode($value),
 
                 /* Array values. */
                 KeyArray::FEATURE_CLASSES, KeyArray::FEATURE_CODES => $params[$key] = $this->splitFeatures($value),
@@ -594,6 +596,23 @@ class QueryParser
         $params[KeyArray::SEARCH] = implode(' ', $params[KeyArray::SEARCH]);
 
         return $params;
+    }
+
+    /**
+     * @param string $value
+     * @return string|null
+     */
+    private function getCountryCode(string $value): string|null
+    {
+        if (empty($value)) {
+            return null;
+        }
+
+        if (!in_array($value, CountryCode::ALL)) {
+            return null;
+        }
+
+        return $value;
     }
 
     /**

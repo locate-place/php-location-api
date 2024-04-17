@@ -286,7 +286,8 @@ final class LocationService extends BaseLocationService
             $search,
             $currentPosition,
             $featureClass,
-            $featureCode
+            $featureCode,
+            $country
         ) {
 
             /* Start task */
@@ -294,7 +295,8 @@ final class LocationService extends BaseLocationService
                 search: $search,
                 featureClass: $featureClass,
                 featureCode: $featureCode,
-                coordinate: $currentPosition
+                coordinate: $currentPosition,
+                country: $country,
             );
             $this->setResultCount($count);
             /* Finish task */
@@ -310,6 +312,7 @@ final class LocationService extends BaseLocationService
             $search,
             $currentPosition,
             $limit,
+            $country,
             $sortBy,
             $page,
             $featureClass,
@@ -322,6 +325,7 @@ final class LocationService extends BaseLocationService
                 featureClass: $featureClass,
                 featureCode: $featureCode,
                 limit: $limit,
+                country: $country,
                 page: $page,
                 coordinate: $currentPosition,
                 sortBy: $sortBy

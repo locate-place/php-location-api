@@ -184,6 +184,7 @@ class LocationRepository extends BaseCoordinateRepository
      * @param array<int, string>|string|null $featureClass
      * @param array<int, string>|string|null $featureCode
      * @param int|null $limit
+     * @param string|null $country
      * @param int $page
      * @param Coordinate|null $coordinate
      * @param string $sortBy
@@ -192,13 +193,16 @@ class LocationRepository extends BaseCoordinateRepository
      * @throws TypeInvalidException
      */
     public function findBySearch(
-        /* Search */
+        /* Search term. */
         string|array|null $search,
 
-        /* Search filter */
+        /* Search filter. */
         array|string|null $featureClass = null,
         array|string|null $featureCode = null,
+
+        /* Filter configuration. */
         int|null $limit = Limit::LIMIT_10,
+        string|null $country = null,
         int $page = LocationService::PAGE_FIRST,
 
         /* Configuration */
@@ -214,6 +218,7 @@ class LocationRepository extends BaseCoordinateRepository
                 featureClass: $featureClass,
                 featureCode: $featureCode,
                 limit: $limit,
+                country: $country,
                 page: $page,
                 coordinate: $coordinate,
                 sortBy: $sortBy,
@@ -223,6 +228,7 @@ class LocationRepository extends BaseCoordinateRepository
                 featureClass: $featureClass,
                 featureCode: $featureCode,
                 limit: $limit,
+                country: $country,
                 page: $page,
                 sortBy: $sortBy,
             )
@@ -243,6 +249,7 @@ class LocationRepository extends BaseCoordinateRepository
      * @param string|string[] $search
      * @param array<int, string>|string|null $featureClass
      * @param array<int, string>|string|null $featureCode
+     * @param string|null $country
      * @param Coordinate|null $coordinate
      * @return int
      */
@@ -253,6 +260,7 @@ class LocationRepository extends BaseCoordinateRepository
         /* Search filter */
         array|string|null $featureClass = null,
         array|string|null $featureCode = null,
+        string|null $country = null,
 
         /* Configuration */
         Coordinate|null $coordinate = null
@@ -263,12 +271,14 @@ class LocationRepository extends BaseCoordinateRepository
                 search: $search,
                 featureClass: $featureClass,
                 featureCode: $featureCode,
+                country: $country,
                 coordinate: $coordinate,
             ),
             default => $this->queryBuilder->getQueryCountLocationSearch(
                 search: $search,
                 featureClass: $featureClass,
                 featureCode: $featureCode,
+                country: $country,
             )
         };
 

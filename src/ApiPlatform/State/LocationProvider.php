@@ -217,6 +217,7 @@ final class LocationProvider extends BaseProviderCustom
         $search = $queryParser->getSearch();
         $featureClasses = $queryParser->getFeatureClasses();
         $featureCodes = $queryParser->getFeatureCodes();
+        $country = $queryParser->getCountry() ?? $country;
 
         if (is_null($search) && is_null($featureClasses) && is_null($featureCodes)) {
             $this->setError('Unable to get search string.');

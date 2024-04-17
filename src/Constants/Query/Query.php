@@ -34,6 +34,7 @@ class Query
         FROM
             location l
         LEFT JOIN search_index si ON si.location_id = l.id
+        LEFT JOIN country c ON l.country_id = c.id
         %(feature_code)s
         %(feature_class)s
         WHERE
@@ -48,6 +49,7 @@ class Query
                         si.search_text_de @@ to_tsquery('german', :search)
                     )
             END
+            %(country)s
         ORDER BY
             %(sort_by)s
         %(limit)s;
@@ -59,6 +61,7 @@ SQL;
         FROM
             location l
         LEFT JOIN search_index si ON si.location_id = l.id
+        LEFT JOIN country c ON l.country_id = c.id
         %(feature_code)s
         %(feature_class)s
         WHERE
@@ -73,6 +76,7 @@ SQL;
                         si.search_text_de @@ to_tsquery('german', :search)
                     )
             END
+            %(country)s
         ;
 SQL;
 
@@ -98,6 +102,7 @@ SQL;
         %(feature_class)s
         LEFT JOIN location_river lr ON lr.location_id = l.id
         LEFT JOIN river r ON lr.river_id = r.id
+        LEFT JOIN country c ON l.country_id = c.id
         LEFT JOIN LATERAL (
             SELECT
                 rp.coordinates as coordinates_river,
@@ -129,6 +134,7 @@ SQL;
                         si.search_text_de @@ to_tsquery('german', :search)
                     )
             END
+            %(country)s
         ORDER BY
             %(sort_by)s
         %(limit)s;
@@ -200,6 +206,7 @@ SQL;
         %(feature_class)s
         LEFT JOIN location_river lr ON lr.location_id = l.id
         LEFT JOIN river r ON lr.river_id = r.id
+        LEFT JOIN country c ON l.country_id = c.id
         LEFT JOIN LATERAL (
             SELECT
                 rp.coordinates as coordinates_river,
@@ -246,6 +253,7 @@ SQL;
                 ST_MakePoint(:longitude, :latitude)::geography, 
                 :distance
             )
+            %(country)s
         ORDER BY
             %(sort_by)s
         %(limit)s;

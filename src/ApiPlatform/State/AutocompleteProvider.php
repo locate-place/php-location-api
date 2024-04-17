@@ -92,6 +92,7 @@ final class AutocompleteProvider extends BaseProviderCustom
      * @param string|string[]|null $search
      * @param array<int, string>|string|null $featureClass
      * @param array<int, string>|string|null $featureCode
+     * @param string|null $country
      * @param string $isoLanguage
      * @return array<int, array{
      *     id: int,
@@ -114,6 +115,7 @@ final class AutocompleteProvider extends BaseProviderCustom
         /* Search filter */
         array|string|null $featureClass = null,
         array|string|null $featureCode = null,
+        string|null $country = null,
 
         /* Configuration */
         string $isoLanguage = LanguageCode::DE
@@ -123,7 +125,8 @@ final class AutocompleteProvider extends BaseProviderCustom
             search: $search,
             featureClass: $featureClass,
             featureCode: $featureCode,
-            limit: 30
+            limit: 30,
+            country: $country
         );
 
         $locationMatches = [];
@@ -319,12 +322,14 @@ final class AutocompleteProvider extends BaseProviderCustom
 
         $featureClass = $query->getQueryParser()?->getFeatureClasses() ?? null;
         $featureCode = $query->getQueryParser()?->getFeatureCodes() ?? null;
+        $country = $query->getQueryParser()?->getCountry() ?? null;
 
         return $this->prepareArray(
             $this->doGetLocationsFromDB(
                 search: $search,
                 featureClass: $featureClass,
                 featureCode: $featureCode,
+                country: $country,
                 isoLanguage: $isoLanguage
             ),
             $search,

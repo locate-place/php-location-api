@@ -49,8 +49,16 @@ class CountryCode
     final public const DEFAULT = 'default';
 
     final public const ALL = [
+        self::CH,
         self::DE,
+        self::ES,
+        self::FR,
         self::GB,
-        self::US
+        self::IT,
+        self::MT,
+        self::RU,
+        self::SE,
+        self::UA,
+        self::US,
     ];
 }

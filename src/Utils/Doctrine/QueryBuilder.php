@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace App\Utils\Doctrine;
 
 use App\Constants\DB\Limit;
+use App\Constants\Language\CountryCode;
 use App\Constants\Query\Query;
 use App\Entity\Location;
 use App\Service\LocationService;
@@ -48,6 +49,7 @@ readonly class QueryBuilder
      * @param array<int, string>|string|null $featureClass
      * @param array<int, string>|string|null $featureCode
      * @param int|null $limit
+     * @param string|null $country
      * @param int $page
      * @param Coordinate|null $coordinate
      * @param int|null $distance
@@ -62,6 +64,7 @@ readonly class QueryBuilder
         array|string|null $featureClass = null,
         array|string|null $featureCode = null,
         int|null $limit = Limit::LIMIT_10,
+        string|null $country = CountryCode::US,
         int $page = LocationService::PAGE_FIRST,
 
         /* Configuration */
@@ -143,6 +146,7 @@ readonly class QueryBuilder
         $sql = str_replace('%(limit)s', $this->getLimit($limit, $page), $sql);
         $sql = str_replace('%(feature_code)s', $this->getFeatureCodeLeftJoin($featureCode), $sql);
         $sql = str_replace('%(feature_class)s', $this->getFeatureClassLeftJoin($featureClass), $sql);
+        $sql = str_replace('%(country)s', is_null($country) ? '' : 'AND c.code=\''.$country.'\'', $sql);
 
         return ($this->entityManager->createNativeQuery($sql, $rsm))
             ->setParameter('longitude', $longitude)
@@ -158,6 +162,7 @@ readonly class QueryBuilder
      * @param string|string[] $search
      * @param array<int, string>|string|null $featureClass
      * @param array<int, string>|string|null $featureCode
+     * @param string|null $country
      * @param Coordinate|null $coordinate
      * @param int|null $distance
      * @return NativeQuery
@@ -169,6 +174,7 @@ readonly class QueryBuilder
         /* Search filter */
         array|string|null $featureClass = null,
         array|string|null $featureCode = null,
+        string|null $country = CountryCode::US,
 
         /* Configuration */
         Coordinate|null $coordinate = null,
@@ -201,6 +207,7 @@ readonly class QueryBuilder
 
         $sql = str_replace('%(feature_code)s', $this->getFeatureCodeLeftJoin($featureCode), $sql);
         $sql = str_replace('%(feature_class)s', $this->getFeatureClassLeftJoin($featureClass), $sql);
+        $sql = str_replace('%(country)s', is_null($country) ? '' : 'AND c.code=\''.$country.'\'', $sql);
 
         return ($this->entityManager->createNativeQuery($sql, $rsm))
             ->setParameter('longitude', $longitude)

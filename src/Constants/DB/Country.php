@@ -23,4 +23,8 @@ namespace App\Constants\DB;
 class Country
 {
     final public const DE = 'DE';
+
+    final public const ALL = [
+        self::DE,
+    ];
 }
