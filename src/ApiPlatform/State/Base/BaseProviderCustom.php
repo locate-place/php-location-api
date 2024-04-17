@@ -662,7 +662,7 @@ class BaseProviderCustom extends BaseResourceWrapperProvider
         $this->setResults([
             KeyArray::RESULTS_CURRENT => count($locations),
             KeyArray::RESULTS_TOTAL => $this->locationService->getResultCount(),
-            KeyArray::PAGE_CURRENT => $this->query->getPage(),
+            KeyArray::PAGE_CURRENT => $this->query->getPageDefault(),
             KeyArray::PAGE_SIZE => $this->query->getLimitDefault(),
         ]);
     }

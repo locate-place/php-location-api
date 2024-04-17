@@ -241,7 +241,7 @@ final class LocationProvider extends BaseProviderCustom
             featureClass: $featureClasses,
             featureCode: $featureCodes,
             limit: $this->query->getLimitDefault(),
-            page: $this->query->getPage(),
+            page: $this->query->getPageDefault(),
 
             /* Configuration */
             currentPosition: $currentPosition,
@@ -316,7 +316,7 @@ final class LocationProvider extends BaseProviderCustom
             featureClass: $queryParser->getFeatureClasses(),
             featureCode: $queryParser->getFeatureCodes(),
             limit: $this->locationServiceConfig->getLimitByQuery($this->query),
-            page: $this->query->getPage(),
+            page: $this->query->getPageDefault(),
 
             /* Configuration */
             currentPosition: $this->query->getCurrentPosition(),

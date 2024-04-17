@@ -17,6 +17,7 @@ use App\Constants\DB\FeatureClass;
 use App\Constants\DB\FeatureCode;
 use App\Constants\Key\KeyArray;
 use App\Constants\Language\LanguageCode;
+use App\Exception\QueryParserException;
 use App\Tests\Unit\Utils\Query\ParserTest;
 use Ixnode\PhpCoordinate\Coordinate;
 use Ixnode\PhpException\Case\CaseUnsupportedException;
@@ -33,6 +34,7 @@ use Throwable;
  * @since 0.1.0 (2024-01-06) First version.
  * @link ParserTest
  * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
+ * @SuppressWarnings(PHPMD.ExcessiveClassLength)
  */
 class QueryParser
 {
@@ -41,6 +43,8 @@ class QueryParser
     final public const TYPE_SEARCH_COORDINATE = 'search-coordinate';
 
     final public const TYPE_SEARCH_LIST_GENERAL = 'search-list-general';
+
+    final public const TYPE_CUSTOM = 'search-custom';
 
     final public const TYPE_SEARCH_LIST_WITH_FEATURES = 'search-list-with-features';
 
@@ -62,7 +66,7 @@ class QueryParser
 
     private const EREG_WRAPPER_COORDINATE_WITH_FEATURES = '^%s[ :] *%s *[,/| ]+ *%s$';
 
-    private const EREG_WRAPPER_LIST_SEARCH_WITH_FEATURES = '^%s(?:[ :][ ]*)?*%s$';
+    private const EREG_WRAPPER_LIST_SEARCH_WITH_FEATURES = '^%s(?:(?:(?:[ :][ ]*)(.*))|)$';
 
     private const FORMAT_ID = '([0-9]+)';
 
@@ -87,24 +91,44 @@ class QueryParser
     private string $type;
 
     /** @var array{
-     *      type: string,
-     *      geoname-id: int|null,
-     *      latitude: float|null,
-     *      longitude: float|null,
+     *      country: string|null,
+     *      distance: int|null,
      *      feature-classes: string[]|null,
      *      feature-codes: string[]|null,
+     *      geoname-id: int|null,
+     *      latitude: float|null,
+     *      limit: int|null,
+     *      longitude: float|null,
      *      search: string|null,
-     *      distance: int|null
+     *      type: string
      * } $data */
     private array $data;
 
     /** @var string[] $matches */
     private array $matches = [];
 
+    private int|null $distance = null;
+
+    private int|null $limit = null;
+
+    private string|null $country = null;
+
+    /** @var string[]|null $featureCodes */
+    private array|null $featureCodes = null;
+
+    /** @var string[]|null $featureClasses */
+    private array|null $featureClasses = null;
+
     /**
      * @param string|int $query
+     * @param string[] $allowedFeatureClasses
+     * @param string[] $allowedFeatureCodes
      */
-    public function __construct(string|int $query)
+    public function __construct(
+        string|int $query,
+        protected array $allowedFeatureClasses = FeatureClass::ALL,
+        protected array $allowedFeatureCodes = FeatureCode::ALL,
+    )
     {
         $this->query = trim((string) $query);
     }
@@ -120,7 +144,7 @@ class QueryParser
             return $this->type;
         }
 
-        $this->type = $this->doGetType();
+        $this->type = $this->doGetType($this->query);
 
         return $this->type;
     }
@@ -147,7 +171,9 @@ class QueryParser
      *     feature-classes: string[]|null,
      *     feature-codes: string[]|null,
      *     search: string|null,
-     *     distance: int|null
+     *     distance: int|null,
+     *     country: string|null,
+     *     limit: int|null
      * }
      *
      * @throws CaseUnsupportedException
@@ -319,13 +345,39 @@ class QueryParser
             return null;
         }
 
-        $searchString = preg_replace('~[():";!\'?]~', '', $searchString);
+        $searchString = preg_replace('~[():;!?]~', '', $searchString);
 
         if (!is_string($searchString)) {
             throw new LogicException('Unable to replace values from $searchString');
         }
 
-        return array_filter(explode(" ", $searchString), fn($word) => !empty($word));
+        return array_filter($this->getSplitStringKeepingQuotes($searchString), fn($word) => !empty($word));
+    }
+
+    /**
+     * @param string $input
+     * @return string[]
+     */
+    public function getSplitStringKeepingQuotes(string $input): array
+    {
+        /* Regex matches quoted substrings or non-whitespace sequences. */
+        preg_match_all('~"[^"]*"|\'[^\']*\'|\S+~', $input, $matches);
+
+        /* Trim the quotes from the matched parts */
+        return array_map(function($part)
+        {
+            /* Check if the part starts and ends with quotes */
+            if (
+                (str_starts_with((string) $part, '"') && str_ends_with((string) $part, '"')) ||
+                (str_starts_with((string) $part, '\'') && str_ends_with((string) $part, '\''))
+            ) {
+                /* Remove the surrounding quotes. */
+                return substr((string) $part, 1, -1);
+            }
+
+            /* Return the part as is if it's not quoted */
+            return $part;
+        }, $matches[0]);
     }
 
     /**
@@ -340,6 +392,34 @@ class QueryParser
         $data = $this->getData();
 
         return $data[KeyArray::DISTANCE];
+    }
+
+    /**
+     * Returns the country.
+     *
+     * @return string|null
+     * @throws CaseUnsupportedException
+     * @throws ParserException
+     */
+    public function getCountry(): string|null
+    {
+        $data = $this->getData();
+
+        return $data[KeyArray::COUNTRY];
+    }
+
+    /**
+     * Returns the limit.
+     *
+     * @return int|null
+     * @throws CaseUnsupportedException
+     * @throws ParserException
+     */
+    public function getLimit(): int|null
+    {
+        $data = $this->getData();
+
+        return $data[KeyArray::LIMIT];
     }
 
     /**
@@ -374,26 +454,40 @@ class QueryParser
      * @param string[]|null $featureCodes
      * @param string|null $search
      * @param int|null $distance
+     * @param string|null $country
+     * @param int|null $limit
      * @return array{
-     *     type: string,
-     *     geoname-id: int|null,
-     *     latitude: float|null,
-     *     longitude: float|null,
+     *     country: string|null,
+     *     distance: int|null,
      *     feature-classes: string[]|null,
      *     feature-codes: string[]|null,
+     *     geoname-id: int|null,
+     *     latitude: float|null,
+     *     limit: int|null,
+     *     longitude: float|null,
      *     search: string|null,
-     *     distance: int|null
+     *     type: string
      * }
+     * @SuppressWarnings(PHPMD.ExcessiveParameterList)
      */
     public static function getDataContainer(
+        /* Search type. */
         string $type,
+
+        /* Search terms. */
+        string|null $search = null,
         int|null $geonameId = null,
         float|null $latitude = null,
         float|null $longitude = null,
+
+        /* Search filter. */
         array|null $featureClasses = null,
         array|null $featureCodes = null,
-        string|null $search = null,
-        int|null $distance = null
+
+        /* Filter configuration. */
+        int|null $distance = null,
+        int|null $limit = null,
+        string|null $country = null
     ): array
     {
         if (!is_null($latitude) && is_null($longitude)) {
@@ -404,14 +498,16 @@ class QueryParser
         }
 
         return [
-            KeyArray::TYPE => $type,
-            KeyArray::GEONAME_ID => $geonameId,
-            KeyArray::LATITUDE => $latitude,
-            KeyArray::LONGITUDE => $longitude,
+            KeyArray::COUNTRY => $country,
+            KeyArray::DISTANCE => $distance,
             KeyArray::FEATURE_CLASSES => $featureClasses,
             KeyArray::FEATURE_CODES => $featureCodes,
+            KeyArray::GEONAME_ID => $geonameId,
+            KeyArray::LATITUDE => $latitude,
+            KeyArray::LIMIT => $limit,
+            KeyArray::LONGITUDE => $longitude,
             KeyArray::SEARCH => $search,
-            KeyArray::DISTANCE => $distance,
+            KeyArray::TYPE => $type,
         ];
     }
 
@@ -438,18 +534,104 @@ class QueryParser
     }
 
     /**
+     * Parses the given search query.
+     *
+     * @param string $query
+     * @return array{
+     *     search: string,
+     *     country?: string,
+     *     feature-codes?: string[],
+     *     feature-classes?: string[],
+     *     limit?: int,
+     *     distance?: int,
+     * }
+     */
+    private function parseSearchQuery(string $query): array
+    {
+        /** @var array{
+         *     search: string,
+         *     country?: string,
+         *     feature-codes?: string[],
+         *     feature-classes?: string[],
+         *     limit?: int,
+         *     distance?: int,
+         * } $params */
+        $params = [
+            KeyArray::SEARCH => [],
+        ];
+
+        $parts = explode(' ', $query);
+
+        foreach ($parts as $part) {
+            if (!str_contains($part, ':')) {
+                $part = trim($part);
+
+                if (empty($part)) {
+                    continue;
+                }
+
+                $params[KeyArray::SEARCH][] = trim($part);
+                continue;
+            }
+
+            [$key, $value] = explode(':', $part);
+
+            match ($key) {
+                /* String values. */
+                KeyArray::COUNTRY => $params[$key] = $value,
+
+                /* Array values. */
+                KeyArray::FEATURE_CLASSES, KeyArray::FEATURE_CODES => $params[$key] = $this->splitFeatures($value),
+
+                /* Integer values. */
+                KeyArray::LIMIT, KeyArray::DISTANCE => $params[$key] = (int) $value,
+
+                /* Search values. */
+                default => $params[KeyArray::SEARCH][] = trim(sprintf('%s:%s', $key, $value)),
+            };
+        }
+
+        $params[KeyArray::SEARCH] = implode(' ', $params[KeyArray::SEARCH]);
+
+        return $params;
+    }
+
+    /**
+     * @param string $value
+     * @return string[]
+     */
+    private function splitFeatures(string $value): array
+    {
+        $split = preg_split('~[,|]~', $value);
+
+        if ($split === false) {
+            throw new LogicException(sprintf('Unable to split %s', $value));
+        }
+
+        return $split;
+    }
+
+    /**
      * Returns the query type.
      *
+     * @param string $query
      * @return string
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+     * @SuppressWarnings(PHPMD.NPathComplexity)
+     * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
      */
-    private function doGetType(): string
+    private function doGetType(string $query): string
     {
+        $parsedSearchQuery = $this->parseSearchQuery($query);
+
+        $onlySearch = count($parsedSearchQuery) === 1 && array_key_exists('search', $parsedSearchQuery);
+        $search = $parsedSearchQuery['search'];
+
         /* Just an id was given -> Use the id to query a direct geoname id:
          * - 12345678
          * - 52454235
          */
-        if (mb_ereg(sprintf(self::EREG_WRAPPER_SINGLE, self::FORMAT_ID), $this->query, $this->matches)) {
+        if ($onlySearch && mb_ereg(sprintf(self::EREG_WRAPPER_SINGLE, self::FORMAT_ID), $search, $this->matches)) {
             return self::TYPE_SEARCH_GEONAME_ID;
         }
 
@@ -465,10 +647,12 @@ class QueryParser
          * - 28.137008, 13°24′17.604″E
          * - etc.
          */
-        foreach (self::FORMAT_LATITUDES as $formatLatitude) {
-            foreach (self::FORMAT_LONGITUDES as $formatLongitude) {
-                if (mb_ereg(sprintf(self::EREG_WRAPPER_COORDINATE, $formatLatitude, $formatLongitude), $this->query, $this->matches)) {
-                    return self::TYPE_SEARCH_COORDINATE;
+        if ($onlySearch) {
+            foreach (self::FORMAT_LATITUDES as $formatLatitude) {
+                foreach (self::FORMAT_LONGITUDES as $formatLongitude) {
+                    if (mb_ereg(sprintf(self::EREG_WRAPPER_COORDINATE, $formatLatitude, $formatLongitude), $search, $this->matches)) {
+                        return self::TYPE_SEARCH_COORDINATE;
+                    }
                 }
             }
         }
@@ -488,10 +672,12 @@ class QueryParser
          * - S|AIRP|AIRT 28.137008, 13°24′17.604″E
          * - etc.
          */
-        foreach (self::FORMAT_LATITUDES as $formatLatitude) {
-            foreach (self::FORMAT_LONGITUDES as $formatLongitude) {
-                if (mb_ereg(sprintf(self::EREG_WRAPPER_COORDINATE_WITH_FEATURES, self::FORMAT_FEATURES, $formatLatitude, $formatLongitude), $this->query, $this->matches)) {
-                    return self::TYPE_SEARCH_LIST_WITH_FEATURES_AND_COORDINATE;
+        if ($onlySearch) {
+            foreach (self::FORMAT_LATITUDES as $formatLatitude) {
+                foreach (self::FORMAT_LONGITUDES as $formatLongitude) {
+                    if (mb_ereg(sprintf(self::EREG_WRAPPER_COORDINATE_WITH_FEATURES, self::FORMAT_FEATURES, $formatLatitude, $formatLongitude), $search, $this->matches)) {
+                        return self::TYPE_SEARCH_LIST_WITH_FEATURES_AND_COORDINATE;
+                    }
                 }
             }
         }
@@ -502,26 +688,72 @@ class QueryParser
          * - AIRP|AIRT Dresden
          * - etc.
          */
-        if (mb_ereg(sprintf(self::EREG_WRAPPER_LIST_SEARCH_WITH_FEATURES, self::FORMAT_FEATURES, '[ ]+(.*)'), $this->query, $this->matches)) {
+        /* Feature codes/classes with and without search term */
+        if ($onlySearch && mb_ereg(sprintf(self::EREG_WRAPPER_LIST_SEARCH_WITH_FEATURES, self::FORMAT_FEATURES), $search, $this->matches)) {
             return $this->getTypeSearchListWithFeatures($this->matches[2]);
-        }
-        if (mb_ereg(sprintf(self::EREG_WRAPPER_LIST_SEARCH_WITH_FEATURES, self::FORMAT_FEATURES, ''), $this->query, $this->matches)) {
-            return $this->getTypeSearchListWithFeatures(false);
         }
 
         /* Use the query as a search list query:
          * - all the rest
          */
-        $this->matches = [$this->query, $this->query];
-        return self::TYPE_SEARCH_LIST_GENERAL;
+        if ($onlySearch) {
+            $this->matches = match (true) {
+                /* Search with feature codes. */
+                is_null($this->featureClasses) && !is_null($this->featureCodes) => [$search, implode('|', $this->featureCodes), $search],
+                !is_null($this->featureClasses) && is_null($this->featureCodes) => [$search, implode('|', $this->featureClasses), $search],
+                !is_null($this->featureClasses) && !is_null($this->featureCodes) => [$search, implode('|', [...$this->featureClasses, ...$this->featureCodes]), $search],
+
+                /* Default search. */
+                default => [$search, $search]
+            };
+
+            return match (true) {
+                /* Search with feature codes. */
+                !is_null($this->featureClasses) || !is_null($this->featureCodes) => self::TYPE_SEARCH_LIST_WITH_FEATURES_AND_SEARCH,
+
+                /* Default search. */
+                default => self::TYPE_SEARCH_LIST_GENERAL
+            };
+        }
+
+        /* Remember properties. */
+        if (array_key_exists(KeyArray::DISTANCE, $parsedSearchQuery)) {
+            $this->distance = $parsedSearchQuery[KeyArray::DISTANCE];
+        }
+        if (array_key_exists(KeyArray::LIMIT, $parsedSearchQuery)) {
+            $this->limit = $parsedSearchQuery[KeyArray::LIMIT];
+        }
+        if (array_key_exists(KeyArray::COUNTRY, $parsedSearchQuery)) {
+            $this->country = $parsedSearchQuery[KeyArray::COUNTRY];
+        }
+        if (array_key_exists(KeyArray::FEATURE_CODES, $parsedSearchQuery)) {
+            $this->featureCodes = $parsedSearchQuery[KeyArray::FEATURE_CODES];
+        }
+        if (array_key_exists(KeyArray::FEATURE_CLASSES, $parsedSearchQuery)) {
+            $this->featureClasses = $parsedSearchQuery[KeyArray::FEATURE_CLASSES];
+        }
+
+        return $this->doGetType($search);
     }
 
     /**
      * Returns the query data.
      *
-     * @return array{type: string, geoname-id: int|null, latitude: float|null, longitude: float|null, feature-classes: string[]|null, feature-codes: string[]|null, search: string|null, distance: int|null}
+     * @return array{
+     *     country: string|null,
+     *     distance: int|null,
+     *     feature-classes: string[]|null,
+     *     feature-codes: string[]|null,
+     *     geoname-id: int|null,
+     *     latitude: float|null,
+     *     limit: int|null,
+     *     longitude: float|null,
+     *     search: string|null,
+     *     type: string
+     * }
      * @throws CaseUnsupportedException
      * @throws ParserException
+     * @throws QueryParserException
      */
     private function doGetData(): array
     {
@@ -589,17 +821,20 @@ class QueryParser
      * @param string[]|string|null $features
      * @param string|null $search
      * @return array{
-     *     type: string,
-     *     geoname-id: int|null,
-     *     latitude: float|null,
-     *     longitude: float|null,
+     *     country: string|null,
+     *     distance: int|null,
      *     feature-classes: string[]|null,
      *     feature-codes: string[]|null,
+     *     geoname-id: int|null,
+     *     latitude: float|null,
+     *     limit: int|null,
+     *     longitude: float|null,
      *     search: string|null,
-     *     distance: int|null
+     *     type: string
      * }
      * @throws CaseUnsupportedException
      * @throws ParserException
+     * @throws QueryParserException
      */
     private function getDataContainerParsed(
         string $type,
@@ -630,13 +865,23 @@ class QueryParser
         ] = $this->extractFeatures($features);
 
         return self::getDataContainer(
-            $type,
+            /* Search type. */
+            type: $type,
+
+            /* Search terms. */
+            search: $search,
             geonameId: $geonameId,
             latitude: $latitude,
             longitude: $longitude,
+
+            /* Search filter. */
             featureClasses: $featureClasses,
             featureCodes: $featureCodes,
-            search: $search
+
+            /* Filter configuration. */
+            distance: $this->distance ?? null,
+            limit: $this->limit ?? null,
+            country: $this->country ?? null,
         );
     }
 
@@ -645,6 +890,9 @@ class QueryParser
      *
      * @param string[]|string|null $features
      * @return array{feature-classes: string[]|null, feature-codes: string[]|null}
+     * @throws QueryParserException
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+     * @SuppressWarnings(PHPMD.NPathComplexity)
      */
     private function extractFeatures(array|string|null $features = null): array
     {
@@ -664,8 +912,8 @@ class QueryParser
 
         foreach ($features as $feature) {
             match (true) {
-                mb_strlen($feature) === self::LENGTH_FEATURE_CLASS => $featureClasses[] = $feature,
-                mb_strlen($feature) > self::LENGTH_FEATURE_CLASS && mb_strlen($feature) <= self::LENGTH_FEATURE_CODE => $featureCodes[] = $feature,
+                mb_strlen($feature) === self::LENGTH_FEATURE_CLASS => $featureClasses[] = strtoupper($feature),
+                mb_strlen($feature) > self::LENGTH_FEATURE_CLASS && mb_strlen($feature) <= self::LENGTH_FEATURE_CODE => $featureCodes[] = strtoupper($feature),
                 default => throw new LogicException(sprintf('Unsupported feature code length given "%s".', $feature)),
             };
         }
@@ -676,6 +924,34 @@ class QueryParser
 
         if (count($featureCodes) <= 0) {
             $featureCodes = null;
+        }
+
+        if (!is_null($featureClasses)) {
+            $featureClasses = array_unique($featureClasses);
+        }
+
+        if (!is_null($featureCodes)) {
+            $featureCodes = array_unique($featureCodes);
+        }
+
+        if (!is_null($featureClasses)) {
+            foreach ($featureClasses as $featureClass) {
+                if (in_array($featureClass, $this->allowedFeatureClasses, true)) {
+                    continue;
+                }
+
+                throw new QueryParserException(sprintf('Unsupported feature class "%s".', $featureClass));
+            }
+        }
+
+        if (!is_null($featureCodes)) {
+            foreach ($featureCodes as $featureCode) {
+                if (in_array($featureCode, $this->allowedFeatureCodes, true)) {
+                    continue;
+                }
+
+                throw new QueryParserException(sprintf('Unsupported feature code "%s".', $featureCode));
+            }
         }
 
         return [

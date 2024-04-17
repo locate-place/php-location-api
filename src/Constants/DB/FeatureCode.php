@@ -1447,7 +1447,7 @@ class FeatureCode extends BaseFeature
 
 
 
-    final public const ALL = [
+    final public const ALL_GROUPED = [
         FeatureClass::A => self::A,
         FeatureClass::H => self::H,
         FeatureClass::L => self::L,
@@ -1457,6 +1457,18 @@ class FeatureCode extends BaseFeature
         FeatureClass::T => self::T,
         FeatureClass::U => self::U,
         FeatureClass::V => self::V,
+    ];
+
+    final public const ALL = [
+        ...self::A,
+        ...self::H,
+        ...self::L,
+        ...self::P,
+        ...self::R,
+        ...self::S,
+        ...self::T,
+        ...self::U,
+        ...self::V,
     ];
 
     private const TEMPLATE_TRANSLATION = '%s.%s';
@@ -1494,13 +1506,13 @@ class FeatureCode extends BaseFeature
         string $locale = null,
     ): array
     {
-        if (!array_key_exists($featureClass, self::ALL)) {
+        if (!array_key_exists($featureClass, self::ALL_GROUPED)) {
             throw new LogicException(sprintf('Given feature class "%s" does not exist.', $featureClass));
         }
 
         $featureCodes = [];
 
-        foreach (self::ALL[$featureClass] as $featureCode) {
+        foreach (self::ALL_GROUPED[$featureClass] as $featureCode) {
             $translated = $this->translate($featureCode, $locale);
 
             $featureCodes[] = [
@@ -1559,13 +1571,13 @@ class FeatureCode extends BaseFeature
         string $filter = null
     ): array
     {
-        if (!array_key_exists($featureClass, self::ALL)) {
+        if (!array_key_exists($featureClass, self::ALL_GROUPED)) {
             throw new LogicException(sprintf('Given feature class "%s" does not exist.', $featureClass));
         }
 
         $featureCodes = [];
 
-        foreach (self::ALL[$featureClass] as $featureCode) {
+        foreach (self::ALL_GROUPED[$featureClass] as $featureCode) {
             $translated = $this->translate($featureCode, $locale);
 
             if (
@@ -1627,7 +1639,7 @@ class FeatureCode extends BaseFeature
      */
     public function getFeatureClass(string $featureCode): string
     {
-        foreach (self::ALL as $featureClass => $featureCodes) {
+        foreach (self::ALL_GROUPED as $featureClass => $featureCodes) {
             if (in_array($featureCode, $featureCodes, true)) {
                 return (string) $featureClass;
             }

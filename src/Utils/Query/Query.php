@@ -384,14 +384,31 @@ class Query
     /**
      * Returns the page parameter.
      *
-     * @return int
+     * @return int|null
      */
-    public function getPage(): int
+    public function getPage(): int|null
     {
         $key = self::FILTER_PAGE;
 
         if (!$this->hasFilter($key)) {
-            return self::PAGE_FIRST;
+            return null;
+        }
+
+        return $this->getFilterAsInt($key);
+    }
+
+    /**
+     * Returns the page parameter.
+     *
+     * @param int $defaultPage
+     * @return int
+     */
+    public function getPageDefault(int $defaultPage = self::PAGE_FIRST): int
+    {
+        $key = self::FILTER_PAGE;
+
+        if (!$this->hasFilter($key)) {
+            return $defaultPage;
         }
 
         return $this->getFilterAsInt($key);
