@@ -652,6 +652,8 @@ class BaseProviderCustom extends BaseResourceWrapperProvider
      *
      * @param array<int, Location> $locations
      * @return void
+     * @throws CaseUnsupportedException
+     * @throws ParserException
      */
     protected function setResultsFromLocations(array $locations): void
     {

@@ -295,8 +295,8 @@ final class LocationService extends BaseLocationService
                 search: $search,
                 featureClass: $featureClass,
                 featureCode: $featureCode,
-                coordinate: $currentPosition,
                 country: $country,
+                coordinate: $currentPosition,
             );
             $this->setResultCount($count);
             /* Finish task */

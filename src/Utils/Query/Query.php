@@ -369,10 +369,20 @@ class Query
      *
      * @param int $defaultLimit
      * @return int
+     * @throws CaseUnsupportedException
+     * @throws ParserException
      */
     public function getLimitDefault(int $defaultLimit = Limit::LIMIT_10): int
     {
         $key = self::FILTER_LIMIT;
+
+        $queryParser = $this->getQueryParser();
+
+        $limit = $queryParser?->getLimit() ?? null;
+
+        if (!is_null($limit)) {
+            return $limit;
+        }
 
         if (!$this->hasFilter($key)) {
             return $defaultLimit;
