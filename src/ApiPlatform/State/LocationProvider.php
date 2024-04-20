@@ -218,7 +218,8 @@ final class LocationProvider extends BaseProviderCustom
         $featureClasses = $queryParser->getFeatureClasses();
         $featureCodes = $queryParser->getFeatureCodes();
         $country = $queryParser->getCountry() ?? $country;
-        $limit = $this->query->getLimitDefault();
+        $limit = $this->locationServiceConfig->getLimitByQuery($this->query);
+        $distance = $this->locationServiceConfig->getDistanceByQuery($this->query);
 
         if (is_null($search) && is_null($featureClasses) && is_null($featureCodes)) {
             $this->setError('Unable to get search string.');
@@ -240,6 +241,7 @@ final class LocationProvider extends BaseProviderCustom
             search: $search,
 
             /* Search filter */
+            distanceMeter: $distance,
             featureClass: $featureClasses,
             featureCode: $featureCodes,
             limit: $limit,
@@ -303,6 +305,11 @@ final class LocationProvider extends BaseProviderCustom
         }
 
         $coordinate = $this->getCoordinateByQueryParser($queryParser, $this->locationRepository);
+        $featureClasses = $queryParser->getFeatureClasses();
+        $featureCodes = $queryParser->getFeatureCodes();
+        $country = $queryParser->getCountry() ?? $country;
+        $limit = $this->locationServiceConfig->getLimitByQuery($this->query);
+        $distance = $this->locationServiceConfig->getDistanceByQuery($this->query);
 
         if (is_null($coordinate)) {
             //$this->setError('Unable to get coordinate from given data.');
@@ -314,10 +321,10 @@ final class LocationProvider extends BaseProviderCustom
             coordinate: $coordinate,
 
             /* Search filter */
-            distanceMeter: $this->locationServiceConfig->getDistanceByQuery($this->query),
-            featureClass: $queryParser->getFeatureClasses(),
-            featureCode: $queryParser->getFeatureCodes(),
-            limit: $this->locationServiceConfig->getLimitByQuery($this->query),
+            distanceMeter: $distance,
+            featureClass: $featureClasses,
+            featureCode: $featureCodes,
+            limit: $limit,
             page: $this->query->getPageDefault(),
 
             /* Configuration */

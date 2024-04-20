@@ -308,9 +308,9 @@ class LocationServiceDebug
                 distanceMeter: $distanceMeter,
                 featureClasses: $featureClass,
                 featureCodes: $featureCode,
+                limit: $limit,
                 country: $country,
                 adminCodes: $adminCodes,
-                limit: $limit,
             );
 
             foreach ($featureCodeLocations as $featureCodeLocation) {

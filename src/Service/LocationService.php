@@ -212,6 +212,7 @@ final class LocationService extends BaseLocationService
      * Returns locations by given search string (filter limit, feature classes).
      *
      * @param string|string[] $search
+     * @param int|null $distanceMeter
      * @param array<int, string>|string|null $featureClass
      * @param array<int, string>|string|null $featureCode
      * @param int|null $limit
@@ -235,12 +236,12 @@ final class LocationService extends BaseLocationService
      * @throws FunctionReplaceException
      * @throws JsonException
      * @throws NonUniqueResultException
+     * @throws ORMException
      * @throws ParserException
      * @throws RedirectionExceptionInterface
      * @throws ServerExceptionInterface
      * @throws TransportExceptionInterface
      * @throws TypeInvalidException
-     * @throws ORMException
      * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
@@ -251,6 +252,7 @@ final class LocationService extends BaseLocationService
         string|array|null $search,
 
         /* Search filter */
+        int|null $distanceMeter = null,
         array|string|null $featureClass = null,
         array|string|null $featureCode = null,
         int|null $limit = Limit::LIMIT_10,
@@ -287,12 +289,14 @@ final class LocationService extends BaseLocationService
             $currentPosition,
             $featureClass,
             $featureCode,
-            $country
+            $country,
+            $distanceMeter
         ) {
 
             /* Start task */
             $count = $this->locationRepository->countBySearch(
                 search: $search,
+                distanceMeter: $distanceMeter,
                 featureClass: $featureClass,
                 featureCode: $featureCode,
                 country: $country,
@@ -309,19 +313,23 @@ final class LocationService extends BaseLocationService
         $locationEntities = [];
         $performanceLogger->logPerformance(function () use (
             &$locationEntities,
+
             $search,
             $currentPosition,
-            $limit,
-            $country,
-            $sortBy,
-            $page,
             $featureClass,
-            $featureCode
+            $featureCode,
+            $country,
+            $distanceMeter,
+
+            $limit,
+            $sortBy,
+            $page
         ) {
 
             /* Start task */
             $locationEntities = $this->locationRepository->findBySearch(
                 search: $search,
+                distanceMeter: $distanceMeter,
                 featureClass: $featureClass,
                 featureCode: $featureCode,
                 limit: $limit,
@@ -434,7 +442,15 @@ final class LocationService extends BaseLocationService
         $locations = [];
 
         /* Save filter parameter and query locations */
-        $performanceLogger->logPerformance(function () use (&$locationEntities, $limit, $distanceMeter, $featureClass, $featureCode, $coordinate) {
+        $performanceLogger->logPerformance(function () use (
+            &$locationEntities,
+
+            $limit,
+            $distanceMeter,
+            $featureClass,
+            $featureCode,
+            $coordinate
+        ) {
 
             /* Start task */
             $this->doBeforeQueryTasks($limit, $distanceMeter, $featureClass, $featureCode);
@@ -455,7 +471,14 @@ final class LocationService extends BaseLocationService
 
         /* Sort array according to given $sortBy */
         $search = '';
-        $performanceLogger->logPerformance(function () use (&$locationEntities, $search, $coordinate, $currentPosition, $sortBy) {
+        $performanceLogger->logPerformance(function () use (
+            &$locationEntities,
+
+            $search,
+            $coordinate,
+            $currentPosition,
+            $sortBy
+        ) {
 
             /* Start task */
             match ($sortBy) {

@@ -1298,14 +1298,15 @@ final class LocationServiceConfig
     {
         $country = $query->getCountry();
 
-        /* Check if the limit was given by query. */
-        $limit = $query->getLimit();
+        $queryParser = $query->getQueryParser();
+
+        /* Check if the limit was given by query (first via search term, second via url parameter). */
+        $limit = $queryParser?->getLimit() ?? $query->getLimit();
         if (!is_null($limit)) {
             return $limit;
         }
 
         /* Check if the query parser is available. */
-        $queryParser = $query->getQueryParser();
         if (is_null($queryParser)) {
             return $this->getLimit(country: $country);
         }
@@ -1367,15 +1368,15 @@ final class LocationServiceConfig
     public function getDistanceByQuery(Query $query): int
     {
         $country = $query->getCountry();
+        $queryParser = $query->getQueryParser();
 
         /* Check if the distance was given by query. */
-        $distance = $query->getDistance();
+        $distance = $queryParser?->getDistance() ?? $query->getDistance();
         if (!is_null($distance)) {
             return $distance;
         }
 
         /* Check if the query parser is available. */
-        $queryParser = $query->getQueryParser();
         if (is_null($queryParser)) {
             $distance = $this->getDistance(country: $country);
             return $distance ?? Distance::DISTANCE_1000;

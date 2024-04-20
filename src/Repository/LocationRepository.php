@@ -181,6 +181,7 @@ class LocationRepository extends BaseCoordinateRepository
      * Finds the locations from given search string.
      *
      * @param string|string[] $search
+     * @param int|null $distanceMeter
      * @param array<int, string>|string|null $featureClass
      * @param array<int, string>|string|null $featureCode
      * @param int|null $limit
@@ -197,6 +198,7 @@ class LocationRepository extends BaseCoordinateRepository
         string|array|null $search,
 
         /* Search filter. */
+        int|null $distanceMeter = null,
         array|string|null $featureClass = null,
         array|string|null $featureCode = null,
 
@@ -221,7 +223,8 @@ class LocationRepository extends BaseCoordinateRepository
                 country: $country,
                 page: $page,
                 coordinate: $coordinate,
-                sortBy: $sortBy,
+                distance: $distanceMeter,
+                sortBy: $sortBy
             ),
             default => $this->queryBuilder->getQueryLocationSearch(
                 search: $search,
@@ -230,6 +233,7 @@ class LocationRepository extends BaseCoordinateRepository
                 limit: $limit,
                 country: $country,
                 page: $page,
+                distance: $distanceMeter,
                 sortBy: $sortBy,
             )
         };
@@ -247,6 +251,7 @@ class LocationRepository extends BaseCoordinateRepository
      * Finds the locations from given search string.
      *
      * @param string|string[] $search
+     * @param int|null $distanceMeter
      * @param array<int, string>|string|null $featureClass
      * @param array<int, string>|string|null $featureCode
      * @param string|null $country
@@ -258,6 +263,7 @@ class LocationRepository extends BaseCoordinateRepository
         string|array|null $search,
 
         /* Search filter */
+        int|null $distanceMeter = null,
         array|string|null $featureClass = null,
         array|string|null $featureCode = null,
         string|null $country = null,
@@ -273,12 +279,14 @@ class LocationRepository extends BaseCoordinateRepository
                 featureCode: $featureCode,
                 country: $country,
                 coordinate: $coordinate,
+                distance: $distanceMeter
             ),
             default => $this->queryBuilder->getQueryCountLocationSearch(
                 search: $search,
                 featureClass: $featureClass,
                 featureCode: $featureCode,
                 country: $country,
+                distance: $distanceMeter
             )
         };
 
@@ -355,17 +363,26 @@ class LocationRepository extends BaseCoordinateRepository
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     public function findLocationsByCoordinate(
+        /* Search term. */
         Coordinate|null $coordinate = null,
+
+        /* Search filter. */
         int|null $distanceMeter = null,
         array|string|null $featureClasses = null,
         array|string|null $featureCodes = null,
+
+        /* Filter configuration. */
+        int|null $limit = null,
         Country|null $country = null,
+
+        /* Configuration */
         array|null $adminCodes = [],
         bool|null $withPopulation = null,
+
+        /* Sort configuration */
         bool $sortByFeatureClasses = false,
         bool $sortByFeatureCodes = false,
-        bool $sortByPopulation = false,
-        int|null $limit = null
+        bool $sortByPopulation = false
     ): array
     {
         $featureContainer = new FeatureContainer($featureClasses, $featureCodes);
@@ -517,6 +534,7 @@ class LocationRepository extends BaseCoordinateRepository
      * @return Location|null
      * @throws CaseUnsupportedException
      * @throws ClassInvalidException
+     * @throws ParserException
      * @throws TypeInvalidException
      * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
      */
@@ -536,13 +554,13 @@ class LocationRepository extends BaseCoordinateRepository
             coordinate: $coordinate,
             featureClasses: $featureClasses,
             featureCodes: $featureCodes,
+            limit: 1,
             country: $country,
             adminCodes: $adminCodes,
             withPopulation: $withPopulation,
             sortByFeatureClasses: $sortByFeatureClasses,
             sortByFeatureCodes: $sortByFeatureCodes,
-            sortByPopulation: $sortByPopulation,
-            limit: 1
+            sortByPopulation: $sortByPopulation
         );
 
         if (count($location) <= 0) {
@@ -889,6 +907,7 @@ class LocationRepository extends BaseCoordinateRepository
      * @throws CaseUnsupportedException
      * @throws ClassInvalidException
      * @throws TypeInvalidException
+     * @throws ParserException
      */
     public function findCapitals(): array
     {
@@ -905,6 +924,7 @@ class LocationRepository extends BaseCoordinateRepository
      * @throws CaseUnsupportedException
      * @throws ClassInvalidException
      * @throws TypeInvalidException
+     * @throws ParserException
      */
     public function findAirports(): array
     {

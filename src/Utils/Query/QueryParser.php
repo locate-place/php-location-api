@@ -670,7 +670,23 @@ class QueryParser
             foreach (self::FORMAT_LATITUDES as $formatLatitude) {
                 foreach (self::FORMAT_LONGITUDES as $formatLongitude) {
                     if (mb_ereg(sprintf(self::EREG_WRAPPER_COORDINATE, $formatLatitude, $formatLongitude), $search, $this->matches)) {
-                        return self::TYPE_SEARCH_COORDINATE;
+                        $featuresString = $this->getFeaturesAsString();
+
+                        $this->matches = match(true) {
+                            /* Search with feature codes. */
+                            !is_null($featuresString) => [$this->matches[0], $featuresString, $this->matches[1], $this->matches[2]],
+
+                            /* Search without feature codes. */
+                            default => $this->matches,
+                        };
+
+                        return match (true) {
+                            /* Search with feature codes. */
+                            !is_null($featuresString) => self::TYPE_SEARCH_LIST_WITH_FEATURES_AND_COORDINATE,
+
+                            /* Search without feature codes. */
+                            default => self::TYPE_SEARCH_COORDINATE,
+                        };
                     }
                 }
             }
@@ -716,21 +732,21 @@ class QueryParser
          * - all the rest
          */
         if ($onlySearch) {
+            $featuresString = $this->getFeaturesAsString();
+
             $this->matches = match (true) {
                 /* Search with feature codes. */
-                is_null($this->featureClasses) && !is_null($this->featureCodes) => [$search, implode('|', $this->featureCodes), $search],
-                !is_null($this->featureClasses) && is_null($this->featureCodes) => [$search, implode('|', $this->featureClasses), $search],
-                !is_null($this->featureClasses) && !is_null($this->featureCodes) => [$search, implode('|', [...$this->featureClasses, ...$this->featureCodes]), $search],
+                !is_null($featuresString) => [$search, $featuresString, $search],
 
-                /* Default search. */
+                /* Search without feature codes. */
                 default => [$search, $search]
             };
 
             return match (true) {
                 /* Search with feature codes. */
-                !is_null($this->featureClasses) || !is_null($this->featureCodes) => self::TYPE_SEARCH_LIST_WITH_FEATURES_AND_SEARCH,
+                !is_null($featuresString) => self::TYPE_SEARCH_LIST_WITH_FEATURES_AND_SEARCH,
 
-                /* Default search. */
+                /* Search without feature codes. */
                 default => self::TYPE_SEARCH_LIST_GENERAL
             };
         }
@@ -1063,5 +1079,23 @@ class QueryParser
                 ],
             ],
         ];
+    }
+
+    /**
+     * Returns the features as string.
+     *
+     * @return string|null
+     */
+    private function getFeaturesAsString(): string|null
+    {
+        return match (true) {
+            /* Search with feature codes. */
+            !is_null($this->featureClasses) && !is_null($this->featureCodes) => implode('|', [...$this->featureClasses, ...$this->featureCodes]),
+            !is_null($this->featureClasses) => implode('|', $this->featureClasses),
+            !is_null($this->featureCodes) => implode('|', $this->featureCodes),
+
+            /* No search with feature codes. */
+            default => null,
+        };
     }
 }
