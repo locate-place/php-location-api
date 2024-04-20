@@ -2,7 +2,7 @@ parameters:
     # next places configuration
     next_places:
         limit:
-            default: 1
+            default: 10
             feature_class:
                 A: 10
                 H: 10
@@ -17,7 +17,7 @@ parameters:
                 S.AIRP: 10 # Airports
             overwrites:
                 DE:
-                    default: 1
+                    default: 10
                     feature_class:
                         A: 10
                         H: 10
