@@ -21,6 +21,7 @@ use App\Constants\DB\FeatureCode;
 use App\Constants\Key\KeyArray;
 use App\Constants\Language\LanguageCode;
 use App\Entity\Country;
+use App\Exception\QueryParserException;
 use App\Repository\LocationRepository;
 use App\Service\LocationContainer;
 use App\Service\LocationService;
@@ -149,10 +150,14 @@ final class AutocompleteProvider extends BaseProviderCustom
                 continue;
             }
 
+            $countryCode = $country?->getCode() ?? null;
+            $countryName = $country?->getName() ?? null;
+
             $locationMatches[$alternateNameWithCountry] = [
                 KeyArray::ID => $location->getGeonameId() ?? 0,
                 KeyArray::NAME => $alternateName,
-                KeyArray::COUNTRY => $country?->getCode() ?? null,
+                KeyArray::COUNTRY => $countryCode,
+                KeyArray::COUNTRY_NAME => $countryName,
                 KeyArray::RELEVANCE => 9_999_999_999 - $location->getRelevanceScore(),
             ];
         }
@@ -307,6 +312,7 @@ final class AutocompleteProvider extends BaseProviderCustom
      * @throws ServerExceptionInterface
      * @throws TransportExceptionInterface
      * @throws TypeInvalidException
+     * @throws QueryParserException
      */
     private function getLocations(Query $query, string $isoLanguage = LanguageCode::DE): array
     {
@@ -346,6 +352,7 @@ final class AutocompleteProvider extends BaseProviderCustom
      * }>
      * @throws CaseUnsupportedException
      * @throws ParserException
+     * @throws QueryParserException
      */
     private function getFeatureClasses(Query $query, string $isoLanguage = LanguageCode::DE): array
     {

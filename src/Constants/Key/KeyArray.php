@@ -50,6 +50,8 @@ class KeyArray
 
     final public const COUNTRY = 'country';
 
+    final public const COUNTRY_NAME = 'country-name';
+
     final public const CURRENT_TIME = 'current-time';
 
     final public const DATA = 'data';

@@ -16,13 +16,13 @@ namespace App\Utils\Query;
 use App\Constants\DB\FeatureClass;
 use App\Constants\DB\FeatureCode;
 use App\Constants\Key\KeyArray;
-use App\Constants\Language\CountryCode;
 use App\Constants\Language\LanguageCode;
 use App\Exception\QueryParserException;
 use App\Tests\Unit\Utils\Query\ParserTest;
 use Ixnode\PhpCoordinate\Coordinate;
 use Ixnode\PhpException\Case\CaseUnsupportedException;
 use Ixnode\PhpException\Parser\ParserException;
+use Ixnode\PhpTimezone\Constants\CountryAll;
 use LogicException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -650,7 +650,7 @@ class QueryParser
             return null;
         }
 
-        if (!in_array($value, CountryCode::ALL)) {
+        if (!array_key_exists($value, CountryAll::COUNTRY_NAMES)) {
             return null;
         }
 
