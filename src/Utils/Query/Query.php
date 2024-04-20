@@ -489,6 +489,9 @@ class Query
             return null;
         }
 
-        return new QueryParser($queryParserString);
+        return new QueryParser(
+            queryString: $queryParserString,
+            request: $this->request
+        );
     }
 }

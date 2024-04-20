@@ -568,6 +568,7 @@ class BaseProviderCustom extends BaseResourceWrapperProvider
      * @return int[]
      * @throws CaseUnsupportedException
      * @throws ClassInvalidException
+     * @throws ParserException
      * @throws TypeInvalidException
      */
     protected function getGeonameIdsCountry(): array
@@ -587,6 +588,7 @@ class BaseProviderCustom extends BaseResourceWrapperProvider
      * @return int[]
      * @throws CaseUnsupportedException
      * @throws ClassInvalidException
+     * @throws ParserException
      * @throws TypeInvalidException
      */
     protected function getGeonameIdsAirport(): array

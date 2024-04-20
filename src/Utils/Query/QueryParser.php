@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace App\Utils\Query;
 
-use App\Constants\DB\Country;
 use App\Constants\DB\FeatureClass;
 use App\Constants\DB\FeatureCode;
 use App\Constants\Key\KeyArray;
@@ -25,6 +24,7 @@ use Ixnode\PhpCoordinate\Coordinate;
 use Ixnode\PhpException\Case\CaseUnsupportedException;
 use Ixnode\PhpException\Parser\ParserException;
 use LogicException;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Throwable;
 
@@ -88,7 +88,7 @@ class QueryParser
 
     private const FORMAT_LONGITUDES = [self::FORMAT_DECIMAL, self::FORMAT_DMS_LONGITUDE];
 
-    private readonly string $query;
+    private readonly string $queryString;
 
     private string $type;
 
@@ -121,18 +121,47 @@ class QueryParser
     /** @var string[]|null $featureClasses */
     private array|null $featureClasses = null;
 
+    private readonly Query|null $query;
+
     /**
-     * @param string|int $query
+     * @param string|int $queryString
      * @param string[] $allowedFeatureClasses
      * @param string[] $allowedFeatureCodes
+     * @param Request|null $request
      */
     public function __construct(
-        string|int $query,
+        string|int $queryString,
         protected array $allowedFeatureClasses = FeatureClass::ALL,
         protected array $allowedFeatureCodes = FeatureCode::ALL,
+        protected Request|null $request = null
     )
     {
-        $this->query = trim((string) $query);
+        $this->queryString = trim((string) $queryString);
+
+        $this->query = match (true) {
+            !is_null($request) => new Query($request),
+            default => null,
+        };
+    }
+
+    /**
+     * Returns the query string.
+     *
+     * @return string
+     */
+    public function getQueryString(): string
+    {
+        return $this->queryString;
+    }
+
+    /**
+     * Returns the query object.
+     *
+     * @return Query|null
+     */
+    public function getQuery(): Query|null
+    {
+        return $this->query;
     }
 
     /**
@@ -146,7 +175,7 @@ class QueryParser
             return $this->type;
         }
 
-        $this->type = $this->doGetType($this->query);
+        $this->type = $this->doGetType($this->queryString);
 
         return $this->type;
     }
@@ -180,6 +209,7 @@ class QueryParser
      *
      * @throws CaseUnsupportedException
      * @throws ParserException
+     * @throws QueryParserException
      */
     public function getData(): array
     {
@@ -198,6 +228,7 @@ class QueryParser
      * @return int|null
      * @throws CaseUnsupportedException
      * @throws ParserException
+     * @throws QueryParserException
      */
     public function getGeonameId(): int|null
     {
@@ -212,6 +243,7 @@ class QueryParser
      * @return float|null
      * @throws CaseUnsupportedException
      * @throws ParserException
+     * @throws QueryParserException
      */
     public function getLatitude(): float|null
     {
@@ -226,6 +258,7 @@ class QueryParser
      * @return float|null
      * @throws CaseUnsupportedException
      * @throws ParserException
+     * @throws QueryParserException
      */
     public function getLongitude(): float|null
     {
@@ -240,6 +273,7 @@ class QueryParser
      * @return string[]|null
      * @throws CaseUnsupportedException
      * @throws ParserException
+     * @throws QueryParserException
      */
     public function getFeatureClasses(): array|null
     {
@@ -256,6 +290,7 @@ class QueryParser
      * @return array<int, array<string, string>>|null
      * @throws CaseUnsupportedException
      * @throws ParserException
+     * @throws QueryParserException
      */
     public function getFeatureClassesTranslated(
         TranslatorInterface $translator,
@@ -288,6 +323,7 @@ class QueryParser
      * @return string[]|null
      * @throws CaseUnsupportedException
      * @throws ParserException
+     * @throws QueryParserException
      */
     public function getFeatureCodes(): array|null
     {
@@ -304,6 +340,7 @@ class QueryParser
      * @return array<int, array<string, string>>|null
      * @throws CaseUnsupportedException
      * @throws ParserException
+     * @throws QueryParserException
      */
     public function getFeatureCodesTranslated(
         TranslatorInterface $translator,
@@ -336,6 +373,7 @@ class QueryParser
      * @return string[]|null
      * @throws CaseUnsupportedException
      * @throws ParserException
+     * @throws QueryParserException
      */
     public function getSearch(): array|null
     {
@@ -388,6 +426,7 @@ class QueryParser
      * @return int|null
      * @throws CaseUnsupportedException
      * @throws ParserException
+     * @throws QueryParserException
      */
     public function getDistance(): int|null
     {
@@ -402,6 +441,7 @@ class QueryParser
      * @return string|null
      * @throws CaseUnsupportedException
      * @throws ParserException
+     * @throws QueryParserException
      */
     public function getCountry(): string|null
     {
@@ -416,6 +456,7 @@ class QueryParser
      * @return int|null
      * @throws CaseUnsupportedException
      * @throws ParserException
+     * @throws QueryParserException
      */
     public function getLimit(): int|null
     {
@@ -430,6 +471,7 @@ class QueryParser
      * @return Coordinate|null
      * @throws CaseUnsupportedException
      * @throws ParserException
+     * @throws QueryParserException
      */
     public function getCoordinate(): Coordinate|null
     {
@@ -995,14 +1037,15 @@ class QueryParser
         ];
     }
 
-
     /**
      * Returns the QueryParser configuration.
      *
      * @param TranslatorInterface|null $translator
+     * @param string $locale
      * @return array<string, mixed>
      * @throws CaseUnsupportedException
      * @throws ParserException
+     * @throws QueryParserException
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      */
     public function get(
@@ -1032,9 +1075,11 @@ class QueryParser
         }
 
         $geonameId = $this->getGeonameId();
+        $distance = $this->getDistance() ?? $this->query?->getDistance() ?? null;
+        $limit = $this->getLimit() ?? $this->query?->getLimit() ?? null;
 
         return [
-            KeyArray::RAW => $this->query,
+            KeyArray::RAW => $this->queryString,
             KeyArray::PARSED => [
                 KeyArray::TYPE => $this->getType(),
                 ...(is_null($search) ? [] : [KeyArray::SEARCH => $search]),
@@ -1042,6 +1087,8 @@ class QueryParser
                 ...(is_null($featureClasses) ? [] : [KeyArray::FEATURE_CLASSES => $featureClasses]),
                 ...(is_null($featureCodes) ? [] : [KeyArray::FEATURE_CODES => $featureCodes]),
                 ...(is_null($geonameId) ? [] : [KeyArray::GEONAME_ID => $geonameId]),
+                ...(is_null($distance) ? [] : [KeyArray::DISTANCE => $distance]),
+                ...(is_null($limit) ? [] : [KeyArray::LIMIT => $limit]),
             ],
         ];
     }
@@ -1052,6 +1099,7 @@ class QueryParser
      * @return array<string, mixed>|null
      * @throws CaseUnsupportedException
      * @throws ParserException
+     * @throws QueryParserException
      */
     private function getConfigCoordinate(): array|null
     {
