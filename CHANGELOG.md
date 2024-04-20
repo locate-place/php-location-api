@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Releases
 
+### [0.1.77] - 2024-04-20
+
+* Allow all available country codes within query parser
+
 ### [0.1.76] - 2024-04-20
 
 * Set default limit to 10 (search endpoint)
