@@ -22,6 +22,7 @@ use App\Entity\Location as LocationEntity;
 use App\Entity\ZipCode;
 use App\Entity\ZipCodeArea;
 use App\Repository\AlternateNameRepository;
+use App\Repository\CountryRepository;
 use App\Repository\LocationRepository;
 use App\Repository\RiverPartRepository;
 use App\Repository\ZipCodeAreaRepository;
@@ -123,6 +124,7 @@ abstract class BaseHelperLocationService
      * @param ZipCodeRepository $zipCodeRepository
      * @param ZipCodeAreaRepository $zipCodeAreaRepository
      * @param RiverPartRepository $riverPartRepository
+     * @param CountryRepository $countryRepository
      * @param TranslatorInterface $translator
      * @param LocationServiceConfig $locationServiceConfig
      * @SuppressWarnings(PHPMD.ExcessiveParameterList)
@@ -136,6 +138,7 @@ abstract class BaseHelperLocationService
         protected ZipCodeRepository $zipCodeRepository,
         protected ZipCodeAreaRepository $zipCodeAreaRepository,
         protected RiverPartRepository $riverPartRepository,
+        protected CountryRepository $countryRepository,
         protected TranslatorInterface $translator,
         protected LocationServiceConfig $locationServiceConfig
     )

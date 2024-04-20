@@ -14,11 +14,13 @@ declare(strict_types=1);
 namespace App\Utils\Db;
 
 use App\Entity\AlternateName;
+use App\Entity\Country;
 use App\Entity\Location;
 use App\Entity\RiverPart;
 use App\Entity\ZipCode;
 use App\Entity\ZipCodeArea;
 use App\Repository\AlternateNameRepository;
+use App\Repository\CountryRepository;
 use App\Repository\LocationRepository;
 use App\Repository\RiverPartRepository;
 use App\Repository\ZipCodeAreaRepository;
@@ -48,6 +50,7 @@ class Repository extends RepositoryIxnode
     {
         return match (true) {
             $repositoryClassName === AlternateNameRepository::class => AlternateName::class,
+            $repositoryClassName === CountryRepository::class => Country::class,
             $repositoryClassName === LocationRepository::class => Location::class,
             $repositoryClassName === RiverPartRepository::class => RiverPart::class,
             $repositoryClassName === VersionRepository::class => Version::class,

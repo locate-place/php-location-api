@@ -343,13 +343,13 @@ class LocationRepository extends BaseCoordinateRepository
      * @param int|null $distanceMeter
      * @param array<int, string>|string|null $featureClasses
      * @param array<int, string>|string|null $featureCodes
+     * @param int|null $limit
      * @param Country|null $country
      * @param array{a1?: string, a2?: string, a3?: string, a4?: string}|null $adminCodes
      * @param bool|null $withPopulation
      * @param bool $sortByFeatureClasses
      * @param bool $sortByFeatureCodes
      * @param bool $sortByPopulation
-     * @param int|null $limit
      * @return array<int, Location>
      * @throws CaseUnsupportedException
      * @throws ClassInvalidException

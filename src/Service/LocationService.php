@@ -215,6 +215,7 @@ final class LocationService extends BaseLocationService
      * @param int|null $distanceMeter
      * @param array<int, string>|string|null $featureClass
      * @param array<int, string>|string|null $featureCode
+     * @param string|null $countryFilter
      * @param int|null $limit
      * @param int $page
      * @param Coordinate|null $currentPosition
@@ -255,6 +256,7 @@ final class LocationService extends BaseLocationService
         int|null $distanceMeter = null,
         array|string|null $featureClass = null,
         array|string|null $featureCode = null,
+        string|null $countryFilter = null,
         int|null $limit = Limit::LIMIT_10,
         int $page = self::PAGE_FIRST,
 
@@ -289,7 +291,7 @@ final class LocationService extends BaseLocationService
             $currentPosition,
             $featureClass,
             $featureCode,
-            $country,
+            $countryFilter,
             $distanceMeter
         ) {
 
@@ -299,7 +301,7 @@ final class LocationService extends BaseLocationService
                 distanceMeter: $distanceMeter,
                 featureClass: $featureClass,
                 featureCode: $featureCode,
-                country: $country,
+                country: $countryFilter,
                 coordinate: $currentPosition,
             );
             $this->setResultCount($count);
@@ -318,7 +320,7 @@ final class LocationService extends BaseLocationService
             $currentPosition,
             $featureClass,
             $featureCode,
-            $country,
+            $countryFilter,
             $distanceMeter,
 
             $limit,
@@ -333,7 +335,7 @@ final class LocationService extends BaseLocationService
                 featureClass: $featureClass,
                 featureCode: $featureCode,
                 limit: $limit,
-                country: $country,
+                country: $countryFilter,
                 page: $page,
                 coordinate: $currentPosition,
                 sortBy: $sortBy
@@ -371,6 +373,7 @@ final class LocationService extends BaseLocationService
      * @param int|null $distanceMeter
      * @param array<int, string>|string|null $featureClass
      * @param array<int, string>|string|null $featureCode
+     * @param string|null $countryFilter
      * @param int|null $limit
      * @param int $page
      * @param Coordinate|null $currentPosition
@@ -409,6 +412,7 @@ final class LocationService extends BaseLocationService
         int|null $distanceMeter = null,
         array|string|null $featureClass = null,
         array|string|null $featureCode = null,
+        string|null $countryFilter = null,
         int|null $limit = Limit::LIMIT_10,
         int $page = self::PAGE_FIRST,
 
@@ -449,8 +453,14 @@ final class LocationService extends BaseLocationService
             $distanceMeter,
             $featureClass,
             $featureCode,
-            $coordinate
+            $coordinate,
+            $countryFilter
         ) {
+
+            $country = match (true) {
+                !is_null($countryFilter) => $this->countryRepository->findOneBy(['code' => $countryFilter]),
+                default => null,
+            };
 
             /* Start task */
             $this->doBeforeQueryTasks($limit, $distanceMeter, $featureClass, $featureCode);
@@ -459,7 +469,8 @@ final class LocationService extends BaseLocationService
                 distanceMeter: $this->distanceMeter,
                 featureClasses: $this->featureClass,
                 featureCodes: $this->featureCode,
-                limit: $this->limit
+                limit: $this->limit,
+                country: $country
             );
             $this->doAfterQueryTasks($locationEntities);
             $this->setResultCount(is_countable($locationEntities) ? count($locationEntities) : 0);

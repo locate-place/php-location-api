@@ -20,6 +20,8 @@ use App\ApiPlatform\Route\LocationRoute;
 use App\ApiPlatform\State\Base\BaseProviderCustom;
 use App\Constants\DB\Limit;
 use App\Constants\Key\KeyArray;
+use App\Constants\Language\CountryCode;
+use App\Constants\Language\LanguageCode;
 use App\Exception\QueryParserException;
 use App\Repository\LocationRepository;
 use App\Service\LocationService;
@@ -211,15 +213,14 @@ final class LocationProvider extends BaseProviderCustom
             KeyArray::ISO_LANGUAGE => $isoLanguage,
             KeyArray::COUNTRY => $country,
         ] = $this->getIsoLanguageAndCountryByFilter();
-
-        if (is_null($isoLanguage) || is_null($country)) {
-            return [];
-        }
+        
+        $isoLanguage ??= LanguageCode::EN;
+        $country ??= CountryCode::US;
 
         $search = $queryParser->getSearch();
         $featureClasses = $queryParser->getFeatureClasses();
         $featureCodes = $queryParser->getFeatureCodes();
-        $country = $queryParser->getCountry() ?? $country;
+        $countryFilter = $queryParser->getCountry() ?? null;
         $limit = $this->locationServiceConfig->getLimitByQuery($this->query);
         $distance = $this->query->getDistanceDefault();
 
@@ -246,6 +247,7 @@ final class LocationProvider extends BaseProviderCustom
             distanceMeter: $distance,
             featureClass: $featureClasses,
             featureCode: $featureCodes,
+            countryFilter: $countryFilter,
             limit: $limit,
             page: $this->query->getPageDefault(),
 
@@ -290,6 +292,7 @@ final class LocationProvider extends BaseProviderCustom
      * @throws JsonException
      * @throws NonUniqueResultException
      * @throws ParserException
+     * @throws QueryParserException
      * @throws RedirectionExceptionInterface
      * @throws ServerExceptionInterface
      * @throws TransportExceptionInterface
@@ -302,14 +305,13 @@ final class LocationProvider extends BaseProviderCustom
             KeyArray::COUNTRY => $country,
         ] = $this->getIsoLanguageAndCountryByFilter();
 
-        if (is_null($isoLanguage) || is_null($country)) {
-            return [];
-        }
+        $isoLanguage ??= LanguageCode::EN;
+        $country ??= CountryCode::US;
 
         $coordinate = $this->getCoordinateByQueryParser($queryParser, $this->locationRepository);
         $featureClasses = $queryParser->getFeatureClasses();
         $featureCodes = $queryParser->getFeatureCodes();
-        $country = $queryParser->getCountry() ?? $country;
+        $countryFilter = $queryParser->getCountry() ?? null;
         $limit = $this->locationServiceConfig->getLimitByQuery($this->query);
         $distance = $this->locationServiceConfig->getDistanceByQuery($this->query);
 
@@ -326,6 +328,7 @@ final class LocationProvider extends BaseProviderCustom
             distanceMeter: $distance,
             featureClass: $featureClasses,
             featureCode: $featureCodes,
+            countryFilter: $countryFilter,
             limit: $limit,
             page: $this->query->getPageDefault(),
 
