@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Releases
 
+### [0.1.73] - 2024-04-20
+
+* Add query parser distance and limit to search query
+* Add feature-classes and feature-codes to coordinate search with features
+
 ### [0.1.72] - 2024-04-18
 
 * Add country filter
