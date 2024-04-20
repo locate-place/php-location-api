@@ -23,6 +23,7 @@ use App\Constants\Language\LanguageCode;
 use App\Constants\Language\LocaleCode;
 use App\Constants\Place\Search;
 use App\Entity\Location as LocationEntity;
+use App\Exception\QueryParserException;
 use App\Repository\LocationRepository;
 use App\Service\LocationService;
 use App\Utils\Performance\PerformanceLogger;
@@ -52,6 +53,10 @@ use LogicException;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Stopwatch\Stopwatch;
+use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
@@ -198,6 +203,7 @@ class BaseProviderCustom extends BaseResourceWrapperProvider
      * @throws CaseInvalidException
      * @throws CaseUnsupportedException
      * @throws ClassInvalidException
+     * @throws ClientExceptionInterface
      * @throws FileNotFoundException
      * @throws FileNotReadableException
      * @throws FunctionJsonEncodeException
@@ -205,6 +211,10 @@ class BaseProviderCustom extends BaseResourceWrapperProvider
      * @throws JsonException
      * @throws NonUniqueResultException
      * @throws ParserException
+     * @throws QueryParserException
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
      * @throws TypeInvalidException
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      * @SuppressWarnings(PHPMD.NPathComplexity)
@@ -229,6 +239,18 @@ class BaseProviderCustom extends BaseResourceWrapperProvider
         }
         if ($this->isAutocompleteRequest() && array_key_exists(KeyArray::QUERY, $uriVariablesOutput)) {
             $uriVariablesOutput[KeyArray::QUERY] = $this->getGivenQueryArray();
+        }
+
+        /* Add limit information */
+        $limit = $this->query->getQueryParser()?->getLimit() ?? null;
+        if (!is_null($limit)) {
+            $uriVariablesOutput[KeyArray::LIMIT] = $limit;
+        }
+
+        /* Add distance information */
+        $distance = $this->query->getQueryParser()?->getDistance() ?? null;
+        if (!is_null($distance)) {
+            $uriVariablesOutput[KeyArray::DISTANCE] = $distance;
         }
 
         /* Add coordinate information. */
@@ -280,18 +302,11 @@ class BaseProviderCustom extends BaseResourceWrapperProvider
      * @return array<string, mixed>|null
      * @throws CaseUnsupportedException
      * @throws ParserException
+     * @throws QueryParserException
      */
     private function getGivenQueryArray(): array|null
     {
-        $request = $this->request->getCurrentRequest();
-
-        if (is_null($request)) {
-            throw new LogicException('Unable to get current request.');
-        }
-
-        $query = new Query($request);
-
-        $queryParser = $query->getQueryParser();
+        $queryParser = $this->query->getQueryParser();
 
         if (is_null($queryParser)) {
             return null;
@@ -309,6 +324,7 @@ class BaseProviderCustom extends BaseResourceWrapperProvider
      * @throws CaseInvalidException
      * @throws CaseUnsupportedException
      * @throws ClassInvalidException
+     * @throws ClientExceptionInterface
      * @throws FileNotFoundException
      * @throws FileNotReadableException
      * @throws FunctionJsonEncodeException
@@ -316,6 +332,9 @@ class BaseProviderCustom extends BaseResourceWrapperProvider
      * @throws JsonException
      * @throws NonUniqueResultException
      * @throws ParserException
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
      * @throws TypeInvalidException
      */
     private function getGivenCoordinateArray(array $uriVariablesOutput): array
@@ -365,6 +384,10 @@ class BaseProviderCustom extends BaseResourceWrapperProvider
      * @throws NonUniqueResultException
      * @throws ParserException
      * @throws TypeInvalidException
+     * @throws ClientExceptionInterface
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
      */
     private function getLocation(Coordinate $coordinate): Location|null
     {
@@ -699,6 +722,7 @@ class BaseProviderCustom extends BaseResourceWrapperProvider
      * @return Coordinate|null
      * @throws CaseUnsupportedException
      * @throws ParserException
+     * @throws QueryParserException
      */
     protected function getCoordinateByQueryParser(QueryParser $queryParser, LocationRepository $locationRepository): Coordinate|null
     {

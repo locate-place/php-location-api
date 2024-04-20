@@ -1075,8 +1075,8 @@ class QueryParser
         }
 
         $geonameId = $this->getGeonameId();
-        $distance = $this->getDistance() ?? $this->query?->getDistance() ?? null;
-        $limit = $this->getLimit() ?? $this->query?->getLimit() ?? null;
+        $distance = $this->getDistance();
+        $limit = $this->getLimit();
 
         return [
             KeyArray::RAW => $this->queryString,
