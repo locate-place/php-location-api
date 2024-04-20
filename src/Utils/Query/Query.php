@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace App\Utils\Query;
 
 use App\Constants\DB\Limit;
+use App\Exception\QueryParserException;
 use Ixnode\PhpCoordinate\Coordinate;
 use Ixnode\PhpException\Case\CaseUnsupportedException;
 use Ixnode\PhpException\Parser\ParserException;
@@ -52,6 +53,7 @@ use Symfony\Component\HttpFoundation\Request;
  * @author Björn Hempel <bjoern@hempel.li>
  * @version 0.1.0 (2024-01-11)
  * @since 0.1.0 (2024-01-11) First version.
+ * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
  */
 class Query
 {
@@ -349,6 +351,34 @@ class Query
     }
 
     /**
+     * Returns the distance parameter.
+     *
+     * @param int|null $defaultDistance
+     * @return int|null
+     * @throws CaseUnsupportedException
+     * @throws ParserException
+     * @throws QueryParserException
+     */
+    public function getDistanceDefault(int|null $defaultDistance = null): int|null
+    {
+        $key = self::FILTER_DISTANCE;
+
+        $queryParser = $this->getQueryParser();
+
+        $distance = $queryParser?->getDistance() ?? null;
+
+        if (!is_null($distance)) {
+            return $distance;
+        }
+
+        if (!$this->hasFilter($key)) {
+            return $defaultDistance;
+        }
+
+        return $this->getFilterAsInt($key);
+    }
+
+    /**
      * Returns the limit parameter.
      *
      * @return int|null
@@ -371,6 +401,7 @@ class Query
      * @return int
      * @throws CaseUnsupportedException
      * @throws ParserException
+     * @throws QueryParserException
      */
     public function getLimitDefault(int $defaultLimit = Limit::LIMIT_10): int
     {

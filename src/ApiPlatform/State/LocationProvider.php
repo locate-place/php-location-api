@@ -20,6 +20,7 @@ use App\ApiPlatform\Route\LocationRoute;
 use App\ApiPlatform\State\Base\BaseProviderCustom;
 use App\Constants\DB\Limit;
 use App\Constants\Key\KeyArray;
+use App\Exception\QueryParserException;
 use App\Repository\LocationRepository;
 use App\Service\LocationService;
 use App\Service\LocationServiceConfig;
@@ -195,12 +196,13 @@ final class LocationProvider extends BaseProviderCustom
      * @throws FunctionReplaceException
      * @throws JsonException
      * @throws NonUniqueResultException
+     * @throws ORMException
      * @throws ParserException
      * @throws RedirectionExceptionInterface
      * @throws ServerExceptionInterface
      * @throws TransportExceptionInterface
      * @throws TypeInvalidException
-     * @throws ORMException
+     * @throws QueryParserException
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      */
     private function doProvideGetCollectionBySearch(QueryParser $queryParser): array
@@ -219,7 +221,7 @@ final class LocationProvider extends BaseProviderCustom
         $featureCodes = $queryParser->getFeatureCodes();
         $country = $queryParser->getCountry() ?? $country;
         $limit = $this->locationServiceConfig->getLimitByQuery($this->query);
-        $distance = $this->locationServiceConfig->getDistanceByQuery($this->query);
+        $distance = $this->query->getDistanceDefault();
 
         if (is_null($search) && is_null($featureClasses) && is_null($featureCodes)) {
             $this->setError('Unable to get search string.');
