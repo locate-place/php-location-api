@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Releases
 
+### [0.1.81] - 2024-04-22
+
+* Improved location search
+
 ### [0.1.80] - 2024-04-22
 
 * Filter by name via database query (autocomplete)
