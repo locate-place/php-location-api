@@ -183,22 +183,20 @@ final class AutocompleteProvider extends BaseProviderCustom
         array $search,
     ): array
     {
-        $replacements = [
-            'ä' => 'a',
-            'ae' => 'a',
-            'ö' => 'o',
-            'oe' => 'o',
-            'ü' => 'u',
-            'ue' => 'u',
-            'ß' => 's',
-            'ss' => 's',
-        ];
-
         return array_filter(
             $array,
-            function($item) use ($search, $replacements): bool {
-                $nameConverted = strtr(strtolower((string) $item[KeyArray::NAME]), $replacements);
-                $searchConverted = strtr(strtolower($search[0]), $replacements);
+            function($item) use ($search): bool {
+                $nameConverted = iconv('UTF-8', 'ASCII//TRANSLIT', strtolower((string) $item[KeyArray::NAME]));
+
+                if (!is_string($nameConverted)) {
+                    throw new LogicException('Could not convert $nameConverted to ASCII');
+                }
+
+                $searchConverted = iconv('UTF-8', 'ASCII//TRANSLIT', strtolower($search[0]));
+
+                if (!is_string($searchConverted)) {
+                    throw new LogicException('Could not convert $searchConverted to ASCII');
+                }
 
                 return str_contains($nameConverted, $searchConverted);
             }

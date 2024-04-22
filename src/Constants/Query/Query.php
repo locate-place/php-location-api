@@ -35,6 +35,7 @@ class Query
             location l
         LEFT JOIN search_index si ON si.location_id = l.id
         LEFT JOIN country c ON l.country_id = c.id
+        LEFT JOIN alternate_name an ON l.id = an.location_id AND (an.iso_language IN ('de') OR an.iso_language IS NULL)
         %(feature_code)s
         %(feature_class)s
         WHERE
@@ -49,6 +50,7 @@ class Query
                         si.search_text_de @@ to_tsquery('german', :search)
                     )
             END
+            %(name_search)s
             %(country)s
         ORDER BY
             %(sort_by)s
@@ -62,6 +64,7 @@ SQL;
             location l
         LEFT JOIN search_index si ON si.location_id = l.id
         LEFT JOIN country c ON l.country_id = c.id
+        LEFT JOIN alternate_name an ON l.id = an.location_id AND (an.iso_language IN ('de') OR an.iso_language IS NULL)
         %(feature_code)s
         %(feature_class)s
         WHERE
@@ -76,6 +79,7 @@ SQL;
                         si.search_text_de @@ to_tsquery('german', :search)
                     )
             END
+            %(name_search)s
             %(country)s
         ;
 SQL;
@@ -98,6 +102,7 @@ SQL;
         FROM
             location l
         LEFT JOIN search_index si ON si.location_id = l.id
+        LEFT JOIN alternate_name an ON l.id = an.location_id AND (an.iso_language IN ('de') OR an.iso_language IS NULL)
         %(feature_code)s
         %(feature_class)s
         LEFT JOIN location_river lr ON lr.location_id = l.id
@@ -134,6 +139,7 @@ SQL;
                         si.search_text_de @@ to_tsquery('german', :search)
                     )
             END
+            %(name_search)s
             %(country)s
         ORDER BY
             %(sort_by)s
@@ -146,6 +152,8 @@ SQL;
         FROM
             location l
         LEFT JOIN search_index si ON si.location_id = l.id
+        LEFT JOIN country c ON l.country_id = c.id
+        LEFT JOIN alternate_name an ON l.id = an.location_id AND (an.iso_language IN ('de') OR an.iso_language IS NULL)
         %(feature_code)s
         %(feature_class)s
         LEFT JOIN location_river lr ON lr.location_id = l.id
@@ -181,6 +189,8 @@ SQL;
                         si.search_text_de @@ to_tsquery('german', :search)
                     )
             END
+            %(name_search)s
+            %(country)s
         ;
 SQL;
 
@@ -202,6 +212,7 @@ SQL;
         FROM
             location l
         LEFT JOIN search_index si ON si.location_id = l.id
+        LEFT JOIN alternate_name an ON l.id = an.location_id AND (an.iso_language IN ('de') OR an.iso_language IS NULL)
         %(feature_code)s
         %(feature_class)s
         LEFT JOIN location_river lr ON lr.location_id = l.id
@@ -253,6 +264,7 @@ SQL;
                 ST_MakePoint(:longitude, :latitude)::geography, 
                 :distance
             )
+            %(name_search)s
             %(country)s
         ORDER BY
             %(sort_by)s
@@ -265,6 +277,8 @@ SQL;
         FROM
             location l
         LEFT JOIN search_index si ON si.location_id = l.id
+        LEFT JOIN country c ON l.country_id = c.id
+        LEFT JOIN alternate_name an ON l.id = an.location_id AND (an.iso_language IN ('de') OR an.iso_language IS NULL)
         %(feature_code)s
         %(feature_class)s
         LEFT JOIN location_river lr ON lr.location_id = l.id
@@ -315,6 +329,8 @@ SQL;
                 ST_MakePoint(:longitude, :latitude)::geography, 
                 :distance
             )
+            %(name_search)s
+            %(country)s
         ;
 SQL;
 }

@@ -213,7 +213,7 @@ final class LocationProvider extends BaseProviderCustom
             KeyArray::ISO_LANGUAGE => $isoLanguage,
             KeyArray::COUNTRY => $country,
         ] = $this->getIsoLanguageAndCountryByFilter();
-        
+
         $isoLanguage ??= LanguageCode::EN;
         $country ??= CountryCode::US;
 

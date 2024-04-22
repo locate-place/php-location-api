@@ -55,6 +55,7 @@ readonly class QueryBuilder
      * @param int|null $distance
      * @param string $sortBy
      * @return NativeQuery
+     * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
      */
     public function getQueryLocationSearch(
         /* Search */
@@ -78,6 +79,11 @@ readonly class QueryBuilder
         if (is_string($search)) {
             $search = [$search];
         }
+
+        $searchFirstWord = match (true) {
+            is_null($search), count($search) <= 0 => '',
+            default => $search[0]
+        };
 
         $search = match (true) {
             is_null($search) => '',
@@ -135,7 +141,6 @@ readonly class QueryBuilder
             ->addScalarResult('relevance_score', 'relevanceScore')
         ;
 
-
         $sql = match (true) {
             $coordinate instanceof Coordinate && !is_null($distance) => Query::SEARCH_COORDINATE_DISTANCE,
             $coordinate instanceof Coordinate => Query::SEARCH_COORDINATE,
@@ -147,6 +152,7 @@ readonly class QueryBuilder
         $sql = str_replace('%(feature_code)s', $this->getFeatureCodeLeftJoin($featureCode), $sql);
         $sql = str_replace('%(feature_class)s', $this->getFeatureClassLeftJoin($featureClass), $sql);
         $sql = str_replace('%(country)s', is_null($country) ? '' : 'AND c.code=\''.$country.'\'', $sql);
+        $sql = str_replace('%(name_search)s', $this->getStartsWith($searchFirstWord), $sql);
 
         return ($this->entityManager->createNativeQuery($sql, $rsm))
             ->setParameter('longitude', $longitude)
@@ -178,12 +184,17 @@ readonly class QueryBuilder
 
         /* Configuration */
         Coordinate|null $coordinate = null,
-        int|null $distance = null
+        int|null $distance = null,
     ): NativeQuery
     {
         if (is_string($search)) {
             $search = [$search];
         }
+
+        $searchFirstWord = match (true) {
+            is_null($search), count($search) <= 0 => '',
+            default => $search[0]
+        };
 
         $search = match (true) {
             is_null($search) => '',
@@ -208,6 +219,7 @@ readonly class QueryBuilder
         $sql = str_replace('%(feature_code)s', $this->getFeatureCodeLeftJoin($featureCode), $sql);
         $sql = str_replace('%(feature_class)s', $this->getFeatureClassLeftJoin($featureClass), $sql);
         $sql = str_replace('%(country)s', is_null($country) ? '' : 'AND c.code=\''.$country.'\'', $sql);
+        $sql = str_replace('%(name_search)s', $this->getStartsWith($searchFirstWord), $sql);
 
         return ($this->entityManager->createNativeQuery($sql, $rsm))
             ->setParameter('longitude', $longitude)
@@ -297,6 +309,14 @@ readonly class QueryBuilder
         return sprintf(
             'RIGHT JOIN feature_class fcl ON fcl.id = l.feature_class_id AND fcl.class IN (\'%s\')',
             implode('\', \'', $featureClass)
+        );
+    }
+
+    private function getStartsWith(string $search): string
+    {
+        return sprintf(
+            'AND UNACCENT(LOWER(COALESCE(an.alternate_name, l.name))) LIKE UNACCENT(LOWER(\'%s\')) ESCAPE \'!\'',
+            sprintf('%s%%', $search)
         );
     }
 }
