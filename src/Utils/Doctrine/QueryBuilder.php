@@ -80,15 +80,8 @@ readonly class QueryBuilder
             $search = [$search];
         }
 
-        $searchFirstWord = match (true) {
-            is_null($search), count($search) <= 0 => '',
-            default => $search[0]
-        };
-
-        $search = match (true) {
-            is_null($search) => '',
-            default => implode(Query::SEARCH_AND, array_map(fn($term) => $term.Query::SEARCH_RIGHT_WILDCARD, $search))
-        };
+        $searchFilter = $this->getSearchFilter($search);
+        $search = $this->getSearch($search);
 
         $longitude = is_null($coordinate) ? null : $coordinate->getLongitude();
         $latitude = is_null($coordinate) ? null : $coordinate->getLatitude();
@@ -152,7 +145,7 @@ readonly class QueryBuilder
         $sql = str_replace('%(feature_code)s', $this->getFeatureCodeLeftJoin($featureCode), $sql);
         $sql = str_replace('%(feature_class)s', $this->getFeatureClassLeftJoin($featureClass), $sql);
         $sql = str_replace('%(country)s', is_null($country) ? '' : 'AND c.code=\''.$country.'\'', $sql);
-        $sql = str_replace('%(name_search)s', $this->getStartsWith($searchFirstWord), $sql);
+        $sql = str_replace('%(name_search)s', $this->getContainFilter($searchFilter), $sql);
 
         return ($this->entityManager->createNativeQuery($sql, $rsm))
             ->setParameter('longitude', $longitude)
@@ -191,15 +184,8 @@ readonly class QueryBuilder
             $search = [$search];
         }
 
-        $searchFirstWord = match (true) {
-            is_null($search), count($search) <= 0 => '',
-            default => $search[0]
-        };
-
-        $search = match (true) {
-            is_null($search) => '',
-            default => implode(Query::SEARCH_AND, array_map(fn($term) => $term.Query::SEARCH_RIGHT_WILDCARD, $search))
-        };
+        $searchFilter = $this->getSearchFilter($search);
+        $search = $this->getSearch($search);
 
         $longitude = is_null($coordinate) ? null : $coordinate->getLongitude();
         $latitude = is_null($coordinate) ? null : $coordinate->getLatitude();
@@ -219,7 +205,7 @@ readonly class QueryBuilder
         $sql = str_replace('%(feature_code)s', $this->getFeatureCodeLeftJoin($featureCode), $sql);
         $sql = str_replace('%(feature_class)s', $this->getFeatureClassLeftJoin($featureClass), $sql);
         $sql = str_replace('%(country)s', is_null($country) ? '' : 'AND c.code=\''.$country.'\'', $sql);
-        $sql = str_replace('%(name_search)s', $this->getStartsWith($searchFirstWord), $sql);
+        $sql = str_replace('%(name_search)s', $this->getContainFilter($searchFilter), $sql);
 
         return ($this->entityManager->createNativeQuery($sql, $rsm))
             ->setParameter('longitude', $longitude)
@@ -312,11 +298,61 @@ readonly class QueryBuilder
         );
     }
 
-    private function getStartsWith(string $search): string
+    /**
+     * Returns the search filter.
+     *
+     * @param string[]|null $search
+     * @return string
+     */
+    private function getContainFilter(array|null $search): string
     {
-        return sprintf(
-            'AND UNACCENT(LOWER(COALESCE(an.alternate_name, l.name))) LIKE UNACCENT(LOWER(\'%s\')) ESCAPE \'!\'',
-            sprintf('%s%%', $search)
-        );
+        if (is_null($search)) {
+            return '';
+        }
+
+        $filter = [];
+
+        foreach ($search as $term) {
+            $filter[] = sprintf(
+                'AND UNACCENT(LOWER(COALESCE(an.alternate_name, l.name))) LIKE UNACCENT(LOWER(\'%s\')) ESCAPE \'!\'',
+                $term
+            );
+        }
+
+        return implode('', $filter);
+    }
+
+    /**
+     * Returns the query filter.
+     *
+     * @param string[]|null $search
+     * @return string[]|null
+     */
+    private function getSearchFilter(array|null $search = null): array|null
+    {
+        if (is_null($search)) {
+            return null;
+        }
+
+        $searches = [];
+        foreach ($search as $term) {
+            $searches[] = sprintf('%%%s%%', $term);
+        }
+
+        return $searches;
+    }
+
+    /**
+     * Returns the query for search (to_tsquery).
+     *
+     * @param string[]|null $search
+     * @return string
+     */
+    private function getSearch(array|null $search = null): string
+    {
+        return match (true) {
+            is_null($search), count($search) <= 0 => '',
+            default => $search[0].Query::SEARCH_RIGHT_WILDCARD,
+        };
     }
 }
