@@ -310,7 +310,6 @@ final class LocationService extends BaseLocationService
         }, self::PERFORMANCE_NAME_COUNT_LOCATIONS_BY_NAME, $performanceGroupName, $performanceLogger->getAdditionalData(self::class, __FUNCTION__, __LINE__));
 
 
-
         /* Finds locations by search */
         $locationEntities = [];
         $performanceLogger->logPerformance(function () use (
@@ -343,8 +342,6 @@ final class LocationService extends BaseLocationService
             /* Finish task */
 
         }, self::PERFORMANCE_NAME_FIND_LOCATIONS_BY_NAME, $performanceGroupName, $performanceLogger->getAdditionalData(self::class, __FUNCTION__, __LINE__));
-
-
 
         /* Collect locations and add additional information */
         $locations = [];
@@ -696,8 +693,6 @@ final class LocationService extends BaseLocationService
         $performanceLogger = PerformanceLogger::getInstance();
         $performanceGroupName = $performanceLogger->getGroupNameFromFileName(__FILE__);
 
-
-
         /* Execute $this->getLocationResourceFull() and log performance. */
         $location = null;
         $performanceLogger->logPerformance(function () use (&$location, $coordinate) {
@@ -714,8 +709,6 @@ final class LocationService extends BaseLocationService
         if (is_null($location)) {
             return $this->getEmptyLocation();
         }
-
-
 
         /* Execute $this->getLocationResourceFull() and log performance. */
         $locationEntity = null;

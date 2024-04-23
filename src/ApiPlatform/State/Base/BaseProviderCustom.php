@@ -679,6 +679,7 @@ class BaseProviderCustom extends BaseResourceWrapperProvider
      * @return void
      * @throws CaseUnsupportedException
      * @throws ParserException
+     * @throws QueryParserException
      */
     protected function setResultsFromLocations(array $locations): void
     {
@@ -686,11 +687,18 @@ class BaseProviderCustom extends BaseResourceWrapperProvider
             return;
         }
 
+        $count = count($locations);
+        $countTotal = $this->locationService->getResultCount();
+
+        $limit = $this->query->getLimitDefault();
+
+        $page = $this->query->getPageDefault();
+
         $this->setResults([
-            KeyArray::RESULTS_CURRENT => count($locations),
-            KeyArray::RESULTS_TOTAL => $this->locationService->getResultCount(),
-            KeyArray::PAGE_CURRENT => $this->query->getPageDefault(),
-            KeyArray::PAGE_SIZE => $this->query->getLimitDefault(),
+            KeyArray::RESULTS_CURRENT => $count,
+            KeyArray::RESULTS_TOTAL => $countTotal,
+            KeyArray::PAGE_CURRENT => $page,
+            KeyArray::PAGE_SIZE => $limit,
         ]);
     }
 
