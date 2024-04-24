@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Releases
 
+### [0.1.83] - 2024-04-25
+
+* Add order by to sub query
+
 ### [0.1.82] - 2024-04-24
 
 * Optimize search
