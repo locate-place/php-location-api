@@ -58,6 +58,8 @@ class Query
                 l.id,
                 %(sort_by)s
         ) sub
+        ORDER BY
+            %(sort_by)s
         %(limit)s;
 SQL;
 
@@ -151,6 +153,8 @@ SQL;
                 l.id,
                 %(sort_by)s
         ) sub
+        ORDER BY
+            %(sort_by)s
         %(limit)s;
 SQL;
 
@@ -280,6 +284,8 @@ SQL;
                 l.id,
                 %(sort_by)s
         ) sub
+        ORDER BY
+            %(sort_by)s
         %(limit)s;
 SQL;
 
