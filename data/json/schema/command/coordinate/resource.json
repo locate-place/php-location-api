@@ -4,8 +4,10 @@
         "geoname-id": 6295497,
         "name": "Zürich (Kreis 3) / Friesenberg",
         "name-full": "Zürich (Kreis 3) / Friesenberg, Zürich, Zürich, Schweiz",
+        "alternate-names": [
+            "Friesenberg"
+        ],
         "zip-code": "8055",
-        "rivers": [],
         "updated-at": "2023-08-21T23:08:34+00:00",
         "properties": {
             "population": {
@@ -58,10 +60,10 @@
             "timezone": "Europe/Zurich",
             "country": "CH",
             "current-time": {
-                "timezone": "2024-03-20T23:53:17+01:00",
-                "utc": "2024-03-20T22:53:17+00:00"
+                "timezone": "2024-04-29T23:18:52+02:00",
+                "utc": "2024-04-29T21:18:52+00:00"
             },
-            "offset": "+01:00",
+            "offset": "+02:00",
             "coordinate": {
                 "latitude": {
                     "decimal": 47.38333,
@@ -174,7 +176,7 @@
                     ]
                 },
                 "waters": {
-                    "distance": 100000,
+                    "distance": 20000,
                     "limit": 10,
                     "name": "lakes, rivers",
                     "feature_codes": [
@@ -221,6 +223,9 @@
             "district-locality": {
                 "geoname-id": 6295497,
                 "name": "Zürich (Kreis 3) / Friesenberg",
+                "alternate-names": [
+                    "Friesenberg"
+                ],
                 "updated-at": "2023-08-21T23:08:34+00:00",
                 "coordinate": {
                     "latitude": {
@@ -346,7 +351,7 @@
                             ]
                         },
                         "waters": {
-                            "distance": 100000,
+                            "distance": 20000,
                             "limit": 10,
                             "name": "lakes, rivers",
                             "feature_codes": [
@@ -393,6 +398,12 @@
             "city-municipality": {
                 "geoname-id": 2657896,
                 "name": "Zürich",
+                "alternate-names": [
+                    "Zürich",
+                    "Zurich",
+                    "Zúrich",
+                    "Zuerich"
+                ],
                 "updated-at": "2023-08-21T23:08:27+00:00",
                 "coordinate": {
                     "latitude": {
@@ -518,7 +529,7 @@
                             ]
                         },
                         "waters": {
-                            "distance": 100000,
+                            "distance": 20000,
                             "limit": 10,
                             "name": "lakes, rivers",
                             "feature_codes": [
@@ -565,6 +576,15 @@
             "state": {
                 "geoname-id": 2657895,
                 "name": "Zürich",
+                "alternate-names": [
+                    "Zürich",
+                    "Kanton Zürich",
+                    "Canton of Zurich",
+                    "Zurich",
+                    "Canton de Zurich",
+                    "Zurigo",
+                    "Region Zürich"
+                ],
                 "updated-at": "2023-08-21T23:08:27+00:00",
                 "coordinate": {
                     "latitude": {
@@ -690,7 +710,7 @@
                             ]
                         },
                         "waters": {
-                            "distance": 100000,
+                            "distance": 20000,
                             "limit": 10,
                             "name": "lakes, rivers",
                             "feature_codes": [
@@ -737,6 +757,17 @@
             "country": {
                 "geoname-id": 2658434,
                 "name": "Schweiz",
+                "alternate-names": [
+                    "Schweizerische Eidgenossenschaft",
+                    "Schweiz",
+                    "Svizzera",
+                    "Helvetia",
+                    "Swiss Confederation",
+                    "Confederatio Helvetica",
+                    "Switzerland",
+                    "Schwiz",
+                    "Suisse"
+                ],
                 "updated-at": "2023-08-21T23:08:27+00:00",
                 "coordinate": {
                     "latitude": {
@@ -862,7 +893,7 @@
                             ]
                         },
                         "waters": {
-                            "distance": 100000,
+                            "distance": 20000,
                             "limit": 10,
                             "name": "lakes, rivers",
                             "feature_codes": [
@@ -929,9 +960,9 @@
             }
         }
     },
-    "time-taken": "422 ms",
-    "memory-taken": "58 MB",
-    "version": "0.1.58",
+    "time-taken": "1339 ms",
+    "memory-taken": "59 MB",
+    "version": "0.1.83",
     "data-licence": {
         "full": "Creative Commons Attribution 4.0 License",
         "short": "CC-BY 4.0",

@@ -573,6 +573,7 @@ final class LocationProvider extends BaseProviderCustom
      * @throws NonUniqueResultException
      * @throws ORMException
      * @throws ParserException
+     * @throws QueryParserException
      * @throws RedirectionExceptionInterface
      * @throws ServerExceptionInterface
      * @throws TransportExceptionInterface

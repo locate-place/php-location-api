@@ -19,9 +19,11 @@ use App\Entity\ZipCodeArea;
 use App\Repository\LocationRepository;
 use App\Repository\ZipCodeAreaRepository;
 use App\Repository\ZipCodeRepository;
+use App\Utils\Db\DebugNativeQuery;
 use App\Utils\Db\DebugQuery;
 use App\Utils\Doctrine\QueryBuilder as UtilQueryBuilder;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\NativeQuery;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 use Ixnode\PhpException\Case\CaseUnsupportedException;
@@ -138,6 +140,21 @@ class BaseCoordinateRepository extends ServiceEntityRepository
     {
         $debugQuery = new DebugQuery($queryBuilder);
         print $debugQuery->getSqlRaw();
+        exit();
+    }
+
+    /**
+     * Prints the raw query from given native builder.
+     *
+     * @param NativeQuery $nativeQuery
+     * @return void
+     * @SuppressWarnings(PHPMD.ExitExpression)
+     */
+    #[NoReturn]
+    protected function debugNativeQuery(NativeQuery $nativeQuery): void
+    {
+        $debugNativeQuery = new DebugNativeQuery($nativeQuery);
+        print $debugNativeQuery->getSqlRaw();
         exit();
     }
 }

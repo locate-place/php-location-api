@@ -15,6 +15,12 @@
                 "name": {
                     "type": "string"
                 },
+                "alternate-names": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "name-full": {
                     "type": "string"
                 },
@@ -22,7 +28,10 @@
                     "type": "string"
                 },
                 "rivers": {
-                    "type": "array"
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "updated-at": {
                     "$ref": "#/$defs/updatedAt"
@@ -589,6 +598,12 @@
                 },
                 "name": {
                     "type": "string"
+                },
+                "alternate-names": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "zip-code": {
                     "type": "string"

@@ -26,7 +26,7 @@ class KeyArray
 
     final public const AIRPORT_CODES = 'airport_codes';
 
-    final public const ALTERNATE_NAMES = 'alternate_names';
+    final public const ALTERNATE_NAMES = 'alternate-names';
 
     final public const BOROUGH_LOCALITY = 'borough-locality';
 

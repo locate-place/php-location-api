@@ -314,7 +314,8 @@ readonly class QueryBuilder
 
         foreach ($search as $term) {
             $filter[] = sprintf(
-                'AND UNACCENT(LOWER(COALESCE(an.alternate_name, l.name))) LIKE UNACCENT(LOWER(\'%s\')) ESCAPE \'!\'',
+                'AND (UNACCENT(LOWER(l.name)) LIKE UNACCENT(LOWER(\'%s\')) ESCAPE \'!\' OR UNACCENT(LOWER(an.alternate_name)) LIKE UNACCENT(LOWER(\'%s\')) ESCAPE \'!\')',
+                $term,
                 $term
             );
         }

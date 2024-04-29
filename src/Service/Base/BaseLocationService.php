@@ -33,6 +33,7 @@ use App\DataTypes\Properties;
 use App\DataTypes\Timezone;
 use App\DBAL\GeoLocation\ValueObject\Point;
 use App\Entity\AlternateName;
+use App\Entity\Location;
 use App\Entity\Location as LocationEntity;
 use App\Entity\ZipCode;
 use App\Entity\ZipCodeArea;
@@ -131,6 +132,7 @@ abstract class BaseLocationService extends BaseHelperLocationService
                 $key === KeyArray::GEONAME_ID => $location->setGeonameId(is_int($value) ? $value : 0),
                 $key === KeyArray::NAME => $location->setName(is_string($value) ? $value : ''),
                 $key === KeyArray::NAME_FULL => $location->setNameFull(is_string($value) ? $value : ''),
+                $key === KeyArray::ALTERNATE_NAMES => $location->setAlternateNames(is_array($value) ? $value : []),
                 $key === KeyArray::ZIP_CODE => $location->setZipCode(is_string($value) ? $value : null),
                 $key === KeyArray::UPDATED_AT => $value instanceof DateTimeImmutable ? $location->setUpdatedAt($value) : null,
 
@@ -1002,6 +1004,7 @@ abstract class BaseLocationService extends BaseHelperLocationService
             /* Single fields. */
             ...(is_int($geonameId) ? [KeyArray::GEONAME_ID => $geonameId] : []),
             ...(is_string($name) ? [KeyArray::NAME => $name] : []),
+            ...(is_string($name) ? [KeyArray::ALTERNATE_NAMES => $this->getAlternateNames($locationEntity)] : []),
             ...(is_string($nameFull) ? [KeyArray::NAME_FULL => $nameFull] : []),
             ...(!is_null($zipCodeString) ? [KeyArray::ZIP_CODE => $zipCodeString] : []),
             ...(!is_null($updateAt) ? [KeyArray::UPDATED_AT => $updateAt] : []),
@@ -1035,6 +1038,7 @@ abstract class BaseLocationService extends BaseHelperLocationService
      * @return LocationEntity|null
      * @throws CaseUnsupportedException
      * @throws ClassInvalidException
+     * @throws ParserException
      * @throws TypeInvalidException
      */
     public function getLocationEntityByCoordinate(CoordinateIxnode $coordinate): LocationEntity|null
@@ -1253,5 +1257,32 @@ abstract class BaseLocationService extends BaseHelperLocationService
             LocationContainer::TYPE_COUNTRY => KeyArray::COUNTRY,
             default => throw new LogicException(sprintf('Invalid location type given: "%s"', $locationType)),
         };
+    }
+
+    /**
+     * Return de, en, es alternate names.
+     *
+     * @param LocationEntity $locationEntity
+     * @return string[]
+     * @throws ClassInvalidException
+     * @throws TypeInvalidException
+     */
+    private function getAlternateNames(Location $locationEntity): array
+    {
+        $alternateNames = [];
+
+        foreach ($this->alternateNameRepository->findByIsoLanguagesWithNull($locationEntity, ['de', 'en', 'es']) as $alternateName) {
+            $name = $alternateName->getAlternateName();
+
+            if (is_null($name)) {
+                continue;
+            }
+
+            $alternateNames[] = $name;
+        }
+
+        $alternateNames = array_unique($alternateNames);
+
+        return array_values($alternateNames);
     }
 }

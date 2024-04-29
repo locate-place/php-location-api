@@ -84,6 +84,35 @@ class AlternateNameRepository extends ServiceEntityRepository
     }
 
     /**
+     * Returns an array of AlternateName objects
+     *
+     * @param Location $location
+     * @param array<int, string|null> $isoLanguages
+     * @return AlternateName[]
+     * @throws ClassInvalidException
+     * @throws TypeInvalidException
+     */
+    public function findByIsoLanguagesWithNull(Location $location, array $isoLanguages): array
+    {
+        $queryBuilder = $this->createQueryBuilder('a')
+            ->andWhere('a.location = :location')
+            ->setParameter('location', $location)
+
+            ->andWhere('a.isoLanguage IN (:isoLanguages) OR a.isoLanguage IS NULL')
+            ->setParameter('isoLanguages', $isoLanguages)
+
+            ->orderBy('a.id', 'ASC')
+            ->setMaxResults(10)
+        ;
+
+        /* Returns the result. */
+        return array_values(
+            (new CheckerArray($queryBuilder->getQuery()->getResult()))
+                ->checkClass(AlternateName::class)
+        );
+    }
+
+    /**
      * Returns the first AlternateName object.
      *
      * @param Location $location

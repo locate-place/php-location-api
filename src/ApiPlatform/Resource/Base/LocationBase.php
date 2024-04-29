@@ -58,6 +58,10 @@ abstract class LocationBase extends BasePublicResource
     #[SerializedName('name-full')]
     private string $nameFull;
 
+    /** @var string[] $alternateNames */
+    #[SerializedName('alternate-names')]
+    private array $alternateNames;
+
     #[SerializedName('zip-code')]
     private string $zipCode;
 
@@ -159,6 +163,25 @@ abstract class LocationBase extends BasePublicResource
     public function setNameFull(string $nameFull): self
     {
         $this->nameFull = $nameFull;
+
+        return $this;
+    }
+
+    /**
+     * @return string[]
+     */
+    public function getAlternateNames(): array
+    {
+        return $this->alternateNames;
+    }
+
+    /**
+     * @param string[] $alternateNames
+     * @return LocationBase
+     */
+    public function setAlternateNames(array $alternateNames): LocationBase
+    {
+        $this->alternateNames = $alternateNames;
 
         return $this;
     }
