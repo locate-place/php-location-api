@@ -62,6 +62,8 @@ class QueryParser
 
     private const LENGTH_FEATURE_CODE = 5;
 
+    private const EXCEPTION_MINIMUM = 3;
+
     private const EREG_WRAPPER_SINGLE = '^%s$';
 
     private const EREG_WRAPPER_COORDINATE = '^%s *[,/| ]+ *%s$';
@@ -88,7 +90,7 @@ class QueryParser
 
     private const FORMAT_LONGITUDES = [self::FORMAT_DECIMAL, self::FORMAT_DMS_LONGITUDE];
 
-    private readonly string $queryString;
+    private string $queryString;
 
     private string $type;
 
@@ -1033,13 +1035,23 @@ class QueryParser
         }
 
         if (!is_null($featureCodes)) {
+            $featureCodesNew = [];
+
             foreach ($featureCodes as $featureCode) {
                 if (in_array($featureCode, $this->allowedFeatureCodes, true)) {
+                    $featureCodesNew[] = $featureCode;
+                    continue;
+                }
+
+                if (strlen($featureCode) <= self::EXCEPTION_MINIMUM) {
+                    $this->queryString .= ' '.strtolower($featureCode);
                     continue;
                 }
 
                 throw new QueryParserException(sprintf('Unsupported feature code "%s".', $featureCode));
             }
+
+            $featureCodes = count($featureCodesNew) > 0 ? $featureCodesNew : null;
         }
 
         return [
