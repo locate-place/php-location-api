@@ -767,6 +767,17 @@ class QueryParser
          */
         /* Feature codes/classes with and without search term */
         if ($onlySearch && mb_ereg(sprintf(self::EREG_WRAPPER_LIST_SEARCH_WITH_FEATURES, self::FORMAT_FEATURES), $search, $this->matches)) {
+
+            $featuresString = $this->getFeaturesAsString();
+
+            $this->matches = match(true) {
+                /* Search with feature codes. */
+                !is_null($featuresString) => [$this->matches[0], $this->matches[1].'|'.$featuresString, $this->matches[2]],
+
+                /* Search without feature codes. */
+                default => $this->matches,
+            };
+
             return $this->getTypeSearchListWithFeatures($this->matches[2]);
         }
 
@@ -804,7 +815,7 @@ class QueryParser
             $this->country = $parsedSearchQuery[KeyArray::COUNTRY];
         }
         if (array_key_exists(KeyArray::FEATURE_CODES, $parsedSearchQuery)) {
-            $this->featureCodes = $parsedSearchQuery[KeyArray::FEATURE_CODES];
+            $this->featureCodes = [...(!is_null($this->featureCodes) ? $this->featureCodes : []) ,...$parsedSearchQuery[KeyArray::FEATURE_CODES]];
         }
         if (array_key_exists(KeyArray::FEATURE_CLASSES, $parsedSearchQuery)) {
             $this->featureClasses = $parsedSearchQuery[KeyArray::FEATURE_CLASSES];
