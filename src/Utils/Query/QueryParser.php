@@ -991,7 +991,7 @@ class QueryParser
             match (true) {
                 mb_strlen($feature) === self::LENGTH_FEATURE_CLASS => $featureClasses[] = strtoupper($feature),
                 mb_strlen($feature) > self::LENGTH_FEATURE_CLASS && mb_strlen($feature) <= self::LENGTH_FEATURE_CODE => $featureCodes[] = strtoupper($feature),
-                default => throw new LogicException(sprintf('Unsupported feature code length given "%s".', $feature)),
+                default => null,
             };
         }
 
