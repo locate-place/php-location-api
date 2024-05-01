@@ -7,9 +7,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Releases
 
+### [0.1.87] - 2024-05-01
+
+* Combine feature search types
+
 ### [0.1.86] - 2024-05-01
 
-* Allow empty feature-classes:
+* Allow empty "feature-classes:"
 
 ### [0.1.85] - 2024-05-01
 
