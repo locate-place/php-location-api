@@ -93,8 +93,8 @@ readonly class QueryBuilder
             LocationService::SORT_BY_RELEVANCE,
             LocationService::SORT_BY_RELEVANCE_USER => 'relevance_score DESC',
 
-            LocationService::SORT_BY_NAME => 'l.name ASC',
-            LocationService::SORT_BY_GEONAME_ID => 'l.geoname_id ASC',
+            LocationService::SORT_BY_NAME => 'name ASC',
+            LocationService::SORT_BY_GEONAME_ID => 'geoname_id ASC',
 
             default => throw new LogicException(sprintf('Invalid sort by "%s".', $sortBy)),
         };
