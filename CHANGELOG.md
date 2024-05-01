@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Releases
 
+### [0.1.85] - 2024-05-01
+
+* Fix name order
+
 ### [0.1.84] - 2024-04-29
 
 * Fix search
