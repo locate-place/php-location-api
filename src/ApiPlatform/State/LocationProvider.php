@@ -18,7 +18,6 @@ use App\ApiPlatform\Resource\Base;
 use App\ApiPlatform\Resource\Location as LocationResource;
 use App\ApiPlatform\Route\LocationRoute;
 use App\ApiPlatform\State\Base\BaseProviderCustom;
-use App\Constants\DB\Limit;
 use App\Constants\Key\KeyArray;
 use App\Constants\Language\CountryCode;
 use App\Constants\Language\LanguageCode;
@@ -35,7 +34,6 @@ use Ixnode\PhpApiVersionBundle\ApiPlatform\Resource\Base\BasePublicResource;
 use Ixnode\PhpApiVersionBundle\ApiPlatform\State\Base\Wrapper\BaseResourceWrapperProvider;
 use Ixnode\PhpApiVersionBundle\Utils\Version\Version;
 use Ixnode\PhpContainer\File;
-use Ixnode\PhpCoordinate\Coordinate;
 use Ixnode\PhpException\ArrayType\ArrayKeyNotFoundException;
 use Ixnode\PhpException\Case\CaseInvalidException;
 use Ixnode\PhpException\Case\CaseUnsupportedException;
@@ -231,7 +229,13 @@ final class LocationProvider extends BaseProviderCustom
 
         if (!is_null($search)) {
             $searchString = implode(' ', $search);
-            if (mb_strlen($searchString) < self::SEARCH_MINIMUM_LENGTH) {
+
+            $ignoreEmptyString =
+                (!is_null($featureClasses) && !is_null($countryFilter) ||
+                (!is_null($distance) && !is_null($featureClasses)))
+            ;
+
+            if (!$ignoreEmptyString && mb_strlen($searchString) < self::SEARCH_MINIMUM_LENGTH) {
                 $this->setError(sprintf('At least %s characters are required to search ("%s").', self::SEARCH_MINIMUM_LENGTH, $searchString));
                 return [];
             }
