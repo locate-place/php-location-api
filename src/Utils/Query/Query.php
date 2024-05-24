@@ -150,13 +150,13 @@ class Query
     }
 
     /**
-     * Returns if the request is a country request.
+     * Returns if the request is a capital request.
      *
      * @return bool
      */
-    public function isCountryRequest(): bool
+    public function isCapitalRequest(): bool
     {
-        return $this->hasPath('countries(:?\.(:?json|html))?');
+        return $this->hasPath('capitals(:?\.(:?json|html))?');
     }
 
     /**
@@ -496,7 +496,7 @@ class Query
     public function getQueryParserString(): string|int|null
     {
         $isGeonameIdsRequest = $this->isExampleRequest() ||
-            $this->isCountryRequest() ||
+            $this->isCapitalRequest() ||
             $this->isAirportRequest();
 
         return match (true) {

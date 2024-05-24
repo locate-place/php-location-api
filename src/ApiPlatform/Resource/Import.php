@@ -37,13 +37,28 @@ use Ixnode\PhpApiVersionBundle\ApiPlatform\Resource\Base\BasePublicResource;
     ],
     provider: ImportProvider::class
 )]
+/* Gets ressource of imports: /api/v1/import/missing */
+#[GetCollection(
+    uriTemplate: 'import/missing.{_format}',
+    openapiContext: [
+        'description' => ImportRoute::DESCRIPTION_COLLECTION_GET_MISSING,
+        'parameters' => [
+            Parameter::FORMAT,
+        ],
+    ],
+    provider: ImportProvider::class
+)]
 class Import extends BasePublicResource
 {
     protected string $country;
 
+    protected string $countryCode;
+
     private string $path;
 
     private int $numberOfLocations;
+
+    private int $numberOfAlternateNames;
 
     private DateTimeImmutable $createdAt;
 
@@ -66,6 +81,25 @@ class Import extends BasePublicResource
     public function setCountry(string $country): self
     {
         $this->country = $country;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getCountryCode(): string
+    {
+        return $this->countryCode;
+    }
+
+    /**
+     * @param string $countryCode
+     * @return self
+     */
+    public function setCountryCode(string $countryCode): self
+    {
+        $this->countryCode = $countryCode;
 
         return $this;
     }
@@ -104,6 +138,25 @@ class Import extends BasePublicResource
     public function setNumberOfLocations(int $numberOfLocations): self
     {
         $this->numberOfLocations = $numberOfLocations;
+
+        return $this;
+    }
+
+    /**
+     * @return int
+     */
+    public function getNumberOfAlternateNames(): int
+    {
+        return $this->numberOfAlternateNames;
+    }
+
+    /**
+     * @param int $numberOfAlternateNames
+     * @return self
+     */
+    public function setNumberOfAlternateNames(int $numberOfAlternateNames): self
+    {
+        $this->numberOfAlternateNames = $numberOfAlternateNames;
 
         return $this;
     }

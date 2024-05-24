@@ -303,6 +303,7 @@ EOT
             ->setShortName($isShortName)
             ->setColloquial($isColloquial)
             ->setHistoric($isHistoric)
+            ->setChanged(false)
         ;
 
         $this->entityManager->persist($alternateName);

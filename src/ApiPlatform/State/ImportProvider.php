@@ -18,6 +18,7 @@ use App\ApiPlatform\Resource\Import;
 use App\ApiPlatform\Route\ImportRoute;
 use App\ApiPlatform\State\Base\BaseProviderCustom;
 use App\Constants\DB\Format;
+use App\Constants\Language\LocaleCode;
 use App\Entity\Country;
 use App\Entity\Import as ImportEntity;
 use App\Repository\ImportRepository;
@@ -32,6 +33,8 @@ use Ixnode\PhpException\ArrayType\ArrayKeyNotFoundException;
 use Ixnode\PhpException\Case\CaseUnsupportedException;
 use Ixnode\PhpException\Class\ClassInvalidException;
 use Ixnode\PhpException\Type\TypeInvalidException;
+use Ixnode\PhpTimezone\Constants\CountryAll;
+use LogicException;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -98,10 +101,11 @@ final class ImportProvider extends BaseProviderCustom
             throw new ClassInvalidException(Country::class, Country::class);
         }
 
+        $countryCode = (string) $country->getCode();
+
         $import = (new Import())
             ->setCountry((string) $country->getName())
-            ->setNumberOfLocations($importEntity->getRows() ?: 0)
-            //->setNumberOfLocations($this->locationRepository->getNumberOfLocations($country))
+            ->setCountryCode($countryCode)
         ;
 
         if ($format === Format::SIMPLE) {
@@ -129,16 +133,23 @@ final class ImportProvider extends BaseProviderCustom
     }
 
     /**
-     * Returns a collection of location resources that matches the given coordinate.
+     * Returns a collection of import resources that have been imported.
      *
      * @return BasePublicResource[]
      * @throws ArrayKeyNotFoundException
      * @throws ClassInvalidException
      * @throws TypeInvalidException
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+     * @SuppressWarnings(PHPMD.NPathComplexity)
      */
     private function doProvideGetCollection(): array
     {
+        /** @var Import[] $imports */
         $imports = [];
+
+        $countAllAlternateNames = [];
+        $countAllLocations = [];
+
         $importEntities = $this->importRepository->findBy([], ['path' => 'ASC']);
 
         foreach ($importEntities as $importEntity) {
@@ -146,10 +157,118 @@ final class ImportProvider extends BaseProviderCustom
                 continue;
             }
 
-            $imports[] = $this->getImport($importEntity);
+            $country = $importEntity->getCountry();
+
+            if (!$country instanceof Country) {
+                throw new ClassInvalidException(Country::class, Country::class);
+            }
+
+            $countryCode = (string) $country->getCode();
+
+            /* All alternate name imports. */
+            if (str_contains($importEntity->getPath() ?? '', 'import/alternate-name')) {
+                $countAlternateName = $importEntity->getRows() ?: 0;
+
+                if (!array_key_exists($countryCode, $countAllAlternateNames)) {
+                    $countAllAlternateNames[$countryCode] = 0;
+                }
+
+                if ($countAlternateName <= 0) {
+                    continue;
+                }
+
+                $countAllAlternateNames[$countryCode] += $countAlternateName;
+                continue;
+            }
+
+            /* Add location imports. */
+            if (str_contains($importEntity->getPath() ?? '', 'import/location')) {
+                $countLocation = $importEntity->getRows() ?: 0;
+                // $countLocation = $this->locationRepository->getNumberOfLocations($country);
+
+                if (!array_key_exists($countryCode, $countAllLocations)) {
+                    $countAllLocations[$countryCode] = 0;
+                }
+
+                $countAllLocations[$countryCode] += $countLocation;
+
+                $imports[$countryCode] = $this->getImport($importEntity);
+
+                $imports[$countryCode]->setNumberOfAlternateNames(0);
+
+                continue;
+            }
+
+            throw new LogicException('Unsupported path: '. $importEntity->getPath());
         }
 
-        return $imports;
+        /* Add the number of alternate names. */
+        foreach ($countAllAlternateNames as $countryCode => $count) {
+            if (!array_key_exists($countryCode, $imports)) {
+                continue;
+            }
+
+            $imports[$countryCode]->setNumberOfAlternateNames($count);
+        }
+
+        /* Add the number of locations. */
+        foreach ($countAllLocations as $countryCode => $count) {
+            if (!array_key_exists($countryCode, $imports)) {
+                continue;
+            }
+
+            $imports[$countryCode]->setNumberOfLocations($count);
+        }
+
+        return array_values($imports);
+    }
+
+    /**
+     * Returns a collection of import resources that have not been imported.
+     *
+     * @return BasePublicResource[]
+     * @throws ClassInvalidException
+     */
+    private function doProvideGetCollectionMissing(): array
+    {
+        $countries = CountryAll::COUNTRY_NAMES;
+
+        $importEntities = $this->importRepository->findBy([], ['path' => 'ASC']);
+
+        $missingImports = [];
+
+        foreach ($importEntities as $importEntity) {
+            if (!$importEntity instanceof ImportEntity) {
+                continue;
+            }
+
+            $country = $importEntity->getCountry();
+
+            if (!$country instanceof Country) {
+                throw new ClassInvalidException(Country::class, Country::class);
+            }
+
+            $countryCode = (string) $country->getCode();
+
+            if (array_key_exists($countryCode, $countries)) {
+                unset($countries[$countryCode]);
+            }
+        }
+
+        foreach ($countries as $countryCode => $countryName) {
+            if (!array_key_exists(LocaleCode::EN_GB, $countryName)) {
+                continue;
+            }
+
+            $import = (new Import())
+                ->setCountry((string) $countryName[LocaleCode::EN_GB])
+                ->setCountryCode($countryCode)
+            ;
+
+            $missingImports[$countryCode] = $import;
+        }
+
+        return array_values($missingImports);
     }
 
     /**
@@ -163,8 +282,9 @@ final class ImportProvider extends BaseProviderCustom
      */
     protected function doProvide(): BasePublicResource|array
     {
-        return match($this->getRequestMethod()) {
-            BaseResourceWrapperProvider::METHOD_GET_COLLECTION => $this->doProvideGetCollection(),
+        return match(true) {
+            $this->getRequestMethod() === BaseResourceWrapperProvider::METHOD_GET_COLLECTION && $this->hasPath('missing(:?\.(:?json|html))?') => $this->doProvideGetCollectionMissing(),
+            $this->getRequestMethod() === BaseResourceWrapperProvider::METHOD_GET_COLLECTION => $this->doProvideGetCollection(),
             default => throw new CaseUnsupportedException('Unsupported mode from api endpoint /api/v1/import.'),
         };
     }

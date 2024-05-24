@@ -170,11 +170,54 @@ class LocationRepository extends BaseCoordinateRepository
      * Finds the locations from given geoname ids.
      *
      * @param int[] $geonameIds
+     * @param int|null $limit
+     * @param int $page
+     * @param Coordinate|null $coordinate
+     * @param string $sortBy
      * @return array<int, Location>
+     * @throws ORMException
+     * @throws TypeInvalidException
      */
-    public function findLocationsByGeonameIds(array $geonameIds): array
+    public function findLocationsByGeonameIds(
+        /* Search term. */
+        array $geonameIds,
+
+        /* Filter configuration. */
+        int|null $limit = Limit::LIMIT_10,
+        int $page = LocationService::PAGE_FIRST,
+
+        /* Configuration */
+        Coordinate|null $coordinate = null,
+
+        /* Sort configuration */
+        string $sortBy = LocationService::SORT_BY_RELEVANCE,
+    ): array
     {
-        return $this->findBy(['geonameId' => $geonameIds]);
+        $locationIds = array_map(fn($location) => (int) $location->getId(), $this->findBy(['geonameId' => $geonameIds]));
+
+        $query = match(true) {
+            $coordinate instanceof Coordinate => $this->queryBuilder->getQueryLocationIds(
+                locationIds: $locationIds,
+                limit: $limit,
+                page: $page,
+                coordinate: $coordinate,
+                sortBy: $sortBy
+            ),
+            default => $this->queryBuilder->getQueryLocationIds(
+                locationIds: $locationIds,
+                limit: $limit,
+                page: $page,
+                sortBy: $sortBy,
+            )
+        };
+
+        /* @var array<int, Location|array<int, mixed>> $results */
+        $results = $query->getResult();
+
+        /* @phpstan-ignore-next-line -> getResult will give array<int, Location|array<int, mixed>> */
+        $locations = $this->resultProcessor->hydrateObjects($results);
+
+        return $this->entityProcessor->reloadLocations($locations);
     }
 
     /**
@@ -914,6 +957,7 @@ class LocationRepository extends BaseCoordinateRepository
         return $this->findLocationsByCoordinate(
             featureClasses: DbFeatureClass::P,
             featureCodes: DbFeatureCode::PPLC,
+            limit: 300,
         );
     }
 

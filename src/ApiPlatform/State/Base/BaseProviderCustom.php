@@ -586,7 +586,7 @@ class BaseProviderCustom extends BaseResourceWrapperProvider
     }
 
     /**
-     * Returns some geoname id country.
+     * Returns some geoname ids for capitals of the world.
      *
      * @return int[]
      * @throws CaseUnsupportedException
@@ -594,7 +594,7 @@ class BaseProviderCustom extends BaseResourceWrapperProvider
      * @throws ParserException
      * @throws TypeInvalidException
      */
-    protected function getGeonameIdsCountry(): array
+    protected function getGeonameIdsCapitals(): array
     {
         /** @var LocationRepository $locationRepository */
         $locationRepository = $this->entityManager->getRepository(LocationEntity::class);
@@ -720,6 +720,25 @@ class BaseProviderCustom extends BaseResourceWrapperProvider
     private function isAutocompleteRequest(): bool
     {
         return str_contains($this->request->getCurrentRequest()?->getPathInfo() ?? '', '/autocomplete');
+    }
+
+    /**
+     * Returns whether the request contains a path.
+     *
+     * @param string $wordRegexp
+     * @return bool
+     */
+    public function hasPath(string $wordRegexp): bool
+    {
+        $pathWords = explode('/', $this->request->getCurrentRequest()?->getPathInfo() ?? '');
+
+        foreach ($pathWords as $pathWord) {
+            if (preg_match(sprintf('~^%s$~', $wordRegexp), $pathWord)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

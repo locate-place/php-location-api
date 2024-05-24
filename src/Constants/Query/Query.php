@@ -351,4 +351,79 @@ SQL;
             %(country)s
         ;
 SQL;
+
+
+
+    final public const SEARCH_GEONAME_ID = <<<SQL
+        SELECT *
+        FROM (
+            SELECT DISTINCT ON (l.id)
+                l.*,
+                ST_AsEWKT(l.coordinate) as coordinate,
+                si.relevance_score AS relevance_score
+            FROM
+                location l
+            LEFT JOIN search_index si ON si.location_id IN (%(location_ids)s) AND si.location_id = l.id
+            WHERE
+                l.id IN (%(location_ids)s)
+            ORDER BY
+                l.id,
+                %(sort_by)s
+        ) sub
+        ORDER BY
+            %(sort_by)s
+        %(limit)s;
+SQL;
+
+    final public const SEARCH_GEONAME_ID_COORDINATE = <<<SQL
+        SELECT *
+        FROM (
+            SELECT DISTINCT ON (l.id)
+                l.*,
+                ST_AsEWKT(l.coordinate) as coordinate,
+                CAST(si.relevance_score - COALESCE(rp.closest_distance_river, ST_Distance(l.coordinate, ST_MakePoint(:longitude, :latitude)::geography)) * 0.01 AS INTEGER) AS relevance_score,
+                CASE 
+                    WHEN rp.closest_distance_river IS NOT NULL THEN rp.closest_distance_river
+                    ELSE ST_Distance(l.coordinate, ST_MakePoint(:longitude, :latitude)::geography)
+                END AS closest_distance,
+                ST_AsText(
+                    CASE 
+                        WHEN rp.closest_point_river IS NOT NULL THEN rp.closest_point_river
+                        ELSE l.coordinate
+                    END
+                ) AS closest_point
+            FROM
+                location l
+            LEFT JOIN search_index si ON si.location_id IN (%(location_ids)s) AND si.location_id = l.id
+            LEFT JOIN location_river lr ON lr.location_id = l.id
+            LEFT JOIN river r ON lr.river_id = r.id
+            LEFT JOIN LATERAL (
+                SELECT
+                    rp.coordinates as coordinates_river,
+                    ST_Distance(
+                        rp.coordinates,
+                        ST_MakePoint(:longitude, :latitude)::geography
+                    ) AS closest_distance_river,
+                    ST_AsText(ST_EndPoint(ST_ShortestLine(
+                        rp.coordinates::geography,
+                        ST_MakePoint(:longitude, :latitude)::geography
+                    )::geometry))::geography AS closest_point_river
+                FROM
+                    river_part rp
+                WHERE
+                    rp.river_id = r.id
+                ORDER BY
+                    closest_distance_river ASC
+                LIMIT 1
+            ) rp ON TRUE
+            WHERE
+                l.id IN (%(location_ids)s)
+            ORDER BY
+                l.id,
+                %(sort_by)s
+        ) sub
+        ORDER BY
+            %(sort_by)s
+        %(limit)s;
+SQL;
 }

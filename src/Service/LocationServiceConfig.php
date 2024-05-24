@@ -20,6 +20,7 @@ use App\Constants\DB\Limit;
 use App\Constants\Key\KeyArray;
 use App\Constants\Language\CountryCode;
 use App\Entity\Location;
+use App\Exception\QueryParserException;
 use App\Utils\Query\Query;
 use Ixnode\PhpApiVersionBundle\Utils\TypeCasting\TypeCastingHelper;
 use Ixnode\PhpContainer\Json;
@@ -1291,6 +1292,7 @@ final class LocationServiceConfig
      * @throws JsonException
      * @throws ParserException
      * @throws TypeInvalidException
+     * @throws QueryParserException
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      * @SuppressWarnings(PHPMD.NPathComplexity)
      */

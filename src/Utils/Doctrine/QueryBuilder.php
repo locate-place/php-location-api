@@ -86,41 +86,9 @@ readonly class QueryBuilder
         $longitude = is_null($coordinate) ? null : $coordinate->getLongitude();
         $latitude = is_null($coordinate) ? null : $coordinate->getLatitude();
 
-        $sortBy = match ($sortBy) {
-            LocationService::SORT_BY_DISTANCE,
-            LocationService::SORT_BY_DISTANCE_USER => 'closest_distance ASC',
+        $sortBy = $this->getSortBy($sortBy);
 
-            LocationService::SORT_BY_RELEVANCE,
-            LocationService::SORT_BY_RELEVANCE_USER => 'relevance_score DESC',
-
-            LocationService::SORT_BY_NAME => 'name ASC',
-            LocationService::SORT_BY_GEONAME_ID => 'geoname_id ASC',
-
-            default => throw new LogicException(sprintf('Invalid sort by "%s".', $sortBy)),
-        };
-
-        $rsm = new ResultSetMapping();
-
-        /* location fields */
-        $rsm
-            ->addEntityResult(Location::class, 'l')
-            ->addFieldResult('l', 'id', 'id')
-            ->addFieldResult('l', 'geoname_id', 'geonameId')
-            ->addFieldResult('l', 'name', 'name')
-            ->addFieldResult('l', 'ascii_name', 'asciiName')
-            ->addFieldResult('l', 'coordinate', 'coordinate')
-            ->addFieldResult('l', 'cc2', 'cc2')
-            ->addFieldResult('l', 'population', 'population')
-            ->addFieldResult('l', 'elevation', 'elevation')
-            ->addFieldResult('l', 'dem', 'dem')
-            ->addFieldResult('l', 'modification_date', 'modificationDate')
-            ->addFieldResult('l', 'source', 'source')
-            ->addFieldResult('l', 'mapping_river_ignore', 'mappingRiverIgnore')
-            ->addFieldResult('l', 'mapping_river_similarity', 'mappingRiverSimilarity')
-            ->addFieldResult('l', 'mapping_river_distance', 'mappingRiverDistance')
-            ->addFieldResult('l', 'created_at', 'createdAt')
-            ->addFieldResult('l', 'updated_at', 'updatedAt')
-        ;
+        $rsm = $this->getResultSetMapping();
 
         /* Additional fields */
         if (!is_null($coordinate)) {
@@ -213,6 +181,65 @@ readonly class QueryBuilder
             ->setParameter('search', $search)
             ->setParameter('distance', $distance)
         ;
+    }
+
+    /**
+     * Returns the native query for location "find by location ids".
+     *
+     * @param int[] $locationIds
+     * @param int|null $limit
+     * @param int $page
+     * @param Coordinate|null $coordinate
+     * @param string $sortBy
+     * @return NativeQuery
+     * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
+     */
+    public function getQueryLocationIds(
+        /* Search */
+        array $locationIds,
+
+        /* Search filter */
+        int|null $limit = Limit::LIMIT_10,
+        int $page = LocationService::PAGE_FIRST,
+
+        /* Configuration */
+        Coordinate|null $coordinate = null,
+
+        /* Sort configuration */
+        string $sortBy = LocationService::SORT_BY_RELEVANCE,
+    ): NativeQuery
+    {
+        $longitude = is_null($coordinate) ? null : $coordinate->getLongitude();
+        $latitude = is_null($coordinate) ? null : $coordinate->getLatitude();
+
+        $sortBy = $this->getSortBy($sortBy);
+
+        $rsm = $this->getResultSetMapping();
+
+        /* Additional fields */
+        if (!is_null($coordinate)) {
+            $rsm
+                ->addScalarResult('closest_distance', 'closestDistance')
+                ->addScalarResult('closest_point', 'closestPoint')
+            ;
+        }
+
+        $rsm
+            ->addScalarResult('relevance_score', 'relevanceScore')
+        ;
+
+        $sql = match (true) {
+            $coordinate instanceof Coordinate => Query::SEARCH_GEONAME_ID_COORDINATE,
+            default => Query::SEARCH_GEONAME_ID,
+        };
+
+        $sql = str_replace('%(sort_by)s', $sortBy, $sql);
+        $sql = str_replace('%(limit)s', $this->getLimit($limit, $page), $sql);
+        $sql = str_replace('%(location_ids)s', implode(',', $locationIds), $sql);
+
+        return ($this->entityManager->createNativeQuery($sql, $rsm))
+            ->setParameter('longitude', $longitude)
+            ->setParameter('latitude', $latitude);
     }
 
     /**
@@ -355,5 +382,60 @@ readonly class QueryBuilder
             is_null($search), count($search) <= 0 => '',
             default => $search[0].Query::SEARCH_RIGHT_WILDCARD,
         };
+    }
+
+    /**
+     * Returns the translated sql sort by string.
+     *
+     * @param string $sortBy
+     * @return string
+     */
+    private function getSortBy(string $sortBy): string
+    {
+        return match ($sortBy) {
+            LocationService::SORT_BY_DISTANCE,
+            LocationService::SORT_BY_DISTANCE_USER => 'closest_distance ASC',
+
+            LocationService::SORT_BY_RELEVANCE,
+            LocationService::SORT_BY_RELEVANCE_USER => 'relevance_score DESC',
+
+            LocationService::SORT_BY_NAME => 'name ASC',
+            LocationService::SORT_BY_GEONAME_ID => 'geoname_id ASC',
+
+            default => throw new LogicException(sprintf('Invalid sort by "%s".', $sortBy)),
+        };
+    }
+
+    /**
+     * Returns the result set mapping.
+     *
+     * @return ResultSetMapping
+     */
+    private function getResultSetMapping(): ResultSetMapping
+    {
+        $rsm = new ResultSetMapping();
+
+        /* location fields */
+        $rsm
+            ->addEntityResult(Location::class, 'l')
+            ->addFieldResult('l', 'id', 'id')
+            ->addFieldResult('l', 'geoname_id', 'geonameId')
+            ->addFieldResult('l', 'name', 'name')
+            ->addFieldResult('l', 'ascii_name', 'asciiName')
+            ->addFieldResult('l', 'coordinate', 'coordinate')
+            ->addFieldResult('l', 'cc2', 'cc2')
+            ->addFieldResult('l', 'population', 'population')
+            ->addFieldResult('l', 'elevation', 'elevation')
+            ->addFieldResult('l', 'dem', 'dem')
+            ->addFieldResult('l', 'modification_date', 'modificationDate')
+            ->addFieldResult('l', 'source', 'source')
+            ->addFieldResult('l', 'mapping_river_ignore', 'mappingRiverIgnore')
+            ->addFieldResult('l', 'mapping_river_similarity', 'mappingRiverSimilarity')
+            ->addFieldResult('l', 'mapping_river_distance', 'mappingRiverDistance')
+            ->addFieldResult('l', 'created_at', 'createdAt')
+            ->addFieldResult('l', 'updated_at', 'updatedAt')
+        ;
+
+        return $rsm;
     }
 }

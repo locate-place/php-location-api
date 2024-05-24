@@ -13,15 +13,18 @@ declare(strict_types=1);
 
 namespace App\DBAL\GeoLocation\ValueObject;
 
+use Stringable;
+
 /**
  * Class Point
  *
  * @author Björn Hempel <bjoern@hempel.li>
- * @version 0.1.1 (2023-07-31)
+ * @version 0.1.2 (2024-05-24)
+ * @since 0.1.2 (2024-05-24) Add __toString function.
  * @since 0.1.1 (2023-07-31) Add srid.
  * @since 0.1.0 (2023-06-27) First version.
  */
-readonly class Point
+readonly class Point implements Stringable
 {
     final public const SRID_WSG84 = 4326;
 
@@ -32,6 +35,32 @@ readonly class Point
      */
     public function __construct(private float $latitude, private float $longitude, private int $srid = self::SRID_WSG84)
     {
+    }
+
+    /**
+     * toString method.
+     *
+     * @return string
+     */
+    public function __toString(): string
+    {
+        return $this->getString();
+    }
+
+    /**
+     * Returns the point string of this point.
+     *
+     * @return string
+     */
+    public function getString(): string
+    {
+        /* Attention: PostgreSQL uses lon/lat not lat/lon! */
+        return sprintf(
+            'SRID=%s;POINT(%s %s)',
+            $this->srid,
+            $this->longitude,
+            $this->latitude
+        );
     }
 
     /**

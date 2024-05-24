@@ -26,5 +26,7 @@ final class ImportRoute extends BaseRoute
 {
     final public const PROPERTIES = [];
 
-    public const DESCRIPTION_COLLECTION_GET = "# Import resource collection\nRetrieves the collection of Import resources.";
+    public const DESCRIPTION_COLLECTION_GET = "# Import resource collection\nRetrieves the collection of imported Import resources.";
+
+    public const DESCRIPTION_COLLECTION_GET_MISSING = "# Import resource collection\nRetrieves the collection of missing Import resources.";
 }

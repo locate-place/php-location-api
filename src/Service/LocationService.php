@@ -86,6 +86,8 @@ final class LocationService extends BaseLocationService
      * Returns locations by given geoname ids.
      *
      * @param int[] $geonameIds
+     * @param int|null $limit
+     * @param int $page
      * @param Coordinate|null $currentPosition
      * @param string $isoLanguage
      * @param string $country
@@ -106,19 +108,23 @@ final class LocationService extends BaseLocationService
      * @throws FunctionReplaceException
      * @throws JsonException
      * @throws NonUniqueResultException
+     * @throws ORMException
      * @throws ParserException
      * @throws RedirectionExceptionInterface
      * @throws ServerExceptionInterface
      * @throws TransportExceptionInterface
      * @throws TypeInvalidException
      * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
+     * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
+     * @SuppressWarnings(PHPMD.ExcessiveParameterList)
      */
     public function getLocationsByGeonameIds(
         /* Search */
         array $geonameIds,
 
         /* Search filter */
-        /* --- no filter --- */
+        int|null $limit = Limit::LIMIT_10,
+        int $page = self::PAGE_FIRST,
 
         /* Configuration */
         Coordinate $currentPosition = null,
@@ -149,15 +155,29 @@ final class LocationService extends BaseLocationService
         $performanceGroupName = $performanceLogger->getGroupNameFromFileName(__FILE__);
 
         $locationEntities = [];
-        $locations = [];
 
+        /* Set results total. */
+        $this->setResultCount(count($geonameIds));
 
         /* Find locations by given geoname ids */
-        $performanceLogger->logPerformance(function () use (&$locationEntities, $geonameIds) {
+        $performanceLogger->logPerformance(function () use (
+            &$locationEntities,
+
+            $geonameIds,
+            $limit,
+            $page,
+            $currentPosition,
+            $sortBy
+        ) {
 
             /* Start task */
-            $locationEntities = $this->locationRepository->findLocationsByGeonameIds($geonameIds);
-            $this->setResultCount(count($locationEntities));
+            $locationEntities = $this->locationRepository->findLocationsByGeonameIds(
+                geonameIds: $geonameIds,
+                limit: $limit,
+                page: $page,
+                coordinate: $currentPosition,
+                sortBy: $sortBy
+            );
             /* Finish task */
 
         }, self::PERFORMANCE_NAME_FIND_LOCATIONS_BY_COORDINATE, $performanceGroupName, $performanceLogger->getAdditionalData(self::class, __FUNCTION__, __LINE__));
@@ -165,6 +185,7 @@ final class LocationService extends BaseLocationService
 
 
         /* Collect locations and add additional information */
+        $locations = [];
         $performanceLogger->logPerformance(function () use ($locationEntities, &$locations, $namesFull) {
 
             /* Start task */
@@ -189,19 +210,21 @@ final class LocationService extends BaseLocationService
 
 
         /* Sort array according to given $sortBy */
-        $performanceLogger->logPerformance(function () use (&$locations, $sortBy) {
+        if (count($namesFull) > 0) {
+            $performanceLogger->logPerformance(function () use (&$locations, $sortBy) {
 
-            /* Start task */
-            match ($sortBy) {
-                self::SORT_BY_GEONAME_ID => $this->sortLocationsByGeonameId($locations),
-                self::SORT_BY_NAME => $this->sortLocationsByName($locations),
-                self::SORT_BY_DISTANCE => $this->sortLocationsByDistance($locations),
-                self::SORT_BY_DISTANCE_USER => $this->sortLocationsByDistanceUser($locations),
-                default => null,
-            };
-            /* Finish task */
+                /* Start task */
+                match ($sortBy) {
+                    self::SORT_BY_GEONAME_ID => $this->sortLocationsByGeonameId($locations),
+                    self::SORT_BY_NAME => $this->sortLocationsByName($locations),
+                    self::SORT_BY_DISTANCE => $this->sortLocationsByDistance($locations),
+                    self::SORT_BY_DISTANCE_USER => $this->sortLocationsByDistanceUser($locations),
+                    default => null,
+                };
+                /* Finish task */
 
-        }, self::PERFORMANCE_SORT_LOCATIONS, $performanceGroupName, $performanceLogger->getAdditionalData(self::class, __FUNCTION__, __LINE__));
+            }, self::PERFORMANCE_SORT_LOCATIONS, $performanceGroupName, $performanceLogger->getAdditionalData(self::class, __FUNCTION__, __LINE__));
+        }
 
 
 

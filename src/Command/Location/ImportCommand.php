@@ -553,6 +553,7 @@ EOT
             ->setFeatureCode($featureCode)
             ->setTimezone($timezone)
             ->setAdminCode($adminCode)
+            ->setMappingRiverIgnore(false)
         ;
 
         $this->entityManager->persist($location);

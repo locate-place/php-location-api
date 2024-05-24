@@ -69,6 +69,8 @@ final class LocationProvider extends BaseProviderCustom
 
     private const SEARCH_MINIMUM_LENGTH = 3;
 
+    private const LIMIT_EXAMPLES = 20;
+
     /**
      * @param Version $version
      * @param ParameterBagInterface $parameterBag
@@ -109,13 +111,15 @@ final class LocationProvider extends BaseProviderCustom
      * - https://www.location-api.localhost/api/v1/location/examples.json?language=de&country=DE
      * - https://www.location-api.localhost/api/v1/location/examples.json?language=de&country=DE&c=51.061002,13.740674
      *
-     *  - https://www.location-api.localhost/api/v1/location/countries.json?language=de&country=DE
-     *  - https://www.location-api.localhost/api/v1/location/countries.json?language=de&country=DE&c=51.061002,13.740674
+     * - https://www.location-api.localhost/api/v1/location/countries.json?language=de&country=DE
+     * - https://www.location-api.localhost/api/v1/location/countries.json?language=de&country=DE&c=51.061002,13.740674
      *
-     *  - https://www.location-api.localhost/api/v1/location/airports.json?language=de&country=DE
-     *  - https://www.location-api.localhost/api/v1/location/airports.json?language=de&country=DE&c=51.061002,13.740674
+     * - https://www.location-api.localhost/api/v1/location/airports.json?language=de&country=DE
+     * - https://www.location-api.localhost/api/v1/location/airports.json?language=de&country=DE&c=51.061002,13.740674
      *
      * @param int[] $geonameIds
+     * @param int|null $limit
+     * @param bool $useNamesFull
      * @return BasePublicResource[]
      * @throws ArrayKeyNotFoundException
      * @throws CaseInvalidException
@@ -133,8 +137,15 @@ final class LocationProvider extends BaseProviderCustom
      * @throws ServerExceptionInterface
      * @throws TransportExceptionInterface
      * @throws TypeInvalidException
+     * @throws QueryParserException
+     * @throws ORMException
+     * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
      */
-    private function doProvideGetCollectionByGeonameIds(array $geonameIds): array
+    private function doProvideGetCollectionByGeonameIds(
+        array $geonameIds,
+        int $limit = null,
+        bool $useNamesFull = false
+    ): array
     {
         [
             KeyArray::ISO_LANGUAGE => $isoLanguage,
@@ -145,6 +156,12 @@ final class LocationProvider extends BaseProviderCustom
             return [];
         }
 
+        if (!is_null($limit)) {
+            $this->request->getCurrentRequest()?->query->set(Query::FILTER_LIMIT, $limit);
+        }
+
+        $limit = $this->locationServiceConfig->getLimitByQuery($this->query);
+
         $currentPosition = $this->query->getCurrentPosition();
 
         $locations = $this->locationService->getLocationsByGeonameIds(
@@ -152,7 +169,8 @@ final class LocationProvider extends BaseProviderCustom
             geonameIds: $geonameIds,
 
             /* Search filter */
-            /* --- no filter --- */
+            limit: $limit,
+            page: $this->query->getPageDefault(),
 
             /* Configuration */
             currentPosition: $currentPosition,
@@ -168,7 +186,7 @@ final class LocationProvider extends BaseProviderCustom
             ),
 
             /* Other configuration */
-            namesFull: $this->getNamesFull()
+            namesFull: $useNamesFull ? $this->getNamesFull() : []
         );
 
         if ($this->locationService->hasError()) {
@@ -381,6 +399,7 @@ final class LocationProvider extends BaseProviderCustom
      * @throws ServerExceptionInterface
      * @throws TransportExceptionInterface
      * @throws TypeInvalidException
+     * @throws QueryParserException
      */
     private function doProvideGetCollectionByGeonameId(QueryParser $queryParser): array
     {
@@ -418,6 +437,7 @@ final class LocationProvider extends BaseProviderCustom
      * @throws RedirectionExceptionInterface
      * @throws ServerExceptionInterface
      * @throws TransportExceptionInterface
+     * @throws QueryParserException
      */
     private function doProvideGetWithGeonameId(QueryParser $queryParser): BasePublicResource
     {
@@ -482,6 +502,7 @@ final class LocationProvider extends BaseProviderCustom
      * @throws ServerExceptionInterface
      * @throws TransportExceptionInterface
      * @throws TypeInvalidException
+     * @throws QueryParserException
      */
     private function doProvideGetWithCoordinate(QueryParser $queryParser): BasePublicResource
     {
@@ -633,24 +654,24 @@ final class LocationProvider extends BaseProviderCustom
              * - https://www.location-api.localhost/api/v1/location/examples.json?language=de&country=DE&c=51.061002,13.740674
              */
             case $this->getRequestMethod() === BaseResourceWrapperProvider::METHOD_GET_COLLECTION && $this->query->isExampleRequest():
-                return $this->doProvideGetCollectionByGeonameIds($this->getGeonameIdsExample());
+                return $this->doProvideGetCollectionByGeonameIds($this->getGeonameIdsExample(), self::LIMIT_EXAMPLES, true);
 
             /* A-2) Show country locations (list search):
              * ------------------------------------------
              *
-             * - https://www.location-api.localhost/api/v1/location/countries.json
-             * - https://www.location-api.localhost/api/v1/location/countries.json?language=de&country=DE
-             * - https://www.location-api.localhost/api/v1/location/countries.json?language=de&country=DE&c=51.061002,13.740674
+             * - https://www.location-api.localhost/api/v1/location/capitals.json
+             * - https://www.location-api.localhost/api/v1/location/capitals.json?language=de&country=DE
+             * - https://www.location-api.localhost/api/v1/location/capitals.json?language=de&country=DE&c=51.061002,13.740674
              */
-            case $this->getRequestMethod() === BaseResourceWrapperProvider::METHOD_GET_COLLECTION && $this->query->isCountryRequest():
-                return $this->doProvideGetCollectionByGeonameIds($this->getGeonameIdsCountry());
+            case $this->getRequestMethod() === BaseResourceWrapperProvider::METHOD_GET_COLLECTION && $this->query->isCapitalRequest():
+                return $this->doProvideGetCollectionByGeonameIds($this->getGeonameIdsCapitals());
 
             /* A-3) Show airport locations (list search):
              * ------------------------------------------
              *
-             * - https://www.location-api.localhost/api/v1/location/countries.json
-             * - https://www.location-api.localhost/api/v1/location/countries.json?language=de&country=DE
-             * - https://www.location-api.localhost/api/v1/location/countries.json?language=de&country=DE&c=51.061002,13.740674
+             * - https://www.location-api.localhost/api/v1/location/airports.json
+             * - https://www.location-api.localhost/api/v1/location/airports.json?language=de&country=DE
+             * - https://www.location-api.localhost/api/v1/location/airports.json?language=de&country=DE&c=51.061002,13.740674
              */
             case $this->getRequestMethod() === BaseResourceWrapperProvider::METHOD_GET_COLLECTION && $this->query->isAirportRequest():
                 return $this->doProvideGetCollectionByGeonameIds($this->getGeonameIdsAirport());

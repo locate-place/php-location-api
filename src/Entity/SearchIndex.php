@@ -31,6 +31,7 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Index(columns: ['search_text_de'], flags: ['gin'])]
 #[ORM\Index(columns: ['search_text_en'], flags: ['gin'])]
 #[ORM\Index(columns: ['search_text_es'], flags: ['gin'])]
+#[ORM\Index(columns: ['location_id'])]
 #[ORM\Index(columns: ['relevance_score'])]
 #[ORM\HasLifecycleCallbacks]
 class SearchIndex
