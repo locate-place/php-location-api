@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Releases
 
+### [1.0.0] - 2024-05-24
+
+* Unlocking all countries
+* Improved import
+* Add a new sort order for geoname ID queries
+* Adding a search_index index for faster queries
+
 ### [0.1.87] - 2024-05-01
 
 * Combine feature search types
