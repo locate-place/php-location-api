@@ -228,6 +228,7 @@ class LocationRepository extends BaseCoordinateRepository
      * @param array<int, string>|string|null $featureClass
      * @param array<int, string>|string|null $featureCode
      * @param int|null $limit
+     * @param string|null $isoLanguage
      * @param string|null $country
      * @param int $page
      * @param Coordinate|null $coordinate
@@ -235,6 +236,7 @@ class LocationRepository extends BaseCoordinateRepository
      * @return array<int, Location>
      * @throws ORMException
      * @throws TypeInvalidException
+     * @SuppressWarnings(PHPMD.ExcessiveParameterList)
      */
     public function findBySearch(
         /* Search term. */
@@ -247,6 +249,7 @@ class LocationRepository extends BaseCoordinateRepository
 
         /* Filter configuration. */
         int|null $limit = Limit::LIMIT_10,
+        string|null $isoLanguage = null,
         string|null $country = null,
         int $page = LocationService::PAGE_FIRST,
 
@@ -263,6 +266,7 @@ class LocationRepository extends BaseCoordinateRepository
                 featureClass: $featureClass,
                 featureCode: $featureCode,
                 limit: $limit,
+                isoLanguage: $isoLanguage,
                 country: $country,
                 page: $page,
                 coordinate: $coordinate,
@@ -274,6 +278,7 @@ class LocationRepository extends BaseCoordinateRepository
                 featureClass: $featureClass,
                 featureCode: $featureCode,
                 limit: $limit,
+                isoLanguage: $isoLanguage,
                 country: $country,
                 page: $page,
                 distance: $distanceMeter,
@@ -297,6 +302,7 @@ class LocationRepository extends BaseCoordinateRepository
      * @param int|null $distanceMeter
      * @param array<int, string>|string|null $featureClass
      * @param array<int, string>|string|null $featureCode
+     * @param string|null $isoLanguage
      * @param string|null $country
      * @param Coordinate|null $coordinate
      * @return int
@@ -309,6 +315,7 @@ class LocationRepository extends BaseCoordinateRepository
         int|null $distanceMeter = null,
         array|string|null $featureClass = null,
         array|string|null $featureCode = null,
+        string|null $isoLanguage = LanguageCode::EN,
         string|null $country = null,
 
         /* Configuration */
@@ -320,6 +327,7 @@ class LocationRepository extends BaseCoordinateRepository
                 search: $search,
                 featureClass: $featureClass,
                 featureCode: $featureCode,
+                isoLanguage: $isoLanguage,
                 country: $country,
                 coordinate: $coordinate,
                 distance: $distanceMeter
@@ -328,6 +336,7 @@ class LocationRepository extends BaseCoordinateRepository
                 search: $search,
                 featureClass: $featureClass,
                 featureCode: $featureCode,
+                isoLanguage: $isoLanguage,
                 country: $country,
                 distance: $distanceMeter
             )

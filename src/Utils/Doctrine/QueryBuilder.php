@@ -15,6 +15,7 @@ namespace App\Utils\Doctrine;
 
 use App\Constants\DB\Limit;
 use App\Constants\Language\CountryCode;
+use App\Constants\Language\LanguageCode;
 use App\Constants\Query\Query;
 use App\Entity\Location;
 use App\Service\LocationService;
@@ -33,6 +34,8 @@ use LogicException;
  */
 readonly class QueryBuilder
 {
+    private const DISTANCE_NAME_FILTER = 28;
+
     /**
      * @param EntityManagerInterface $entityManager
      */
@@ -49,6 +52,7 @@ readonly class QueryBuilder
      * @param array<int, string>|string|null $featureClass
      * @param array<int, string>|string|null $featureCode
      * @param int|null $limit
+     * @param string|null $isoLanguage
      * @param string|null $country
      * @param int $page
      * @param Coordinate|null $coordinate
@@ -56,6 +60,7 @@ readonly class QueryBuilder
      * @param string $sortBy
      * @return NativeQuery
      * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
+     * @SuppressWarnings(PHPMD.ExcessiveParameterList)
      */
     public function getQueryLocationSearch(
         /* Search */
@@ -65,6 +70,7 @@ readonly class QueryBuilder
         array|string|null $featureClass = null,
         array|string|null $featureCode = null,
         int|null $limit = Limit::LIMIT_10,
+        string|null $isoLanguage = LanguageCode::EN,
         string|null $country = CountryCode::US,
         int $page = LocationService::PAGE_FIRST,
 
@@ -81,6 +87,7 @@ readonly class QueryBuilder
         }
 
         $searchFilter = $this->getSearchFilter($search);
+        $nameFilter = $this->getNameFilter($search, $isoLanguage);
         $search = $this->getSearch($search);
 
         $longitude = is_null($coordinate) ? null : $coordinate->getLongitude();
@@ -114,6 +121,7 @@ readonly class QueryBuilder
         $sql = str_replace('%(feature_class)s', $this->getFeatureClassLeftJoin($featureClass), $sql);
         $sql = str_replace('%(country)s', is_null($country) ? '' : 'AND c.code=\''.$country.'\'', $sql);
         $sql = str_replace('%(name_search)s', $this->getContainFilter($searchFilter), $sql);
+        $sql = str_replace('%(name_filter)s', $nameFilter, $sql);
 
         return ($this->entityManager->createNativeQuery($sql, $rsm))
             ->setParameter('longitude', $longitude)
@@ -129,6 +137,7 @@ readonly class QueryBuilder
      * @param string|string[] $search
      * @param array<int, string>|string|null $featureClass
      * @param array<int, string>|string|null $featureCode
+     * @param string|null $isoLanguage
      * @param string|null $country
      * @param Coordinate|null $coordinate
      * @param int|null $distance
@@ -141,6 +150,7 @@ readonly class QueryBuilder
         /* Search filter */
         array|string|null $featureClass = null,
         array|string|null $featureCode = null,
+        string|null $isoLanguage = LanguageCode::EN,
         string|null $country = CountryCode::US,
 
         /* Configuration */
@@ -153,6 +163,7 @@ readonly class QueryBuilder
         }
 
         $searchFilter = $this->getSearchFilter($search);
+        $nameFilter = $this->getNameFilter($search, $isoLanguage);
         $search = $this->getSearch($search);
 
         $longitude = is_null($coordinate) ? null : $coordinate->getLongitude();
@@ -174,6 +185,7 @@ readonly class QueryBuilder
         $sql = str_replace('%(feature_class)s', $this->getFeatureClassLeftJoin($featureClass), $sql);
         $sql = str_replace('%(country)s', is_null($country) ? '' : 'AND c.code=\''.$country.'\'', $sql);
         $sql = str_replace('%(name_search)s', $this->getContainFilter($searchFilter), $sql);
+        $sql = str_replace('%(name_filter)s', $nameFilter, $sql);
 
         return ($this->entityManager->createNativeQuery($sql, $rsm))
             ->setParameter('longitude', $longitude)
@@ -356,7 +368,7 @@ readonly class QueryBuilder
      * @param string[]|null $search
      * @return string[]|null
      */
-    private function getSearchFilter(array|null $search = null): array|null
+    private function getSearchFilter(array|null $search): array|null
     {
         if (is_null($search)) {
             return null;
@@ -382,6 +394,49 @@ readonly class QueryBuilder
             is_null($search), count($search) <= 0 => '',
             default => $search[0].Query::SEARCH_RIGHT_WILDCARD,
         };
+    }
+
+    /**
+     * Returns the query for name_filter.
+     *
+     * @param string[]|null $search
+     * @param string|null $isoLanguage
+     * @return string
+     */
+    private function getNameFilter(array|null $search, string|null $isoLanguage): string
+    {
+        if (is_null($search) || count($search) <= 0) {
+            $search = [''];
+        }
+
+        $isoLanguages = ['simple'];
+
+        if (!is_null($isoLanguage)) {
+            $isoLanguages[] = $isoLanguage;
+        }
+
+        $searches = [];
+        foreach ($isoLanguages as $isoLanguageTerm) {
+            $language = match ($isoLanguageTerm) {
+                LanguageCode::DE => 'german',
+                default => $isoLanguageTerm,
+            };
+
+            $languageSearch = [];
+            foreach ($search as $searchTerm) {
+                $languageSearch[] = sprintf(
+                    'si.search_text_%s @@ to_tsquery(\'%s\', \'%s%s\')',
+                    $isoLanguageTerm,
+                    $language,
+                    $searchTerm,
+                    Query::SEARCH_RIGHT_WILDCARD
+                );
+            }
+
+            $searches[] = sprintf('(%s)', implode(' AND ', $languageSearch));
+        }
+
+        return implode(' OR '.PHP_EOL.str_repeat(' ', self::DISTANCE_NAME_FILTER), $searches);
     }
 
     /**

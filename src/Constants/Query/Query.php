@@ -48,8 +48,7 @@ class Query
                         si.id IS NOT NULL
                     ELSE
                         (
-                            si.search_text_simple @@ to_tsquery('simple', :search) OR
-                            si.search_text_de @@ to_tsquery('german', :search)
+                            %(name_filter)s
                         )
                 END
                 %(name_search)s
@@ -81,8 +80,7 @@ SQL;
                     si.id IS NOT NULL
                 ELSE
                     (
-                        si.search_text_simple @@ to_tsquery('simple', :search) OR
-                        si.search_text_de @@ to_tsquery('german', :search)
+                        %(name_filter)s
                     )
             END
             %(name_search)s
@@ -143,8 +141,7 @@ SQL;
                         si.id IS NOT NULL
                     ELSE
                         (
-                            si.search_text_simple @@ to_tsquery('simple', :search) OR
-                            si.search_text_de @@ to_tsquery('german', :search)
+                            %(name_filter)s
                         )
                 END
                 %(name_search)s
@@ -197,8 +194,7 @@ SQL;
                     si.id IS NOT NULL
                 ELSE
                     (
-                        si.search_text_simple @@ to_tsquery('simple', :search) OR
-                        si.search_text_de @@ to_tsquery('german', :search)
+                        %(name_filter)s
                     )
             END
             %(name_search)s
@@ -263,8 +259,7 @@ SQL;
                         si.id IS NOT NULL
                     ELSE
                         (
-                            si.search_text_simple @@ to_tsquery('simple', :search) OR
-                            si.search_text_de @@ to_tsquery('german', :search)
+                            %(name_filter)s
                         )
                 END AND
                 ST_DWithin(
@@ -332,8 +327,7 @@ SQL;
                     si.id IS NOT NULL
                 ELSE
                     (
-                        si.search_text_simple @@ to_tsquery('simple', :search) OR
-                        si.search_text_de @@ to_tsquery('german', :search)
+                        %(name_filter)s
                     )
             END AND
             ST_DWithin(

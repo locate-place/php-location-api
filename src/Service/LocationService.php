@@ -315,7 +315,8 @@ final class LocationService extends BaseLocationService
             $featureClass,
             $featureCode,
             $countryFilter,
-            $distanceMeter
+            $distanceMeter,
+            $isoLanguage
         ) {
 
             /* Start task */
@@ -324,6 +325,7 @@ final class LocationService extends BaseLocationService
                 distanceMeter: $distanceMeter,
                 featureClass: $featureClass,
                 featureCode: $featureCode,
+                isoLanguage: $isoLanguage,
                 country: $countryFilter,
                 coordinate: $currentPosition,
             );
@@ -347,7 +349,8 @@ final class LocationService extends BaseLocationService
 
             $limit,
             $sortBy,
-            $page
+            $page,
+            $isoLanguage
         ) {
 
             /* Start task */
@@ -357,6 +360,7 @@ final class LocationService extends BaseLocationService
                 featureClass: $featureClass,
                 featureCode: $featureCode,
                 limit: $limit,
+                isoLanguage: $isoLanguage,
                 country: $countryFilter,
                 page: $page,
                 coordinate: $currentPosition,

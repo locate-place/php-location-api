@@ -127,6 +127,7 @@ final class AutocompleteProvider extends BaseProviderCustom
             featureClass: $featureClass,
             featureCode: $featureCode,
             limit: 30,
+            isoLanguage: $isoLanguage,
             country: $country
         );
 
