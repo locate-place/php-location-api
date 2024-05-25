@@ -35,9 +35,12 @@ class Query
                 si.relevance_score AS relevance_score
             FROM
                 location l
-            LEFT JOIN search_index si ON si.location_id = l.id
-            LEFT JOIN country c ON l.country_id = c.id
-            LEFT JOIN alternate_name an ON l.id = an.location_id AND (an.iso_language IN ('de') OR an.iso_language IS NULL)
+            -- INNER: Only show locations with search index
+            INNER JOIN search_index si ON si.location_id = l.id
+            -- INNER: Only show locations with country
+            INNER JOIN country c ON l.country_id = c.id
+            -- LEFT: Also show locations without alternate names; Used for %(name_search)s
+            --LEFT JOIN alternate_name an ON l.id = an.location_id AND (an.iso_language IN ('de') OR an.iso_language IS NULL)
             %(feature_code)s
             %(feature_class)s
             WHERE
@@ -51,7 +54,7 @@ class Query
                             %(name_filter)s
                         )
                 END
-                %(name_search)s
+                --%(name_search)s
                 %(country)s
             ORDER BY
                 l.id,
@@ -67,9 +70,12 @@ SQL;
             COUNT(DISTINCT l.id) AS count
         FROM
             location l
-        LEFT JOIN search_index si ON si.location_id = l.id
-        LEFT JOIN country c ON l.country_id = c.id
-        LEFT JOIN alternate_name an ON l.id = an.location_id AND (an.iso_language IN ('de') OR an.iso_language IS NULL)
+        -- INNER: Only show locations with search index
+        INNER JOIN search_index si ON si.location_id = l.id
+        -- INNER: Only show locations with country
+        INNER JOIN country c ON l.country_id = c.id
+        -- LEFT: Also show locations without alternate names; Used for %(name_search)s
+        --LEFT JOIN alternate_name an ON l.id = an.location_id AND (an.iso_language IN ('de') OR an.iso_language IS NULL)
         %(feature_code)s
         %(feature_class)s
         WHERE
@@ -83,7 +89,7 @@ SQL;
                         %(name_filter)s
                     )
             END
-            %(name_search)s
+            --%(name_search)s
             %(country)s
         ;
 SQL;
@@ -107,13 +113,16 @@ SQL;
                 ) AS closest_point
             FROM
                 location l
-            LEFT JOIN search_index si ON si.location_id = l.id
-            LEFT JOIN alternate_name an ON l.id = an.location_id AND (an.iso_language IN ('de') OR an.iso_language IS NULL)
+            -- INNER: Only show locations with search index
+            INNER JOIN search_index si ON si.location_id = l.id
+            -- LEFT: Also show locations without alternate names; Used for %(name_search)s
+            --LEFT JOIN alternate_name an ON l.id = an.location_id AND (an.iso_language IN ('de') OR an.iso_language IS NULL)
             %(feature_code)s
             %(feature_class)s
             LEFT JOIN location_river lr ON lr.location_id = l.id
             LEFT JOIN river r ON lr.river_id = r.id
-            LEFT JOIN country c ON l.country_id = c.id
+            -- INNER: Only show locations with country
+            INNER JOIN country c ON l.country_id = c.id
             LEFT JOIN LATERAL (
                 SELECT
                     rp.coordinates as coordinates_river,
@@ -144,7 +153,7 @@ SQL;
                             %(name_filter)s
                         )
                 END
-                %(name_search)s
+                --%(name_search)s
                 %(country)s
             ORDER BY
                 l.id,
@@ -160,9 +169,12 @@ SQL;
             COUNT(DISTINCT l.id) AS count
         FROM
             location l
-        LEFT JOIN search_index si ON si.location_id = l.id
-        LEFT JOIN country c ON l.country_id = c.id
-        LEFT JOIN alternate_name an ON l.id = an.location_id AND (an.iso_language IN ('de') OR an.iso_language IS NULL)
+        -- INNER: Only show locations with search index
+        INNER JOIN search_index si ON si.location_id = l.id
+        -- INNER: Only show locations with country
+        INNER JOIN country c ON l.country_id = c.id
+        -- LEFT: Also show locations without alternate names; Used for %(name_search)s
+        --LEFT JOIN alternate_name an ON l.id = an.location_id AND (an.iso_language IN ('de') OR an.iso_language IS NULL)
         %(feature_code)s
         %(feature_class)s
         LEFT JOIN location_river lr ON lr.location_id = l.id
@@ -197,7 +209,7 @@ SQL;
                         %(name_filter)s
                     )
             END
-            %(name_search)s
+            --%(name_search)s
             %(country)s
         ;
 SQL;
@@ -221,13 +233,16 @@ SQL;
                 ) AS closest_point
             FROM
                 location l
-            LEFT JOIN search_index si ON si.location_id = l.id
-            LEFT JOIN alternate_name an ON l.id = an.location_id AND (an.iso_language IN ('de') OR an.iso_language IS NULL)
+            -- INNER: Only show locations with search index
+            INNER JOIN search_index si ON si.location_id = l.id
+            -- LEFT: Also show locations without alternate names; Used for %(name_search)s
+            --LEFT JOIN alternate_name an ON l.id = an.location_id AND (an.iso_language IN ('de') OR an.iso_language IS NULL)
             %(feature_code)s
             %(feature_class)s
             LEFT JOIN location_river lr ON lr.location_id = l.id
             LEFT JOIN river r ON lr.river_id = r.id
-            LEFT JOIN country c ON l.country_id = c.id
+            -- INNER: Only show locations with country
+            INNER JOIN country c ON l.country_id = c.id
             LEFT JOIN LATERAL (
                 SELECT
                     rp.coordinates as coordinates_river,
@@ -273,7 +288,7 @@ SQL;
                     ST_MakePoint(:longitude, :latitude)::geography, 
                     :distance
                 )
-                %(name_search)s
+                --%(name_search)s
                 %(country)s
             ORDER BY
                 l.id,
@@ -289,9 +304,12 @@ SQL;
             COUNT(DISTINCT l.id) AS count
         FROM
             location l
-        LEFT JOIN search_index si ON si.location_id = l.id
-        LEFT JOIN country c ON l.country_id = c.id
-        LEFT JOIN alternate_name an ON l.id = an.location_id AND (an.iso_language IN ('de') OR an.iso_language IS NULL)
+        -- INNER: Only show locations with search index
+        INNER JOIN search_index si ON si.location_id = l.id
+        -- INNER: Only show locations with country
+        INNER JOIN country c ON l.country_id = c.id
+        -- LEFT: Also show locations without alternate names; Used for %(name_search)s
+        --LEFT JOIN alternate_name an ON l.id = an.location_id AND (an.iso_language IN ('de') OR an.iso_language IS NULL)
         %(feature_code)s
         %(feature_class)s
         LEFT JOIN location_river lr ON lr.location_id = l.id
@@ -341,7 +359,7 @@ SQL;
                 ST_MakePoint(:longitude, :latitude)::geography, 
                 :distance
             )
-            %(name_search)s
+            --%(name_search)s
             %(country)s
         ;
 SQL;

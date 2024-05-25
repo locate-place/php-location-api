@@ -86,7 +86,7 @@ readonly class QueryBuilder
             $search = [$search];
         }
 
-        $searchFilter = $this->getSearchFilter($search);
+        $nameSearch = $this->getNameSearch($this->getSearchFilter($search));
         $nameFilter = $this->getNameFilter($search, $isoLanguage);
         $search = $this->getSearch($search);
 
@@ -120,15 +120,14 @@ readonly class QueryBuilder
         $sql = str_replace('%(feature_code)s', $this->getFeatureCodeLeftJoin($featureCode), $sql);
         $sql = str_replace('%(feature_class)s', $this->getFeatureClassLeftJoin($featureClass), $sql);
         $sql = str_replace('%(country)s', is_null($country) ? '' : 'AND c.code=\''.$country.'\'', $sql);
-        $sql = str_replace('%(name_search)s', $this->getContainFilter($searchFilter), $sql);
+        $sql = str_replace('%(name_search)s', $nameSearch, $sql);
         $sql = str_replace('%(name_filter)s', $nameFilter, $sql);
 
         return ($this->entityManager->createNativeQuery($sql, $rsm))
             ->setParameter('longitude', $longitude)
             ->setParameter('latitude', $latitude)
             ->setParameter('search', $search)
-            ->setParameter('distance', $distance)
-        ;
+            ->setParameter('distance', $distance);
     }
 
     /**
@@ -162,7 +161,7 @@ readonly class QueryBuilder
             $search = [$search];
         }
 
-        $searchFilter = $this->getSearchFilter($search);
+        $nameSearch = $this->getNameSearch($this->getSearchFilter($search));
         $nameFilter = $this->getNameFilter($search, $isoLanguage);
         $search = $this->getSearch($search);
 
@@ -184,7 +183,7 @@ readonly class QueryBuilder
         $sql = str_replace('%(feature_code)s', $this->getFeatureCodeLeftJoin($featureCode), $sql);
         $sql = str_replace('%(feature_class)s', $this->getFeatureClassLeftJoin($featureClass), $sql);
         $sql = str_replace('%(country)s', is_null($country) ? '' : 'AND c.code=\''.$country.'\'', $sql);
-        $sql = str_replace('%(name_search)s', $this->getContainFilter($searchFilter), $sql);
+        $sql = str_replace('%(name_search)s', $nameSearch, $sql);
         $sql = str_replace('%(name_filter)s', $nameFilter, $sql);
 
         return ($this->entityManager->createNativeQuery($sql, $rsm))
@@ -343,7 +342,7 @@ readonly class QueryBuilder
      * @param string[]|null $search
      * @return string
      */
-    private function getContainFilter(array|null $search): string
+    private function getNameSearch(array|null $search): string
     {
         if (is_null($search)) {
             return '';
@@ -409,11 +408,10 @@ readonly class QueryBuilder
             $search = [''];
         }
 
-        $isoLanguages = ['simple'];
-
-        if (!is_null($isoLanguage)) {
-            $isoLanguages[] = $isoLanguage;
-        }
+        $isoLanguages = match (true) {
+            is_null($isoLanguage) => ['simple'],
+            default => [$isoLanguage],
+        };
 
         $searches = [];
         foreach ($isoLanguages as $isoLanguageTerm) {
@@ -425,7 +423,7 @@ readonly class QueryBuilder
             $languageSearch = [];
             foreach ($search as $searchTerm) {
                 $languageSearch[] = sprintf(
-                    'si.search_text_%s @@ to_tsquery(\'%s\', \'%s%s\')',
+                    'si.search_text_%s @@ to_tsquery(\'%s\', unaccent(\'%s%s\'))',
                     $isoLanguageTerm,
                     $language,
                     $searchTerm,
