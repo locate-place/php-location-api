@@ -1,0 +1,10 @@
+# Git pull
+git pull
+
+# Composer install
+DOCKER_BUILDKIT=1 docker-compose -f docker-compose.yml -f docker-compose.production.yml exec php composer install
+
+# Clears the cache
+DOCKER_BUILDKIT=1 docker-compose -f docker-compose.yml -f docker-compose.production.yml exec php bin/console cache:clear
+DOCKER_BUILDKIT=1 docker-compose -f docker-compose.yml -f docker-compose.production.yml exec php rm -rf var/cache/prod/
+
