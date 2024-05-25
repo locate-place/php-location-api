@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace App\Utils\Doctrine;
 
 use App\Constants\DB\Limit;
+use App\Constants\DB\StopWord;
 use App\Constants\Language\CountryCode;
 use App\Constants\Language\LanguageCode;
 use App\Constants\Query\Query;
@@ -82,9 +83,7 @@ readonly class QueryBuilder
         string $sortBy = LocationService::SORT_BY_RELEVANCE,
     ): NativeQuery
     {
-        if (is_string($search)) {
-            $search = [$search];
-        }
+        $search = $this->removeStopWords($search, $isoLanguage);
 
         $nameSearch = $this->getNameSearch($this->getSearchFilter($search));
         $nameFilter = $this->getNameFilter($search, $isoLanguage);
@@ -157,9 +156,7 @@ readonly class QueryBuilder
         int|null $distance = null,
     ): NativeQuery
     {
-        if (is_string($search)) {
-            $search = [$search];
-        }
+        $search = $this->removeStopWords($search, $isoLanguage);
 
         $nameSearch = $this->getNameSearch($this->getSearchFilter($search));
         $nameFilter = $this->getNameFilter($search, $isoLanguage);
@@ -435,6 +432,38 @@ readonly class QueryBuilder
         }
 
         return implode(' OR '.PHP_EOL.str_repeat(' ', self::DISTANCE_NAME_FILTER), $searches);
+    }
+
+    /**
+     * @param string|string[]|null $search
+     * @return string[]|null
+     */
+    private function removeStopWords(string|array|null $search, string|null $isoLanguage): null|array
+    {
+        if (is_null($search)) {
+            return null;
+        }
+
+        if (is_string($search)) {
+            $search = [$search];
+        }
+
+        if (is_null($isoLanguage)) {
+            return $search;
+        }
+
+        $stopWords = match ($isoLanguage) {
+            LanguageCode::DE => StopWord::DE,
+            LanguageCode::EN => StopWord::EN,
+            LanguageCode::ES => StopWord::ES,
+            default => [],
+        };
+
+        $result = array_diff($search, $stopWords);
+
+        $result = array_unique($result);
+
+        return array_values($result);
     }
 
     /**
