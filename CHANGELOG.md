@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Releases
 
+### [1.0.6] - 2024-05-26
+
+* Fix english and spanish full-text search
+
 ### [1.0.5] - 2024-05-25
 
 * Change url from location.twelvepics.com to loc8.place
