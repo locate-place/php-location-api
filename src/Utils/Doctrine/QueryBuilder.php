@@ -414,6 +414,8 @@ readonly class QueryBuilder
         foreach ($isoLanguages as $isoLanguageTerm) {
             $language = match ($isoLanguageTerm) {
                 LanguageCode::DE => 'german',
+                LanguageCode::EN => 'english',
+                LanguageCode::ES => 'spanish',
                 default => $isoLanguageTerm,
             };
 
