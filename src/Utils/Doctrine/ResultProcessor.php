@@ -35,6 +35,7 @@ readonly class ResultProcessor
      * @throws TypeInvalidException
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      * @SuppressWarnings(PHPMD.NPathComplexity)
+     * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
      */
     public function hydrateObject(Location|array $object): Location
     {
@@ -90,6 +91,8 @@ readonly class ResultProcessor
                 /* Set the closest distance. */
                 case 'closest_distance':
                 case 'closestDistance':
+                case 'distance_meters':
+                case 'distanceMeters':
                     if (is_null($value)) {
                         continue 2;
                     }
@@ -115,6 +118,51 @@ readonly class ResultProcessor
                         throw new LogicException(sprintf('$value expected to be a int or null. "%s" given.', gettype($value)));
                     }
                     $location->setRelevanceScore($value);
+                    break;
+
+                /* Set the location type. */
+                case 'location_type':
+                case 'locationType':
+                    if (is_null($value)) {
+                        continue 2;
+                    }
+                    if (is_string($value)) {
+                        $value = (int) $value;
+                    }
+                    if (!is_int($value)) {
+                        throw new LogicException(sprintf('$value expected to be a int or null. "%s" given.', gettype($value)));
+                    }
+                    $location->setLocationType($value);
+                    break;
+
+                /* Set the rank city value. */
+                case 'rank_city':
+                case 'rankCity':
+                    if (is_null($value)) {
+                        continue 2;
+                    }
+                    if (is_string($value)) {
+                        $value = (int) $value;
+                    }
+                    if (!is_int($value)) {
+                        throw new LogicException(sprintf('$value expected to be a int or null. "%s" given.', gettype($value)));
+                    }
+                    $location->setRankCity($value);
+                    break;
+
+                /* Set the rank district value. */
+                case 'rank_district':
+                case 'rankDistrict':
+                    if (is_null($value)) {
+                        continue 2;
+                    }
+                    if (is_string($value)) {
+                        $value = (int) $value;
+                    }
+                    if (!is_int($value)) {
+                        throw new LogicException(sprintf('$value expected to be a int or null. "%s" given.', gettype($value)));
+                    }
+                    $location->setRankDistrict($value);
                     break;
 
                 /* Unknown property. */

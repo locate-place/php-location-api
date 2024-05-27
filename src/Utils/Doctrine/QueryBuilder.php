@@ -13,17 +13,22 @@ declare(strict_types=1);
 
 namespace App\Utils\Doctrine;
 
+use App\Constants\DB\FeatureCode;
 use App\Constants\DB\Limit;
 use App\Constants\DB\StopWord;
 use App\Constants\Language\CountryCode;
 use App\Constants\Language\LanguageCode;
 use App\Constants\Query\Query;
+use App\Constants\Query\QueryAdmin;
 use App\Entity\Location;
+use App\Repository\LocationRepository;
 use App\Service\LocationService;
+use App\Service\LocationServiceConfig;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\NativeQuery;
 use Doctrine\ORM\Query\ResultSetMapping;
 use Ixnode\PhpCoordinate\Coordinate;
+use Ixnode\PhpException\Case\CaseUnsupportedException;
 use LogicException;
 
 /**
@@ -32,18 +37,187 @@ use LogicException;
  * @author Björn Hempel <bjoern@hempel.li>
  * @version 0.1.0 (2024-04-04)
  * @since 0.1.0 (2024-04-04) First version.
+ * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
  */
 readonly class QueryBuilder
 {
     private const DISTANCE_NAME_FILTER = 28;
 
+    private const DISTANCE_ADMIN_CODES = 20000;
+
+    private const DISTANCE_WHEN_IDS = 36;
+
+    private const DISTANCE_WHEN_STRINGS = 20;
+
+    private const INDEX_NO_SORT = 1;
+
     /**
      * @param EntityManagerInterface $entityManager
+     * @param LocationRepository $locationRepository
+     * @param LocationServiceConfig $locationServiceConfig
      */
     public function __construct(
-        private EntityManagerInterface $entityManager
+        private EntityManagerInterface $entityManager,
+        private LocationRepository $locationRepository,
+        private LocationServiceConfig $locationServiceConfig
     )
     {
+    }
+
+    /**
+     * Returns the native query for finding the administrative areas.
+     *
+     * @param Location $location
+     * @param Coordinate $coordinate
+     * @return NativeQuery
+     * @throws CaseUnsupportedException
+     * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
+     * @SuppressWarnings(PHPMD.LongVariable)
+     */
+    public function getAdminQuery(
+        Location $location,
+        Coordinate $coordinate
+    ): NativeQuery
+    {
+        /* Get feature codes. */
+        $featureCodeAdmin2 = [FeatureCode::ADM2];
+        $featureCodeAdmin3 = [FeatureCode::ADM3];
+        $featureCodeAdmin4 = [FeatureCode::ADM4]; /* Admin4Code for cities. */
+        $featureCodeAdmin5 = [FeatureCode::ADM5]; /* Admin4Code for districts. */
+        $featureCodeCities = $this->locationServiceConfig->getCityFeatureCodes($location);
+        $featureCodeDistricts = $this->locationServiceConfig->getDistrictFeatureCodes($location);
+
+        /* Get sort by feature codes. */
+        $citySortByFeatureCodes = $this->locationServiceConfig->isCitySortByFeatureCodes($location);
+        $districtSortByFeatureCodes = $this->locationServiceConfig->isDistrictSortByFeatureCodes($location);
+
+        /* Get sort by population. */
+        $citySortByPopulation = $this->locationServiceConfig->isCitySortByPopulation($location);
+        $districtSortByPopulation = $this->locationServiceConfig->isDistrictSortByPopulation($location);
+
+        /* Translate the feature codes to ids. */
+        $featureCodeIdsAdmin2 = $this->locationRepository->translateFeatureCodesToIds($featureCodeAdmin2);
+        $featureCodeIdsAdmin3 = $this->locationRepository->translateFeatureCodesToIds($featureCodeAdmin3);
+        $featureCodeIdsAdmin4 = $this->locationRepository->translateFeatureCodesToIds($featureCodeAdmin4);
+        $featureCodeIdsAdmin5 = $this->locationRepository->translateFeatureCodesToIds($featureCodeAdmin5);
+        $featureCodeIdsCities = $this->locationRepository->translateFeatureCodesToIds($featureCodeCities);
+        $featureCodeIdsDistricts = $this->locationRepository->translateFeatureCodesToIds($featureCodeDistricts);
+
+        /* Calculate the intersected ids. */
+        $featureCodeIdsCitiesDistricts = array_values(array_intersect($featureCodeIdsCities, $featureCodeIdsDistricts));
+
+        /* Set non-existing id. */
+        if (count($featureCodeIdsCitiesDistricts) <= 0) {
+            $featureCodeIdsCitiesDistricts = [9999];
+        }
+
+        /* Remove intersected ids. */
+        $featureCodeIdsCities = array_values(array_diff($featureCodeIdsCities, $featureCodeIdsCitiesDistricts));
+        $featureCodeIdsDistricts = array_values(array_diff($featureCodeIdsDistricts, $featureCodeIdsCitiesDistricts));
+
+        /* When cases with ids. */
+        $featureCodeIdsAdmin2When = $this->buildWhen($featureCodeIdsAdmin2);
+        $featureCodeIdsAdmin3When = $this->buildWhen($featureCodeIdsAdmin3);
+        $featureCodeIdsAdmin4When = $this->buildWhen($featureCodeIdsAdmin4);
+        $featureCodeIdsAdmin5When = $this->buildWhen($featureCodeIdsAdmin5);
+
+        $featureCodeIdsCitiesWhen = $this->buildWhen($featureCodeIdsCities, $citySortByFeatureCodes);
+        $featureCodeIdsDistrictsWhen = $this->buildWhen($featureCodeIdsDistricts, $districtSortByFeatureCodes);
+        $featureCodeIdsCitiesDistrictsWhen = $this->buildWhen($featureCodeIdsCitiesDistricts, $citySortByFeatureCodes);
+
+        /* When cases with strings. */
+        $featureCodeCitiesWhen = $this->buildWhen($featureCodeCities, $citySortByFeatureCodes, self::DISTANCE_WHEN_STRINGS);
+        $featureCodeDistrictsWhen = $this->buildWhen($featureCodeDistricts, $districtSortByFeatureCodes, self::DISTANCE_WHEN_STRINGS);
+
+        $rsm = $this->getResultSetMapping(true);
+
+        $sql = QueryAdmin::ADMIN;
+
+        $adminCode = $location->getAdminCode();
+
+        if (is_null($adminCode)) {
+            throw new LogicException('Unable to get admin code from location.');
+        }
+
+        $admin1Code = $adminCode->getAdmin1Code();
+        $admin2Code = $adminCode->getAdmin2Code();
+        $admin3Code = $adminCode->getAdmin3Code();
+        $admin4Code = $adminCode->getAdmin4Code();
+
+        $admin1Code = match (true) {
+            is_null($admin1Code) => 'IS NULL',
+            default => sprintf('= \'%s\'', $admin1Code),
+        };
+        $admin2Code = match (true) {
+            is_null($admin2Code) => 'IS NULL',
+            default => sprintf('= \'%s\'', $admin2Code),
+        };
+        $admin3Code = match (true) {
+            is_null($admin3Code) => 'IS NULL',
+            default => sprintf('= \'%s\'', $admin3Code),
+        };
+        $admin4Code = match (true) {
+            is_null($admin4Code) => 'IS NULL',
+            default => sprintf('= \'%s\'', $admin4Code),
+        };
+
+        $sql = str_replace('%(longitude)s', (string) $coordinate->getLongitude(), $sql);
+        $sql = str_replace('%(latitude)s', (string) $coordinate->getLatitude(), $sql);
+        $sql = str_replace('%(admin1_code)s', $admin1Code, $sql);
+        $sql = str_replace('%(admin2_code)s', $admin2Code, $sql);
+        $sql = str_replace('%(admin3_code)s', $admin3Code, $sql);
+        $sql = str_replace('%(admin4_code)s', $admin4Code, $sql);
+        $sql = str_replace('%(feature_code_admin2)s', implode(',', $featureCodeIdsAdmin2), $sql);
+        $sql = str_replace('%(feature_code_admin3)s', implode(',', $featureCodeIdsAdmin3), $sql);
+        $sql = str_replace('%(feature_code_admin4)s', implode(',', $featureCodeIdsAdmin4), $sql);
+        $sql = str_replace('%(feature_code_admin5)s', implode(',', $featureCodeIdsAdmin5), $sql);
+        $sql = str_replace('%(feature_code_cities)s', implode(',', $featureCodeIdsCities), $sql);
+        $sql = str_replace('%(feature_code_districts)s', implode(',', $featureCodeIdsDistricts), $sql);
+        $sql = str_replace('%(feature_code_cities_districts)s', implode(',', $featureCodeIdsCitiesDistricts), $sql);
+        $sql = str_replace('%(feature_code_admin2_when)s', $featureCodeIdsAdmin2When, $sql);
+        $sql = str_replace('%(feature_code_admin3_when)s', $featureCodeIdsAdmin3When, $sql);
+        $sql = str_replace('%(feature_code_admin4_when)s', $featureCodeIdsAdmin4When, $sql);
+        $sql = str_replace('%(feature_code_admin5_when)s', $featureCodeIdsAdmin5When, $sql);
+        $sql = str_replace('%(feature_code_cities_when)s', $featureCodeIdsCitiesWhen, $sql);
+        $sql = str_replace('%(feature_code_districts_when)s', $featureCodeIdsDistrictsWhen, $sql);
+        $sql = str_replace('%(feature_code_cities_districts_when)s', $featureCodeIdsCitiesDistrictsWhen, $sql);
+        $sql = str_replace('%(feature_code_cities_case_when)s', $featureCodeCitiesWhen, $sql);
+        $sql = str_replace('%(feature_code_districts_case_when)s', $featureCodeDistrictsWhen, $sql);
+        $sql = str_replace('%(sort_by_population_cities)s', $citySortByPopulation ? 'l.population' : 'NULL', $sql);
+        $sql = str_replace('%(sort_by_population_districts)s', $districtSortByPopulation ? 'l.population' : 'NULL', $sql);
+        $sql = str_replace('%(sort_by_population_cities_districts)s', $districtSortByPopulation ? 'l.population' : 'NULL', $sql);
+
+        return ($this->entityManager->createNativeQuery($sql, $rsm))
+            ->setParameter('distance', self::DISTANCE_ADMIN_CODES)
+        ;
+    }
+
+    /**
+     * Builds when condition for admin code search.
+     *
+     * @param int[]|string[] $featureCodes
+     * @param bool $sortBy
+     * @param int $distance
+     * @return string
+     * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
+     */
+    private function buildWhen(
+        array $featureCodes,
+        bool $sortBy = true,
+        int $distance = self::DISTANCE_WHEN_IDS
+    ): string
+    {
+        $when = [];
+        foreach ($featureCodes as $index => $featureCode) {
+            $nextIndex = $sortBy ? $index + 1 : self::INDEX_NO_SORT;
+
+            $when[] = match(true) {
+                is_int($featureCode) => sprintf('WHEN %d THEN %d', $featureCode, $nextIndex),
+                is_string($featureCode) => sprintf('WHEN \'%s\' THEN %d', $featureCode, $nextIndex),
+            };
+        }
+
+        return implode(PHP_EOL.str_repeat(' ', $distance), $when);
     }
 
     /**
@@ -493,9 +667,11 @@ readonly class QueryBuilder
     /**
      * Returns the result set mapping.
      *
+     * @param bool $withLocationType
      * @return ResultSetMapping
+     * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
      */
-    private function getResultSetMapping(): ResultSetMapping
+    private function getResultSetMapping(bool $withLocationType = false): ResultSetMapping
     {
         $rsm = new ResultSetMapping();
 
@@ -519,6 +695,13 @@ readonly class QueryBuilder
             ->addFieldResult('l', 'created_at', 'createdAt')
             ->addFieldResult('l', 'updated_at', 'updatedAt')
         ;
+
+        if ($withLocationType) {
+            $rsm->addScalarResult('location_type', 'locationType');
+            $rsm->addScalarResult('rank_city', 'rankCity');
+            $rsm->addScalarResult('rank_district', 'rankDistrict');
+            $rsm->addScalarResult('distance_meters', 'distanceMeters');
+        }
 
         return $rsm;
     }

@@ -43,6 +43,7 @@ use App\Utils\Wikipedia\Wikipedia;
 use DateTime;
 use DateTimeImmutable;
 use DateTimeZone;
+use Doctrine\ORM\Exception\ORMException;
 use Doctrine\ORM\NonUniqueResultException;
 use Exception;
 use Ixnode\PhpCoordinate\Coordinate as CoordinateIxnode;
@@ -81,6 +82,27 @@ abstract class BaseLocationService extends BaseHelperLocationService
     private const DEFAULT_LIMIT = 100;
 
     private const ZERO_RESULT = 0;
+
+    private bool $useNewAdminDetectionStrategy = false;
+
+    /**
+     * @return bool
+     */
+    public function isUseNewAdminDetectionStrategy(): bool
+    {
+        return $this->useNewAdminDetectionStrategy;
+    }
+
+    /**
+     * @param bool $useNewAdminDetectionStrategy
+     * @return self
+     */
+    public function setUseNewAdminDetectionStrategy(bool $useNewAdminDetectionStrategy): self
+    {
+        $this->useNewAdminDetectionStrategy = $useNewAdminDetectionStrategy;
+
+        return $this;
+    }
 
     /**
      * Returns a Location entity.
@@ -1069,15 +1091,19 @@ abstract class BaseLocationService extends BaseHelperLocationService
      * @throws NonUniqueResultException
      * @throws ParserException
      * @throws TypeInvalidException
+     * @throws ORMException
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      * @SuppressWarnings(PHPMD.NPathComplexity)
      * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
+     * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
      */
     public function getServiceLocationContainerFromLocationRepository(
         LocationEntity $locationEntity,
         bool $loadLocations = false
     ): LocationContainer
     {
+        $this->setUseNewAdminDetectionStrategy(false);
+
         $id = $locationEntity->getId();
 
         if (is_null($id)) {
@@ -1121,9 +1147,32 @@ abstract class BaseLocationService extends BaseHelperLocationService
             throw new LogicException('Unable to find next place for given location entity.');
         }
 
-        $district = $isDistrictVisible ? $this->locationRepository->findDistrictByLocation($locationEntityPlace, $coordinate) : null;
-        $borough = $isBoroughVisible? $this->locationRepository->findBoroughByLocation($locationEntityPlace, $coordinate) : null;
-        $city = $isCityVisible ? $this->locationRepository->findCityByLocation($district ?: $locationEntityPlace, $coordinate) : null;
+        /* Try to find the admin areas according to given strategy. */
+        switch ($this->isUseNewAdminDetectionStrategy()) {
+            /* Use the NEW admin detection strategy. */
+            case true:
+                $adminAreas = $this->locationRepository->findAdminAreas(
+                    $locationEntityPlace,
+                    $coordinate
+                );
+
+                $district = $isDistrictVisible && array_key_exists(KeyArray::DISTRICT_LOCALITY, $adminAreas) ?
+                    $adminAreas[KeyArray::DISTRICT_LOCALITY] : null;
+//                $borough = $isBoroughVisible && array_key_exists(KeyArray::BOROUGH_LOCALITY, $adminAreas) ?
+//                    $adminAreas[KeyArray::BOROUGH_LOCALITY] : null;
+                $borough = null;
+                $city = $isCityVisible && array_key_exists(KeyArray::CITY_MUNICIPALITY, $adminAreas) ?
+                    $adminAreas[KeyArray::CITY_MUNICIPALITY] : null;
+                break;
+
+            /* Use the OLD admin detection strategy. */
+            default:
+                $district = $isDistrictVisible ? $this->locationRepository->findDistrictByLocation($locationEntityPlace, $coordinate) : null;
+                $borough = $isBoroughVisible? $this->locationRepository->findBoroughByLocation($locationEntityPlace, $coordinate) : null;
+                $city = $isCityVisible ? $this->locationRepository->findCityByLocation($district ?: $locationEntityPlace, $coordinate) : null;
+                break;
+        }
+
         $state = $this->locationRepository->findStateByLocation(($district ?: $city) ?: $locationEntityPlace);
         $country = $this->locationRepository->findCountryByLocation($state);
 

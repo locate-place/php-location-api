@@ -19,6 +19,7 @@ use App\Entity\ZipCodeArea;
 use App\Repository\LocationRepository;
 use App\Repository\ZipCodeAreaRepository;
 use App\Repository\ZipCodeRepository;
+use App\Service\LocationServiceConfig;
 use App\Utils\Db\DebugNativeQuery;
 use App\Utils\Db\DebugQuery;
 use App\Utils\Doctrine\QueryBuilder as UtilQueryBuilder;
@@ -30,6 +31,7 @@ use Ixnode\PhpException\Case\CaseUnsupportedException;
 use JetBrains\PhpStorm\NoReturn;
 use LogicException;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
  * Class BaseCoordinateRepository
@@ -49,12 +51,21 @@ class BaseCoordinateRepository extends ServiceEntityRepository
      */
     public function __construct(
         protected ManagerRegistry $registry,
-        protected ParameterBagInterface $parameterBag
+        protected ParameterBagInterface $parameterBag,
+        protected TranslatorInterface $translator,
+        protected LocationRepository $locationRepository
     )
     {
-        parent::__construct($registry, $this->getEntityClassByRepository());
+        parent::__construct(
+            $registry,
+            $this->getEntityClassByRepository()
+        );
 
-        $this->queryBuilder = new UtilQueryBuilder($this->getEntityManager());
+        $this->queryBuilder = new UtilQueryBuilder(
+            $this->getEntityManager(),
+            $locationRepository,
+            new LocationServiceConfig($parameterBag, $translator)
+        );
     }
 
     /**

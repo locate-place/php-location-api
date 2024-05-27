@@ -148,6 +148,15 @@ class Location
     #[Ignore]
     private ?int $relevanceScore = null;
 
+    #[Ignore]
+    private ?int $locationType = null;
+
+    #[Ignore]
+    private ?int $rankCity = null;
+
+    #[Ignore]
+    private ?int $rankDistrict = null;
+
     /**
      */
     public function __construct()
@@ -886,6 +895,83 @@ class Location
     public function setRelevanceScore(int $relevanceScore): self
     {
         $this->relevanceScore = $relevanceScore;
+
+        return $this;
+    }
+
+    /**
+     * Gets the location type if given from self::setLocationType.
+     *
+     * @return int|null
+     */
+    #[Ignore]
+    public function getLocationType(): ?int
+    {
+        return $this->locationType;
+    }
+
+    /**
+     * Sets the location type.
+     *
+     * See \App\Constants\Query\QueryAdmin::ADMIN
+     *
+     * - 10: ADM2
+     * - 11: ADM3
+     * - 12: ADM4
+     * - 13: ADM5
+     * - 20: CITY
+     * - 21: DISTRICT
+     * - 90: UNKNOWN
+     *
+     * @param int|null $locationType
+     * @return $this
+     */
+    #[Ignore]
+    public function setLocationType(?int $locationType): static
+    {
+        $this->locationType = $locationType;
+
+        return $this;
+    }
+
+    /**
+     * @return int|null
+     */
+    #[Ignore]
+    public function getRankCity(): ?int
+    {
+        return $this->rankCity;
+    }
+
+    /**
+     * @param int|null $rankCity
+     * @return self
+     */
+    #[Ignore]
+    public function setRankCity(?int $rankCity): self
+    {
+        $this->rankCity = $rankCity;
+
+        return $this;
+    }
+
+    /**
+     * @return int|null
+     */
+    #[Ignore]
+    public function getRankDistrict(): ?int
+    {
+        return $this->rankDistrict;
+    }
+
+    /**
+     * @param int|null $rankDistrict
+     * @return self
+     */
+    #[Ignore]
+    public function setRankDistrict(?int $rankDistrict): self
+    {
+        $this->rankDistrict = $rankDistrict;
 
         return $this;
     }

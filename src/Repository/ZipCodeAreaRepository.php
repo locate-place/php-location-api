@@ -23,6 +23,7 @@ use Ixnode\PhpCoordinate\Coordinate;
 use Ixnode\PhpException\Class\ClassInvalidException;
 use Ixnode\PhpException\Type\TypeInvalidException;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
  * Class ZipCodeAreaRepository
@@ -42,14 +43,18 @@ class ZipCodeAreaRepository extends BaseCoordinateRepository
      * @param ManagerRegistry $registry
      * @param LocationServiceConfig $locationCountryService
      * @param ParameterBagInterface $parameterBag
+     * @param TranslatorInterface $translator
+     * @param LocationRepository $locationRepository
      */
     public function __construct(
         protected ManagerRegistry $registry,
         protected LocationServiceConfig $locationCountryService,
-        protected ParameterBagInterface $parameterBag
+        protected ParameterBagInterface $parameterBag,
+        protected TranslatorInterface $translator,
+        protected LocationRepository $locationRepository
     )
     {
-        parent::__construct($registry, $parameterBag);
+        parent::__construct($registry, $parameterBag, $translator, $locationRepository);
     }
 
     /**

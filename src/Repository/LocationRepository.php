@@ -17,11 +17,12 @@ use App\Constants\Code\Prediction;
 use App\Constants\DB\FeatureClass as DbFeatureClass;
 use App\Constants\DB\FeatureCode as DbFeatureCode;
 use App\Constants\DB\Limit;
+use App\Constants\Key\KeyArray;
 use App\Constants\Language\LanguageCode;
+use App\Constants\Place\LocationType;
 use App\Entity\AlternateName;
 use App\Entity\Country;
 use App\Entity\FeatureClass;
-use App\Entity\FeatureCode;
 use App\Entity\Location;
 use App\Entity\River;
 use App\Entity\RiverPart;
@@ -46,6 +47,7 @@ use Ixnode\PhpException\Parser\ParserException;
 use Ixnode\PhpException\Type\TypeInvalidException;
 use LogicException;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
  * Class LocationRepository
@@ -64,11 +66,14 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
  */
 class LocationRepository extends BaseCoordinateRepository
 {
+    private const INDEX_NAME_POPULATION = 9_999_999_999;
+
     /**
      * @param ManagerRegistry $registry
      * @param EntityManagerInterface $entityManager
      * @param LocationServiceConfig $locationCountryService
      * @param ParameterBagInterface $parameterBag
+     * @param TranslatorInterface $translator
      * @param RiverRepository $riverRepository
      * @param EntityProcessor $entityProcessor
      * @param ResultProcessor $resultProcessor
@@ -78,12 +83,18 @@ class LocationRepository extends BaseCoordinateRepository
         protected EntityManagerInterface $entityManager,
         protected LocationServiceConfig $locationCountryService,
         protected ParameterBagInterface $parameterBag,
+        protected TranslatorInterface $translator,
         protected RiverRepository $riverRepository,
         protected EntityProcessor $entityProcessor,
         protected ResultProcessor $resultProcessor
     )
     {
-        parent::__construct($registry, $parameterBag);
+        parent::__construct(
+            $registry,
+            $parameterBag,
+            $translator,
+            $this
+        );
     }
 
     /**
@@ -126,21 +137,33 @@ class LocationRepository extends BaseCoordinateRepository
      * @param string[]|string|null $featureCodes
      * @return int[]
      */
-    private function translateFeatureCodesToIds(array|string $featureCodes = null): array
+    public function translateFeatureCodesToIds(array|string|null $featureCodes = null): array
     {
-        $featureCodes = is_string($featureCodes) ? explode(',', $featureCodes) : $featureCodes;
-
-        $repository = $this->getEntityManager()->getRepository(FeatureCode::class);
-
-        $featureCodeEntities = $repository->findBy(['code' => $featureCodes]);
-
-        $featureCodeIds = [];
-
-        foreach ($featureCodeEntities as $featureCodeEntity) {
-            $featureCodeIds[] = (int) $featureCodeEntity->getId();
+        if (is_null($featureCodes)) {
+            return [];
         }
 
-        return $featureCodeIds;
+        $featureCodes = is_string($featureCodes) ? explode(',', $featureCodes) : $featureCodes;
+
+        $featureCodesTranslated = [];
+
+        foreach ($featureCodes as $featureCode) {
+            $constantName = "\App\Constants\DB\FeatureCodeToId::$featureCode";
+
+            if (!defined($constantName)) {
+                continue;
+            }
+
+            $translated = constant($constantName);
+
+            if (!is_int($translated)) {
+                throw new LogicException(sprintf('Invalid feature code given: "%s"', $featureCode));
+            }
+
+            $featureCodesTranslated[] = $translated;
+        }
+
+        return $featureCodesTranslated;
     }
 
     /**
@@ -164,6 +187,205 @@ class LocationRepository extends BaseCoordinateRepository
         }
 
         return $featureClassIds;
+    }
+
+    /**
+     * Builds the index for given location.
+     *
+     * @param Location $location
+     * @param int|null $rank
+     * @param bool $sortByPopulation
+     * @return string
+     */
+    private function getIndex(Location $location, int|null $rank, bool $sortByPopulation): string
+    {
+        if (is_null($rank)) {
+            throw new LogicException('Rank is null.');
+        }
+
+        return sprintf(
+            '%010d-%010d-%010.2f',
+            $rank,
+            $sortByPopulation ? (self::INDEX_NAME_POPULATION - (int) ($location->getPopulation() ?? 0)) : self::INDEX_NAME_POPULATION,
+            $location->getClosestDistance()
+        );
+    }
+
+    /**
+     * Returns the smallest index.
+     *
+     * @param array<string, Location> $indexes
+     * @return string|null
+     */
+    private function getSmallestIndex(array $indexes): string|null
+    {
+        if (count($indexes) <= 0) {
+            return null;
+        }
+
+        $keys = array_keys($indexes);
+
+        return min($keys);
+    }
+
+    /**
+     * Calculates the city, city adm, district, district adm from given locations.
+     *
+     * @param Location $location
+     * @param Location[] $locations
+     * @return array{city-adm: Location|null, city: Location|null, district-adm: Location|null, district: Location|null}
+     * @throws CaseUnsupportedException
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+     */
+    private function getAdminLocations(Location $location, array $locations): array
+    {
+        $citySortByPopulation = $this->locationCountryService->isCitySortByPopulation($location);
+        $districtSortByPopulation = $this->locationCountryService->isDistrictSortByPopulation($location);
+
+//        $admin2 = null;
+//        $admin3 = null;
+        $admin4 = null;
+        $admin5 = null;
+
+        $cities = [];
+        $districts = [];
+
+        foreach ($locations as $location) {
+            switch ($location->getLocationType()) {
+//                case LocationType::ADM2: $admin2 = $location; break;
+//                case LocationType::ADM3: $admin3 = $location; break;
+                case LocationType::ADM4: $admin4 = $location; break;
+                case LocationType::ADM5: $admin5 = $location; break;
+
+                case LocationType::CITY:
+                    $cities[$this->getIndex($location, $location->getRankCity(), $citySortByPopulation)] = $location;
+                    break;
+
+                case LocationType::DISTRICT:
+                    $districts[$this->getIndex($location, $location->getRankDistrict(), $districtSortByPopulation)] = $location;
+                    break;
+
+                case LocationType::CITY_DISTRICT:
+                    $rankCity = $location->getRankCity();
+                    $rankDistrict = $location->getRankDistrict();
+
+                    if (!is_null($rankCity)) {
+                        $cities[$this->getIndex($location, $location->getRankCity(), $citySortByPopulation)] = $location;
+                    }
+                    if (!is_null($rankDistrict)) {
+                        $districts[$this->getIndex($location, $location->getRankDistrict(), $districtSortByPopulation)] = $location;
+                    }
+                    break;
+            }
+        }
+
+        $smallestIndexCities = $this->getSmallestIndex($cities);
+        $smallestIndexDistricts = $this->getSmallestIndex($districts);
+
+        $city = is_null($smallestIndexCities) ? null : $cities[$smallestIndexCities];
+        $district = is_null($smallestIndexDistricts) ? null : $districts[$smallestIndexDistricts];
+
+        return [
+            'city-adm' => $admin4,
+            'city' => $city,
+            'district-adm' => $admin5,
+            'district' => $district,
+        ];
+    }
+
+    /**
+     * Finds all admin areas for the given location.
+     *
+     * @param Location $location
+     * @param Coordinate $coordinate
+     * @return array{city-municipality: Location|null, district-locality: Location|null}
+     * @throws CaseUnsupportedException
+     * @throws ORMException
+     * @throws TypeInvalidException
+     */
+    public function findAdminAreas(
+        Location $location,
+        Coordinate $coordinate
+    ): array
+    {
+        $query = $this->queryBuilder->getAdminQuery($location, $coordinate);
+
+        /* @var array<int, Location|array<int, mixed>> $results */
+        $results = $query->getResult();
+
+        /* @phpstan-ignore-next-line -> getResult will give array<int, Location|array<int, mixed>> */
+        $locations = $this->resultProcessor->hydrateObjects($results);
+
+        /* Reload locations. */
+        $locations = $this->entityProcessor->reloadLocations($locations);
+
+        [
+            'city-adm' => $cityAdm,
+            'city' => $city,
+            'district-adm' => $districtAdm,
+            'district' => $district,
+        ] = $this->getAdminLocations($location, $locations);
+
+//        print 'City Adm: ';
+//        print is_null($cityAdm) ? 'n/a' : $cityAdm->getName();
+//        print PHP_EOL;
+//        print 'City: ';
+//        print is_null($city) ? 'n/a' : $city->getName();
+//        print PHP_EOL;
+//        print 'District Adm: ';
+//        print is_null($districtAdm) ? 'n/a' : $districtAdm->getName();
+//        print PHP_EOL;
+//        print 'District: ';
+//        print is_null($district) ? 'n/a' : $district->getName();
+//        print PHP_EOL;
+//        exit();
+
+        $city ??= $cityAdm;
+        $district ??= $districtAdm;
+
+        $this->extendName($city, $cityAdm?->getName() ?? null);
+        $this->extendName($district, $districtAdm?->getName() ?? null);
+
+        if (!is_null($city) && !is_null($district) && $city->getId() === $district->getId()) {
+            $district = null;
+        }
+
+        $adminAreas = [
+            KeyArray::CITY_MUNICIPALITY => $city,
+            KeyArray::DISTRICT_LOCALITY => $district,
+        ];
+
+        return $adminAreas;
+    }
+
+    /**
+     * Function to extend the name.
+     *
+     * @param Location|null $location
+     * @param string|null $name
+     * @return void
+     */
+    private function extendName(Location|null $location, string|null $name): void
+    {
+        if (is_null($location)) {
+            return;
+        }
+        if (is_null($name)) {
+            return;
+        }
+
+        $nameOrigin = $location->getName();
+
+        if (is_null($nameOrigin)) {
+            $location->setName($name);
+            return;
+        }
+
+        if ($nameOrigin === $name) {
+            return;
+        }
+
+        $location->setName(sprintf('%s (%s)', $nameOrigin, $name));
     }
 
     /**

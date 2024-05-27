@@ -17,8 +17,8 @@ namespace App\Constants\Place;
  * Class Location
  *
  * @author Björn Hempel <bjoern@hempel.li>
- * @version 0.1.0 (2024-12-04)
- * @since 0.1.0 (2024-12-04) First version.
+ * @version 0.1.0 (2023-12-04)
+ * @since 0.1.0 (2023-12-04) First version.
  */
 class Location
 {
