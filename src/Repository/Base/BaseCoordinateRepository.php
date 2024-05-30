@@ -28,7 +28,6 @@ use Doctrine\ORM\NativeQuery;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 use Ixnode\PhpException\Case\CaseUnsupportedException;
-use JetBrains\PhpStorm\NoReturn;
 use LogicException;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -43,6 +42,8 @@ use Symfony\Contracts\Translation\TranslatorInterface;
  */
 class BaseCoordinateRepository extends ServiceEntityRepository
 {
+    private bool $debug = false;
+
     protected UtilQueryBuilder $queryBuilder;
 
     /**
@@ -66,6 +67,25 @@ class BaseCoordinateRepository extends ServiceEntityRepository
             $locationRepository,
             new LocationServiceConfig($parameterBag, $translator)
         );
+    }
+
+    /**
+     * @return bool
+     */
+    public function isDebug(): bool
+    {
+        return $this->debug;
+    }
+
+    /**
+     * @param bool $debug
+     * @return self
+     */
+    public function setDebug(bool $debug): self
+    {
+        $this->debug = $debug;
+
+        return $this;
     }
 
     /**
@@ -146,12 +166,18 @@ class BaseCoordinateRepository extends ServiceEntityRepository
      * @return void
      * @SuppressWarnings(PHPMD.ExitExpression)
      */
-    #[NoReturn]
-    protected function debugQuery(QueryBuilder $queryBuilder): void
+    public function debugQuery(QueryBuilder $queryBuilder): void
     {
+        if (!$this->isDebug()) {
+            return;
+        }
+
         $debugQuery = new DebugQuery($queryBuilder);
+
+        print '<h1>SQL Query</h1>';
+        print '<textarea style="width: 100%" rows="50">';
         print $debugQuery->getSqlRaw();
-        exit();
+        print '</textarea>';
     }
 
     /**
@@ -161,11 +187,80 @@ class BaseCoordinateRepository extends ServiceEntityRepository
      * @return void
      * @SuppressWarnings(PHPMD.ExitExpression)
      */
-    #[NoReturn]
-    protected function debugNativeQuery(NativeQuery $nativeQuery): void
+    public function debugNativeQuery(NativeQuery $nativeQuery): void
     {
+        if (!$this->isDebug()) {
+            return;
+        }
+
         $debugNativeQuery = new DebugNativeQuery($nativeQuery);
+
+        print '<h1>SQL Query</h1>';
+        print '<textarea style="width: 100%" rows="50">';
         print $debugNativeQuery->getSqlRaw();
+        print '</textarea>';
+    }
+
+    /**
+     * Debug admin areas.
+     *
+     * @param string $adminArea
+     * @param Location|null $admin2
+     * @param Location|null $admin3
+     * @param Location|null $admin4
+     * @param Location|null $admin5
+     * @param Location|null $cityAdm
+     * @param Location|null $districtAdm
+     * @param Location|null $city
+     * @param Location|null $district
+     * @return void
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+     * @SuppressWarnings(PHPMD.NPathComplexity)
+     */
+    public function debugAdminAreas(
+        string $adminArea,
+        Location|null $admin2,
+        Location|null $admin3,
+        Location|null $admin4,
+        Location|null $admin5,
+        Location|null $cityAdm,
+        Location|null $districtAdm,
+        Location|null $city,
+        Location|null $district
+    ): void
+    {
+        if (!$this->isDebug()) {
+            return;
+        }
+
+        print PHP_EOL;
+        print PHP_EOL;
+        print '<table cellpadding="10">';
+        print '<tr><td>Admin area:</td><td>'.$adminArea.'</td></tr>';
+        print '<tr><td></td></tr>';
+        print '<tr><td>Admin 2:</td><td>'.(is_null($admin2) ? 'n/a' : $admin2->getName()).'</td></tr>';
+        print '<tr><td>Admin 3:</td><td>'.(is_null($admin3) ? 'n/a' : $admin3->getName()).'</td></tr>';
+        print '<tr><td>Admin 4:</td><td>'.(is_null($admin4) ? 'n/a' : $admin4->getName()).'</td></tr>';
+        print '<tr><td>Admin 5:</td><td>'.(is_null($admin5) ? 'n/a' : $admin5->getName()).'</td></tr>';
+        print '<tr><td>City Adm:</td><td>'.(is_null($cityAdm) ? 'n/a' : $cityAdm->getName()).'</td></tr>';
+        print '<tr><td>District Adm:</td><td>'.(is_null($districtAdm) ? 'n/a' : $districtAdm->getName()).'</td></tr>';
+        print '<tr><td>City:</td><td>'.(is_null($city) ? 'n/a' : $city->getName()).'</td></tr>';
+        print '<tr><td>District:</td><td>'.(is_null($district) ? 'n/a' : $district->getName()).'</td></tr>';
+        print '</table>';
+    }
+
+    /**
+     * Stops execution in debug mode.
+     *
+     * @return void
+     * @SuppressWarnings(PHPMD.ExitExpression)
+     */
+    public function debugStopExecution(): void
+    {
+        if (!$this->isDebug()) {
+            return;
+        }
+
         exit();
     }
 }

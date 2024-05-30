@@ -19,6 +19,7 @@ use App\Constants\DB\FeatureCode as DbFeatureCode;
 use App\Constants\DB\Limit;
 use App\Constants\Key\KeyArray;
 use App\Constants\Language\LanguageCode;
+use App\Constants\Place\AdminType;
 use App\Constants\Place\LocationType;
 use App\Entity\AlternateName;
 use App\Entity\Country;
@@ -195,9 +196,15 @@ class LocationRepository extends BaseCoordinateRepository
      * @param Location $location
      * @param int|null $rank
      * @param bool $sortByPopulation
+     * @param bool $sortByFeatureCodes
      * @return string
      */
-    private function getIndex(Location $location, int|null $rank, bool $sortByPopulation): string
+    private function getIndex(
+        Location $location,
+        int|null $rank,
+        bool $sortByPopulation,
+        bool $sortByFeatureCodes
+    ): string
     {
         if (is_null($rank)) {
             throw new LogicException('Rank is null.');
@@ -205,7 +212,7 @@ class LocationRepository extends BaseCoordinateRepository
 
         return sprintf(
             '%010d-%010d-%010.2f',
-            $rank,
+            $sortByFeatureCodes ? $rank : 1,
             $sortByPopulation ? (self::INDEX_NAME_POPULATION - (int) ($location->getPopulation() ?? 0)) : self::INDEX_NAME_POPULATION,
             $location->getClosestDistance()
         );
@@ -231,19 +238,23 @@ class LocationRepository extends BaseCoordinateRepository
     /**
      * Calculates the city, city adm, district, district adm from given locations.
      *
-     * @param Location $location
+     * @param Location $currentLocation
      * @param Location[] $locations
      * @return array{city-adm: Location|null, city: Location|null, district-adm: Location|null, district: Location|null}
      * @throws CaseUnsupportedException
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+     * @SuppressWarnings(PHPMD.NPathComplexity)
      */
-    private function getAdminLocations(Location $location, array $locations): array
+    private function getAdminLocations(Location $currentLocation, array $locations): array
     {
-        $citySortByPopulation = $this->locationCountryService->isCitySortByPopulation($location);
-        $districtSortByPopulation = $this->locationCountryService->isDistrictSortByPopulation($location);
+        $citySortByPopulation = $this->locationCountryService->isCitySortByPopulation($currentLocation);
+        $districtSortByPopulation = $this->locationCountryService->isDistrictSortByPopulation($currentLocation);
 
-//        $admin2 = null;
-//        $admin3 = null;
+        $citySortByFeatureCodes = $this->locationCountryService->isCitySortByFeatureCodes($currentLocation);
+        $districtSortByFeatureCodes = $this->locationCountryService->isDistrictSortByFeatureCodes($currentLocation);
+
+        $admin2 = null;
+        $admin3 = null;
         $admin4 = null;
         $admin5 = null;
 
@@ -252,17 +263,17 @@ class LocationRepository extends BaseCoordinateRepository
 
         foreach ($locations as $location) {
             switch ($location->getLocationType()) {
-//                case LocationType::ADM2: $admin2 = $location; break;
-//                case LocationType::ADM3: $admin3 = $location; break;
+                case LocationType::ADM2: $admin2 = $location; break;
+                case LocationType::ADM3: $admin3 = $location; break;
                 case LocationType::ADM4: $admin4 = $location; break;
                 case LocationType::ADM5: $admin5 = $location; break;
 
                 case LocationType::CITY:
-                    $cities[$this->getIndex($location, $location->getRankCity(), $citySortByPopulation)] = $location;
+                    $cities[$this->getIndex($location, $location->getRankCity(), $citySortByPopulation, $citySortByFeatureCodes)] = $location;
                     break;
 
                 case LocationType::DISTRICT:
-                    $districts[$this->getIndex($location, $location->getRankDistrict(), $districtSortByPopulation)] = $location;
+                    $districts[$this->getIndex($location, $location->getRankDistrict(), $districtSortByPopulation, $districtSortByFeatureCodes)] = $location;
                     break;
 
                 case LocationType::CITY_DISTRICT:
@@ -270,25 +281,63 @@ class LocationRepository extends BaseCoordinateRepository
                     $rankDistrict = $location->getRankDistrict();
 
                     if (!is_null($rankCity)) {
-                        $cities[$this->getIndex($location, $location->getRankCity(), $citySortByPopulation)] = $location;
+                        $cities[$this->getIndex($location, $location->getRankCity(), $citySortByPopulation, $citySortByFeatureCodes)] = $location;
                     }
                     if (!is_null($rankDistrict)) {
-                        $districts[$this->getIndex($location, $location->getRankDistrict(), $districtSortByPopulation)] = $location;
+                        $districts[$this->getIndex($location, $location->getRankDistrict(), $districtSortByPopulation, $districtSortByFeatureCodes)] = $location;
                     }
                     break;
             }
         }
 
-        $smallestIndexCities = $this->getSmallestIndex($cities);
+        /* Find the next district. */
         $smallestIndexDistricts = $this->getSmallestIndex($districts);
-
-        $city = is_null($smallestIndexCities) ? null : $cities[$smallestIndexCities];
         $district = is_null($smallestIndexDistricts) ? null : $districts[$smallestIndexDistricts];
 
+        /* Find the next city. */
+        $smallestIndexCities = $this->getSmallestIndex($cities);
+        $city = is_null($smallestIndexCities) ? null : $cities[$smallestIndexCities];
+
+        /* Use the next city if district and city is equal. */
+        if (!is_null($city) && !is_null($district) && $city->getGeonameId() === $district->getGeonameId()) {
+            unset($cities[$smallestIndexCities]);
+            $smallestIndexCities = $this->getSmallestIndex($cities);
+
+            $city = is_null($smallestIndexCities) ? null : $cities[$smallestIndexCities];
+        }
+
+        $adminArea = $this->locationCountryService->getAdminDistrictMatch($currentLocation);
+
+        $cityAdm = match ($adminArea) {
+            AdminType::A2 => $admin2,
+            AdminType::A3 => $admin3,
+            AdminType::A4 => $admin4,
+            default => null,
+        };
+        $districtAdm = match ($adminArea) {
+            AdminType::A1 => $admin2,
+            AdminType::A2 => $admin3,
+            AdminType::A3 => $admin4,
+            AdminType::A4 => $admin5,
+            default => null,
+        };
+
+        $this->debugAdminAreas(
+            $adminArea,
+            $admin2,
+            $admin3,
+            $admin4,
+            $admin5,
+            $cityAdm,
+            $districtAdm,
+            $city,
+            $district
+        );
+
         return [
-            'city-adm' => $admin4,
+            'city-adm' => $cityAdm,
             'city' => $city,
-            'district-adm' => $admin5,
+            'district-adm' => $districtAdm,
             'district' => $district,
         ];
     }
@@ -309,6 +358,7 @@ class LocationRepository extends BaseCoordinateRepository
     ): array
     {
         $query = $this->queryBuilder->getAdminQuery($location, $coordinate);
+        $this->debugNativeQuery($query);
 
         /* @var array<int, Location|array<int, mixed>> $results */
         $results = $query->getResult();
@@ -326,25 +376,11 @@ class LocationRepository extends BaseCoordinateRepository
             'district' => $district,
         ] = $this->getAdminLocations($location, $locations);
 
-//        print 'City Adm: ';
-//        print is_null($cityAdm) ? 'n/a' : $cityAdm->getName();
-//        print PHP_EOL;
-//        print 'City: ';
-//        print is_null($city) ? 'n/a' : $city->getName();
-//        print PHP_EOL;
-//        print 'District Adm: ';
-//        print is_null($districtAdm) ? 'n/a' : $districtAdm->getName();
-//        print PHP_EOL;
-//        print 'District: ';
-//        print is_null($district) ? 'n/a' : $district->getName();
-//        print PHP_EOL;
-//        exit();
-
         $city ??= $cityAdm;
         $district ??= $districtAdm;
 
-        $this->extendName($city, $cityAdm?->getName() ?? null);
-        $this->extendName($district, $districtAdm?->getName() ?? null);
+//        $this->extendName($city, $cityAdm?->getName() ?? null);
+//        $this->extendName($district, $districtAdm?->getName() ?? null);
 
         if (!is_null($city) && !is_null($district) && $city->getId() === $district->getId()) {
             $district = null;
@@ -358,35 +394,35 @@ class LocationRepository extends BaseCoordinateRepository
         return $adminAreas;
     }
 
-    /**
-     * Function to extend the name.
-     *
-     * @param Location|null $location
-     * @param string|null $name
-     * @return void
-     */
-    private function extendName(Location|null $location, string|null $name): void
-    {
-        if (is_null($location)) {
-            return;
-        }
-        if (is_null($name)) {
-            return;
-        }
-
-        $nameOrigin = $location->getName();
-
-        if (is_null($nameOrigin)) {
-            $location->setName($name);
-            return;
-        }
-
-        if ($nameOrigin === $name) {
-            return;
-        }
-
-        $location->setName(sprintf('%s (%s)', $nameOrigin, $name));
-    }
+//    /**
+//     * Function to extend the name.
+//     *
+//     * @param Location|null $location
+//     * @param string|null $name
+//     * @return void
+//     */
+//    private function extendName(Location|null $location, string|null $name): void
+//    {
+//        if (is_null($location)) {
+//            return;
+//        }
+//        if (is_null($name)) {
+//            return;
+//        }
+//
+//        $nameOrigin = $location->getName();
+//
+//        if (is_null($nameOrigin)) {
+//            $location->setName($name);
+//            return;
+//        }
+//
+//        if ($nameOrigin === $name) {
+//            return;
+//        }
+//
+//        $location->setName(sprintf('%s (%s)', $nameOrigin, $name));
+//    }
 
     /**
      * Finds the locations from given geoname ids.
@@ -786,6 +822,8 @@ class LocationRepository extends BaseCoordinateRepository
             ;
         }
 
+        $this->debugQuery($queryBuilder);
+
         /* Returns the result. */
         return array_values(
             (new CheckerArray($queryBuilder->getQuery()->getResult()))
@@ -853,6 +891,7 @@ class LocationRepository extends BaseCoordinateRepository
      * @return array{a1?: string, a2?: string, a3?: string, a4?: string}
      * @throws CaseUnsupportedException
      * @throws ClassInvalidException
+     * @throws ParserException
      * @throws TypeInvalidException
      */
     public function findNextAdminConfiguration(

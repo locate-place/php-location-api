@@ -573,18 +573,19 @@ final class LocationService extends BaseLocationService
      * @throws CaseInvalidException
      * @throws CaseUnsupportedException
      * @throws ClassInvalidException
+     * @throws ClientExceptionInterface
      * @throws FileNotFoundException
      * @throws FileNotReadableException
      * @throws FunctionJsonEncodeException
      * @throws FunctionReplaceException
      * @throws JsonException
      * @throws NonUniqueResultException
+     * @throws ORMException
      * @throws ParserException
-     * @throws TypeInvalidException
-     * @throws ClientExceptionInterface
      * @throws RedirectionExceptionInterface
      * @throws ServerExceptionInterface
      * @throws TransportExceptionInterface
+     * @throws TypeInvalidException
      * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
      */
     public function getLocationByGeonameId(
@@ -677,6 +678,7 @@ final class LocationService extends BaseLocationService
      * @throws FunctionReplaceException
      * @throws JsonException
      * @throws NonUniqueResultException
+     * @throws ORMException
      * @throws ParserException
      * @throws RedirectionExceptionInterface
      * @throws ServerExceptionInterface

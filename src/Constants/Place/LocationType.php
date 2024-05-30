@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace App\Constants\Place;
 
 /**
- * Class Location
+ * Class LocationType
  *
  * @author Björn Hempel <bjoern@hempel.li>
  * @version 0.1.0 (2024-05-27)
@@ -22,13 +22,13 @@ namespace App\Constants\Place;
  */
 class LocationType
 {
-    final public const ADM2 = 10;
+    final public const ADM2 = 11;
 
-    final public const ADM3 = 11;
+    final public const ADM3 = 12;
 
-    final public const ADM4 = 12;
+    final public const ADM4 = 13;
 
-    final public const ADM5 = 13;
+    final public const ADM5 = 14;
 
     final public const CITY = 20;
 

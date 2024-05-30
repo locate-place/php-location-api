@@ -193,6 +193,7 @@ abstract class BaseLocationService extends BaseHelperLocationService
      * @throws FunctionReplaceException
      * @throws JsonException
      * @throws NonUniqueResultException
+     * @throws ORMException
      * @throws ParserException
      * @throws RedirectionExceptionInterface
      * @throws ServerExceptionInterface
@@ -1102,7 +1103,17 @@ abstract class BaseLocationService extends BaseHelperLocationService
         bool $loadLocations = false
     ): LocationContainer
     {
+        $detectionMode = $this->locationServiceConfig->getDetectionMode($locationEntity);
+
+        match ($detectionMode) {
+            1 => $this->setUseNewAdminDetectionStrategy(true),
+            2 => $this->setUseNewAdminDetectionStrategy(false),
+            default => throw new LogicException(sprintf('Unknown detection mode "%d".', $detectionMode)),
+        };
+
         $this->setUseNewAdminDetectionStrategy(false);
+
+        $this->locationRepository->setDebug($this->isDebug());
 
         $id = $locationEntity->getId();
 
@@ -1176,6 +1187,8 @@ abstract class BaseLocationService extends BaseHelperLocationService
         $state = $this->locationRepository->findStateByLocation(($district ?: $city) ?: $locationEntityPlace);
         $country = $this->locationRepository->findCountryByLocation($state);
 
+        $this->locationRepository->debugStopExecution();
+
         if (is_null($city) && !is_null($district)) {
             $city = $district;
             $district = null;
@@ -1213,6 +1226,7 @@ abstract class BaseLocationService extends BaseHelperLocationService
      * @throws CaseUnsupportedException
      * @throws ClassInvalidException
      * @throws NonUniqueResultException
+     * @throws ORMException
      * @throws ParserException
      * @throws TypeInvalidException
      * @SuppressWarnings(PHPMD.BooleanArgumentFlag)

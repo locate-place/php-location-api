@@ -66,6 +66,8 @@ abstract class BaseHelperLocationService
 {
     protected ?string $error = null;
 
+    protected bool $debug = false;
+
     protected int|null $resultCount = null;
 
     protected float $timeStart;
@@ -150,6 +152,30 @@ abstract class BaseHelperLocationService
 
         $this->featureClassService = new FeatureClass($translator);
         $this->featureCodeService = new FeatureCode($translator);
+    }
+
+    /**
+     * @return bool
+     */
+    public function isDebug(): bool
+    {
+        return $this->debug;
+    }
+
+    /**
+     * @param bool $debug
+     * @return self
+     */
+    public function setDebug(bool|string $debug): self
+    {
+        if (is_bool($debug)) {
+            $this->debug = $debug;
+            return $this;
+        }
+
+        $this->debug = in_array($debug, ['1', 'true'], true);
+
+        return $this;
     }
 
     /**

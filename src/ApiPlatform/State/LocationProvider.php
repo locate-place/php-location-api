@@ -522,6 +522,12 @@ final class LocationProvider extends BaseProviderCustom
             return (new LocationResource())->setGeonameId(0);
         }
 
+        $query = $queryParser->getQuery();
+
+        if (!is_null($query) && $query->hasFilter('debug')) {
+            $this->locationService->setDebug((string) $query->getFilter('debug'));
+        }
+
         $location = $this->locationService->getLocationByCoordinate(
             /* Search */
             coordinate: $coordinate,

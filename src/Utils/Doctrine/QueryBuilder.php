@@ -18,6 +18,7 @@ use App\Constants\DB\Limit;
 use App\Constants\DB\StopWord;
 use App\Constants\Language\CountryCode;
 use App\Constants\Language\LanguageCode;
+use App\Constants\Place\AdminType;
 use App\Constants\Query\Query;
 use App\Constants\Query\QueryAdmin;
 use App\Entity\Location;
@@ -73,6 +74,8 @@ readonly class QueryBuilder
      * @throws CaseUnsupportedException
      * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
      * @SuppressWarnings(PHPMD.LongVariable)
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+     * @SuppressWarnings(PHPMD.NPathComplexity)
      */
     public function getAdminQuery(
         Location $location,
@@ -86,6 +89,12 @@ readonly class QueryBuilder
         $featureCodeAdmin5 = [FeatureCode::ADM5]; /* Admin4Code for districts. */
         $featureCodeCities = $this->locationServiceConfig->getCityFeatureCodes($location);
         $featureCodeDistricts = $this->locationServiceConfig->getDistrictFeatureCodes($location);
+
+        $countryId = $location->getCountry()?->getId() ?? null;
+
+        if (is_null($countryId)) {
+            throw new LogicException('Country is not set.');
+        }
 
         /* Get sort by feature codes. */
         $citySortByFeatureCodes = $this->locationServiceConfig->isCitySortByFeatureCodes($location);
@@ -106,14 +115,32 @@ readonly class QueryBuilder
         /* Calculate the intersected ids. */
         $featureCodeIdsCitiesDistricts = array_values(array_intersect($featureCodeIdsCities, $featureCodeIdsDistricts));
 
-        /* Set non-existing id. */
-        if (count($featureCodeIdsCitiesDistricts) <= 0) {
-            $featureCodeIdsCitiesDistricts = [9999];
-        }
-
         /* Remove intersected ids. */
         $featureCodeIdsCities = array_values(array_diff($featureCodeIdsCities, $featureCodeIdsCitiesDistricts));
         $featureCodeIdsDistricts = array_values(array_diff($featureCodeIdsDistricts, $featureCodeIdsCitiesDistricts));
+
+        /* Set non-existing id. */
+        if (count($featureCodeIdsAdmin2) <= 0) {
+            $featureCodeIdsAdmin2 = [9999];
+        }
+        if (count($featureCodeIdsAdmin3) <= 0) {
+            $featureCodeIdsAdmin3 = [9999];
+        }
+        if (count($featureCodeIdsAdmin4) <= 0) {
+            $featureCodeIdsAdmin4 = [9999];
+        }
+        if (count($featureCodeIdsAdmin5) <= 0) {
+            $featureCodeIdsAdmin5 = [9999];
+        }
+        if (count($featureCodeIdsCities) <= 0) {
+            $featureCodeIdsCities = [9999];
+        }
+        if (count($featureCodeIdsDistricts) <= 0) {
+            $featureCodeIdsDistricts = [9999];
+        }
+        if (count($featureCodeIdsCitiesDistricts) <= 0) {
+            $featureCodeIdsCitiesDistricts = [9999];
+        }
 
         /* When cases with ids. */
         $featureCodeIdsAdmin2When = $this->buildWhen($featureCodeIdsAdmin2);
@@ -133,40 +160,61 @@ readonly class QueryBuilder
 
         $sql = QueryAdmin::ADMIN;
 
-        $adminCode = $location->getAdminCode();
+        [
+            AdminType::A1 => $admin1Code,
+            AdminType::A2 => $admin2Code,
+            AdminType::A3 => $admin3Code,
+            AdminType::A4 => $admin4Code,
+        ] = $this->locationServiceConfig->getAdminCodesMatch($location);
 
-        if (is_null($adminCode)) {
-            throw new LogicException('Unable to get admin code from location.');
-        }
-
-        $admin1Code = $adminCode->getAdmin1Code();
-        $admin2Code = $adminCode->getAdmin2Code();
-        $admin3Code = $adminCode->getAdmin3Code();
-        $admin4Code = $adminCode->getAdmin4Code();
-
-        $admin1Code = match (true) {
+        $admin1CodeMatch = match (true) {
             is_null($admin1Code) => 'IS NULL',
+            $admin1Code === false => 'IS NOT DISTINCT FROM ac.admin1_code',
             default => sprintf('= \'%s\'', $admin1Code),
         };
-        $admin2Code = match (true) {
+        $admin2CodeMatch = match (true) {
             is_null($admin2Code) => 'IS NULL',
+            $admin2Code === false => 'IS NOT DISTINCT FROM ac.admin2_code',
             default => sprintf('= \'%s\'', $admin2Code),
         };
-        $admin3Code = match (true) {
+        $admin3CodeMatch = match (true) {
             is_null($admin3Code) => 'IS NULL',
+            $admin3Code === false => 'IS NOT DISTINCT FROM ac.admin3_code',
             default => sprintf('= \'%s\'', $admin3Code),
         };
-        $admin4Code = match (true) {
+        $admin4CodeMatch = match (true) {
             is_null($admin4Code) => 'IS NULL',
+            $admin4Code === false => 'IS NOT DISTINCT FROM ac.admin4_code',
             default => sprintf('= \'%s\'', $admin4Code),
+        };
+
+        $admin1CodeMatchNot = match (true) {
+            $admin1Code === false => 'IS NOT DISTINCT FROM ac.admin1_code',
+            default => 'IS NULL',
+        };
+        $admin2CodeMatchNot = match (true) {
+            $admin2Code === false => 'IS NOT DISTINCT FROM ac.admin2_code',
+            default => 'IS NULL',
+        };
+        $admin3CodeMatchNot = match (true) {
+            $admin3Code === false => 'IS NOT DISTINCT FROM ac.admin3_code',
+            default => 'IS NULL',
+        };
+        $admin4CodeMatchNot = match (true) {
+            $admin4Code === false => 'IS NOT DISTINCT FROM ac.admin4_code',
+            default => 'IS NULL',
         };
 
         $sql = str_replace('%(longitude)s', (string) $coordinate->getLongitude(), $sql);
         $sql = str_replace('%(latitude)s', (string) $coordinate->getLatitude(), $sql);
-        $sql = str_replace('%(admin1_code)s', $admin1Code, $sql);
-        $sql = str_replace('%(admin2_code)s', $admin2Code, $sql);
-        $sql = str_replace('%(admin3_code)s', $admin3Code, $sql);
-        $sql = str_replace('%(admin4_code)s', $admin4Code, $sql);
+        $sql = str_replace('%(admin1_code)s', $admin1CodeMatch, $sql);
+        $sql = str_replace('%(admin2_code)s', $admin2CodeMatch, $sql);
+        $sql = str_replace('%(admin3_code)s', $admin3CodeMatch, $sql);
+        $sql = str_replace('%(admin4_code)s', $admin4CodeMatch, $sql);
+        $sql = str_replace('%(admin1_code_not)s', $admin1CodeMatchNot, $sql);
+        $sql = str_replace('%(admin2_code_not)s', $admin2CodeMatchNot, $sql);
+        $sql = str_replace('%(admin3_code_not)s', $admin3CodeMatchNot, $sql);
+        $sql = str_replace('%(admin4_code_not)s', $admin4CodeMatchNot, $sql);
         $sql = str_replace('%(feature_code_admin2)s', implode(',', $featureCodeIdsAdmin2), $sql);
         $sql = str_replace('%(feature_code_admin3)s', implode(',', $featureCodeIdsAdmin3), $sql);
         $sql = str_replace('%(feature_code_admin4)s', implode(',', $featureCodeIdsAdmin4), $sql);
@@ -189,6 +237,7 @@ readonly class QueryBuilder
 
         return ($this->entityManager->createNativeQuery($sql, $rsm))
             ->setParameter('distance', self::DISTANCE_ADMIN_CODES)
+            ->setParameter('country_id', $countryId)
         ;
     }
 

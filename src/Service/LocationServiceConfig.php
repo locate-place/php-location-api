@@ -19,6 +19,7 @@ use App\Constants\DB\FeatureCode;
 use App\Constants\DB\Limit;
 use App\Constants\Key\KeyArray;
 use App\Constants\Language\CountryCode;
+use App\Constants\Place\AdminType;
 use App\Entity\Location;
 use App\Exception\QueryParserException;
 use App\Utils\Query\Query;
@@ -47,6 +48,7 @@ use Symfony\Contracts\Translation\TranslatorInterface;
  * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
  * @SuppressWarnings(PHPMD.TooManyPublicMethods)
  * @SuppressWarnings(PHPMD.ExcessiveClassLength)
+ * @SuppressWarnings(PHPMD.ExcessivePublicCount)
  */
 final class LocationServiceConfig
 {
@@ -109,11 +111,12 @@ final class LocationServiceConfig
      *
      * @param string|null $countryCode
      * @param string $type
-     * @return array<string, mixed>
+     * @return array<string, mixed>|int
      * @throws CaseUnsupportedException
      * @SuppressWarnings(PHPMD.NPathComplexity)
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      */
-    private function getCountryConfig(string|null $countryCode, string $type = 'district'): array
+    private function getCountryConfig(string|null $countryCode, string $type = 'district'): array|int
     {
         $locationCountry = $this->parameterBag->get('location_configuration');
 
@@ -150,11 +153,30 @@ final class LocationServiceConfig
             return $locationCountry['default'][$type];
         }
 
-        if (!is_array($configType)) {
+        if (!is_array($configType) && !is_int($configType)) {
             throw new CaseUnsupportedException(sprintf('The given config for country.%s %s is not an array.', $type, $countryCode));
         }
 
         return $configType;
+    }
+
+    /**
+     * Returns the default config.
+     *
+     * @param string $type
+     * @return array<string, mixed>|int
+     * @throws CaseUnsupportedException
+     * @SuppressWarnings(PHPMD.NPathComplexity)
+     */
+    private function getDefaultConfig(string $type = 'district'): array|int
+    {
+        $locationCountry = $this->parameterBag->get('location_configuration');
+
+        if (!is_array($locationCountry)) {
+            throw new CaseUnsupportedException('The given location_configuration configuration is not an array.');
+        }
+
+        return $locationCountry['default'][$type];
     }
 
     /**
@@ -166,30 +188,101 @@ final class LocationServiceConfig
      */
     public function getAdminCodesGeneral(Location $location): array
     {
-        $countryCode = $location->getCountry()?->getCode();
-
-        if (is_null($countryCode)) {
-            throw new CaseUnsupportedException('Unable to get country code from location.');
-        }
-
-        $districtMatch = $this->parameterBag->get('district_match');
-
-        if (!is_array($districtMatch)) {
-            throw new CaseUnsupportedException('The given district_match configuration is not an array.');
-        }
-
-        $adminCode = array_key_exists($countryCode, $districtMatch) ?
-            $districtMatch[$countryCode] :
-            'a4'
-        ;
+        $adminCode = $this->getAdminDistrictMatch($location);
 
         return match ($adminCode) {
-            'a0' => [],
-            'a1' => ['a1' => (string) $location->getAdminCode()?->getAdmin1Code()],
-            'a2' => ['a2' => (string) $location->getAdminCode()?->getAdmin2Code()],
-            'a3' => ['a3' => (string) $location->getAdminCode()?->getAdmin3Code()],
-            default => ['a4' => (string) $location->getAdminCode()?->getAdmin4Code()]
+            AdminType::A0 => [],
+            AdminType::A1 => [AdminType::A1 => (string) $location->getAdminCode()?->getAdmin1Code()],
+            AdminType::A2 => [AdminType::A2 => (string) $location->getAdminCode()?->getAdmin2Code()],
+            AdminType::A3 => [AdminType::A3 => (string) $location->getAdminCode()?->getAdmin3Code()],
+            default => [AdminType::A4 => (string) $location->getAdminCode()?->getAdmin4Code()]
         };
+    }
+
+    /**
+     * Returns the admin codes for the given location (Country).
+     *
+     * @param Location $location
+     * @return array{a1: string|false|null, a2: string|false|null, a3: string|false|null, a4: string|false|null}
+     * @throws CaseUnsupportedException
+     */
+    public function getAdminCodesMatch(Location $location): array
+    {
+        $adminCode = $this->getAdminDistrictMatch($location);
+
+        return match ($adminCode) {
+            AdminType::A0 => [
+                'a1' => false,
+                'a2' => false,
+                'a3' => false,
+                'a4' => false,
+            ],
+            AdminType::A1 => [
+                'a1' => $location->getAdminCode()?->getAdmin1Code(),
+                'a2' => false,
+                'a3' => false,
+                'a4' => false,
+            ],
+            AdminType::A2 => [
+                'a1' => $location->getAdminCode()?->getAdmin1Code(),
+                'a2' => $location->getAdminCode()?->getAdmin2Code(),
+                'a3' => false,
+                'a4' => false,
+            ],
+            AdminType::A3 => [
+                'a1' => $location->getAdminCode()?->getAdmin1Code(),
+                'a2' => $location->getAdminCode()?->getAdmin2Code(),
+                'a3' => $location->getAdminCode()?->getAdmin3Code(),
+                'a4' => false,
+            ],
+            default => [
+                'a1' => $location->getAdminCode()?->getAdmin1Code(),
+                'a2' => $location->getAdminCode()?->getAdmin2Code(),
+                'a3' => $location->getAdminCode()?->getAdmin3Code(),
+                'a4' => $location->getAdminCode()?->getAdmin4Code(),
+            ]
+        };
+    }
+
+    /**
+     * Returns the admin codes for the given location (Country).
+     *
+     * @param Location $location
+     * @param string $type
+     * @return string
+     * @throws CaseUnsupportedException
+     */
+    public function getAdminDistrictMatch(Location $location, string $type = 'district'): string
+    {
+        $key = 'match';
+
+        $match = $this->getValueFromConfig($key, $location, $type);
+
+        if (!is_string($match)) {
+            throw new LogicException('The given match config is not a string.');
+        }
+
+        return $match;
+    }
+
+    /**
+     * @param Location $location
+     * @return int
+     * @throws CaseUnsupportedException
+     */
+    public function getDetectionMode(Location $location): int
+    {
+        $type = 'detection_mode';
+
+        $countryCode = $this->getCountryCode($location);
+
+        $countryConfig = $this->getCountryConfig($countryCode, $type);
+
+        if (!is_int($countryConfig)) {
+            throw new LogicException('The given config for country is not an int.');
+        }
+
+        return $countryConfig;
     }
 
     /**
@@ -324,23 +417,39 @@ final class LocationServiceConfig
      * @param string $type
      * @return mixed
      * @throws CaseUnsupportedException
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      */
     private function getValueFromConfig(string $key, Location|null $location, string $type = 'district'): mixed
     {
         $countryCode = $this->getCountryCode($location);
 
+        $defaultConfig = $this->getDefaultConfig($type);
+
+        if (!is_array($defaultConfig)) {
+            throw new LogicException('The given default config is not an array.');
+        }
+
         $countryConfig = $this->getCountryConfig($countryCode, $type);
+
+        if (!is_array($countryConfig)) {
+            throw new LogicException('The given country config is not an array.');
+        }
 
         $exceptionMatch = $this->getExceptionMatchConfig($countryConfig, $location);
 
         /* Return the exception value. */
-        if (!is_null($exceptionMatch) && array_key_exists($key, $exceptionMatch)) {
+        if (!is_null($exceptionMatch) && array_key_exists($key, $exceptionMatch) && !is_null($exceptionMatch[$key])) {
             return $exceptionMatch[$key];
         }
 
         /* Return the value for key from default or country settings. */
-        if (array_key_exists($key, $countryConfig)) {
+        if (array_key_exists($key, $countryConfig) && !is_null($countryConfig[$key])) {
             return $countryConfig[$key];
+        }
+
+        /* Return the value for key from default settings. */
+        if (array_key_exists($key, $defaultConfig) && !is_null($defaultConfig[$key])) {
+            return $defaultConfig[$key];
         }
 
         return null;
@@ -532,6 +641,10 @@ final class LocationServiceConfig
         $countryCode = $this->getCountryCode($location);
 
         $countryConfig = $this->getCountryConfig($countryCode, $type);
+
+        if (!is_array($countryConfig)) {
+            throw new LogicException('The given country config is not an array.');
+        }
 
         $exceptionMatch = $this->getExceptionMatchConfig($countryConfig, $location);
 

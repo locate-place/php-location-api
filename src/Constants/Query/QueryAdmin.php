@@ -39,10 +39,10 @@ class QueryAdmin
                 l.coordinate <-> 'SRID=4326;POINT(%(longitude)s %(latitude)s)' AS distance_meters,
                 CASE
                     -- ADM Area
-                    WHEN l.feature_code_id IN (%(feature_code_admin2)s) AND ac.admin1_code %(admin1_code)s AND ac.admin2_code %(admin2_code)s AND ac.admin3_code IS NULL AND ac.admin4_code IS NULL THEN 10
-                    WHEN l.feature_code_id IN (%(feature_code_admin3)s) AND ac.admin1_code %(admin1_code)s AND ac.admin2_code %(admin2_code)s AND ac.admin3_code %(admin3_code)s AND ac.admin4_code IS NULL THEN 11
-                    WHEN l.feature_code_id IN (%(feature_code_admin4)s) AND ac.admin1_code %(admin1_code)s AND ac.admin2_code %(admin2_code)s AND ac.admin3_code %(admin3_code)s AND ac.admin4_code %(admin4_code)s THEN 12
-                    WHEN l.feature_code_id IN (%(feature_code_admin5)s) AND ac.admin1_code %(admin1_code)s AND ac.admin2_code %(admin2_code)s AND ac.admin3_code %(admin3_code)s AND ac.admin4_code %(admin4_code)s THEN 13
+                    WHEN l.feature_code_id IN (%(feature_code_admin2)s) AND ac.admin1_code %(admin1_code)s AND ac.admin2_code %(admin2_code)s AND ac.admin3_code %(admin3_code_not)s AND ac.admin4_code %(admin4_code_not)s THEN 11
+                    WHEN l.feature_code_id IN (%(feature_code_admin3)s) AND ac.admin1_code %(admin1_code)s AND ac.admin2_code %(admin2_code)s AND ac.admin3_code %(admin3_code)s AND ac.admin4_code %(admin4_code_not)s THEN 12
+                    WHEN l.feature_code_id IN (%(feature_code_admin4)s) AND ac.admin1_code %(admin1_code)s AND ac.admin2_code %(admin2_code)s AND ac.admin3_code %(admin3_code)s AND ac.admin4_code %(admin4_code)s THEN 13
+                    WHEN l.feature_code_id IN (%(feature_code_admin5)s) AND ac.admin1_code %(admin1_code)s AND ac.admin2_code %(admin2_code)s AND ac.admin3_code %(admin3_code)s AND ac.admin4_code %(admin4_code)s THEN 14
         
                     -- Place Area
                     WHEN l.feature_code_id IN (%(feature_code_cities)s) AND ac.admin1_code %(admin1_code)s AND ac.admin2_code %(admin2_code)s AND ac.admin3_code %(admin3_code)s AND ac.admin4_code %(admin4_code)s THEN 20
@@ -70,10 +70,10 @@ class QueryAdmin
                     PARTITION BY CASE
         
                         -- ADM Area
-                        WHEN l.feature_code_id IN (%(feature_code_admin2)s) AND ac.admin1_code %(admin1_code)s AND ac.admin2_code %(admin2_code)s AND ac.admin3_code IS NULL AND ac.admin4_code IS NULL THEN 10
-                        WHEN l.feature_code_id IN (%(feature_code_admin3)s) AND ac.admin1_code %(admin1_code)s AND ac.admin2_code %(admin2_code)s AND ac.admin3_code %(admin3_code)s AND ac.admin4_code IS NULL THEN 11
-                        WHEN l.feature_code_id IN (%(feature_code_admin4)s) AND ac.admin1_code %(admin1_code)s AND ac.admin2_code %(admin2_code)s AND ac.admin3_code %(admin3_code)s AND ac.admin4_code %(admin4_code)s THEN 12
-                        WHEN l.feature_code_id IN (%(feature_code_admin5)s) AND ac.admin1_code %(admin1_code)s AND ac.admin2_code %(admin2_code)s AND ac.admin3_code %(admin3_code)s AND ac.admin4_code %(admin4_code)s THEN 13
+                        WHEN l.feature_code_id IN (%(feature_code_admin2)s) AND ac.admin1_code %(admin1_code)s AND ac.admin2_code %(admin2_code)s AND ac.admin3_code %(admin3_code_not)s AND ac.admin4_code %(admin4_code_not)s THEN 11
+                        WHEN l.feature_code_id IN (%(feature_code_admin3)s) AND ac.admin1_code %(admin1_code)s AND ac.admin2_code %(admin2_code)s AND ac.admin3_code %(admin3_code)s AND ac.admin4_code %(admin4_code_not)s THEN 12
+                        WHEN l.feature_code_id IN (%(feature_code_admin4)s) AND ac.admin1_code %(admin1_code)s AND ac.admin2_code %(admin2_code)s AND ac.admin3_code %(admin3_code)s AND ac.admin4_code %(admin4_code)s THEN 13
+                        WHEN l.feature_code_id IN (%(feature_code_admin5)s) AND ac.admin1_code %(admin1_code)s AND ac.admin2_code %(admin2_code)s AND ac.admin3_code %(admin3_code)s AND ac.admin4_code %(admin4_code)s THEN 14
         
                         -- Place Area
                         WHEN l.feature_code_id IN (%(feature_code_cities)s) AND ac.admin1_code %(admin1_code)s AND ac.admin2_code %(admin2_code)s AND ac.admin3_code %(admin3_code)s AND ac.admin4_code %(admin4_code)s THEN 20
@@ -153,11 +153,11 @@ class QueryAdmin
                 feature_code fco ON l.feature_code_id = fco.id
             WHERE
                 ST_DWithin(l.coordinate, ST_SetSRID(ST_MakePoint(%(longitude)s, %(latitude)s), 4326)::geography, :distance) AND
-                l.country_id = 1 AND
+                l.country_id = :country_id AND
                 (
                     -- ADM 1 - 5
-                    (l.feature_code_id IN (%(feature_code_admin2)s) AND ac.admin1_code %(admin1_code)s AND ac.admin2_code %(admin2_code)s AND ac.admin3_code IS NULL AND ac.admin4_code IS NULL) OR
-                    (l.feature_code_id IN (%(feature_code_admin3)s) AND ac.admin1_code %(admin1_code)s AND ac.admin2_code %(admin2_code)s AND ac.admin3_code %(admin3_code)s AND ac.admin4_code IS NULL) OR
+                    (l.feature_code_id IN (%(feature_code_admin2)s) AND ac.admin1_code %(admin1_code)s AND ac.admin2_code %(admin2_code)s AND ac.admin3_code %(admin3_code_not)s AND ac.admin4_code %(admin4_code_not)s) OR
+                    (l.feature_code_id IN (%(feature_code_admin3)s) AND ac.admin1_code %(admin1_code)s AND ac.admin2_code %(admin2_code)s AND ac.admin3_code %(admin3_code)s AND ac.admin4_code %(admin4_code_not)s) OR
                     (l.feature_code_id IN (%(feature_code_admin4)s) AND ac.admin1_code %(admin1_code)s AND ac.admin2_code %(admin2_code)s AND ac.admin3_code %(admin3_code)s AND ac.admin4_code %(admin4_code)s) OR
                     (l.feature_code_id IN (%(feature_code_admin5)s) AND ac.admin1_code %(admin1_code)s AND ac.admin2_code %(admin2_code)s AND ac.admin3_code %(admin3_code)s AND ac.admin4_code %(admin4_code)s) OR
         
@@ -172,7 +172,7 @@ class QueryAdmin
         FROM
             ranked_locations
         WHERE
-            rn = 1 OR location_type = 29
+            rn = 1 OR location_type = 20 OR location_type = 21 OR location_type = 29
         ORDER BY
             location_type;
 SQL;
