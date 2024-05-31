@@ -36,7 +36,7 @@ use Ixnode\PhpContainer\File;
  */
 class ImportCommand extends BaseLocationImport
 {
-    protected static $defaultName = 'zip-code:import';
+    protected static string $defaultName = 'zip-code:import';
 
     /** @var array<string, AdminCode> $adminCodes */
     private array $adminCodes = [];

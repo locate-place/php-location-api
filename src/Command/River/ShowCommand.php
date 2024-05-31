@@ -53,7 +53,7 @@ use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
  */
 class ShowCommand extends Command
 {
-    protected static $defaultName = 'river:show';
+    protected static string $defaultName = 'river:show';
 
     protected InputInterface $input;
 

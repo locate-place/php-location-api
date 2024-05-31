@@ -30,7 +30,7 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class CreateCommand extends Command
 {
-    protected static $defaultName = 'river:create';
+    protected static string $defaultName = 'river:create';
 
     /**
      * @param EntityManagerInterface $entityManager

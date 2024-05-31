@@ -39,17 +39,6 @@ use Symfony\Component\Routing\Annotation\Route;
 class CoordinateController extends BaseCoordinateController
 {
     /**
-     * The controller to show the / root page.
-     *
-     * @return Response
-     */
-    #[Route('/', name: 'app_home')]
-    public function home(): Response
-    {
-        return $this->redirectToRoute('app_coordinate_overview');
-    }
-
-    /**
      * The controller to show an overview of coordinate examples.
      *
      * @return Response

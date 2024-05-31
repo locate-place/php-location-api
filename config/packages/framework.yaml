@@ -19,8 +19,8 @@ framework:
         log: true
 
     # Serializer configuration
-    serializer:
-        enable_annotations: true
+    #serializer:
+    #    enable_attributes: false
 
 when@test:
     framework:

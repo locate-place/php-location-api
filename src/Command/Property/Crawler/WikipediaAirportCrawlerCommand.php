@@ -146,7 +146,7 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class WikipediaAirportCrawlerCommand extends Command
 {
-    protected static $defaultName = 'crawler:wikipedia:airport';
+    protected static string $defaultName = 'crawler:wikipedia:airport';
 
     private const WIKIPEDIA_LIST_SEARCHES = [
         'may refer to:',

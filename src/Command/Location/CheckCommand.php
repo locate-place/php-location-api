@@ -42,7 +42,7 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class CheckCommand extends ImportCommand
 {
-    public static $defaultName = 'location:check';
+    public static string $defaultName = 'location:check';
 
     private const TEXT_ROWS_CHECKED = '%d rows checked from data %s (%d checked): %.2fs';
 

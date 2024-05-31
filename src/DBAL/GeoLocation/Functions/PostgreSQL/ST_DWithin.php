@@ -16,10 +16,10 @@ namespace App\DBAL\GeoLocation\Functions\PostgreSQL;
 use Doctrine\ORM\Query\AST\ASTException;
 use Doctrine\ORM\Query\AST\Functions\FunctionNode;
 use Doctrine\ORM\Query\AST\Node;
-use Doctrine\ORM\Query\Lexer;
 use Doctrine\ORM\Query\Parser;
 use Doctrine\ORM\Query\QueryException;
 use Doctrine\ORM\Query\SqlWalker;
+use Doctrine\ORM\Query\TokenType;
 
 /**
  * Class ST_DWithin
@@ -39,7 +39,7 @@ use Doctrine\ORM\Query\SqlWalker;
  */
 class ST_DWithin extends FunctionNode
 {
-    /** @var array<int, object> */
+    /** @var array<int, object|string> */
     protected array $expressions = [];
 
     /**
@@ -51,29 +51,29 @@ class ST_DWithin extends FunctionNode
      */
     public function parse(Parser $parser): void
     {
-        $parser->match(Lexer::T_IDENTIFIER);
-        $parser->match(Lexer::T_OPEN_PARENTHESIS);
+        $parser->match(TokenType::T_IDENTIFIER);
+        $parser->match(TokenType::T_OPEN_PARENTHESIS);
 
         $this->expressions[] = $parser->ArithmeticFactor();
 
-        $parser->match(Lexer::T_COMMA);
+        $parser->match(TokenType::T_COMMA);
 
         $this->expressions[] = $parser->ArithmeticFactor();
 
-        $parser->match(Lexer::T_COMMA);
+        $parser->match(TokenType::T_COMMA);
 
         $this->expressions[] = $parser->ArithmeticFactor();
 
         $lexer = $parser->getLexer();
 
-        $nextType = $lexer->lookahead['type'] ?? $lexer->lookahead->type ?? null;
+        $nextType = $lexer->lookahead->type ?? null;
 
-        if (Lexer::T_COMMA === $nextType) {
-            $parser->match(Lexer::T_COMMA);
+        if (TokenType::T_COMMA === $nextType) {
+            $parser->match(TokenType::T_COMMA);
             $this->expressions[] = $parser->ArithmeticFactor();
         }
 
-        $parser->match(Lexer::T_CLOSE_PARENTHESIS);
+        $parser->match(TokenType::T_CLOSE_PARENTHESIS);
     }
 
     /**

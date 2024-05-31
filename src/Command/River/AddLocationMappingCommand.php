@@ -56,7 +56,7 @@ use Throwable;
  */
 class AddLocationMappingCommand extends Command
 {
-    protected static $defaultName = 'river:mapping';
+    protected static string $defaultName = 'river:mapping';
 
     private const TEXT_CALCULATED_SIMILARITY = '<comment>Calculated similarity:</comment>    <info>%1.2f</info>';
 

@@ -48,7 +48,7 @@ use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
  */
 class ShowCommand extends Command
 {
-    protected static $defaultName = 'location:show';
+    protected static string $defaultName = 'location:show';
 
     protected InputInterface $input;
 

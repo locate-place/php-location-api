@@ -41,7 +41,7 @@ use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
  */
 class GeonameIdCommand extends Base
 {
-    protected static $defaultName = 'location:geoname-id';
+    protected static string $defaultName = 'location:geoname-id';
 
     private const ARGUMENT_NAME_GEONAME_ID = 'geoname-id';
 

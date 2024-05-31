@@ -1568,13 +1568,13 @@ class LocationRepository extends BaseCoordinateRepository
                     $useRiverPart ? $queryBuilder->expr()->andX(
                         'r.id IS NOT NULL',
                         'ST_DWithin(rp.coordinates, ST_MakePoint(:longitude, :latitude), :distance, TRUE) = TRUE',
-                    ) : null,
+                    ) : $queryBuilder->expr()->andX(),
                     $useLocationPart ? $queryBuilder->expr()->andX(
                         'l.featureClass IN (:riverFeatureClasses)',
                         'l.featureCode NOT IN (:riverFeatureCodes)',
                         'r.id IS NULL',
                         'ST_DWithin(l.coordinate, ST_MakePoint(:longitude, :latitude), :distance, TRUE) = TRUE'
-                    ) : null
+                    ) : $queryBuilder->expr()->andX()
                 )
             )
 

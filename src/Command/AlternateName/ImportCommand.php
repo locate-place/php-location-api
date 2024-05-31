@@ -45,7 +45,7 @@ use Symfony\Component\Console\Command\Command;
  */
 class ImportCommand extends BaseLocationImport
 {
-    protected static $defaultName = 'alternate-name:import';
+    protected static string $defaultName = 'alternate-name:import';
 
     /** @var array<int, Location> $locations */
     private array $locations = [];

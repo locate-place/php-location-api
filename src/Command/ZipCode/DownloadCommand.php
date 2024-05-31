@@ -34,7 +34,7 @@ use ZipArchive;
  */
 class DownloadCommand extends Base
 {
-    protected static $defaultName = 'zip-code:download';
+    protected static string $defaultName = 'zip-code:download';
 
     protected const URL_DOWNLOAD_ZIP_CODE = 'https://download.geonames.org/export/zip/allCountries.zip';
 

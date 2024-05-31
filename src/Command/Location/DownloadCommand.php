@@ -42,7 +42,7 @@ use ZipArchive;
  */
 class DownloadCommand extends Base
 {
-    protected static $defaultName = 'location:download';
+    protected static string $defaultName = 'location:download';
 
     protected const URL_DOWNLOAD_LOCATION = 'http://download.geonames.org/export/dump/%s.zip';
 

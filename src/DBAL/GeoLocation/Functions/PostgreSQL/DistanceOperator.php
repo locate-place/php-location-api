@@ -16,10 +16,10 @@ namespace App\DBAL\GeoLocation\Functions\PostgreSQL;
 use Doctrine\ORM\Query\AST\ASTException;
 use Doctrine\ORM\Query\AST\Functions\FunctionNode;
 use Doctrine\ORM\Query\AST\Node;
-use Doctrine\ORM\Query\Lexer;
 use Doctrine\ORM\Query\Parser;
 use Doctrine\ORM\Query\QueryException;
 use Doctrine\ORM\Query\SqlWalker;
+use Doctrine\ORM\Query\TokenType;
 
 /**
  * Class DistanceOperator
@@ -54,23 +54,23 @@ class DistanceOperator extends FunctionNode
      */
     public function parse(Parser $parser): void
     {
-        $parser->match(Lexer::T_IDENTIFIER);          // DistanceOperator
-        $parser->match(Lexer::T_OPEN_PARENTHESIS);    // (
+        $parser->match(TokenType::T_IDENTIFIER);          // DistanceOperator
+        $parser->match(TokenType::T_OPEN_PARENTHESIS);    // (
         $this->field = $parser->ArithmeticFactor();         // l.coordinate
-        $parser->match(Lexer::T_COMMA);               // ,
+        $parser->match(TokenType::T_COMMA);               // ,
         $this->latitude = $parser->ArithmeticFactor();      // 47.473110 (latitude)
-        $parser->match(Lexer::T_COMMA);               // ,
+        $parser->match(TokenType::T_COMMA);               // ,
         $this->longitude = $parser->ArithmeticFactor();     // 10.813154 (longitude)
 
         /* Check if srid was given. */
         $lexer = $parser->getLexer();                       // ,4326 or NULL
-        $nextType = $lexer->lookahead['type'] ?? $lexer->lookahead->type ?? null;
-        if (Lexer::T_COMMA === $nextType) {
-            $parser->match(Lexer::T_COMMA);
+        $nextType = $lexer->lookahead->type ?? null;
+        if (TokenType::T_COMMA === $nextType) {
+            $parser->match(TokenType::T_COMMA);
             $this->srid = $parser->ArithmeticFactor();
         }
 
-        $parser->match(Lexer::T_CLOSE_PARENTHESIS);   // )
+        $parser->match(TokenType::T_CLOSE_PARENTHESIS);   // )
     }
 
     /**

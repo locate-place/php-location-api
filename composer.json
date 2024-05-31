@@ -13,9 +13,10 @@
         "ext-intl": "*",
         "ext-mbstring": "*",
         "ext-zip": "*",
+        "doctrine/dbal": "^4.0",
         "doctrine/doctrine-laminas-hydrator": "^3.4",
         "ixnode/bash-version-manager": "^0.1.7",
-        "ixnode/php-api-version-bundle": "^0.1.22",
+        "ixnode/php-api-version-bundle": "^0.1.24",
         "ixnode/php-checker": "^0.1.9",
         "ixnode/php-container": "^0.1.23",
         "ixnode/php-coordinate": "^0.1.21",
@@ -23,17 +24,20 @@
         "ixnode/php-exception": "*",
         "ixnode/php-timezone": "^0.1.20",
         "ixnode/php-web-crawler": "^0.1.24",
-        "symfony/config": "6.3.*",
-        "symfony/console": "6.3.*",
-        "symfony/dotenv": "6.3.*",
+        "symfony/asset": "7.1.*",
+        "symfony/config": "7.1.*",
+        "symfony/console": "7.1.*",
+        "symfony/dependency-injection": "7.1.*",
+        "symfony/dotenv": "7.1.*",
         "symfony/flex": "^2",
-        "symfony/framework-bundle": "6.3.*",
-        "symfony/intl": "6.3.*",
+        "symfony/framework-bundle": "7.1.*",
+        "symfony/http-foundation": "7.1.*",
+        "symfony/intl": "7.1.*",
         "symfony/monolog-bundle": "^3.8",
-        "symfony/runtime": "6.3.*",
-        "symfony/stopwatch": "6.3.*",
-        "symfony/translation": "6.3.*",
-        "symfony/yaml": "6.3.*"
+        "symfony/runtime": "7.1.*",
+        "symfony/stopwatch": "7.1.*",
+        "symfony/translation": "7.1.*",
+        "symfony/yaml": "7.1.*"
     },
     "config": {
         "allow-plugins": {
@@ -338,7 +342,7 @@
     "extra": {
         "symfony": {
             "allow-contrib": false,
-            "require": "6.3.*"
+            "require": "7.1.*"
         }
     },
     "require-dev": {
@@ -350,11 +354,11 @@
         "phpunit/phpunit": "^9.5",
         "povils/phpmnd": "^3.1",
         "rector/rector": "^0.17.1",
-        "symfony/browser-kit": "6.3.*",
-        "symfony/css-selector": "6.3.*",
-        "symfony/http-client": "6.3.*",
+        "symfony/browser-kit": "7.1.*",
+        "symfony/css-selector": "7.1.*",
+        "symfony/http-client": "7.1.*",
         "symfony/maker-bundle": "^1.49",
         "symfony/phpunit-bridge": "^6.3",
-        "symfony/web-profiler-bundle": "6.3.*"
+        "symfony/web-profiler-bundle": "7.1.*"
     }
 }

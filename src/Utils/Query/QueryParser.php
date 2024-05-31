@@ -1001,9 +1001,15 @@ class QueryParser
         $featureCodes = [];
 
         foreach ($features as $feature) {
+            $length = mb_strlen($feature);
+
+            if (!is_int($length)) {
+                throw new LogicException('Failed to get length of feature.');
+            }
+
             match (true) {
-                mb_strlen($feature) === self::LENGTH_FEATURE_CLASS => $featureClasses[] = strtoupper($feature),
-                mb_strlen($feature) > self::LENGTH_FEATURE_CLASS && mb_strlen($feature) <= self::LENGTH_FEATURE_CODE => $featureCodes[] = strtoupper($feature),
+                $length === self::LENGTH_FEATURE_CLASS => $featureClasses[] = strtoupper($feature),
+                $length > self::LENGTH_FEATURE_CLASS && $length <= self::LENGTH_FEATURE_CODE => $featureCodes[] = strtoupper($feature),
                 default => null,
             };
         }

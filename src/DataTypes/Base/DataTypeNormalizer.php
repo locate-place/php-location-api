@@ -51,9 +51,22 @@ class DataTypeNormalizer implements NormalizerInterface
      * Returns whether this normalizer supports the given data and format.
      *
      * @inheritdoc
+     * @param array<int|string, mixed> $context
      */
-    public function supportsNormalization(mixed $data, string $format = null): bool
+    public function supportsNormalization(mixed $data, ?string $format = null, array $context = []): bool
     {
         return $data instanceof DataType;
+    }
+
+    /**
+     * Returns the supported types for this normalizer.
+     *
+     * @inheritdoc
+     */
+    public function getSupportedTypes(?string $format): array
+    {
+        return [
+            DataType::class => true,
+        ];
     }
 }

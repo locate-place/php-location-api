@@ -46,7 +46,7 @@ use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
  */
 class WikipediaCommand extends Command
 {
-    protected static $defaultName = 'alternate-name:wikipedia';
+    protected static string $defaultName = 'alternate-name:wikipedia';
 
     private const NUMBER_FLUSH_AFTER = 10;
 

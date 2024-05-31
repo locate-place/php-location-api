@@ -49,7 +49,7 @@ class PlaceSE
             'longitude' => 18.15446911303962,
         ],
         'location' => [
-            'district-locality' => 'Kottla',
+            'district-locality' => 'Skärsätra',
             'city-municipality' => 'Lidingö',
             'state' => 'Stockholm',
             'country' => 'Schweden',

@@ -53,7 +53,7 @@ use Symfony\Component\Console\Input\ArrayInput;
  */
 class ImportCommand extends BaseLocationImport
 {
-    protected static $defaultName = 'location:import';
+    protected static string $defaultName = 'location:import';
 
     /** @var array<string, array<int, string>> $unknownTimezones */
     private array $unknownTimezones = [];

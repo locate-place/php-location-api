@@ -39,6 +39,8 @@ abstract class BasePostGISType extends Type
 
     final public const SRID_ZERO = 0;
 
+    abstract public function getName(): string;
+
     /**
      * Sets whether this type requires a SQL conversion.
      *

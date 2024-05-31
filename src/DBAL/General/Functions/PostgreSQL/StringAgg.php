@@ -17,10 +17,10 @@ use Doctrine\ORM\Query\AST\Functions\FunctionNode;
 use Doctrine\ORM\Query\AST\Node;
 use Doctrine\ORM\Query\AST\OrderByClause;
 use Doctrine\ORM\Query\AST\PathExpression;
-use Doctrine\ORM\Query\Lexer;
 use Doctrine\ORM\Query\Parser;
 use Doctrine\ORM\Query\QueryException;
 use Doctrine\ORM\Query\SqlWalker;
+use Doctrine\ORM\Query\TokenType;
 
 /**
  * Class StringAgg
@@ -53,23 +53,23 @@ class StringAgg extends FunctionNode
     {
         $lexer = $parser->getLexer();
 
-        $parser->match(Lexer::T_IDENTIFIER);                                                 // string_agg
-        $parser->match(Lexer::T_OPEN_PARENTHESIS);                                           // (
+        $parser->match(TokenType::T_IDENTIFIER);                                                 // string_agg
+        $parser->match(TokenType::T_OPEN_PARENTHESIS);                                           // (
 
-        if ($lexer->isNextToken(Lexer::T_DISTINCT)) {                                         // [DISTINCT]
-            $parser->match(Lexer::T_DISTINCT);
+        if ($lexer->isNextToken(TokenType::T_DISTINCT)) {                                         // [DISTINCT]
+            $parser->match(TokenType::T_DISTINCT);
             $this->isDistinct = true;
         }
 
         $this->expression = $parser->PathExpression(PathExpression::TYPE_STATE_FIELD); // a.alternateName
-        $parser->match(Lexer::T_COMMA);                                                      // ,
+        $parser->match(TokenType::T_COMMA);                                                      // ,
         $this->delimiter = $parser->StringPrimary();                                               // ', '
 
-        if ($lexer->isNextToken(Lexer::T_ORDER)) {                                            // [ORDER BY a.alternateName]
+        if ($lexer->isNextToken(TokenType::T_ORDER)) {                                            // [ORDER BY a.alternateName]
             $this->orderBy = $parser->OrderByClause();
         }
 
-        $parser->match(Lexer::T_CLOSE_PARENTHESIS);                                          // )
+        $parser->match(TokenType::T_CLOSE_PARENTHESIS);                                          // )
     }
 
     /**
