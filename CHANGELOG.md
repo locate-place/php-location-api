@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Releases
 
+### [1.0.8] - 2024-06-01
+
+* Add relative url to redoc
+
 ### [1.0.7] - 2024-05-31
 
 * Add first country district configuration
