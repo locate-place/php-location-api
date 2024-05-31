@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Releases
 
+### [1.0.7] - 2024-05-31
+
+* Add first country district configuration
+* Add new adm detection and optimizations
+* Update symfony to 7.1
+* Add redoc to /
+
 ### [1.0.6] - 2024-05-26
 
 * Fix english and spanish full-text search
