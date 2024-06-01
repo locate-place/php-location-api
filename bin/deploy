@@ -8,3 +8,7 @@ DOCKER_BUILDKIT=1 docker-compose -f docker-compose.yml -f docker-compose.product
 DOCKER_BUILDKIT=1 docker-compose -f docker-compose.yml -f docker-compose.production.yml exec php bin/console cache:clear
 DOCKER_BUILDKIT=1 docker-compose -f docker-compose.yml -f docker-compose.production.yml exec php rm -rf var/cache/prod/
 
+# Reload version
+DOCKER_BUILDKIT=1 docker-compose -f docker-compose.yml -f docker-compose.production.yml down
+DOCKER_BUILDKIT=1 docker-compose -f docker-compose.yml -f docker-compose.production.yml up -d
+
