@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Releases
 
+### [1.0.11] - 2024-06-01
+
+* Add link to locate.place app
+
 ### [1.0.10] - 2024-06-01
 
 * Add Swagger UI and Bootstrap to overview page
