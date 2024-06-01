@@ -17,6 +17,7 @@ use ApiPlatform\Metadata\Get;
 use App\ApiPlatform\OpenApiContext\Parameter;
 use App\ApiPlatform\Route\AutocompleteRoute;
 use App\ApiPlatform\State\AutocompleteProvider;
+use App\ApiPlatform\Type\AutocompleteFeature;
 use App\ApiPlatform\Type\AutocompleteLocation;
 use Ixnode\PhpApiVersionBundle\ApiPlatform\Resource\Base\BasePublicResource;
 use Symfony\Component\Serializer\Annotation\SerializedName;
@@ -45,11 +46,11 @@ class Autocomplete extends BasePublicResource
     #[SerializedName('locations')]
     private array $locations;
 
-    /** @var array<int, array<string, mixed>> $featureClasses */
+    /** @var array<int, AutocompleteFeature> $featureClasses */
     #[SerializedName('feature-classes')]
     private array $featureClasses;
 
-    /** @var array<int, array<string, mixed>> $featureCodes */
+    /** @var array<int, AutocompleteFeature> $featureCodes */
     #[SerializedName('feature-codes')]
     private array $featureCodes;
 
@@ -73,7 +74,7 @@ class Autocomplete extends BasePublicResource
     }
 
     /**
-     * @return array<int, array<string, mixed>>
+     * @return array<int, AutocompleteFeature>
      */
     public function getFeatureClasses(): array
     {
@@ -81,7 +82,7 @@ class Autocomplete extends BasePublicResource
     }
 
     /**
-     * @param array<int, array<string, mixed>> $featureClasses
+     * @param array<int, AutocompleteFeature> $featureClasses
      * @return self
      */
     public function setFeatureClasses(array $featureClasses): self
@@ -92,7 +93,7 @@ class Autocomplete extends BasePublicResource
     }
 
     /**
-     * @return array<int, array<string, mixed>>
+     * @return array<int, AutocompleteFeature>
      */
     public function getFeatureCodes(): array
     {
@@ -100,7 +101,7 @@ class Autocomplete extends BasePublicResource
     }
 
     /**
-     * @param array<int, array<string, mixed>> $featureCodes
+     * @param array<int, AutocompleteFeature> $featureCodes
      * @return self
      */
     public function setFeatureCodes(array $featureCodes): self
