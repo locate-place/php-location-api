@@ -75,6 +75,8 @@ class BaseProviderCustom extends BaseResourceWrapperProvider
     /** @var array<int|string, mixed>|null $results */
     private array|null $results = null;
 
+    protected const GET_COLLECTION = 'GET_COLLECTION';
+
     /**
      * @param Version $version
      * @param ParameterBagInterface $parameterBag

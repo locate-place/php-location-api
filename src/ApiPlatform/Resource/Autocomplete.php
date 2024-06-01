@@ -17,6 +17,7 @@ use ApiPlatform\Metadata\Get;
 use App\ApiPlatform\OpenApiContext\Parameter;
 use App\ApiPlatform\Route\AutocompleteRoute;
 use App\ApiPlatform\State\AutocompleteProvider;
+use App\ApiPlatform\Type\AutocompleteLocation;
 use Ixnode\PhpApiVersionBundle\ApiPlatform\Resource\Base\BasePublicResource;
 use Symfony\Component\Serializer\Annotation\SerializedName;
 
@@ -29,6 +30,7 @@ use Symfony\Component\Serializer\Annotation\SerializedName;
  */
 #[Get(
     openapiContext: [
+        'summary' => AutocompleteRoute::SUMMARY,
         'description' => AutocompleteRoute::DESCRIPTION,
         'parameters' => [
             Parameter::QUERY_AUTOCOMPLETE,
@@ -39,7 +41,7 @@ use Symfony\Component\Serializer\Annotation\SerializedName;
 )]
 class Autocomplete extends BasePublicResource
 {
-    /** @var array<int, array<string, mixed>> $locations */
+    /** @var array<int, AutocompleteLocation> $locations */
     #[SerializedName('locations')]
     private array $locations;
 
@@ -52,7 +54,7 @@ class Autocomplete extends BasePublicResource
     private array $featureCodes;
 
     /**
-     * @return array<int, array<string, mixed>>
+     * @return array<int, AutocompleteLocation>
      */
     public function getLocations(): array
     {
@@ -60,7 +62,7 @@ class Autocomplete extends BasePublicResource
     }
 
     /**
-     * @param array<int, array<string, mixed>> $locations
+     * @param array<int, AutocompleteLocation> $locations
      * @return self
      */
     public function setLocations(array $locations): self

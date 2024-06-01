@@ -149,7 +149,7 @@ class Parameter
         'name' => Name::LANGUAGE,
         'in' => 'query', // cookie, header, path, query
         'description' => '<strong>Language</strong>',
-        'required' => true,
+        'required' => false,
         'deprecated' => false,
         'allowEmptyValue' => false,
         'schema' => [

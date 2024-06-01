@@ -3,6 +3,22 @@
 {% block title %}Documentation{% endblock %}
 
 {% block body %}
-    <redoc id="redoc-container" spec-url="/api/v1/docs.json"></redoc>
-    <script src="https://cdn.redoc.ly/redoc/latest/bundles/redoc.standalone.js"></script>
+    <redoc
+        id="redoc-container"
+        spec-url="/api/v1/docs.json"
+        required-props-first=true
+        hide-download-button=true
+        scroll-y-offset="56"
+        theme='{
+            "sidebar": {
+                "backgroundColor": "rgb(248, 249, 250)"
+            },
+            "spacing": {
+                "unit": "5",
+                "sectionHorizontal": "40",
+                "sectionVertical": "40"
+            }
+       }'
+    ></redoc>
+    <script src="/dist/js/redoc.standalone.js"></script>
 {% endblock %}

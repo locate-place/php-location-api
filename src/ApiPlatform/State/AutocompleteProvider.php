@@ -16,6 +16,7 @@ namespace App\ApiPlatform\State;
 use App\ApiPlatform\Resource\Autocomplete;
 use App\ApiPlatform\Route\AutocompleteRoute;
 use App\ApiPlatform\State\Base\BaseProviderCustom;
+use App\ApiPlatform\Type\AutocompleteLocation;
 use App\Constants\DB\FeatureClass;
 use App\Constants\DB\FeatureCode;
 use App\Constants\Key\KeyArray;
@@ -98,8 +99,9 @@ final class AutocompleteProvider extends BaseProviderCustom
      * @return array<int, array{
      *     id: int,
      *     name: string,
-     *     relevance: int,
-     *     country: string|null
+     *     country: string|null,
+     *     country-name: string|null,
+     *     relevance: int
      * }>
      * @throws ClassInvalidException
      * @throws ClientExceptionInterface
@@ -171,12 +173,16 @@ final class AutocompleteProvider extends BaseProviderCustom
      * @param array<int, array{
      *      id: int|string,
      *      name: string,
+     *      country?: string|null,
+     *      country-name?: string|null,
      *      relevance: int
      *  }> $array
      * @return array<int, array{
-     *      id: int|string,
-     *      name: string,
-     *      relevance: int
+     *       id: int|string,
+     *       name: string,
+     *       country?: string|null,
+     *       country-name?: string|null,
+     *       relevance: int
      *  }>
      */
     private function filterFirstSearch(
@@ -209,12 +215,16 @@ final class AutocompleteProvider extends BaseProviderCustom
      * @param array<int, array{
      *      id: int|string,
      *      name: string,
+     *      country?: string|null,
+     *      country-name?: string|null,
      *      relevance: int
      *  }> $array
      * @param bool $useRelevance
      * @return array<int, array{
      *      id: int|string,
      *      name: string,
+     *      country?: string|null,
+     *      country-name?: string|null,
      *      relevance: int
      *  }>
      * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
@@ -250,10 +260,35 @@ final class AutocompleteProvider extends BaseProviderCustom
      * @param array<int, array{
      *      id: int|string,
      *      name: string,
+     *      country?: string|null,
+     *      country-name?: string|null,
+     *      relevance: int
+     *  }> $array
+     * @return array<int, AutocompleteLocation>
+     */
+    private function convertAutocompleteLocation(
+        array $array
+    ): array
+    {
+        return array_map(function($locationMatch) {
+            unset($locationMatch[KeyArray::RELEVANCE]);
+            return (new AutocompleteLocation())
+                ->setId((int) $locationMatch[KeyArray::ID])
+                ->setName($locationMatch[KeyArray::NAME])
+                ->setCountry($locationMatch[KeyArray::COUNTRY] ?? null)
+                ->setCountryName($locationMatch[KeyArray::COUNTRY_NAME] ?? null)
+            ;
+        }, $array);
+    }
+
+    /**
+     * @param array<int, array{
+     *      id: string|int,
+     *      name: string,
      *      relevance: int
      *  }> $array
      * @return array<int, array{
-     *      id: int|string,
+     *      id: string,
      *      name: string
      *  }>
      */
@@ -263,6 +298,9 @@ final class AutocompleteProvider extends BaseProviderCustom
     {
         return array_map(function($locationMatch) {
             unset($locationMatch[KeyArray::RELEVANCE]);
+
+            $locationMatch[KeyArray::ID] = (string) $locationMatch[KeyArray::ID];
+
             return $locationMatch;
         }, $array);
     }
@@ -271,17 +309,66 @@ final class AutocompleteProvider extends BaseProviderCustom
      * @param array<int, array{
      *      id: int|string,
      *      name: string,
+     *      country: string|null,
+     *      country-name: string|null,
      *      relevance: int
      *  }> $array
      * @param string[] $search
      * @param bool $useRelevance
-     * @return array<int, array{
-     *      id: int|string,
-     *      name: string
-     *  }>
+     * @return array<int, AutocompleteLocation>
      * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
      */
-    private function prepareArray(
+    private function prepareArrayAutocompleteLocation(
+        array $array,
+        array $search,
+        bool $useRelevance = false,
+    ): array
+    {
+        $array = $this->filterFirstSearch($array, $search);
+        $array = $this->sortRelevance($array, $search, $useRelevance);
+        return $this->convertAutocompleteLocation($array);
+    }
+
+    /**
+     * @param array<int, array{
+     *      id: string,
+     *      name: string,
+     *      relevance: int,
+     *  }> $array
+     * @param string[] $search
+     * @param bool $useRelevance
+     * @return array<int, array{
+     *     id: string,
+     *     name: string
+     * }>
+     * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
+     */
+    private function prepareArrayFeatureClasses(
+        array $array,
+        array $search,
+        bool $useRelevance = false,
+    ): array
+    {
+        $array = $this->filterFirstSearch($array, $search);
+        $array = $this->sortRelevance($array, $search, $useRelevance);
+        return $this->removeRelevance($array);
+    }
+
+    /**
+     * @param array<int, array{
+     *     id: string,
+     *     name: string,
+     *     relevance: int
+     * }> $array
+     * @param string[] $search
+     * @param bool $useRelevance
+     * @return array<int, array{
+     *     id: string,
+     *     name: string
+     * }>
+     * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
+     */
+    private function prepareArrayFeatureCodes(
         array $array,
         array $search,
         bool $useRelevance = false,
@@ -297,11 +384,7 @@ final class AutocompleteProvider extends BaseProviderCustom
      *
      * @param Query $query
      * @param string $isoLanguage
-     * @return array<int, array{
-     *     id: int|string,
-     *     name: string,
-     *     country?: string|null
-     * }>
+     * @return array<int, AutocompleteLocation>
      * @throws CaseUnsupportedException
      * @throws ClassInvalidException
      * @throws ClientExceptionInterface
@@ -329,7 +412,7 @@ final class AutocompleteProvider extends BaseProviderCustom
         $featureCode = $query->getQueryParser()?->getFeatureCodes() ?? null;
         $country = $query->getQueryParser()?->getCountry() ?? null;
 
-        return $this->prepareArray(
+        return $this->prepareArrayAutocompleteLocation(
             $this->doGetLocationsFromDB(
                 search: $search,
                 featureClass: $featureClass,
@@ -346,7 +429,7 @@ final class AutocompleteProvider extends BaseProviderCustom
      * @param Query $query
      * @param string $isoLanguage
      * @return array<int, array{
-     *     id: int|string,
+     *     id: string,
      *     name: string
      * }>
      * @throws CaseUnsupportedException
@@ -365,7 +448,7 @@ final class AutocompleteProvider extends BaseProviderCustom
             return [];
         }
 
-        return $this->prepareArray(
+        return $this->prepareArrayFeatureClasses(
             (new FeatureCode($this->translator))->getAllAutoCompletion(
                 queryString: strtolower($search[0]),
                 locale: $isoLanguage
@@ -378,11 +461,12 @@ final class AutocompleteProvider extends BaseProviderCustom
      * @param Query $query
      * @param string $isoLanguage
      * @return array<int, array{
-     *     id: int|string,
+     *     id: string,
      *     name: string
      * }>
      * @throws CaseUnsupportedException
      * @throws ParserException
+     * @throws QueryParserException
      */
     private function getFeatureCodes(Query $query, string $isoLanguage = LanguageCode::DE): array
     {
@@ -396,7 +480,7 @@ final class AutocompleteProvider extends BaseProviderCustom
             return [];
         }
 
-        return $this->prepareArray(
+        return $this->prepareArrayFeatureCodes(
             (new FeatureClass($this->translator))->getAllAutoCompletion(
                 queryString: strtolower($search[0]),
                 locale: $isoLanguage
@@ -414,6 +498,7 @@ final class AutocompleteProvider extends BaseProviderCustom
      * @throws ClientExceptionInterface
      * @throws ORMException
      * @throws ParserException
+     * @throws QueryParserException
      * @throws RedirectionExceptionInterface
      * @throws ServerExceptionInterface
      * @throws TransportExceptionInterface
@@ -462,6 +547,7 @@ final class AutocompleteProvider extends BaseProviderCustom
      * @throws ServerExceptionInterface
      * @throws TransportExceptionInterface
      * @throws TypeInvalidException
+     * @throws QueryParserException
      */
     protected function doProvide(): BasePublicResource|array
     {
