@@ -31,9 +31,20 @@ class DocumentController extends BaseCoordinateController
      *
      * @return Response
      */
-    #[Route('/', name: 'app_home')]
-    public function home(): Response
+    #[Route('/', name: 'app_documentation')]
+    public function documentation(): Response
     {
         return $this->render('document/redoc.html.twig');
+    }
+
+    /**
+     * The controller to show the /swagger page.
+     *
+     * @return Response
+     */
+    #[Route('/swagger', name: 'app_swagger')]
+    public function swagger(): Response
+    {
+        return $this->render('document/swagger.html.twig');
     }
 }

@@ -31,7 +31,7 @@ use Symfony\Component\Serializer\Annotation\SerializedName;
     openapiContext: [
         'description' => AutocompleteRoute::DESCRIPTION,
         'parameters' => [
-            Parameter::QUERY,
+            Parameter::QUERY_AUTOCOMPLETE,
             Parameter::LANGUAGE,
         ]
     ],

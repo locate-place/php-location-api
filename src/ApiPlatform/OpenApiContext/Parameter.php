@@ -204,8 +204,24 @@ class Parameter
         'deprecated' => false,
         'allowEmptyValue' => false,
         'schema' => [
-            'type' => 'sting',
+            'type' => 'string',
             'default' => 'AIRP 51.05811,13.74133', /* Dresden, Germany, The golden rider */
+        ],
+        'style' => 'simple', // simple, form
+        'explode' => false,
+        'allowReserved' => false,
+    ];
+
+    final public const QUERY_AUTOCOMPLETE = [
+        'name' => Name::QUERY_SHORT,
+        'in' => 'query', // cookie, header, path, query
+        'description' => '<strong>Query</strong>',
+        'required' => true,
+        'deprecated' => false,
+        'allowEmptyValue' => false,
+        'schema' => [
+            'type' => 'string',
+            'default' => 'Dresden',
         ],
         'style' => 'simple', // simple, form
         'explode' => false,
