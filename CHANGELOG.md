@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Releases
 
+### [1.0.12] - 2024-06-01
+
+* Add Api Platform descriptions
+* Add AutocompleteLocation type to autocomplete endpoint
+* Add AutocompleteFeature type to autocomplete endpoint
+
 ### [1.0.11] - 2024-06-01
 
 * Add link to locate.place app
