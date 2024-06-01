@@ -1,17 +1,29 @@
 # PHP Location API
 
-[![Release](https://img.shields.io/github/v/release/twelvepics-com/php-location-api)](https://github.com/twelvepics-com/php-location-api/releases)
-[![](https://img.shields.io/github/release-date/twelvepics-com/php-location-api)](https://github.com/twelvepics-com/php-location-api/releases)
-![](https://img.shields.io/github/repo-size/twelvepics-com/php-location-api.svg)
+[![Release](https://img.shields.io/github/v/release/locate-place/php-location-api)](https://github.com/locate-place/php-location-api/releases)
+[![Release Data](https://img.shields.io/github/release-date/locate-place/php-location-api)](https://github.com/locate-place/php-location-api/releases)
+[![Repository Size](https://img.shields.io/github/repo-size/locate-place/php-location-api.svg)](https://github.com/locate-place/php-location-api)
+[![Symfony](https://img.shields.io/badge/Symfony-^7.1-1f2937.svg?logo=symfony&logoColor=white&labelColor=555555&style=flat)](https://symfony.com/doc/current/setup.html)
+[![Doctrine](https://img.shields.io/badge/Doctrine-^3.2-fa6931.svg?labelColor=555555&style=flat)](https://www.doctrine-project.org/projects/doctrine-orm/en/3.2/index.html)
+[![API Platform](https://img.shields.io/badge/API%20Platform-^3.3-0099a1.svg?labelColor=555555&style=flat)](https://api-platform.com/docs/distribution/)
 [![PHP](https://img.shields.io/badge/PHP-^8.2-777bb3.svg?logo=php&logoColor=white&labelColor=555555&style=flat)](https://www.php.net/supported-versions.php)
 [![PHPStan](https://img.shields.io/badge/PHPStan-Level%20Max-777bb3.svg?style=flat)](https://phpstan.org/user-guide/rule-levels)
 [![PHPUnit](https://img.shields.io/badge/PHPUnit-Unit%20Tests-6b9bd2.svg?style=flat)](https://phpunit.de)
 [![PHPCS](https://img.shields.io/badge/PHPCS-PSR12-416d4e.svg?style=flat)](https://www.php-fig.org/psr/psr-12/)
 [![PHPMD](https://img.shields.io/badge/PHPMD-ALL-364a83.svg?style=flat)](https://github.com/phpmd/phpmd)
-[![Rector - Instant Upgrades and Automated Refactoring](https://img.shields.io/badge/Rector-PHP%208.2-73a165.svg?style=flat)](https://github.com/rectorphp/rector)
+[![Rector - Instant Upgrades and Automated Refactoring](https://img.shields.io/badge/Rector-^0.17-73a165.svg?style=flat)](https://github.com/rectorphp/rector)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-14.11-336791.svg?style=flat&logo=postgresql&logoColor=white)](https://www.postgresql.org/docs/14/index.html)
+[![PostGIS](https://img.shields.io/badge/PostGIS-3.4-112b3c.svg?style=flat)](https://postgis.net/documentation/getting_started/)
 [![LICENSE](https://img.shields.io/github/license/ixnode/php-api-version-bundle)](https://github.com/ixnode/php-api-version-bundle/blob/master/LICENSE)
 
-> This project provides a location API.
+> Welcome to the php-location-api repository! This project provides the backend API for the
+> locate.place application, delivering comprehensive location information. From population
+> statistics and mountain data to airport details and postal codes, this API is the
+> backbone of our location-based services.
+
+## Demo
+
+Check out the live demo and documentation here: [loc8.place](https://loc8.place/)
 
 ## Installation
 
