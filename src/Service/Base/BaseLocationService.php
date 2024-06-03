@@ -1111,8 +1111,6 @@ abstract class BaseLocationService extends BaseHelperLocationService
             default => throw new LogicException(sprintf('Unknown detection mode "%d".', $detectionMode)),
         };
 
-        $this->setUseNewAdminDetectionStrategy(false);
-
         $this->locationRepository->setDebug($this->isDebug());
 
         $id = $locationEntity->getId();

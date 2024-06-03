@@ -386,12 +386,10 @@ class LocationRepository extends BaseCoordinateRepository
             $district = null;
         }
 
-        $adminAreas = [
+        return [
             KeyArray::CITY_MUNICIPALITY => $city,
             KeyArray::DISTRICT_LOCALITY => $district,
         ];
-
-        return $adminAreas;
     }
 
 //    /**

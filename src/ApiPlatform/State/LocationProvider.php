@@ -438,6 +438,7 @@ final class LocationProvider extends BaseProviderCustom
      * @throws ServerExceptionInterface
      * @throws TransportExceptionInterface
      * @throws QueryParserException
+     * @throws ORMException
      */
     private function doProvideGetWithGeonameId(QueryParser $queryParser): BasePublicResource
     {
@@ -456,6 +457,12 @@ final class LocationProvider extends BaseProviderCustom
 
         if (is_null($geonameId)) {
             throw new LogicException('Unexpected behaviour: geoname id is null.');
+        }
+
+        $query = $queryParser->getQuery();
+
+        if (!is_null($query) && $query->hasFilter('debug')) {
+            $this->locationService->setDebug((string) $query->getFilter('debug'));
         }
 
         $location = $this->locationService->getLocationByGeonameId(

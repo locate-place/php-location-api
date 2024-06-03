@@ -782,6 +782,7 @@ parameters:
             city:
                 match: '%admin_codes_a1%'
         US:
+            detection_mode: 2
             district:
                 feature_class: '%feature_class_p%'
                 feature_codes:
@@ -854,3 +855,5 @@ parameters:
                       admin_codes:
                           a1: 'NY'
                           a2: 'null'
+        YT:
+            detection_mode: 1
