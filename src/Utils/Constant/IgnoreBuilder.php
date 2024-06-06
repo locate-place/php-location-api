@@ -46,7 +46,7 @@ class IgnoreBuilder
 <?php
 
 /*
- * This file is part of the twelvepics-com/php-location-api project.
+ * This file is part of the locate-place/php-location-api project.
  *
  * (c) Björn Hempel <https://www.hempel.li/>
  *
