@@ -537,6 +537,19 @@ class BaseProviderCustom extends BaseResourceWrapperProvider
     }
 
     /**
+     * Return the language by given locale.
+     *
+     * @param string $locale
+     * @return string
+     */
+    protected function getLanguageByLocale(string $locale): string
+    {
+        [$language] = explode('_', $locale);
+
+        return $language;
+    }
+
+    /**
      * Returns the iso language and country given by filter.
      *
      * @return array{iso-language: string|null, country: string|null}
