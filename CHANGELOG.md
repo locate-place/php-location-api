@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Releases
 
+### [1.0.13] - 2024-06-06
+
+* Update OpenAPI Specification
+
 ### [1.0.12] - 2024-06-01
 
 * Add Api Platform descriptions
