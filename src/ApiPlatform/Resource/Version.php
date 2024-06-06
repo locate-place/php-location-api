@@ -27,7 +27,20 @@ use Ixnode\PhpApiVersionBundle\ApiPlatform\State\VersionProvider as VersionProvi
  */
 #[Get(
     openapiContext: [
-        'description' => VersionRouteOrigin::DESCRIPTION
+        'summary' => VersionRouteOrigin::SUMMARY_GET,
+        'description' => VersionRouteOrigin::DESCRIPTION_GET,
+        'responses' => [
+            '200' => [
+                'description' => 'Version resource',
+                'content' => [
+                    'application/json' => [
+                        'schema' => [
+                            '$ref' => "#/components/schemas/Version"
+                        ]
+                    ]
+                ]
+            ]
+        ]
     ],
     provider: VersionProviderOrigin::class
 )]

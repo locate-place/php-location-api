@@ -31,11 +31,23 @@ use Symfony\Component\Serializer\Annotation\SerializedName;
  */
 #[Get(
     openapiContext: [
-        'summary' => AutocompleteRoute::SUMMARY,
-        'description' => AutocompleteRoute::DESCRIPTION,
+        'summary' => AutocompleteRoute::SUMMARY_GET,
+        'description' => AutocompleteRoute::DESCRIPTION_GET,
         'parameters' => [
             Parameter::QUERY_AUTOCOMPLETE,
             Parameter::LANGUAGE,
+        ],
+        'responses' => [
+            '200' => [
+                'description' => 'Autocomplete resource',
+                'content' => [
+                    'application/json' => [
+                        'schema' => [
+                            '$ref' => "#/components/schemas/Autocomplete"
+                        ]
+                    ]
+                ]
+            ]
         ]
     ],
     provider: AutocompleteProvider::class

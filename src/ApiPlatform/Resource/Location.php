@@ -42,40 +42,15 @@ use Symfony\Component\Serializer\Annotation\Ignore;
 /* Get resources via geoname id: /api/v1/location */
 #[GetCollection(
     openapiContext: [
-        'description' => LocationRoute::DESCRIPTION_COLLECTION_GET,
+        'summary' => LocationRoute::SUMMARY_GET_COLLECTION_SEARCH,
+        'description' => LocationRoute::DESCRIPTION_GET_COLLECTION_SEARCH,
         'parameters' => [
             Parameter::QUERY,
+            Parameter::LOCALE,
+            Parameter::POSITION,
             Parameter::DISTANCE,
             Parameter::LIMIT,
-            Parameter::LANGUAGE,
-            Parameter::COUNTRY,
-            Parameter::COORDINATE_SHORT,
-        ],
-    ],
-    provider: LocationProvider::class
-)]
-/* Get resources via geoname id: /api/v1/location/examples */
-#[GetCollection(
-    uriTemplate: 'location/examples.{_format}',
-    openapiContext: [
-        'description' => LocationRoute::DESCRIPTION_COLLECTION_GET,
-        'parameters' => [
-            Parameter::LANGUAGE,
-            Parameter::COUNTRY,
-            Parameter::COORDINATE_SHORT,
-        ],
-    ],
-    provider: LocationProvider::class
-)]
-/* Get resources via geoname id: /api/v1/location/capitals */
-#[GetCollection(
-    uriTemplate: 'location/capitals.{_format}',
-    openapiContext: [
-        'description' => LocationRoute::DESCRIPTION_COLLECTION_GET,
-        'parameters' => [
-            Parameter::LANGUAGE,
-            Parameter::COUNTRY,
-            Parameter::COORDINATE_SHORT,
+            Parameter::PAGE,
         ],
     ],
     provider: LocationProvider::class
@@ -84,11 +59,69 @@ use Symfony\Component\Serializer\Annotation\Ignore;
 #[GetCollection(
     uriTemplate: 'location/airports.{_format}',
     openapiContext: [
-        'description' => LocationRoute::DESCRIPTION_COLLECTION_GET,
+        'summary' => LocationRoute::SUMMARY_GET_COLLECTION_AIRPORTS,
+        'description' => LocationRoute::DESCRIPTION_GET_COLLECTION_AIRPORTS,
         'parameters' => [
-            Parameter::LANGUAGE,
-            Parameter::COUNTRY,
-            Parameter::COORDINATE_SHORT,
+            Parameter::LOCALE,
+            Parameter::POSITION,
+            Parameter::DISTANCE,
+            Parameter::LIMIT,
+            Parameter::PAGE,
+        ],
+    ],
+    provider: LocationProvider::class
+)]
+/* Get resources via geoname id: /api/v1/location/capitals */
+#[GetCollection(
+    uriTemplate: 'location/capitals.{_format}',
+    openapiContext: [
+        'summary' => LocationRoute::SUMMARY_GET_COLLECTION_CAPITOLS,
+        'description' => LocationRoute::DESCRIPTION_GET_COLLECTION_CAPITOLS,
+        'parameters' => [
+            Parameter::LOCALE,
+            Parameter::POSITION,
+            Parameter::DISTANCE,
+            Parameter::LIMIT,
+            Parameter::PAGE,
+        ],
+    ],
+    provider: LocationProvider::class
+)]
+/* Get resources via geoname id: /api/v1/location/examples */
+#[GetCollection(
+    uriTemplate: 'location/examples.{_format}',
+    openapiContext: [
+        'summary' => LocationRoute::SUMMARY_GET_COLLECTION_EXAMPLES,
+        'description' => LocationRoute::DESCRIPTION_GET_COLLECTION_EXAMPLES,
+        'parameters' => [
+            Parameter::LOCALE,
+        ],
+    ],
+    paginationEnabled: false,
+    provider: LocationProvider::class
+)]
+/* Get resource via location: /api/v1/location/coordinate/{coordinate} */
+#[Get(
+    uriTemplate: 'location/coordinate.{_format}',
+    openapiContext: [
+        'summary' => LocationRoute::SUMMARY_GET_COORDINATE,
+        'description' => LocationRoute::DESCRIPTION_GET_COORDINATE,
+        'parameters' => [
+            Parameter::QUERY_COORDINATE,
+            Parameter::NEXT_PLACES,
+            Parameter::LOCALE,
+        ],
+        'responses' => [
+            '200' => [
+                'description' => 'Location resource',
+                'content' => [
+                    'application/json' => [
+                        'schema' => [
+                            '$ref' => "#/components/schemas/Location"
+                        ]
+                    ]
+                ]
+            ]
         ],
     ],
     provider: LocationProvider::class
@@ -99,27 +132,25 @@ use Symfony\Component\Serializer\Annotation\Ignore;
         Name::GEONAME_ID,
     ],
     openapiContext: [
-        'description' => LocationRoute::DESCRIPTION,
+        'summary' => LocationRoute::SUMMARY_GET_GEONAME_ID,
+        'description' => LocationRoute::DESCRIPTION_GET_GEONAME_ID,
         'parameters' => [
             Parameter::GEONAME_ID,
             Parameter::NEXT_PLACES,
-            Parameter::LANGUAGE,
-            Parameter::COUNTRY,
-        ]
-    ],
-    provider: LocationProvider::class
-)]
-/* Get resource via location: /api/v1/location/coordinate/{coordinate} */
-#[Get(
-    uriTemplate: 'location/coordinate.{_format}',
-    openapiContext: [
-        'description' => LocationRoute::DESCRIPTION,
-        'parameters' => [
-            Parameter::QUERY,
-            Parameter::NEXT_PLACES,
-            Parameter::LANGUAGE,
-            Parameter::COUNTRY,
-        ]
+            Parameter::LOCALE,
+        ],
+        'responses' => [
+            '200' => [
+                'description' => 'Location resource',
+                'content' => [
+                    'application/json' => [
+                        'schema' => [
+                            '$ref' => "#/components/schemas/Location"
+                        ]
+                    ]
+                ]
+            ]
+        ],
     ],
     provider: LocationProvider::class
 )]

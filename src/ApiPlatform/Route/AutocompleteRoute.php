@@ -41,7 +41,7 @@ final class AutocompleteRoute extends BaseRoute
         ],
     ];
 
-    public const SUMMARY = "Retrieves a Autocomplete resource.";
+    public const SUMMARY_GET = "Retrieves a Autocomplete resource";
 
-    public const DESCRIPTION = "This endpoint is used to search the database for hits and returns them with the ID.";
+    public const DESCRIPTION_GET = "This endpoint is used to search the database for hits and returns them with the ID.";
 }

@@ -32,6 +32,15 @@ class LocaleCode
 
 
 
+    final public const LOCALE_SUPPORTED = [
+        self::DE_DE,
+        self::EN_GB,
+        self::EN_US,
+        self::ES_ES,
+    ];
+
+
+
     final public const ALL = [
         self::DE_DE,
         self::EN_GB,

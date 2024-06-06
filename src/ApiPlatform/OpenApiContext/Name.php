@@ -24,8 +24,6 @@ class Name
 {
     final public const COORDINATE = 'coordinate';
 
-    final public const COORDINATE_SHORT = 'p';
-
     final public const COUNTRY = 'country';
 
     final public const DISTANCE = 'distance';
@@ -42,7 +40,13 @@ class Name
 
     final public const LIMIT = 'limit';
 
+    final public const LOCALE = 'locale';
+
     final public const NEXT_PLACES = 'next_places';
+
+    final public const PAGE = 'page';
+
+    final public const POSITION = 'p';
 
     final public const QUERY = 'query';
 

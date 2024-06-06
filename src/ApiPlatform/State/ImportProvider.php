@@ -18,7 +18,6 @@ use App\ApiPlatform\Resource\Import;
 use App\ApiPlatform\Route\ImportRoute;
 use App\ApiPlatform\State\Base\BaseProviderCustom;
 use App\Constants\DB\Format;
-use App\Constants\Language\LocaleCode;
 use App\Entity\Country;
 use App\Entity\Import as ImportEntity;
 use App\Repository\ImportRepository;
@@ -33,7 +32,6 @@ use Ixnode\PhpException\ArrayType\ArrayKeyNotFoundException;
 use Ixnode\PhpException\Case\CaseUnsupportedException;
 use Ixnode\PhpException\Class\ClassInvalidException;
 use Ixnode\PhpException\Type\TypeInvalidException;
-use Ixnode\PhpTimezone\Constants\CountryAll;
 use LogicException;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -224,54 +222,6 @@ final class ImportProvider extends BaseProviderCustom
     }
 
     /**
-     * Returns a collection of import resources that have not been imported.
-     *
-     * @return BasePublicResource[]
-     * @throws ClassInvalidException
-     */
-    private function doProvideGetCollectionMissing(): array
-    {
-        $countries = CountryAll::COUNTRY_NAMES;
-
-        $importEntities = $this->importRepository->findBy([], ['path' => 'ASC']);
-
-        $missingImports = [];
-
-        foreach ($importEntities as $importEntity) {
-            if (!$importEntity instanceof ImportEntity) {
-                continue;
-            }
-
-            $country = $importEntity->getCountry();
-
-            if (!$country instanceof Country) {
-                throw new ClassInvalidException(Country::class, Country::class);
-            }
-
-            $countryCode = (string) $country->getCode();
-
-            if (array_key_exists($countryCode, $countries)) {
-                unset($countries[$countryCode]);
-            }
-        }
-
-        foreach ($countries as $countryCode => $countryName) {
-            if (!array_key_exists(LocaleCode::EN_GB, $countryName)) {
-                continue;
-            }
-
-            $import = (new Import())
-                ->setCountry((string) $countryName[LocaleCode::EN_GB])
-                ->setCountryCode($countryCode)
-            ;
-
-            $missingImports[$countryCode] = $import;
-        }
-
-        return array_values($missingImports);
-    }
-
-    /**
      * Do the provided job.
      *
      * @return BasePublicResource|BasePublicResource[]
@@ -283,7 +233,6 @@ final class ImportProvider extends BaseProviderCustom
     protected function doProvide(): BasePublicResource|array
     {
         return match(true) {
-            $this->getRequestMethod() === BaseResourceWrapperProvider::METHOD_GET_COLLECTION && $this->hasPath('missing(:?\.(:?json|html))?') => $this->doProvideGetCollectionMissing(),
             $this->getRequestMethod() === BaseResourceWrapperProvider::METHOD_GET_COLLECTION => $this->doProvideGetCollection(),
             default => throw new CaseUnsupportedException('Unsupported mode from api endpoint /api/v1/import.'),
         };

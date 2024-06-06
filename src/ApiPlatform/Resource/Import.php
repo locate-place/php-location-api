@@ -27,25 +27,15 @@ use Ixnode\PhpApiVersionBundle\ApiPlatform\Resource\Base\BasePublicResource;
  * @version 0.1.0 (2023-07-22)
  * @since 0.1.0 (2023-07-22) First version.
  */
-/* Gets ressource of imports: /api/v1/import */
 #[GetCollection(
     openapiContext: [
-        'description' => ImportRoute::DESCRIPTION_COLLECTION_GET,
+        'summary' => ImportRoute::SUMMARY_GET_COLLECTION,
+        'description' => ImportRoute::DESCRIPTION_GET_COLLECTION,
         'parameters' => [
             Parameter::FORMAT,
         ],
     ],
-    provider: ImportProvider::class
-)]
-/* Gets ressource of imports: /api/v1/import/missing */
-#[GetCollection(
-    uriTemplate: 'import/missing.{_format}',
-    openapiContext: [
-        'description' => ImportRoute::DESCRIPTION_COLLECTION_GET_MISSING,
-        'parameters' => [
-            Parameter::FORMAT,
-        ],
-    ],
+    paginationEnabled: false,
     provider: ImportProvider::class
 )]
 class Import extends BasePublicResource
@@ -54,11 +44,11 @@ class Import extends BasePublicResource
 
     protected string $countryCode;
 
-    private string $path;
-
     private int $numberOfLocations;
 
     private int $numberOfAlternateNames;
+
+    private string $path;
 
     private DateTimeImmutable $createdAt;
 
@@ -105,25 +95,6 @@ class Import extends BasePublicResource
     }
 
     /**
-     * @return string
-     */
-    public function getPath(): string
-    {
-        return $this->path;
-    }
-
-    /**
-     * @param string $path
-     * @return self
-     */
-    public function setPath(string $path): self
-    {
-        $this->path = $path;
-
-        return $this;
-    }
-
-    /**
      * @return int
      */
     public function getNumberOfLocations(): int
@@ -157,6 +128,25 @@ class Import extends BasePublicResource
     public function setNumberOfAlternateNames(int $numberOfAlternateNames): self
     {
         $this->numberOfAlternateNames = $numberOfAlternateNames;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getPath(): string
+    {
+        return $this->path;
+    }
+
+    /**
+     * @param string $path
+     * @return self
+     */
+    public function setPath(string $path): self
+    {
+        $this->path = $path;
 
         return $this;
     }

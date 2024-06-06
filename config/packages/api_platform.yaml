@@ -248,14 +248,10 @@ api_platform:
   formats:
     json:
       mime_types: ['application/json']
-
-    jsonld:
-      mime_types: ['application/ld+json']
-
-    html:
-      mime_types: ['text/html']
-
-    # ...
+#    jsonld:
+#      mime_types: ['application/ld+json']
+#    html:
+#      mime_types: ['text/html']
 
   # The list of enabled patch formats. The first one will be the default.
   patch_formats: []

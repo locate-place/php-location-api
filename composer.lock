@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "a72a416b501ca1f82ed5ab6cf6b6476d",
+    "content-hash": "3752edff841c67202345d4108fd2eea8",
     "packages": [
         {
             "name": "adhocore/cli",
@@ -1683,16 +1683,16 @@
         },
         {
             "name": "ixnode/php-api-version-bundle",
-            "version": "0.1.24",
+            "version": "0.1.25",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ixnode/php-api-version-bundle.git",
-                "reference": "38d73dac475aa0565852a1b4d0b07291fa0f52de"
+                "reference": "48faaea3abeb36f2178fa19dfea9056a1c6a9e52"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ixnode/php-api-version-bundle/zipball/38d73dac475aa0565852a1b4d0b07291fa0f52de",
-                "reference": "38d73dac475aa0565852a1b4d0b07291fa0f52de",
+                "url": "https://api.github.com/repos/ixnode/php-api-version-bundle/zipball/48faaea3abeb36f2178fa19dfea9056a1c6a9e52",
+                "reference": "48faaea3abeb36f2178fa19dfea9056a1c6a9e52",
                 "shasum": ""
             },
             "require": {
@@ -1786,9 +1786,9 @@
             "description": "Provides the base API plattform functionality",
             "support": {
                 "issues": "https://github.com/ixnode/php-api-version-bundle/issues",
-                "source": "https://github.com/ixnode/php-api-version-bundle/tree/0.1.24"
+                "source": "https://github.com/ixnode/php-api-version-bundle/tree/0.1.25"
             },
-            "time": "2024-05-31T21:38:10+00:00"
+            "time": "2024-06-06T20:00:32+00:00"
         },
         {
             "name": "ixnode/php-array-to-object",

@@ -16,17 +16,17 @@ namespace App\ApiPlatform\Route;
 use Ixnode\PhpApiVersionBundle\ApiPlatform\Route\Base\BaseRoute;
 
 /**
- * Class ImportRoute
+ * Class ImportMissingRoute
  *
  * @author Björn Hempel <bjoern@hempel.li>
- * @version 0.1.0 (2023-07-22)
- * @since 0.1.0 (2023-07-22) First version.
+ * @version 0.1.0 (2024-06-05)
+ * @since 0.1.0 (2024-06-05) First version.
  */
-final class ImportRoute extends BaseRoute
+final class ImportMissingRoute extends BaseRoute
 {
     final public const PROPERTIES = [];
 
-    public const SUMMARY_GET_COLLECTION = "Retrieves a collection of Import resources";
+    public const SUMMARY_GET_COLLECTION = "Retrieves a collection of missing ImportMissing resources";
 
-    public const DESCRIPTION_GET_COLLECTION = "This endpoint is used to retrieve a collection of already imported Import resources.";
+    public const DESCRIPTION_GET_COLLECTION = "This endpoint is used to retrieve a collection of missing ImportMissing resources.";
 }

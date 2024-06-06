@@ -515,6 +515,16 @@ class BaseProviderCustom extends BaseResourceWrapperProvider
      */
     protected function getLocaleByFilter(string|null $isoLanguage = null, string|null $country = null): string
     {
+        if ($this->hasFilter(Name::LOCALE)) {
+            $locale = $this->getFilter(Name::LOCALE);
+
+            if (!is_string($locale)) {
+                throw new LogicException('Locale must be a string.');
+            }
+
+            return $locale;
+        }
+
         if (is_null($isoLanguage)) {
             $isoLanguage = $this->getIsoLanguageByFilter();
         }
@@ -546,6 +556,11 @@ class BaseProviderCustom extends BaseResourceWrapperProvider
                 KeyArray::COUNTRY => null,
             ];
         }
+
+        [
+            $isoLanguage,
+            $country
+        ] = explode('_', $locale);
 
         return [
             KeyArray::ISO_LANGUAGE => $isoLanguage,

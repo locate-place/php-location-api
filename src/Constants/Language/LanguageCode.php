@@ -34,6 +34,12 @@ class LanguageCode
 
     final public const LINK = 'link';
 
+    final public const LANGUAGE_SUPPORTED = [
+        self::DE,
+        self::EN,
+        self::ES,
+    ];
+
     final public const LANGUAGE_ISO_639_1 = [
         'aa',
         'ab',
