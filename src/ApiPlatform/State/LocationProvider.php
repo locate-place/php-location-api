@@ -761,7 +761,7 @@ final class LocationProvider extends BaseProviderCustom
              * - https://www.location-api.localhost/api/v1/location/coordinate.json?q=2830942&country=DE&language=de&next_places=1
              * - https://www.location-api.localhost/api/v1/location/coordinate.json?q=2830942&country=DE&language=de&next_places=1&p=51.05811,13.74133
              */
-            case $this->getRequestMethod() === Request::METHOD_GET && $this->hasUri(Name::GEONAME_ID):
+            case $this->getRequestMethod() === Request::METHOD_GET && $queryParser->isType(QueryParser::TYPE_SEARCH_GEONAME_ID):
                 return $this->doProvideGetWithGeonameId($queryParser);
 
 
