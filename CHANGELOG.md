@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Releases
 
+### [1.0.15] - 2024-06-07
+
+* Add endpoint /api/v1/feature-class
+
 ### [1.0.14] - 2024-06-07
 
 * Fix geoname id search
