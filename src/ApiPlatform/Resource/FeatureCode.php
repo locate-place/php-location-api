@@ -16,8 +16,8 @@ namespace App\ApiPlatform\Resource;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
 use App\ApiPlatform\OpenApiContext\Parameter;
-use App\ApiPlatform\Route\FeatureClassRoute;
-use App\ApiPlatform\State\FeatureClassProvider;
+use App\ApiPlatform\Route\FeatureCodeRoute;
+use App\ApiPlatform\State\FeatureCodeProvider;
 use Ixnode\PhpApiVersionBundle\ApiPlatform\Resource\Base\BasePublicResource;
 
 /**
@@ -31,11 +31,12 @@ use Ixnode\PhpApiVersionBundle\ApiPlatform\Resource\Base\BasePublicResource;
     routePrefix: '/feature',
 )]
 #[GetCollection(
-    uriTemplate: '/class.{_format}',
+    uriTemplate: '/code.{_format}',
     openapiContext: [
-        'summary' => FeatureClassRoute::SUMMARY_GET_COLLECTION,
-        'description' => FeatureClassRoute::DESCRIPTION_GET_COLLECTION,
+        'summary' => FeatureCodeRoute::SUMMARY_GET_COLLECTION,
+        'description' => FeatureCodeRoute::DESCRIPTION_GET_COLLECTION,
         'parameters' => [
+            Parameter::CLASS_,
             Parameter::LOCALE,
         ],
         'tags' => [
@@ -43,13 +44,13 @@ use Ixnode\PhpApiVersionBundle\ApiPlatform\Resource\Base\BasePublicResource;
         ],
         'responses' => [
             '200' => [
-                'description' => 'FeatureClass collection',
+                'description' => 'FeatureCode collection',
                 'content' => [
                     'application/json' => [
                         'schema' => [
                             'type' => 'array',
                             'items' => [
-                                '$ref' => "#/components/schemas/FeatureClass"
+                                '$ref' => "#/components/schemas/FeatureCode"
                             ]
                         ]
                     ]
@@ -58,13 +59,55 @@ use Ixnode\PhpApiVersionBundle\ApiPlatform\Resource\Base\BasePublicResource;
         ],
     ],
     paginationEnabled: false,
-    provider: FeatureClassProvider::class
+    provider: FeatureCodeProvider::class
 )]
-class FeatureClass extends BasePublicResource
+class FeatureCode extends BasePublicResource
 {
+    protected string $code;
+
+    protected string $codeName;
+
     protected string $class;
 
     protected string $className;
+
+    /**
+     * @return string
+     */
+    public function getCode(): string
+    {
+        return $this->code;
+    }
+
+    /**
+     * @param string $code
+     * @return self
+     */
+    public function setCode(string $code): self
+    {
+        $this->code = $code;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getCodeName(): string
+    {
+        return $this->codeName;
+    }
+
+    /**
+     * @param string $codeName
+     * @return self
+     */
+    public function setCodeName(string $codeName): self
+    {
+        $this->codeName = $codeName;
+
+        return $this;
+    }
 
     /**
      * @return string

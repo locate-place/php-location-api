@@ -13,10 +13,12 @@ declare(strict_types=1);
 
 namespace App\ApiPlatform\State;
 
-use App\ApiPlatform\Resource\FeatureClass;
+use App\ApiPlatform\OpenApiContext\Name;
+use App\ApiPlatform\Resource\FeatureCode;
 use App\ApiPlatform\Route\FeatureClassRoute;
 use App\ApiPlatform\State\Base\BaseProviderCustom;
 use App\Constants\DB\FeatureClass as FeatureClassDb;
+use App\Constants\DB\FeatureCode as FeatureCodeDb;
 use App\Service\LocationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Ixnode\PhpApiVersionBundle\Utils\Version\Version;
@@ -27,13 +29,13 @@ use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
- * Class FeatureClassProvider
+ * Class FeatureCodeProvider
  *
  * @author Björn Hempel <bjoern@hempel.li>
  * @version 0.1.0 (2024-06-07)
  * @since 0.1.0 (2024-06-07) First version.
  */
-final class FeatureClassProvider extends BaseProviderCustom
+final class FeatureCodeProvider extends BaseProviderCustom
 {
     /**
      * @param Version $version
@@ -66,11 +68,12 @@ final class FeatureClassProvider extends BaseProviderCustom
     }
 
     /**
-     * @return FeatureClass[]
+     * @param string|null $filterClass
+     * @return FeatureCode[]
      * @throws ArrayKeyNotFoundException
      * @throws TypeInvalidException
      */
-    private function doProvideGetCollection(): array
+    private function doProvideGetCollection(string|null $filterClass = null): array
     {
         $locale = $this->getLocaleByFilter();
 
@@ -78,11 +81,25 @@ final class FeatureClassProvider extends BaseProviderCustom
 
         $featureClasses = [];
 
-        foreach (FeatureClassDb::ALL as $class) {
-            $featureClasses[] = (new FeatureClass())
-                ->setClass($class)
-                ->setClassName((new FeatureClassDb($this->translator, $language))->translate($class))
-            ;
+        foreach (FeatureCodeDb::ALL_GROUPED as $class => $codes) {
+
+            /* Filter by class if given. */
+            if (!is_null($filterClass) && $filterClass !== $class) {
+                continue;
+            }
+
+            $className = (new FeatureClassDb($this->translator, $language))->translate($class);
+
+            foreach ($codes as $code) {
+                $codeName = (new FeatureCodeDb($this->translator, $language))->translate($code);
+
+                $featureClasses[] = (new FeatureCode())
+                    ->setCode($code)
+                    ->setCodeName($codeName)
+                    ->setClass($class)
+                    ->setClassName($className)
+                ;
+            }
         }
 
         return $featureClasses;
@@ -91,12 +108,22 @@ final class FeatureClassProvider extends BaseProviderCustom
     /**
      * Do the provided job.
      *
-     * @return FeatureClass[]
+     * @return FeatureCode[]
      * @throws ArrayKeyNotFoundException
      * @throws TypeInvalidException
      */
     protected function doProvide(): array
     {
-        return $this->doProvideGetCollection();
+        $filterClass = match (true) {
+            $this->hasFilter(Name::CLASS_) => $this->getFilter(Name::CLASS_),
+            default => null,
+        };
+
+        if (!is_string($filterClass) && !is_null($filterClass)) {
+            $this->setError('Given class filter is not a string.');
+            return [];
+        }
+
+        return $this->doProvideGetCollection($filterClass);
     }
 }

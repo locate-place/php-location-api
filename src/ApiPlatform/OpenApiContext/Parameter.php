@@ -30,6 +30,23 @@ use App\Constants\Language\LocaleCode;
  */
 class Parameter
 {
+    final public const CLASS_ = [
+        'name' => Name::CLASS_,
+        'in' => 'query', // cookie, header, path, query
+        'description' => 'The <strong>class</strong> parameter specifies the filter for class features. The following are supported: <code>A</code>, <code>H</code>, <code>L</code>, <code>P</code>, <code>R</code>, <code>S</code>, <code>T</code>, <code>U</code> and <code>V</code>.',
+        'required' => false,
+        'deprecated' => false,
+        'allowEmptyValue' => false,
+        'schema' => [
+            'type' => 'string',
+            'default' => null,
+            'enum' => FeatureClass::ALL,
+        ],
+        'style' => 'simple', // simple, form
+        'explode' => false,
+        'allowReserved' => false,
+    ];
+
     final public const COORDINATE = [
         'name' => Name::COORDINATE,
         'in' => 'query', // cookie, header, path, query

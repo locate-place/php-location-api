@@ -27,10 +27,10 @@ use Ixnode\PhpApiVersionBundle\ApiPlatform\Resource\Base\BasePublicResource;
  * @since 0.1.0 (2024-06-05) First version.
  */
 #[ApiResource(
-    uriTemplate: '/import',
+    routePrefix: '/import',
 )]
 #[GetCollection(
-    uriTemplate: 'import/missing.{_format}',
+    uriTemplate: '/missing.{_format}',
     openapiContext: [
         'summary' => ImportMissingRoute::SUMMARY_GET_COLLECTION,
         'description' => ImportMissingRoute::DESCRIPTION_GET_COLLECTION,
