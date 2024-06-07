@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Releases
 
+### [1.0.17] - 2024-06-08
+
+* Add feature code endpoint
+* Feature class refactoring
+
 ### [1.0.16] - 2024-06-07
 
 * Replace the repository name to locate-place/php-location-api project
