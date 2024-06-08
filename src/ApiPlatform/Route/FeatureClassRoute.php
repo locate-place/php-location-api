@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace App\ApiPlatform\Route;
 
+use App\ApiPlatform\OpenApiContext\Name;
+use App\Constants\Language\LocaleCode;
 use Ixnode\PhpApiVersionBundle\ApiPlatform\Route\Base\BaseRoute;
 
 /**
@@ -24,7 +26,14 @@ use Ixnode\PhpApiVersionBundle\ApiPlatform\Route\Base\BaseRoute;
  */
 final class FeatureClassRoute extends BaseRoute
 {
-    final public const PROPERTIES = [];
+    final public const PROPERTIES = [
+        Name::LOCALE => [
+            self::KEY_REQUEST => Name::LOCALE,
+            self::KEY_RESPONSE => 'locale',
+            self::KEY_DEFAULT => LocaleCode::EN_GB,
+            self::KEY_TYPE => self::TYPE_STRING,
+        ],
+    ];
 
     public const SUMMARY_GET_COLLECTION = "Retrieves a collection of FeatureClass resources";
 

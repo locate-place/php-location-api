@@ -15,7 +15,7 @@ namespace App\ApiPlatform\State;
 
 use App\ApiPlatform\OpenApiContext\Name;
 use App\ApiPlatform\Resource\FeatureCode;
-use App\ApiPlatform\Route\FeatureClassRoute;
+use App\ApiPlatform\Route\FeatureCodeRoute;
 use App\ApiPlatform\State\Base\BaseProviderCustom;
 use App\Constants\DB\FeatureClass as FeatureClassDb;
 use App\Constants\DB\FeatureCode as FeatureCodeDb;
@@ -60,11 +60,11 @@ final class FeatureCodeProvider extends BaseProviderCustom
     /**
      * Returns the route properties according to current class.
      *
-     * @return array<string, array<string, int|string|string[]>>
+     * @return array<string, array<string, string|null>>
      */
     protected function getRouteProperties(): array
     {
-        return FeatureClassRoute::PROPERTIES;
+        return FeatureCodeRoute::PROPERTIES;
     }
 
     /**
