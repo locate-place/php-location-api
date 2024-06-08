@@ -425,8 +425,9 @@ class ApiLogger
             throw new LogicException('HttpOperation expected.');
         }
 
-        //return str_replace('{._format}', '', $operation->getUriTemplate() ?? '');
-        return '/'.ltrim(str_replace('{._format}', '', $operation->getUriTemplate() ?? ''), '/');
+        $apiEndpoint = str_replace('{._format}', '', $operation->getUriTemplate() ?? '');
+
+        return '/'.ltrim($apiEndpoint, '/');
     }
 
     /**
