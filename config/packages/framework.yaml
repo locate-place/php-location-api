@@ -19,7 +19,8 @@ framework:
         log: true
 
     # set the trusted proxies
-    trusted_proxies: '%env(TRUSTED_PROXIES)%'
+    #trusted_proxies: '%env(TRUSTED_PROXIES)%'
+    trusted_proxies: 'private_ranges'
     trusted_headers: ['x-forwarded-for', 'x-forwarded-proto', 'x-forwarded-port', 'x-forwarded-host']
 
     # Serializer configuration
