@@ -14,9 +14,9 @@ declare(strict_types=1);
 namespace App\ApiPlatform\Resource;
 
 use ApiPlatform\Metadata\Get;
+use App\ApiPlatform\State\VersionProvider;
 use Ixnode\PhpApiVersionBundle\ApiPlatform\Resource\Version as VersionOrigin;
 use Ixnode\PhpApiVersionBundle\ApiPlatform\Route\VersionRoute as VersionRouteOrigin;
-use Ixnode\PhpApiVersionBundle\ApiPlatform\State\VersionProvider as VersionProviderOrigin;
 
 /**
  * Class Version
@@ -42,7 +42,7 @@ use Ixnode\PhpApiVersionBundle\ApiPlatform\State\VersionProvider as VersionProvi
             ]
         ]
     ],
-    provider: VersionProviderOrigin::class
+    provider: VersionProvider::class
 )]
 class Version extends VersionOrigin
 {

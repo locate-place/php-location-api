@@ -15,6 +15,7 @@ namespace App\Entity;
 
 use App\Entity\Trait\TimestampsTrait;
 use App\Repository\ApiKeyCreditsMonthRepository;
+use DateTimeImmutable;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
@@ -51,8 +52,8 @@ class ApiKeyCreditsMonth
     #[ORM\Column]
     private ?int $creditsUsed = null;
 
-    #[ORM\Column(type: Types::DATE_MUTABLE)]
-    private ?\DateTimeInterface $month = null;
+    #[ORM\Column(type: Types::DATE_IMMUTABLE)]
+    private ?DateTimeImmutable $month = null;
 
     /**
      * @return int|null
@@ -101,18 +102,29 @@ class ApiKeyCreditsMonth
     }
 
     /**
-     * @return \DateTimeInterface|null
+     * Increase the credits by given credits.
+     *
+     * @param int $creditsUsed
+     * @return void
      */
-    public function getMonth(): ?\DateTimeInterface
+    public function increaseCreditsUsedBy(int $creditsUsed): void
+    {
+        $this->creditsUsed = ($this->creditsUsed ?? 0) + $creditsUsed;
+    }
+
+    /**
+     * @return DateTimeImmutable|null
+     */
+    public function getMonth(): ?DateTimeImmutable
     {
         return $this->month;
     }
 
     /**
-     * @param \DateTimeInterface $month
+     * @param DateTimeImmutable $month
      * @return $this
      */
-    public function setMonth(\DateTimeInterface $month): static
+    public function setMonth(DateTimeImmutable $month): static
     {
         $this->month = $month;
 

@@ -27,6 +27,7 @@ use App\Exception\QueryParserException;
 use App\Repository\LocationRepository;
 use App\Service\LocationContainer;
 use App\Service\LocationService;
+use App\Utils\Api\ApiLogger;
 use App\Utils\Query\Query;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Exception\ORMException;
@@ -62,6 +63,7 @@ final class AutocompleteProvider extends BaseProviderCustom
      * @param LocationService $locationService
      * @param TranslatorInterface $translator
      * @param EntityManagerInterface $entityManager
+     * @param ApiLogger $apiLogger
      * @param LocationRepository $locationRepository
      * @param LocationContainer $locationContainer
      */
@@ -72,11 +74,20 @@ final class AutocompleteProvider extends BaseProviderCustom
         protected LocationService $locationService,
         protected TranslatorInterface $translator,
         protected EntityManagerInterface $entityManager,
+        protected ApiLogger $apiLogger,
         protected LocationRepository $locationRepository,
         protected LocationContainer $locationContainer,
     )
     {
-        parent::__construct($version, $parameterBag, $request, $locationService, $translator, $entityManager);
+        parent::__construct(
+            $version,
+            $parameterBag,
+            $request,
+            $locationService,
+            $translator,
+            $entityManager,
+            $apiLogger,
+        );
     }
 
     /**

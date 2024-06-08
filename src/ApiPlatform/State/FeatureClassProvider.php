@@ -17,14 +17,8 @@ use App\ApiPlatform\Resource\FeatureClass;
 use App\ApiPlatform\Route\FeatureClassRoute;
 use App\ApiPlatform\State\Base\BaseProviderCustom;
 use App\Constants\DB\FeatureClass as FeatureClassDb;
-use App\Service\LocationService;
-use Doctrine\ORM\EntityManagerInterface;
-use Ixnode\PhpApiVersionBundle\Utils\Version\Version;
 use Ixnode\PhpException\ArrayType\ArrayKeyNotFoundException;
 use Ixnode\PhpException\Type\TypeInvalidException;
-use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use Symfony\Component\HttpFoundation\RequestStack;
-use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
  * Class FeatureClassProvider
@@ -35,26 +29,6 @@ use Symfony\Contracts\Translation\TranslatorInterface;
  */
 final class FeatureClassProvider extends BaseProviderCustom
 {
-    /**
-     * @param Version $version
-     * @param ParameterBagInterface $parameterBag
-     * @param RequestStack $request
-     * @param TranslatorInterface $translator
-     * @param LocationService $locationService
-     * @param EntityManagerInterface $entityManager
-     */
-    public function __construct(
-        protected Version $version,
-        protected ParameterBagInterface $parameterBag,
-        protected RequestStack $request,
-        protected LocationService $locationService,
-        protected TranslatorInterface $translator,
-        protected EntityManagerInterface $entityManager
-    )
-    {
-        parent::__construct($version, $parameterBag, $request, $locationService, $translator, $entityManager);
-    }
-
     /**
      * Returns the route properties according to current class.
      *

@@ -13,7 +13,9 @@ declare(strict_types=1);
 
 namespace App\Repository;
 
+use App\Entity\ApiKey;
 use App\Entity\ApiRequestLog;
+use DateTime;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -40,28 +42,63 @@ class ApiRequestLogRepository extends ServiceEntityRepository
         parent::__construct($registry, ApiRequestLog::class);
     }
 
-    //    /**
-    //     * @return ApiRequestLog[] Returns an array of ApiRequestLog objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('a')
-    //            ->andWhere('a.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('a.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
+    /**
+     * Counts the result of valid logs.
+     *
+     * @param ApiKey $apiKey
+     * @param string $ip
+     * @param DateTime|null $dateTime
+     * @return int
+     */
+    public function countIpLogs(ApiKey $apiKey, string $ip, DateTime $dateTime = null): int
+    {
+        $queryBuilder = $this->createQueryBuilder('l');
 
-    //    public function findOneBySomeField($value): ?ApiRequestLog
-    //    {
-    //        return $this->createQueryBuilder('a')
-    //            ->andWhere('a.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+        $queryBuilder
+            ->select('COUNT(l.id)')
+
+            /* Only check given ip address. */
+            ->andWhere('l.ip = :ip')
+            ->setParameter('ip', $ip)
+
+            ->andWhere('l.apiKey = :apiKey')
+            ->setParameter('apiKey', $apiKey)
+
+            ->andWhere('l.isValid = :valid')
+            ->setParameter('valid', true)
+        ;
+
+        if (!is_null($dateTime)) {
+            $queryBuilder
+                ->andWhere('l.createdAt >= :createdAt')
+                ->setParameter('createdAt', $dateTime)
+            ;
+        }
+
+        return (int) $queryBuilder->getQuery()->getSingleScalarResult();
+    }
+
+    /**
+     * Counts the result of valid logs for one hour.
+     *
+     * @param ApiKey $apiKey
+     * @param string $ip
+     * @return int
+     */
+    public function countIpLogsLastHour(ApiKey $apiKey, string $ip): int
+    {
+        return $this->countIpLogs($apiKey, $ip, new DateTime('-1 hour'));
+    }
+
+    /**
+     * Counts the result of valid logs for one minute.
+     *
+     * @param ApiKey $apiKey
+     * @param string $ip
+     * @return int
+     */
+    public function countIpLogsLastMinute(ApiKey $apiKey, string $ip): int
+    {
+        return $this->countIpLogs($apiKey, $ip, new DateTime('-1 minute'));
+    }
 }

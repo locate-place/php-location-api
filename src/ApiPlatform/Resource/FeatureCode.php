@@ -31,7 +31,7 @@ use Ixnode\PhpApiVersionBundle\ApiPlatform\Resource\Base\BasePublicResource;
     routePrefix: '/feature',
 )]
 #[GetCollection(
-    uriTemplate: '/code.{_format}',
+    uriTemplate: '/code{._format}',
     openapiContext: [
         'summary' => FeatureCodeRoute::SUMMARY_GET_COLLECTION,
         'description' => FeatureCodeRoute::DESCRIPTION_GET_COLLECTION,

@@ -25,6 +25,7 @@ use App\Exception\QueryParserException;
 use App\Repository\LocationRepository;
 use App\Service\LocationService;
 use App\Service\LocationServiceConfig;
+use App\Utils\Api\ApiLogger;
 use App\Utils\Query\Query;
 use App\Utils\Query\QueryParser;
 use Doctrine\ORM\EntityManagerInterface;
@@ -62,6 +63,7 @@ use Symfony\Contracts\Translation\TranslatorInterface;
  * @version 0.1.0 (2023-07-01)
  * @since 0.1.0 (2023-07-01) First version.
  * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
+ * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  */
 final class LocationProvider extends BaseProviderCustom
 {
@@ -75,24 +77,34 @@ final class LocationProvider extends BaseProviderCustom
      * @param Version $version
      * @param ParameterBagInterface $parameterBag
      * @param RequestStack $request
-     * @param LocationRepository $locationRepository
-     * @param TranslatorInterface $translator
      * @param LocationService $locationService
-     * @param LocationServiceConfig $locationServiceConfig
+     * @param TranslatorInterface $translator
      * @param EntityManagerInterface $entityManager
+     * @param ApiLogger $apiLogger
+     * @param LocationRepository $locationRepository
+     * @param LocationServiceConfig $locationServiceConfig
      */
     public function __construct(
         protected Version $version,
         protected ParameterBagInterface $parameterBag,
         protected RequestStack $request,
-        protected LocationRepository $locationRepository,
-        protected TranslatorInterface $translator,
         protected LocationService $locationService,
+        protected TranslatorInterface $translator,
+        protected EntityManagerInterface $entityManager,
+        protected ApiLogger $apiLogger,
+        protected LocationRepository $locationRepository,
         private readonly LocationServiceConfig $locationServiceConfig,
-        protected EntityManagerInterface $entityManager
     )
     {
-        parent::__construct($version, $parameterBag, $request, $locationService, $translator, $entityManager);
+        parent::__construct(
+            $version,
+            $parameterBag,
+            $request,
+            $locationService,
+            $translator,
+            $entityManager,
+            $apiLogger
+        );
     }
 
     /**

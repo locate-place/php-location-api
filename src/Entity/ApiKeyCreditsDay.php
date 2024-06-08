@@ -15,6 +15,7 @@ namespace App\Entity;
 
 use App\Entity\Trait\TimestampsTrait;
 use App\Repository\ApiKeyCreditsDayRepository;
+use DateTimeImmutable;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
@@ -52,7 +53,7 @@ class ApiKeyCreditsDay
     private ?int $creditsUsed = null;
 
     #[ORM\Column(type: Types::DATE_IMMUTABLE)]
-    private ?\DateTimeImmutable $day = null;
+    private ?DateTimeImmutable $day = null;
 
     /**
      * @return int|null
@@ -101,18 +102,29 @@ class ApiKeyCreditsDay
     }
 
     /**
-     * @return \DateTimeImmutable|null
+     * Increase the credits by given credits.
+     *
+     * @param int $creditsUsed
+     * @return void
      */
-    public function getDay(): ?\DateTimeImmutable
+    public function increaseCreditsUsedBy(int $creditsUsed): void
+    {
+        $this->creditsUsed = ($this->creditsUsed ?? 0) + $creditsUsed;
+    }
+
+    /**
+     * @return DateTimeImmutable|null
+     */
+    public function getDay(): ?DateTimeImmutable
     {
         return $this->day;
     }
 
     /**
-     * @param \DateTimeImmutable $day
+     * @param DateTimeImmutable $day
      * @return $this
      */
-    public function setDay(\DateTimeImmutable $day): static
+    public function setDay(DateTimeImmutable $day): static
     {
         $this->day = $day;
 

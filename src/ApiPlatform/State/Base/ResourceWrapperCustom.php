@@ -49,6 +49,9 @@ class ResourceWrapperCustom extends ResourceWrapper
     /** @var array<int|string, mixed> $results */
     private array $results;
 
+    /** @var array<int|string, array<string, mixed>|bool|int|string|null> */
+    private array $given;
+
     /**
      * @return array{full: string, short: string, url: string}
      */
@@ -159,6 +162,25 @@ class ResourceWrapperCustom extends ResourceWrapper
     public function setResults(array $results): self
     {
         $this->results = $results;
+
+        return $this;
+    }
+
+    /**
+     * @return array<int|string, array<string, mixed>|bool|int|string|null>
+     */
+    public function getGiven(): array
+    {
+        return $this->given;
+    }
+
+    /**
+     * @param array<int|string, array<string, mixed>|bool|int|string|null> $given
+     * @return self
+     */
+    public function setGiven(array $given): self
+    {
+        $this->given = $given;
 
         return $this;
     }

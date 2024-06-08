@@ -22,6 +22,7 @@ use App\Entity\Import as ImportEntity;
 use App\Repository\ImportRepository;
 use App\Repository\LocationRepository;
 use App\Service\LocationService;
+use App\Utils\Api\ApiLogger;
 use Doctrine\ORM\EntityManagerInterface;
 use Ixnode\PhpApiVersionBundle\ApiPlatform\Resource\Base\BasePublicResource;
 use Ixnode\PhpApiVersionBundle\ApiPlatform\State\Base\Wrapper\BaseResourceWrapperProvider;
@@ -46,24 +47,34 @@ final class ImportMissingProvider extends BaseProviderCustom
      * @param Version $version
      * @param ParameterBagInterface $parameterBag
      * @param RequestStack $request
+     * @param LocationService $locationService
+     * @param TranslatorInterface $translator
+     * @param EntityManagerInterface $entityManager
+     * @param ApiLogger $apiLogger
      * @param ImportRepository $importRepository
      * @param LocationRepository $locationRepository
-     * @param TranslatorInterface $translator
-     * @param LocationService $locationService
-     * @param EntityManagerInterface $entityManager
      */
     public function __construct(
         protected Version $version,
         protected ParameterBagInterface $parameterBag,
         protected RequestStack $request,
+        protected LocationService $locationService,
+        protected TranslatorInterface $translator,
+        protected EntityManagerInterface $entityManager,
+        protected ApiLogger $apiLogger,
         protected ImportRepository $importRepository,
         protected LocationRepository $locationRepository,
-        protected TranslatorInterface $translator,
-        protected LocationService $locationService,
-        protected EntityManagerInterface $entityManager
     )
     {
-        parent::__construct($version, $parameterBag, $request, $locationService, $translator, $entityManager);
+        parent::__construct(
+            $version,
+            $parameterBag,
+            $request,
+            $locationService,
+            $translator,
+            $entityManager,
+            $apiLogger
+        );
     }
 
     /**

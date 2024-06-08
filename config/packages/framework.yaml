@@ -18,6 +18,10 @@ framework:
     php_errors:
         log: true
 
+    # set the trusted proxies
+    trusted_proxies: '%env(TRUSTED_PROXIES)%'
+    trusted_headers: ['x-forwarded-for', 'x-forwarded-proto', 'x-forwarded-port', 'x-forwarded-host']
+
     # Serializer configuration
     #serializer:
     #    enable_attributes: false

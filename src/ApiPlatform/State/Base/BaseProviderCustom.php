@@ -26,13 +26,17 @@ use App\Entity\Location as LocationEntity;
 use App\Exception\QueryParserException;
 use App\Repository\LocationRepository;
 use App\Service\LocationService;
+use App\Utils\Api\ApiLogger;
 use App\Utils\Performance\PerformanceLogger;
 use App\Utils\Query\Query;
 use App\Utils\Query\QueryParser;
+use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Exception\ORMException;
 use Doctrine\ORM\NonUniqueResultException;
 use Exception;
 use Ixnode\PhpApiVersionBundle\ApiPlatform\Resource\Base\BasePublicResource;
+use Ixnode\PhpApiVersionBundle\ApiPlatform\Resource\Version as VersionOrigin;
 use Ixnode\PhpApiVersionBundle\ApiPlatform\State\Base\Wrapper\BaseResourceWrapperProvider;
 use Ixnode\PhpApiVersionBundle\Utils\TypeCasting\TypeCastingHelper;
 use Ixnode\PhpApiVersionBundle\Utils\Version\Version;
@@ -84,6 +88,7 @@ class BaseProviderCustom extends BaseResourceWrapperProvider
      * @param LocationService $locationService
      * @param TranslatorInterface $translator
      * @param EntityManagerInterface $entityManager
+     * @param ApiLogger $apiLogger
      */
     public function __construct(
         Version $version,
@@ -91,7 +96,8 @@ class BaseProviderCustom extends BaseResourceWrapperProvider
         RequestStack $request,
         protected LocationService $locationService,
         protected TranslatorInterface $translator,
-        protected EntityManagerInterface $entityManager
+        protected EntityManagerInterface $entityManager,
+        protected ApiLogger $apiLogger,
     )
     {
         parent::__construct($version, $parameterBag, $request);
@@ -114,14 +120,49 @@ class BaseProviderCustom extends BaseResourceWrapperProvider
      * @param array<int|string, mixed> $context
      * @return object|array|object[]|null
      * @throws Exception
+     * @throws TransportExceptionInterface
      */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
         $stopwatch = new Stopwatch();
-
         $stopwatch->start('provide-custom');
-        /** @var ResourceWrapperCustom $resourceWrapper */
-        $resourceWrapper = parent::provide($operation, $uriVariables, $context);
+
+        $accepted = $this->apiLogger->isRequestAccepted();
+
+        switch ($accepted) {
+            /* API access accepted. */
+            case true:
+                /** @var ResourceWrapperCustom $resourceWrapper */
+                $resourceWrapper = parent::provide($operation, $uriVariables, $context);
+                break;
+
+            /* API access is not accepted. */
+            default:
+                /* Set context, etc. because parent::provide() is not called in this case. */
+                $this->prepare($operation, $uriVariables, $context);
+
+                $resourceWrapper = new ResourceWrapperCustom();
+
+                $resourceWrapper->setGiven($this->getUriVariablesOutput(true));
+                $resourceWrapper
+                    ->setData([])
+                    ->setError($this->apiLogger->getErrorLast() ?? '')
+                    ->setValid(false)
+                    ->setDate(new DateTimeImmutable())
+                    ->setVersion($this->version->getVersion())
+                ;
+
+                $this->prepareRessourceWrapper($resourceWrapper);
+                break;
+        }
+
+        $data = $resourceWrapper->getData();
+
+        /* Return version data directly. */
+        if ($data instanceof VersionOrigin) {
+            return $data;
+        }
+
         $event = $stopwatch->stop('provide-custom');
 
         $memoryTaken = sprintf('%.2f MB', memory_get_usage() / 1024 / 1024);
@@ -135,6 +176,9 @@ class BaseProviderCustom extends BaseResourceWrapperProvider
         if ($this->hasResults()) {
             $resourceWrapper->setResults($this->getResults());
         }
+
+        $this->apiLogger->increaseCredits($resourceWrapper);
+        $this->apiLogger->log($resourceWrapper);
 
         return $resourceWrapper;
     }
@@ -181,12 +225,7 @@ class BaseProviderCustom extends BaseResourceWrapperProvider
             ->setData($resourceWrapper->getData())
         ;
 
-        /* Add data licence. */
-        $resourceWrapperNew->setDataLicence([
-            'full' => (new TypeCastingHelper($this->parameterBag->get('data_license_full')))->strval(),
-            'short' => (new TypeCastingHelper($this->parameterBag->get('data_license_short')))->strval(),
-            'url' => (new TypeCastingHelper($this->parameterBag->get('data_license_url')))->strval(),
-        ]);
+        $this->prepareRessourceWrapper($resourceWrapperNew);
 
         $error = $resourceWrapper->getError();
 
@@ -195,6 +234,23 @@ class BaseProviderCustom extends BaseResourceWrapperProvider
         }
 
         return $resourceWrapperNew;
+    }
+
+    /**
+     * Adds data licenses, etc.
+     *
+     * @param ResourceWrapperCustom $resourceWrapper
+     * @return void
+     * @throws TypeInvalidException
+     */
+    protected function prepareRessourceWrapper(ResourceWrapperCustom $resourceWrapper): void
+    {
+        /* Add data licence. */
+        $resourceWrapper->setDataLicence([
+            'full' => (new TypeCastingHelper($this->parameterBag->get('data_license_full')))->strval(),
+            'short' => (new TypeCastingHelper($this->parameterBag->get('data_license_short')))->strval(),
+            'url' => (new TypeCastingHelper($this->parameterBag->get('data_license_url')))->strval(),
+        ]);
     }
 
     /**
@@ -220,10 +276,15 @@ class BaseProviderCustom extends BaseResourceWrapperProvider
      * @throws TypeInvalidException
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      * @SuppressWarnings(PHPMD.NPathComplexity)
+     * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
      */
-    protected function getUriVariablesOutput(): array
+    protected function getUriVariablesOutput(bool $doNotTranslate = false): array
     {
         $uriVariablesOutput = parent::getUriVariablesOutput();
+
+        if ($doNotTranslate) {
+            return $uriVariablesOutput;
+        }
 
         /* Add query information */
         if ($this->isLocationRequest() && array_key_exists(KeyArray::QUERY, $uriVariablesOutput)) {
@@ -390,6 +451,7 @@ class BaseProviderCustom extends BaseResourceWrapperProvider
      * @throws RedirectionExceptionInterface
      * @throws ServerExceptionInterface
      * @throws TransportExceptionInterface
+     * @throws ORMException
      */
     private function getLocation(Coordinate $coordinate): Location|null
     {

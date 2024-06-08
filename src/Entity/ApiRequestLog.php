@@ -28,6 +28,7 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Entity(repositoryClass: ApiRequestLogRepository::class)]
 #[ORM\Index(columns: ['api_key_id'])]
 #[ORM\Index(columns: ['api_key_id', 'created_at'])]
+#[ORM\Index(columns: ['api_key_id', 'created_at', 'is_valid'])]
 #[ORM\Index(columns: ['api_key_id', 'created_at', 'api_request_log_type_id'])]
 #[ORM\Index(columns: ['api_key_id', 'api_request_log_type_id'])]
 #[ORM\Index(columns: ['api_request_log_type_id', 'created_at'])]
@@ -53,7 +54,7 @@ class ApiRequestLog
     #[ORM\JoinColumn(nullable: false)]
     private ?ApiEndpoint $apiEndpoint = null;
 
-    #[ORM\Column]
+    #[ORM\Column(nullable: true)]
     private ?int $creditsUsed = null;
 
     #[ORM\Column(length: 45)]
@@ -71,6 +72,9 @@ class ApiRequestLog
     /** @var array<int|string, mixed> $given */
     #[ORM\Column(name: 'given', type: 'json')]
     private array $given = [];
+
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $error = null;
 
     /**
      * @return int|null
@@ -146,10 +150,10 @@ class ApiRequestLog
     }
 
     /**
-     * @param int $creditsUsed
+     * @param int|null $creditsUsed
      * @return $this
      */
-    public function setCreditsUsed(int $creditsUsed): static
+    public function setCreditsUsed(int|null $creditsUsed): static
     {
         $this->creditsUsed = $creditsUsed;
 
@@ -247,6 +251,18 @@ class ApiRequestLog
     public function setGiven(array $given): static
     {
         $this->given = $given;
+
+        return $this;
+    }
+
+    public function getError(): ?string
+    {
+        return $this->error;
+    }
+
+    public function setError(?string $error): static
+    {
+        $this->error = $error;
 
         return $this;
     }

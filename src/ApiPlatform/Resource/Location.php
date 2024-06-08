@@ -57,7 +57,7 @@ use Symfony\Component\Serializer\Annotation\Ignore;
 )]
 /* Get resources via geoname id: /api/v1/location/airports */
 #[GetCollection(
-    uriTemplate: 'location/airports.{_format}',
+    uriTemplate: 'location/airports{._format}',
     openapiContext: [
         'summary' => LocationRoute::SUMMARY_GET_COLLECTION_AIRPORTS,
         'description' => LocationRoute::DESCRIPTION_GET_COLLECTION_AIRPORTS,
@@ -73,7 +73,7 @@ use Symfony\Component\Serializer\Annotation\Ignore;
 )]
 /* Get resources via geoname id: /api/v1/location/capitals */
 #[GetCollection(
-    uriTemplate: 'location/capitals.{_format}',
+    uriTemplate: 'location/capitals{._format}',
     openapiContext: [
         'summary' => LocationRoute::SUMMARY_GET_COLLECTION_CAPITOLS,
         'description' => LocationRoute::DESCRIPTION_GET_COLLECTION_CAPITOLS,
@@ -89,7 +89,7 @@ use Symfony\Component\Serializer\Annotation\Ignore;
 )]
 /* Get resources via geoname id: /api/v1/location/examples */
 #[GetCollection(
-    uriTemplate: 'location/examples.{_format}',
+    uriTemplate: 'location/examples{._format}',
     openapiContext: [
         'summary' => LocationRoute::SUMMARY_GET_COLLECTION_EXAMPLES,
         'description' => LocationRoute::DESCRIPTION_GET_COLLECTION_EXAMPLES,
@@ -102,7 +102,7 @@ use Symfony\Component\Serializer\Annotation\Ignore;
 )]
 /* Get resource via location: /api/v1/location/coordinate/{coordinate} */
 #[Get(
-    uriTemplate: 'location/coordinate.{_format}',
+    uriTemplate: 'location/coordinate{._format}',
     openapiContext: [
         'summary' => LocationRoute::SUMMARY_GET_COORDINATE,
         'description' => LocationRoute::DESCRIPTION_GET_COORDINATE,
