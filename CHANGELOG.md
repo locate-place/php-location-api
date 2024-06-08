@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Releases
 
+### [1.0.18] - 2024-06-08
+
+* Add given response parameter to feature endpoints
+
 ### [1.0.17] - 2024-06-08
 
 * Add feature code endpoint
