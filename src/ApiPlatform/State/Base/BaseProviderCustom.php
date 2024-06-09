@@ -156,13 +156,6 @@ class BaseProviderCustom extends BaseResourceWrapperProvider
                 break;
         }
 
-        $data = $resourceWrapper->getData();
-
-        /* Return version data directly. */
-        if ($data instanceof VersionOrigin) {
-            return $data;
-        }
-
         $event = $stopwatch->stop('provide-custom');
 
         $memoryTaken = sprintf('%.2f MB', memory_get_usage() / 1024 / 1024);
@@ -179,6 +172,13 @@ class BaseProviderCustom extends BaseResourceWrapperProvider
 
         $this->apiLogger->increaseCredits($resourceWrapper);
         $this->apiLogger->log($resourceWrapper);
+
+        $data = $resourceWrapper->getData();
+
+        /* Return version data directly. */
+        if ($data instanceof VersionOrigin) {
+            return $data;
+        }
 
         return $resourceWrapper;
     }
