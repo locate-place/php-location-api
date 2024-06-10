@@ -56,16 +56,22 @@ class ApiRequestLogRepository extends ServiceEntityRepository
 
         $queryBuilder
             ->select('COUNT(l.id)')
+            ->join('l.apiEndpoint', 'e')
 
             /* Only check given ip address. */
             ->andWhere('l.ip = :ip')
             ->setParameter('ip', $ip)
 
+            /* Only current API key. */
             ->andWhere('l.apiKey = :apiKey')
             ->setParameter('apiKey', $apiKey)
 
+            /* Only valid logs. */
             ->andWhere('l.isValid = :valid')
             ->setParameter('valid', true)
+
+            /* Only apiEndpoint's with more than 0 credits. */
+            ->andWhere('e.credits > 0')
         ;
 
         if (!is_null($dateTime)) {

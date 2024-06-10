@@ -99,6 +99,14 @@ class ResourceWrapperCustom extends ResourceWrapper
     }
 
     /**
+     * @return int
+     */
+    public function getTimeTakenValue(): int
+    {
+        return (int) $this->timeTaken;
+    }
+
+    /**
      * @param string $timeTaken
      * @return self
      */
@@ -115,6 +123,14 @@ class ResourceWrapperCustom extends ResourceWrapper
     public function getMemoryTaken(): string
     {
         return $this->memoryTaken;
+    }
+
+    /**
+     * @return float
+     */
+    public function getMemoryTakenValue(): float
+    {
+        return (float) $this->memoryTaken;
     }
 
     /**

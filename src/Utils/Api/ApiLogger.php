@@ -127,7 +127,7 @@ class ApiLogger
         }
 
         /* IP protection. */
-        if (!$this->checkIpLimits($this->apiKey)) {
+        if (!$this->checkIpLimits($this->apiKey, $this->apiEndpoint)) {
             $this->apiRequestLogTypeValue = ApiRequestLogType::FAILED_429;
             $this->setErrorLast('The limit for the given API key has been reached. Please try again later.');
             return false;
@@ -154,12 +154,17 @@ class ApiLogger
      * Checks the ip rate limit.
      *
      * @param ApiKeyEntity $apiKey
+     * @param ApiEndpointEntity $apiEndpoint
      * @return bool
      */
-    private function checkIpLimits(ApiKeyEntity $apiKey): bool
+    private function checkIpLimits(ApiKeyEntity $apiKey, ApiEndpointEntity $apiEndpoint): bool
     {
         /* We don't have an ip limit. Cancel. */
         if (!$apiKey->hasIpLimit()) {
+            return true;
+        }
+
+        if ($apiEndpoint->getCredits() <= 0) {
             return true;
         }
 
@@ -387,6 +392,8 @@ class ApiLogger
             ->setGiven($givenRaw ?? $resourceWrapper->getGiven())
             ->setValid($valid)
             ->setError($error)
+            ->setTimeTaken($resourceWrapper->getTimeTakenValue())
+            ->setMemoryTaken($resourceWrapper->getMemoryTakenValue())
         ;
 
         $this->entityManager->persist($apiRequestLog);

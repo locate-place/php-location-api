@@ -76,6 +76,12 @@ class ApiRequestLog
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $error = null;
 
+    #[ORM\Column(type: Types::INTEGER, nullable: false, options: ['default' => 0, 'comment' => 'Time in ms'])]
+    private ?int $timeTaken = null;
+
+    #[ORM\Column(type: Types::FLOAT, options: ['default' => 0, 'comment' => 'Memory in MB'])]
+    private ?float $memoryTaken = null;
+
     /**
      * @return int|null
      */
@@ -255,14 +261,59 @@ class ApiRequestLog
         return $this;
     }
 
+    /**
+     * @return string|null
+     */
     public function getError(): ?string
     {
         return $this->error;
     }
 
+    /**
+     * @param string|null $error
+     * @return $this
+     */
     public function setError(?string $error): static
     {
         $this->error = $error;
+
+        return $this;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getTimeTaken(): ?int
+    {
+        return $this->timeTaken;
+    }
+
+    /**
+     * @param int $timeTaken
+     * @return $this
+     */
+    public function setTimeTaken(int $timeTaken): static
+    {
+        $this->timeTaken = $timeTaken;
+
+        return $this;
+    }
+
+    /**
+     * @return float|null
+     */
+    public function getMemoryTaken(): ?float
+    {
+        return $this->memoryTaken;
+    }
+
+    /**
+     * @param float $memoryTaken
+     * @return $this
+     */
+    public function setMemoryTaken(float $memoryTaken): static
+    {
+        $this->memoryTaken = $memoryTaken;
 
         return $this;
     }
