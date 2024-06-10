@@ -171,7 +171,7 @@ class BaseProviderCustom extends BaseResourceWrapperProvider
         }
 
         $this->apiLogger->increaseCredits($resourceWrapper);
-        $this->apiLogger->log($resourceWrapper);
+        $this->apiLogger->log($resourceWrapper, $this->getUriVariablesOutputRaw());
 
         $data = $resourceWrapper->getData();
 
@@ -256,6 +256,7 @@ class BaseProviderCustom extends BaseResourceWrapperProvider
     /**
      * Extends the getUriVariablesOutput method.
      *
+     * @param bool $doNotTranslate
      * @return array<int|string, array<string, mixed>|bool|int|string|null>
      * @throws ArrayKeyNotFoundException
      * @throws CaseInvalidException
@@ -267,7 +268,7 @@ class BaseProviderCustom extends BaseResourceWrapperProvider
      * @throws FunctionJsonEncodeException
      * @throws FunctionReplaceException
      * @throws JsonException
-     * @throws NonUniqueResultException
+     * @throws ORMException
      * @throws ParserException
      * @throws QueryParserException
      * @throws RedirectionExceptionInterface
@@ -360,6 +361,20 @@ class BaseProviderCustom extends BaseResourceWrapperProvider
     }
 
     /**
+     * Returns the untranslated raw given variables output.
+     *
+     * @return array<int|string, bool|int|string>
+     * @throws ArrayKeyNotFoundException
+     * @throws CaseInvalidException
+     * @throws CaseUnsupportedException
+     * @throws TypeInvalidException
+     */
+    protected function getUriVariablesOutputRaw(): array
+    {
+        return parent::getUriVariablesOutput();
+    }
+
+    /**
      * Returns the given query array.
      *
      * @return array<string, mixed>|null
@@ -399,6 +414,7 @@ class BaseProviderCustom extends BaseResourceWrapperProvider
      * @throws ServerExceptionInterface
      * @throws TransportExceptionInterface
      * @throws TypeInvalidException
+     * @throws ORMException
      */
     private function getGivenCoordinateArray(array $uriVariablesOutput): array
     {

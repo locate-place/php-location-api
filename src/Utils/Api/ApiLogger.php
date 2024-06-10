@@ -337,9 +337,10 @@ class ApiLogger
      * Logs the request.
      *
      * @param ResourceWrapperCustom $resourceWrapper
+     * @param array<int|string, bool|int|string>|null $givenRaw
      * @return void
      */
-    public function log(ResourceWrapperCustom $resourceWrapper): void
+    public function log(ResourceWrapperCustom $resourceWrapper, array|null $givenRaw = null): void
     {
         if (!$this->initialized) {
             throw new LogicException('Please execute the "accepted()" method first.');
@@ -383,7 +384,7 @@ class ApiLogger
             ->setIp($this->getIp())
             ->setBrowser($this->request->headers->get('User-Agent') ?? '')
             ->setReferrer($this->request->headers->get('Referer') ?? '')
-            ->setGiven($resourceWrapper->getGiven())
+            ->setGiven($givenRaw ?? $resourceWrapper->getGiven())
             ->setValid($valid)
             ->setError($error)
         ;
@@ -427,7 +428,15 @@ class ApiLogger
 
         $apiEndpoint = str_replace('{._format}', '', $operation->getUriTemplate() ?? '');
 
-        return '/'.ltrim($apiEndpoint, '/');
+        $apiEndpoint = '/'.ltrim($apiEndpoint, '/');
+
+        $prefix = $operation->getRoutePrefix();
+
+        if (!is_null($prefix)) {
+            $apiEndpoint = $prefix.$apiEndpoint;
+        }
+
+        return $apiEndpoint;
     }
 
     /**
