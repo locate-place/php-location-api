@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace App\ApiPlatform\OpenApiContext;
 
+use App\Constants\Code\ApiKey;
 use App\Constants\DB\Distance;
 use App\Constants\DB\FeatureClass;
 use App\Constants\DB\Format;
@@ -30,6 +31,24 @@ use App\Constants\Language\LocaleCode;
  */
 class Parameter
 {
+    final public const API_KEY = [
+        'name' => Name::API_KEY_HEADER,
+        'in' => 'header', // cookie, header, path, query
+        'description' => 'The <strong>api-key</strong> parameter specifies the API key to be checked. For security reasons, the API key must be passed in the header.',
+        'required' => true,
+        'deprecated' => false,
+        'allowEmptyValue' => false,
+        'schema' => [
+            'type' => 'string',
+            'default' => ApiKey::PUBLIC_KEY,
+            'minLength' => 32,
+            'maxLength' => 32,
+        ],
+        'style' => 'simple', // simple, form
+        'explode' => false,
+        'allowReserved' => false,
+    ];
+
     final public const CLASS_ = [
         'name' => Name::CLASS_,
         'in' => 'query', // cookie, header, path, query

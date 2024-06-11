@@ -55,6 +55,7 @@ use Ixnode\PhpTimezone\Constants\Language;
 use JsonException;
 use LogicException;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Stopwatch\Stopwatch;
 use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
@@ -84,31 +85,38 @@ class BaseProviderCustom extends BaseResourceWrapperProvider
     /**
      * @param Version $version
      * @param ParameterBagInterface $parameterBag
-     * @param RequestStack $request
+     * @param RequestStack $requestStack
      * @param LocationService $locationService
      * @param TranslatorInterface $translator
      * @param EntityManagerInterface $entityManager
      * @param ApiLogger $apiLogger
+     * @throws CaseUnsupportedException
      */
     public function __construct(
         Version $version,
         ParameterBagInterface $parameterBag,
-        RequestStack $request,
+        RequestStack $requestStack,
         protected LocationService $locationService,
         protected TranslatorInterface $translator,
         protected EntityManagerInterface $entityManager,
         protected ApiLogger $apiLogger,
     )
     {
-        parent::__construct($version, $parameterBag, $request);
+        parent::__construct($version, $parameterBag, $requestStack);
 
-        $requestCurrent = $this->request->getCurrentRequest();
+        $this->query = new Query($this->getRequest());
+    }
 
-        if (is_null($requestCurrent)) {
-            throw new LogicException('Unable to get current request.');
-        }
-
-        $this->query = new Query($requestCurrent);
+    /**
+     * Protection of some given variables that should not be returned.
+     *
+     * @inheritdoc
+     */
+    protected function getProtectedValues(): array
+    {
+        return [
+            Name::API_KEY_HEADER
+        ];
     }
 
     /**
@@ -121,6 +129,7 @@ class BaseProviderCustom extends BaseResourceWrapperProvider
      * @return object|array|object[]|null
      * @throws Exception
      * @throws TransportExceptionInterface
+     * @throws ORMException
      */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
@@ -664,7 +673,7 @@ class BaseProviderCustom extends BaseResourceWrapperProvider
      */
     protected function endpointContains(string $word): bool
     {
-        $pathInfo = explode('/', $this->getCurrentRequest()->getPathInfo());
+        $pathInfo = explode('/', $this->getRequest()->getPathInfo());
 
         foreach ($pathInfo as $pathInfoPart) {
             if (preg_match(sprintf('~^%s$~', $word), $pathInfoPart)) {
@@ -817,7 +826,7 @@ class BaseProviderCustom extends BaseResourceWrapperProvider
      */
     private function isLocationRequest(): bool
     {
-        return str_contains($this->request->getCurrentRequest()?->getPathInfo() ?? '', '/location');
+        return str_contains($this->getRequest()->getPathInfo(), '/location');
     }
 
     /**
@@ -827,7 +836,7 @@ class BaseProviderCustom extends BaseResourceWrapperProvider
      */
     private function isAutocompleteRequest(): bool
     {
-        return str_contains($this->request->getCurrentRequest()?->getPathInfo() ?? '', '/autocomplete');
+        return str_contains($this->getRequest()->getPathInfo(), '/autocomplete');
     }
 
     /**
@@ -838,7 +847,7 @@ class BaseProviderCustom extends BaseResourceWrapperProvider
      */
     public function hasPath(string $wordRegexp): bool
     {
-        $pathWords = explode('/', $this->request->getCurrentRequest()?->getPathInfo() ?? '');
+        $pathWords = explode('/', $this->getRequest()->getPathInfo());
 
         foreach ($pathWords as $pathWord) {
             if (preg_match(sprintf('~^%s$~', $wordRegexp), $pathWord)) {

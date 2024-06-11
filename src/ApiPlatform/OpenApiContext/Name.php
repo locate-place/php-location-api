@@ -22,6 +22,8 @@ namespace App\ApiPlatform\OpenApiContext;
  */
 class Name
 {
+    final public const API_KEY_HEADER = 'api-key';
+
     final public const CLASS_ = 'class';
 
     final public const COORDINATE = 'coordinate';

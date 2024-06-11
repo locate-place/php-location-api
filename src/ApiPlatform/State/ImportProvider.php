@@ -50,30 +50,31 @@ final class ImportProvider extends BaseProviderCustom
     /**
      * @param Version $version
      * @param ParameterBagInterface $parameterBag
-     * @param RequestStack $request
+     * @param RequestStack $requestStack
      * @param LocationService $locationService
      * @param TranslatorInterface $translator
      * @param EntityManagerInterface $entityManager
      * @param ApiLogger $apiLogger
      * @param ImportRepository $importRepository
      * @param LocationRepository $locationRepository
+     * @throws CaseUnsupportedException
      */
     public function __construct(
-        protected Version $version,
-        protected ParameterBagInterface $parameterBag,
-        protected RequestStack $request,
-        protected LocationService $locationService,
-        protected TranslatorInterface $translator,
+        Version                          $version,
+        ParameterBagInterface            $parameterBag,
+        RequestStack                     $requestStack,
+        protected LocationService        $locationService,
+        protected TranslatorInterface    $translator,
         protected EntityManagerInterface $entityManager,
-        protected ApiLogger $apiLogger,
-        protected ImportRepository $importRepository,
-        protected LocationRepository $locationRepository,
+        protected ApiLogger              $apiLogger,
+        protected ImportRepository       $importRepository,
+        protected LocationRepository     $locationRepository,
     )
     {
         parent::__construct(
             $version,
             $parameterBag,
-            $request,
+            $requestStack,
             $locationService,
             $translator,
             $entityManager,

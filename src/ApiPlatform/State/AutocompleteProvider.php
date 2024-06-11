@@ -59,18 +59,19 @@ final class AutocompleteProvider extends BaseProviderCustom
     /**
      * @param Version $version
      * @param ParameterBagInterface $parameterBag
-     * @param RequestStack $request
+     * @param RequestStack $requestStack
      * @param LocationService $locationService
      * @param TranslatorInterface $translator
      * @param EntityManagerInterface $entityManager
      * @param ApiLogger $apiLogger
      * @param LocationRepository $locationRepository
      * @param LocationContainer $locationContainer
+     * @throws CaseUnsupportedException
      */
     public function __construct(
-        protected Version $version,
-        protected ParameterBagInterface $parameterBag,
-        protected RequestStack $request,
+        Version $version,
+        ParameterBagInterface $parameterBag,
+        RequestStack $requestStack,
         protected LocationService $locationService,
         protected TranslatorInterface $translator,
         protected EntityManagerInterface $entityManager,
@@ -82,7 +83,7 @@ final class AutocompleteProvider extends BaseProviderCustom
         parent::__construct(
             $version,
             $parameterBag,
-            $request,
+            $requestStack,
             $locationService,
             $translator,
             $entityManager,
@@ -495,13 +496,9 @@ final class AutocompleteProvider extends BaseProviderCustom
      */
     private function doProvideGet(): BasePublicResource
     {
-        $currentRequest = $this->request->getCurrentRequest();
+        $request = $this->getRequest();
 
-        if (is_null($currentRequest)) {
-            throw new LogicException('Unable to get current request.');
-        }
-
-        $query = new Query($currentRequest);
+        $query = new Query($request);
 
         $queryString = $query->getQuery();
         if (is_null($queryString)) {
