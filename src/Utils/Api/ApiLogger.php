@@ -91,16 +91,6 @@ class ApiLogger
     }
 
     /**
-     * Returns the API key.
-     *
-     * @return string
-     */
-    protected function getApiKey(): string
-    {
-        return ApiKey::PUBLIC_KEY;
-    }
-
-    /**
      * @return bool
      */
     public function isRequestAccepted(): bool
@@ -118,11 +108,19 @@ class ApiLogger
             return false;
         }
 
-        $this->apiKey = $this->apiKeyRepository->findOneBy(['apiKey' => $this->getApiKey()]);
+        $this->apiKey = $this->getApiKey();
 
+        /* API key was not found. */
         if (is_null($this->apiKey)) {
             $this->apiRequestLogTypeValue = ApiRequestLogType::FAILED_401;
-            $this->setErrorLast('The given API key was not found.');
+            $this->setErrorLast('The given API key is not valid.');
+            return false;
+        }
+
+        /* API key is not enabled. */
+        if (!$this->apiKey->isEnabled()) {
+            $this->apiRequestLogTypeValue = ApiRequestLogType::FAILED_401;
+            $this->setErrorLast('The given API key is not valid.');
             return false;
         }
 
@@ -418,6 +416,28 @@ class ApiLogger
         }
 
         return $apiEndpoint->getCredits();
+    }
+
+    /**
+     * Returns the API key.
+     *
+     * @return string
+     */
+    protected function getApiKeyString(): string
+    {
+        return ApiKey::PUBLIC_KEY;
+    }
+
+    /**
+     * Returns the API key entity.
+     *
+     * @return ApiKeyEntity|null
+     */
+    protected function getApiKey(): ApiKeyEntity|null
+    {
+        return $this->apiKeyRepository->findOneBy([
+            'apiKey' => $this->getApiKeyString(),
+        ]);
     }
 
     /**

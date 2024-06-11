@@ -9,6 +9,7 @@
  * file that was distributed with this source code.
  */
 
+
 declare(strict_types=1);
 
 namespace App\Entity;
@@ -76,6 +77,9 @@ class ApiKey
     /** @var Collection<int, ApiKeyCreditsMonth> */
     #[ORM\OneToMany(targetEntity: ApiKeyCreditsMonth::class, mappedBy: 'apiKey', orphanRemoval: true)]
     private Collection $apiKeyCreditsMonths;
+
+    #[ORM\Column(options: ['default' => true])]
+    private ?bool $isEnabled = null;
 
     /**
      *
@@ -357,6 +361,25 @@ class ApiKey
                 $apiKeyCreditsMonth->setApiKey(null);
             }
         }
+
+        return $this;
+    }
+
+    /**
+     * @return bool|null
+     */
+    public function isEnabled(): ?bool
+    {
+        return $this->isEnabled;
+    }
+
+    /**
+     * @param bool $isEnabled
+     * @return $this
+     */
+    public function setEnabled(bool $isEnabled): static
+    {
+        $this->isEnabled = $isEnabled;
 
         return $this;
     }
